@@ -1,0 +1,83 @@
+﻿@model IEnumerable<JW_Management.Models.Discurso>
+
+@{
+    ViewData["Title"] = "Discursos";
+}
+
+<h1>Index</h1>
+
+<p>
+    <a asp-action="Create">Create New</a>
+</p>
+<table class="table">
+    <thead>
+        <tr>
+            <th>
+                @Html.DisplayNameFor(model => model.IdDiscurso)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.NomeOrador)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.CongregacaoOrador)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.ContactoOrador)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.DataDiscurso)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.IdTemaDiscurso)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.TemaDiscurso)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Dentro_Fora)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Observacoes)
+            </th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+@foreach (var item in Model) {
+        <tr>
+            <td>
+                @Html.DisplayFor(modelItem => item.IdDiscurso)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.NomeOrador)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.CongregacaoOrador)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.ContactoOrador)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.DataDiscurso)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.IdTemaDiscurso)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.TemaDiscurso)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.Dentro_Fora)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.Observacoes)
+            </td>
+            <td>
+                @Html.ActionLink("Edit", "Edit", new { /* id=item.PrimaryKey */ }) |
+                @Html.ActionLink("Details", "Details", new { /* id=item.PrimaryKey */ }) |
+                @Html.ActionLink("Delete", "Delete", new { /* id=item.PrimaryKey */ })
+            </td>
+        </tr>
+}
+    </tbody>
+</table>
