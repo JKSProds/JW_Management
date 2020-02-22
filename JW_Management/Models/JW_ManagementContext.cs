@@ -49,5 +49,34 @@ namespace JW_Management.Models
             }
             ConnectionString += "database=" + DB_Nome;
         }
+
+        public List<Discurso> ObterListaDiscursos()
+        {
+            List<Discurso> LstDiscursos = new List<Discurso>();
+
+            Database db = ConnectionString;
+
+            using (var result = db.Query("SELECT * FROM dat_discursos INNER JOIN dat_temas ON dat_discursos.IdTemaDiscurso=dat_temas.IdTemaDiscurso;"))
+            {
+                while (result.Read())
+                {
+                    LstDiscursos.Add(new Discurso()
+                    {
+                        IdDiscurso = result["IdDiscurso"],
+                        NomeOrador = result["NomeOrador"],
+                        CongregacaoOrador = result["CongregacaoOrador"],
+                        ContactoOrador = result["ContactoOrador"],
+                        DataDiscurso = result["DataDiscurso"],
+                        IdTemaDiscurso = result["IdTemaDiscurso"],
+                        TemaDiscurso = result["TemaDiscurso"],
+                        Dentro_Fora = result["Dentro_Fora"],
+                        Observacoes = result["Observacoes"],
+
+                    });
+                }
+            }
+
+            return LstDiscursos;
+        }
     }
 }

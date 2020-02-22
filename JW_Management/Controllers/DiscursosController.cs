@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using JW_Management.Models;
 
 namespace JW_Management.Controllers
 {
@@ -12,7 +13,9 @@ namespace JW_Management.Controllers
         // GET: Discursos
         public ActionResult Index()
         {
-            return View();
+            JW_ManagementContext context = HttpContext.RequestServices.GetService(typeof(JW_ManagementContext)) as JW_ManagementContext;
+
+            return View(context.ObterListaDiscursos());
         }
 
         // GET: Discursos/Details/5
