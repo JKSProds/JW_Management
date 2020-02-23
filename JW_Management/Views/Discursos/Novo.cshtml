@@ -44,13 +44,13 @@
                         <span asp-validation-for="EmailOrador" class="text-danger"></span>
                     </div>
                     <div class="w-100"></div>
-                    <div class="form-group col-6">
+                    <div class="form-group col-7">
                         <label asp-for="TemaDiscurso" class="control-label"></label>
                         <select class="form-control" asp-for="IdTemaDiscurso" asp-items="@ViewBag.Temas"></select>
                         @* <input asp-for="TemaDiscurso" class="form-control" />*@
                         <span asp-validation-for="TemaDiscurso" class="text-danger"></span>
                     </div>
-                    <div class="col-2">
+                    <div class="col-5">
                         <label asp-for="DataDiscurso" class="control-label"></label>
                         @*DateTimePicker*@
                         <script src="~/lib/jquery/dist/jquery.min.js"></script>
@@ -70,13 +70,14 @@
                         <input asp-for="IdTemaDiscurso" class="form-control" />
                         <span asp-validation-for="IdTemaDiscurso" class="text-danger"></span>
                     </div>
-                    <div class="input-group mb-3 col-4">
+                    <div class="w-100"></div>
+                    <div class="input-group mb-3 col">
                         <div class="input-group-prepend">
                             <div class="input-group-text">
-                                <input type="checkbox" asp-for="Dentro_Fora" >
+                                <input type="checkbox" asp-for="Dentro_Fora">
                             </div>
                         </div>
-                        <textarea type="text" rows="2" class="form-control" value="" readonly>Este discurso vai ser realizado na congregação de origem?</textarea>                  
+                        <input type="text" class="form-control" value="Este discurso vai ser realizado na congregação de origem?" readonly />
                     </div>
 
                     <div class="w-100"></div>
