@@ -50,7 +50,7 @@
                         @* <input asp-for="TemaDiscurso" class="form-control" />*@
                         <span asp-validation-for="TemaDiscurso" class="text-danger"></span>
                     </div>
-                    <div class="col-3">
+                    <div class="col-2">
                         <label asp-for="DataDiscurso" class="control-label"></label>
                         @*DateTimePicker*@
                         <script src="~/lib/jquery/dist/jquery.min.js"></script>
@@ -70,11 +70,15 @@
                         <input asp-for="IdTemaDiscurso" class="form-control" />
                         <span asp-validation-for="IdTemaDiscurso" class="text-danger"></span>
                     </div>
-                    <div class="form-group form-check col-3">
-                        <label class="form-check-label">
-                            <input class="form-check-input" asp-for="Dentro_Fora" /> @Html.DisplayNameFor(model => model.Dentro_Fora)
-                        </label>
+                    <div class="input-group mb-3 col-4">
+                        <div class="input-group-prepend">
+                            <div class="input-group-text">
+                                <input type="checkbox" asp-for="Dentro_Fora" >
+                            </div>
+                        </div>
+                        <textarea type="text" rows="2" class="form-control" value="" readonly>Este discurso vai ser realizado na congregação de origem?</textarea>                  
                     </div>
+
                     <div class="w-100"></div>
                     <div class="form-group col">
                         <label asp-for="Observacoes" class="control-label"></label>
