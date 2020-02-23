@@ -1,0 +1,88 @@
+﻿@model JW_Management.Models.Discurso
+
+@{
+    ViewData["Title"] = "Novo";
+}
+
+<h1>Novo Discurso</h1>
+
+<hr />
+<div class="row">
+    <div>
+        <form asp-action="Novo">
+            <div class="container">
+                <div class="row">
+                    <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+                    <div class="form-group" style="display: none">
+                        <label asp-for="IdDiscurso" class="control-label"></label>
+                        <input asp-for="IdDiscurso" class="form-control" />
+                        <span asp-validation-for="IdDiscurso" class="text-danger"></span>
+                    </div>
+                    <div class="form-group col">
+                        <label asp-for="NomeOrador" class="control-label"></label>
+                        <input asp-for="NomeOrador" class="form-control" />
+                        <span asp-validation-for="NomeOrador" class="text-danger"></span>
+                    </div>
+
+                    <div class="form-group col">
+                        <label asp-for="CongregacaoOrador" class="control-label"></label>
+                        <input asp-for="CongregacaoOrador" class="form-control" />
+                        <span asp-validation-for="CongregacaoOrador" class="text-danger"></span>
+                    </div>
+                    <div class="w-100"></div>
+                    <div class="form-group col-5">
+                        <label asp-for="ContactoOrador" class="control-label"></label>
+                        <input asp-for="ContactoOrador" class="form-control" />
+                        <span asp-validation-for="ContactoOrador" class="text-danger"></span>
+                    </div>
+                    <div class="form-group col-7">
+                        <label asp-for="EmailOrador" class="control-label"></label>
+                        <input asp-for="EmailOrador" class="form-control" />
+                        <span asp-validation-for="EmailOrador" class="text-danger"></span>
+                    </div>
+                    <div class="w-100"></div>
+                    <div class="form-group col-6">
+                        <label asp-for="TemaDiscurso" class="control-label"></label>
+                        <select class="form-control" asp-for="IdTemaDiscurso" asp-items="@ViewBag.Temas"></select>
+                        @* <input asp-for="TemaDiscurso" class="form-control" />*@
+                        <span asp-validation-for="TemaDiscurso" class="text-danger"></span>
+                    </div>
+
+                    <div class="form-group col-3">
+                        <label asp-for="DataDiscurso" class="control-label"></label>
+                        <input asp-for="DataDiscurso" class="form-control" />
+                        <span asp-validation-for="DataDiscurso" class="text-danger"></span>
+                    </div>
+                    <div class="form-group" style="display: none">
+                        <label asp-for="IdTemaDiscurso" class="control-label"></label>
+                        <input asp-for="IdTemaDiscurso" class="form-control" />
+                        <span asp-validation-for="IdTemaDiscurso" class="text-danger"></span>
+                    </div>
+                    <div class="form-group form-check col-3">
+                        <label class="form-check-label">
+                            <input class="form-check-input" asp-for="Dentro_Fora" /> @Html.DisplayNameFor(model => model.Dentro_Fora)
+                        </label>
+                    </div>
+                    <div class="w-100"></div>
+                    <div class="form-group col">
+                        <label asp-for="Observacoes" class="control-label"></label>
+                        @Html.EditorFor(model => model.Observacoes, new { htmlAttributes = new { @class = "form-control", @rows = "8" } })
+                        <span asp-validation-for="Observacoes" class="text-danger"></span>
+                    </div>
+                </div>
+            </div>
+            <div class="container">
+                <div class="row">
+                    <div class="form-group" style="width: 100%">
+                        <input type="submit" value="Criar Discurso" class="btn btn-lg btn-primary btn-block" />
+                    </div>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div>
+    <a asp-action="Index">Voltar</a>
+</div>
+

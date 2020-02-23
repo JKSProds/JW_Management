@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using JW_Management.Models;
+using Microsoft.AspNetCore.Mvc.Rendering;
 
 namespace JW_Management.Controllers
 {
@@ -13,31 +14,44 @@ namespace JW_Management.Controllers
         // GET: Discursos
         public ActionResult Index()
         {
-            JW_ManagementContext context = HttpContext.RequestServices.GetService(typeof(JW_ManagementContext)) as JW_ManagementContext;
-
-            return View(context.ObterListaDiscursos());
+            return View();
         }
-
-        // GET: Discursos/Details/5
-        public ActionResult Details(int id)
+        public ActionResult Calendario()
         {
             return View();
         }
 
-        // GET: Discursos/Create
-        public ActionResult Create()
+
+        public JsonResult ObterDiscursos()
         {
+            JW_ManagementContext context = HttpContext.RequestServices.GetService(typeof(JW_ManagementContext)) as JW_ManagementContext;
+            return new JsonResult(context.ConverterDiscursosEventos(context.ObterListaDiscursos()).ToList());
+
+        }
+
+
+        
+        // GET: Discursos/Create
+        public ActionResult Novo()
+        {
+            JW_ManagementContext context = HttpContext.RequestServices.GetService(typeof(JW_ManagementContext)) as JW_ManagementContext;
+
+            ViewBag.Temas = context.ObterListaTemas().Select(c => new SelectListItem()
+            { Text = "#" + c.Id.ToString().PadLeft(3, '0') + " - " + c.Tema, Value = c.Id.ToString() }).ToList();
+
             return View();
         }
 
         // POST: Discursos/Create
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public ActionResult Create(IFormCollection collection)
+        public ActionResult Novo(Discurso discurso)
         {
             try
             {
-                // TODO: Add insert logic here
+                JW_ManagementContext context = HttpContext.RequestServices.GetService(typeof(JW_ManagementContext)) as JW_ManagementContext;
+
+                context.CriarDiscurso(discurso);
 
                 return RedirectToAction(nameof(Index));
             }
@@ -48,21 +62,28 @@ namespace JW_Management.Controllers
         }
 
         // GET: Discursos/Edit/5
-        public ActionResult Edit(int id)
+        public ActionResult Editar(int id)
         {
-            return View();
+            JW_ManagementContext context = HttpContext.RequestServices.GetService(typeof(JW_ManagementContext)) as JW_ManagementContext;
+            
+            ViewBag.Temas = context.ObterListaTemas().Select(c => new SelectListItem()
+            { Text = "#" + c.Id.ToString().PadLeft(3, '0') + " - " + c.Tema, Value = c.Id.ToString() }).ToList();
+
+            return View(context.ObterDiscurso(id));
         }
 
         // POST: Discursos/Edit/5
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public ActionResult Edit(int id, IFormCollection collection)
+        public ActionResult Editar(int id, Discurso discurso)
         {
             try
             {
-                // TODO: Add update logic here
+                JW_ManagementContext context = HttpContext.RequestServices.GetService(typeof(JW_ManagementContext)) as JW_ManagementContext;
 
-                return RedirectToAction(nameof(Index));
+                context.AtualizarDiscurso(discurso, id);
+
+                return RedirectToAction(nameof(Editar), id);
             }
             catch
             {
@@ -70,20 +91,13 @@ namespace JW_Management.Controllers
             }
         }
 
-        // GET: Discursos/Delete/5
-        public ActionResult Delete(int id)
-        {
-            return View();
-        }
 
-        // POST: Discursos/Delete/5
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public ActionResult Delete(int id, IFormCollection collection)
+        public ActionResult Apagar(int id)
         {
             try
             {
-                // TODO: Add delete logic here
+                JW_ManagementContext context = HttpContext.RequestServices.GetService(typeof(JW_ManagementContext)) as JW_ManagementContext;
+                context.ApagarDiscurso(id);
 
                 return RedirectToAction(nameof(Index));
             }
