@@ -252,15 +252,15 @@ gj.documentManager = {
 gj.core = {
     messages: {
         'en-us': {
-            monthNames: ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'],
-            monthShortNames: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],            
-            weekDaysMin: ['S', 'M', 'T', 'W', 'T', 'F', 'S'],
-            weekDaysShort: ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"],
-            weekDays: ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"],
+            monthNames: ['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho', 'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'],
+            monthShortNames: ['Jan', 'Feb', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez'],            
+            weekDaysMin: ['D', 'S', 'T', 'Q', 'Q', 'S', 'S'],
+            weekDaysShort: ["Dom", "Seg", "Ter", "Qua", "Qui", "Sex", "Sab"],
+            weekDays: ["Domingo", "Segunda", "Terça", "Quarta", "Quinta", "Sexta", "Sabado"],
             am: 'AM',
             pm: 'PM',
             ok: 'Ok',
-            cancel: 'Cancel',
+            cancel: 'Cancelar',
             titleFormat: 'mmmm yyyy'
         }
     },
