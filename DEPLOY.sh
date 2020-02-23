@@ -16,7 +16,7 @@ chmod -R 777 JW_Management
 
 rm -r JW_Management
 
-docker run -d -p 8081:80 --name JW_Management jwmanagement
+docker run -d -p 8081:80 --restart always --name JW_Management jwmanagement
 
 
 
