@@ -8,27 +8,31 @@
     <link rel="stylesheet" href="~/css/site.css" />
     <link rel="stylesheet" href="~/css/all.css">
     <link rel="stylesheet" href="~/css/v4-shims.min.css">
-
-
 </head>
 <body>
     <header>
-        <nav class="navbar navbar-expand-sm navbar-toggleable-sm border-bottom box-shadow mb-3" style="background-color: #373433; height: 60px">
-            <div class="container">
-                <a class="navbar-brand" asp-area="" asp-controller="Home" asp-action="Index">
-                    <img src="~/img/jw_logo.png" width="79" height="80" class="d-inline-block align-top" alt="" style="margin-top: 30px">
-                </a>
-                <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#collapsibleNavbar">
-                    <span class="navbar-toggler-icon"></span>
-                </button>
-                <div class="navbar-collapse collapse d-sm-inline-flex flex-sm-row-reverse" id="collapsibleNavbar">
-                    <ul class="navbar-nav flex-grow-1">
-                        <li class="nav-item">
-                            <a class="nav-link text-light lead" asp-area="" asp-controller="Discursos" asp-action="Index"><img src="~/img/public-speech.png" width="40" heigh="40" style="margin-right: 10px" />Discursos</a>
-                        </li>
+        <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
 
-                    </ul>
-                </div>
+            <a class="navbar-brand" href="Home">
+                <img src="~/img/jw_logo.png" width="70" height="70" style="position: absolute; z-index: 1; left: 20px; top: 10px;" class="d-inline-block align-top">
+            </a>
+            <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarTogglerDemo03" aria-controls="navbarTogglerDemo03" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarTogglerDemo03">
+                <ul class="navbar-nav mr-auto mt-2 mt-lg-0" style="margin-left: 80px">
+                    <li class="nav-item">
+                        <a class="nav-link text-light lead" asp-area="" asp-controller="Discursos" asp-action="Index"><img src="~/img/public-speech.png" width="40" heigh="40" style="margin-right: 10px" />Discursos</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link text-light lead" asp-area="" asp-controller="Territorios" asp-action="Index"><img src="~/img/territorios.png" width="40" heigh="40" style="margin-right: 10px" />Territórios</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link text-light lead" asp-area="" asp-controller="Stocks" asp-action="Index"><img src="~/img/stock.png" width="40" heigh="40" style="margin-right: 10px" />Publicações</a>
+                    </li>
+
+                </ul>
+
             </div>
         </nav>
     </header>
