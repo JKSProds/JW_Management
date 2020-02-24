@@ -5,9 +5,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="jQuery.Fullcalendar" Version="3.9.0" />
     <PackageReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" Version="3.1.1" />
-    <PackageReference Include="Moment.js" Version="2.24.0" />
     <PackageReference Include="MySql.Simple" Version="5.3.5" />
   </ItemGroup>
 
