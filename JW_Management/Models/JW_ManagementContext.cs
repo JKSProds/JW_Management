@@ -67,7 +67,7 @@ namespace JW_Management.Models
                     email = item.EmailOrador,
                     start = item.DataDiscurso,
                     end = item.DataDiscurso,
-                    allDay = true,
+                    allDay = false,
                     color = (item.Dentro_Fora ? "#33FF77" : "#3371FF")
                 });
             }
