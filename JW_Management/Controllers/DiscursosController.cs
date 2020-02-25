@@ -37,7 +37,7 @@ namespace JW_Management.Controllers
             JW_ManagementContext context = HttpContext.RequestServices.GetService(typeof(JW_ManagementContext)) as JW_ManagementContext;
 
             ViewBag.Temas = context.ObterListaTemas().Select(c => new SelectListItem()
-            { Text = "#" + c.Id.ToString().PadLeft(3, '0') + " - " + c.Tema, Value = c.Id.ToString() }).ToList();
+            { Text = "N. " + c.Id.ToString().PadLeft(3, '0') + " - " + c.Tema, Value = c.Id.ToString() }).ToList();
 
             Discurso discurso = new Discurso();
 
