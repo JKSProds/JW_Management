@@ -39,7 +39,11 @@ namespace JW_Management.Controllers
             ViewBag.Temas = context.ObterListaTemas().Select(c => new SelectListItem()
             { Text = "#" + c.Id.ToString().PadLeft(3, '0') + " - " + c.Tema, Value = c.Id.ToString() }).ToList();
 
-            return View();
+            Discurso discurso = new Discurso();
+
+            discurso.DataDiscurso = DateTime.Parse(DateTime.Now.ToString("dd/MM/yyyy hh:mm"));
+
+            return View(discurso);
         }
 
         // POST: Discursos/Create

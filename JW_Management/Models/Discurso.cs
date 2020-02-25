@@ -23,10 +23,11 @@ namespace JW_Management.Models
         public int IdTemaDiscurso { get; set; }
         [Display(Name = "Tema do Discurso")]
         public string TemaDiscurso { get; set; }
-        [Display(Name = "Este discurso vai ser realizado na congregação de origem?")]
+        [Display(Name = "Este discurso vai ser realizado na sua congregação?")]
         public bool Dentro_Fora { get; set; }
         [Display(Name = "Observações Adicionais")]
         [DataType(DataType.MultilineText)]
         public string Observacoes { get; set; }
+
     }
 }
