@@ -32,7 +32,7 @@ namespace JW_Management.Controllers
 
         
         // GET: Discursos/Create
-        public ActionResult Novo()
+        public ActionResult Novo(DateTime Data)
         {
             JW_ManagementContext context = HttpContext.RequestServices.GetService(typeof(JW_ManagementContext)) as JW_ManagementContext;
 
@@ -41,7 +41,7 @@ namespace JW_Management.Controllers
 
             Discurso discurso = new Discurso();
 
-            discurso.DataDiscurso = DateTime.Parse(DateTime.Now.ToString("dd/MM/yyyy hh:mm"));
+            discurso.DataDiscurso = Data != new DateTime() ? Data : DateTime.Parse(DateTime.Now.ToString("dd/MM/yyyy hh:mm"));
 
             return View(discurso);
         }

@@ -60,7 +60,7 @@
                         @Html.TextBoxFor(model => model.DataDiscurso, new { data_val = "false", id = "input", @readonly = "false" })
 
                         <script>
-                            $('#input').datetimepicker({ footer: true, modal: true, format: 'dd-mm-yyyy HH:MM' });
+                            $('#input').datetimepicker({ footer: true, modal: true, format: 'dd/mm/yyyy HH:MM' });
                         </script>
                         <span asp-validation-for="DataDiscurso" class="text-danger"></span>
 
