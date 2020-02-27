@@ -140,7 +140,7 @@ namespace JW_Management.Models
         {
             Database db = ConnectionString;
 
-            db.Execute("UPDATE dat_discursos SET NomeOrador='" + discurso.NomeOrador + "', CongregacaoOrador='" + discurso.CongregacaoOrador + "', ContactoOrador='" + discurso.ContactoOrador + "', DataDiscurso='" + discurso.DataDiscurso.ToString("yyyy-MM-dd HH:mm:ss") + "', Observacoes='" + discurso.Observacoes + "', IdTemaDiscurso=" + discurso.IdTemaDiscurso + ", Dentro_Fora="+discurso.Dentro_Fora+" WHERE IdDiscurso=" + id + ";");
+            db.Execute("UPDATE dat_discursos SET NomeOrador='" + discurso.NomeOrador + "', CongregacaoOrador='" + discurso.CongregacaoOrador + "', ContactoOrador='" + discurso.ContactoOrador + "', DataDiscurso='" + discurso.DataDiscurso.ToString("yyyy-MM-dd HH:mm:ss") + "', Observacoes='" + discurso.Observacoes + "', IdTemaDiscurso=" + discurso.IdTemaDiscurso + ", Dentro_Fora="+discurso.Dentro_Fora+", EmailOrador='"+discurso.EmailOrador+"' WHERE IdDiscurso=" + id + ";");
         }
         public void CriarDiscurso(Discurso discurso)
         {
