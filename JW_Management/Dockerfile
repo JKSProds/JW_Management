@@ -7,7 +7,7 @@ EXPOSE 80
 FROM mcr.microsoft.com/dotnet/sdk:6.0 AS build
 WORKDIR /src
 COPY ["JW_Management.csproj", "JW_Management/"]
-RUN dotnet restore "JW_Management.csproj"
+RUN dotnet restore "JW_Manament/JW_Management.csproj"
 COPY . .
 WORKDIR "/src/JW_Management"
 RUN dotnet build "JW_Management.csproj" -c Release -o /app/build
