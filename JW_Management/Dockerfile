@@ -4,15 +4,18 @@ FROM mcr.microsoft.com/dotnet/aspnet:6.0 AS base
 WORKDIR /app
 EXPOSE 80
 
-COPY *.csproj ./
-RUN dotnet restore
-
-# Copy everything else and build
-COPY . ./
-RUN dotnet publish -c Release -o out
-
 FROM mcr.microsoft.com/dotnet/sdk:6.0 AS build
-WORKDIR /app
+WORKDIR /src
+COPY ["JW_Management.csproj", "JW_Management/"]
+RUN dotnet restore "JW_Management.csproj"
+COPY . .
+WORKDIR "/src/JW_Management"
+RUN dotnet build "JW_Management.csproj" -c Release -o /app/build
 
-COPY --from=build-env /app/out .
+FROM build AS publish
+RUN dotnet publish "JW_Management.csproj" -c Release -o /app/publish
+
+FROM base AS final
+WORKDIR /app
+COPY --from=publish /app/publish .
 ENTRYPOINT ["dotnet", "JW_Management.dll"]
