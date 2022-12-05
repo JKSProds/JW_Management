@@ -1,0 +1,207 @@
+-- MySQL Administrator dump 1.4
+--
+-- ------------------------------------------------------
+-- Server version	8.0.28
+
+
+/*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
+/*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
+/*!40101 SET @OLD_COLLATION_CONNECTION=@@COLLATION_CONNECTION */;
+/*!40101 SET NAMES utf8 */;
+
+/*!40014 SET @OLD_UNIQUE_CHECKS=@@UNIQUE_CHECKS, UNIQUE_CHECKS=0 */;
+/*!40014 SET @OLD_FOREIGN_KEY_CHECKS=@@FOREIGN_KEY_CHECKS, FOREIGN_KEY_CHECKS=0 */;
+/*!40101 SET @OLD_SQL_MODE=@@SQL_MODE, SQL_MODE='NO_AUTO_VALUE_ON_ZERO' */;
+
+
+--
+-- Create schema sys_jw
+--
+
+CREATE DATABASE IF NOT EXISTS sys_jw;
+USE sys_jw;
+
+--
+-- Definition of table `dat_grupos`
+--
+
+DROP TABLE IF EXISTS `dat_grupos`;
+CREATE TABLE `dat_grupos` (
+  `Id` int unsigned NOT NULL AUTO_INCREMENT,
+  `Nome` varchar(45) NOT NULL,
+  `Responsavel` varchar(45) NOT NULL,
+  `Ajudante` varchar(45) NOT NULL,
+  PRIMARY KEY (`Id`)
+) ENGINE=InnoDB AUTO_INCREMENT=101 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+--
+-- Dumping data for table `dat_grupos`
+--
+
+/*!40000 ALTER TABLE `dat_grupos` DISABLE KEYS */;
+INSERT INTO `dat_grupos` (`Id`,`Nome`,`Responsavel`,`Ajudante`) VALUES 
+ (1,'Grupo 1','Nuno Pereira','Diogo Ferreira'),
+ (100,'Salão do Reino','Jorge Monteiro','David Costa');
+/*!40000 ALTER TABLE `dat_grupos` ENABLE KEYS */;
+
+
+--
+-- Definition of table `dat_literatura`
+--
+
+DROP TABLE IF EXISTS `dat_literatura`;
+CREATE TABLE `dat_literatura` (
+  `Id` int unsigned NOT NULL AUTO_INCREMENT,
+  `Referencia` varchar(45) NOT NULL,
+  `Descricao` varchar(128) NOT NULL,
+  `IdGrupo` int unsigned NOT NULL,
+  `IdTipo` int unsigned NOT NULL,
+  `Quantidade` int unsigned NOT NULL DEFAULT '0',
+  `timestamp` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `STAMP` varchar(45) NOT NULL DEFAULT 'UUID()',
+  PRIMARY KEY (`Id`,`IdGrupo`) USING BTREE
+) ENGINE=InnoDB AUTO_INCREMENT=88532 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+--
+-- Dumping data for table `dat_literatura`
+--
+
+/*!40000 ALTER TABLE `dat_literatura` DISABLE KEYS */;
+INSERT INTO `dat_literatura` (`Id`,`Referencia`,`Descricao`,`IdGrupo`,`IdTipo`,`Quantidade`,`timestamp`,`STAMP`) VALUES 
+ (1,'es22','Examine as Escrituras Diariamente — 2022',100,7,0,'2022-12-04 12:14:43','43b5717d-73d7-11ed-940f-0242ac110004'),
+ (2,'eslp22','Examine as Escrituras Diariamente — 2022 - L.G.',100,7,0,'2022-12-04 12:14:43','43b59178-73d7-11ed-940f-0242ac110004'),
+ (3,'w012022','Sentinela Nº1 2022',100,7,0,'2022-12-04 12:14:43','43b59efa-73d7-11ed-940f-0242ac110004'),
+ (4,'g012022','Despertai Nº1 2022',100,7,0,'2022-12-04 12:14:43','43b5ab92-73d7-11ed-940f-0242ac110004'),
+ (3503,'pte','Envelope Plástico para Cartão de Território',100,5,0,'2022-12-04 12:14:43','43b5b7e9-73d7-11ed-940f-0242ac110004'),
+ (3505,'bdg','Porta-cartão de lapela (Plástico)',100,5,0,'2022-12-04 12:14:43','43b5c4bc-73d7-11ed-940f-0242ac110004'),
+ (3515,'ldcrt','Carrinho de publicações ',100,6,0,'2022-12-04 12:14:43','43b5d188-73d7-11ed-940f-0242ac110004'),
+ (3520,'ldcrtadp','Carrinho — Peças de acrílico das prateleiras ',100,6,0,'2022-12-04 12:14:43','43b5ddeb-73d7-11ed-940f-0242ac110004'),
+ (3521,'ldcrtrcv','Carrinho — Capa para a chuva ',100,6,0,'2022-12-04 12:14:43','43b5ea67-73d7-11ed-940f-0242ac110004'),
+ (3522,'ldcrtrkt','Carrinho — Toda a ferragem do carrinho ',100,6,0,'2022-12-04 12:14:43','43b5fce4-73d7-11ed-940f-0242ac110004'),
+ (3523,'ldcrtwhl','Carrinho — Rodas ',100,6,0,'2022-12-04 12:14:43','43b60fc8-73d7-11ed-940f-0242ac110004'),
+ (3526,'ldcrtmbd','Placa magnética ',100,6,0,'2022-12-04 12:14:43','43b61474-73d7-11ed-940f-0242ac110004'),
+ (3528,'ldcrtpbd','Placa de PVC preta (não magnética) ',100,6,0,'2022-12-04 12:14:43','43b6191b-73d7-11ed-940f-0242ac110004'),
+ (3535,'ldcrtmsk','Kit inicial',100,6,0,'2022-12-04 12:14:43','43b61dfc-73d7-11ed-940f-0242ac110004'),
+ (5112,'Hbi12','TNM (capa dura)',100,2,0,'2022-12-04 12:14:43','43b622a1-73d7-11ed-940f-0242ac110004'),
+ (5117,'DLbi12','TNM de luxo (cinza)',100,2,0,'2022-12-04 12:14:43','43b62742-73d7-11ed-940f-0242ac110004'),
+ (5140,'nwt','Tradução do Novo Mundo',100,2,0,'2022-12-04 12:14:43','43b62be4-73d7-11ed-940f-0242ac110004'),
+ (5227,'fy','Família Feliz 6632 dg Importa-se Deus?',100,3,0,'2022-12-04 12:14:43','43b630ad-73d7-11ed-940f-0242ac110004'),
+ (5326,'sh','Busca de Deus ',100,3,0,'2022-12-04 12:14:43','43b63d2a-73d7-11ed-940f-0242ac110004'),
+ (5332,'od','Organizados ',100,3,0,'2022-12-04 12:14:43','43b641e5-73d7-11ed-940f-0242ac110004'),
+ (5334,'bh','O que a Bíblia Realmente Ensina?',100,3,0,'2022-12-04 12:14:43','43b64698-73d7-11ed-940f-0242ac110004'),
+ (5335,'lv','‘Amor de Deus ',100,3,0,'2022-12-04 12:14:43','43b64b43-73d7-11ed-940f-0242ac110004'),
+ (5336,'yp2','Os Jovens Perguntam, Volume 2 ',100,3,0,'2022-12-04 12:14:43','43b64fea-73d7-11ed-940f-0242ac110004'),
+ (5339,'yp1','Os Jovens Perguntam, Volume 1 ',100,3,0,'2022-12-04 12:14:43','43b654bc-73d7-11ed-940f-0242ac110004'),
+ (5340,'bhs',' O Que Nos Ensina a Bíblia?',100,3,0,'2022-12-04 12:14:43','43b65970-73d7-11ed-940f-0242ac110004'),
+ (5341,'sjj','Cantemos com Alegria a Jeová ',100,3,0,'2022-12-04 12:14:43','43b65e20-73d7-11ed-940f-0242ac110004'),
+ (5343,'lvs','Amar a Deus',100,3,0,'2022-12-04 12:14:43','43b66306-73d7-11ed-940f-0242ac110004'),
+ (5413,'jv','Proclamadores',100,3,0,'2022-12-04 12:14:43','43b667b4-73d7-11ed-940f-0242ac110004'),
+ (5414,'be','Escola do Ministério',100,3,0,'2022-12-04 12:14:43','43b66c4a-73d7-11ed-940f-0242ac110004'),
+ (5415,'lr','Instrutor ',100,3,0,'2022-12-04 12:14:43','43b670f4-73d7-11ed-940f-0242ac110004'),
+ (5416,'bt','Dê Testemunho Cabal sobre o Reino de Deus',100,3,0,'2022-12-04 12:14:43','43b674df-73d7-11ed-940f-0242ac110004'),
+ (5422,'kr','O Reino de Deus já Governa! ',100,3,0,'2022-12-04 12:14:43','43b678b5-73d7-11ed-940f-0242ac110004'),
+ (5423,'krlp','O Reino de Deus já Governa!',100,3,0,'2022-12-04 12:14:43','43b67c9d-73d7-11ed-940f-0242ac110004'),
+ (5425,'jy','Jesus—o Caminho, a Verdade e a Vida ',100,3,0,'2022-12-04 12:14:43','43b68064-73d7-11ed-940f-0242ac110004'),
+ (5427,'lfb','Aprende com as Histórias da Bíblia ',100,3,0,'2022-12-04 12:14:43','43b68432-73d7-11ed-940f-0242ac110004'),
+ (5434,'jylp','Jesus — o Caminho, a Verdade e a Vida',100,3,0,'2022-12-04 12:14:43','43b68801-73d7-11ed-940f-0242ac110004'),
+ (5441,'sjjls','Cantemos com Alegria a Jeová (Grande) ',100,3,0,'2022-12-04 12:14:43','43b68bcf-73d7-11ed-940f-0242ac110004'),
+ (5442,'sjjyls','Cantemos com Alegria a Jeová – S/Pauta',100,3,0,'2022-12-04 12:14:43','43b690f7-73d7-11ed-940f-0242ac110004'),
+ (5445,'lff','Seja Feliz Para Sempre! (livro)',100,3,0,'2022-12-04 12:14:43','43b694cd-73d7-11ed-940f-0242ac110004'),
+ (6219,'ialp','Imite Sua Fé',100,4,0,'2022-12-04 12:14:43','43b698a2-73d7-11ed-940f-0242ac110004'),
+ (6235,'lvlp','Mantenha-se no Amor de Deus',100,4,0,'2022-12-04 12:14:43','43b69c73-73d7-11ed-940f-0242ac110004'),
+ (6630,'sp','Espíritos dos Mortos',100,4,0,'2022-12-04 12:14:43','43b6a041-73d7-11ed-940f-0242ac110004'),
+ (6636,'pr','Objetivo da Vida',100,4,0,'2022-12-04 12:14:43','43b6a41f-73d7-11ed-940f-0242ac110004'),
+ (6637,'we','Quando Morre Alguém',100,4,0,'2022-12-04 12:14:43','43b6a7fb-73d7-11ed-940f-0242ac110004'),
+ (6639,'pc','Verdadeira Paz e Felicidade (Para Chineses)',100,4,0,'2022-12-04 12:14:43','43b6abe9-73d7-11ed-940f-0242ac110004'),
+ (6642,'ie','Quando Morremos',100,4,0,'2022-12-04 12:14:43','43b6afb4-73d7-11ed-940f-0242ac110004'),
+ (6645,'gf','Amigo de Deus ',100,4,0,'2022-12-04 12:14:43','43b6b397-73d7-11ed-940f-0242ac110004'),
+ (6647,'la','Vida Satisfatória',100,4,0,'2022-12-04 12:14:43','43b6b759-73d7-11ed-940f-0242ac110004'),
+ (6648,'ol','Caminho para a Vida (Para Muçulmanos)',100,4,0,'2022-12-04 12:14:43','43b6bb2c-73d7-11ed-940f-0242ac110004'),
+ (6652,'bm','Mensagem da Bíblia',100,4,0,'2022-12-04 12:14:43','43b6befc-73d7-11ed-940f-0242ac110004'),
+ (6653,'ph','O Caminho (Para Budistas)',100,4,0,'2022-12-04 12:14:43','43b6c2ca-73d7-11ed-940f-0242ac110004'),
+ (6654,'lc','A vida—teve um Criador?',100,4,0,'2022-12-04 12:14:43','43b6c694-73d7-11ed-940f-0242ac110004'),
+ (6655,'lf','A origem da vida ',100,4,0,'2022-12-04 12:14:43','43b6ca5f-73d7-11ed-940f-0242ac110004'),
+ (6656,'rk','Verdadeira fé (Para Muçulmanos)',100,4,0,'2022-12-04 12:14:43','43b6ce3f-73d7-11ed-940f-0242ac110004'),
+ (6657,'ll','Escute e viva ',100,4,0,'2022-12-04 12:14:43','43b6d2c9-73d7-11ed-940f-0242ac110004'),
+ (6658,'ld','Escute a Deus',100,4,0,'2022-12-04 12:14:43','43b6d69a-73d7-11ed-940f-0242ac110004'),
+ (6659,'fg','Boas Notícias de Deus Para Si!',100,4,0,'2022-12-04 12:14:43','43b6da5a-73d7-11ed-940f-0242ac110004'),
+ (6660,'jl','Vontade de Deus',100,4,0,'2022-12-04 12:14:43','43b6de40-73d7-11ed-940f-0242ac110004'),
+ (6662,'hl','Vida Feliz (Para Judeus)',100,4,0,'2022-12-04 12:14:43','43b6e211-73d7-11ed-940f-0242ac110004'),
+ (6663,'mb','Minhas Primeiras Lições da Bíblia',100,4,0,'2022-12-04 12:14:43','43b6e5e0-73d7-11ed-940f-0242ac110004'),
+ (6664,'yc','Ensine Seus Filhos',100,4,0,'2022-12-04 12:14:43','43b6e9b6-73d7-11ed-940f-0242ac110004'),
+ (6665,'hf','Você Pode Ter uma Família Feliz!',100,4,0,'2022-12-04 12:14:43','43b6edae-73d7-11ed-940f-0242ac110004'),
+ (6671,'rj','Volte para Jeová',100,4,0,'2022-12-04 12:14:43','43b6f1a7-73d7-11ed-940f-0242ac110004'),
+ (6674,'np','Boas Novas para Pessoas de Todas as Nações',100,4,0,'2022-12-04 12:14:43','43b6f576-73d7-11ed-940f-0242ac110004'),
+ (6684,'ypq','Respostas 10 Perguntas Que os Jovens Fazem',100,4,0,'2022-12-04 12:14:43','43b6f945-73d7-11ed-940f-0242ac110004'),
+ (7074,'kt','Conhecer a Verdade ',100,1,0,'2022-12-04 12:14:43','43b6fd2b-73d7-11ed-940f-0242ac110004'),
+ (7130,'T-30','O Que Acha da Bíblia?',100,1,0,'2022-12-04 12:14:43','43b700f9-73d7-11ed-940f-0242ac110004'),
+ (7131,'T-31','O Que Espera do Futuro? ',100,1,0,'2022-12-04 12:14:43','43b704ff-73d7-11ed-940f-0242ac110004'),
+ (7132,'T-32','Qual o Segredo para Ter uma Família Feliz? ',100,1,0,'2022-12-04 12:14:43','43b708ca-73d7-11ed-940f-0242ac110004'),
+ (7133,'T-33','Quem controla o mundo?',100,1,0,'2022-12-04 12:14:43','43b70c97-73d7-11ed-940f-0242ac110004'),
+ (7134,'T-34','Sofrimento vai acabar?',100,1,0,'2022-12-04 12:14:43','43b71062-73d7-11ed-940f-0242ac110004'),
+ (7135,'T-35','Será Que os Mortos Podem Voltar a Viver? ',100,1,0,'2022-12-04 12:14:43','43b71440-73d7-11ed-940f-0242ac110004'),
+ (7136,'T-36','O Que É o Reino de Deus?',100,1,0,'2022-12-04 12:14:43','43b7180d-73d7-11ed-940f-0242ac110004'),
+ (7137,'T-37','Respostas Importantes',100,1,0,'2022-12-04 12:14:43','43b71bd8-73d7-11ed-940f-0242ac110004'),
+ (7305,'inv','Convite para reuniões congregacionais',100,1,0,'2022-12-04 12:14:43','43b71fa6-73d7-11ed-940f-0242ac110004'),
+ (8388,'ic','Cartão - Identificação (criança)',100,5,0,'2022-12-04 12:14:43','43b7237e-73d7-11ed-940f-0242ac110004'),
+ (8410,'jwcd1','Cartão de visita para jw.org',100,5,0,'2022-12-04 12:14:43','43b72748-73d7-11ed-940f-0242ac110004'),
+ (8416,'jwcdsl1','Cartão de visita para jw.org [língua gestual]',100,5,0,'2022-12-04 12:14:43','43b73105-73d7-11ed-940f-0242ac110004'),
+ (8422,'jwcd3','Cartão de visita para jw.org',100,5,0,'2022-12-04 12:14:43','43b73514-73d7-11ed-940f-0242ac110004'),
+ (8423,'jwcdsl2','Cartão de visita para jw.org [língua gestual]',100,5,0,'2022-12-04 12:14:43','43b738f3-73d7-11ed-940f-0242ac110004'),
+ (8525,'jwcd1br','Cartão de visita para o jw.org [Braile]',100,5,0,'2022-12-04 12:14:43','43b73d15-73d7-11ed-940f-0242ac110004'),
+ (8703,'S-3','Relatório de Assistência às Reuniões',100,5,0,'2022-12-04 12:14:43','43b740e0-73d7-11ed-940f-0242ac110004'),
+ (8704,'S-4','Relatório de Serviço de Campo',100,5,0,'2022-12-04 12:14:43','43b744b4-73d7-11ed-940f-0242ac110004'),
+ (8712,'S-12','Cartão de Mapa de Território',100,5,0,'2022-12-04 12:14:43','43b7488b-73d7-11ed-940f-0242ac110004'),
+ (8713,'S-13','Registo de Designação de Território',100,5,0,'2022-12-04 12:14:43','43b74c89-73d7-11ed-940f-0242ac110004'),
+ (8721,'S-21','Cartão Registo de Publicador de Congregação',100,5,0,'2022-12-04 12:14:43','43b7507d-73d7-11ed-940f-0242ac110004'),
+ (8724,'S-24','Recibo (Maços de 100 unidades)',100,5,0,'2022-12-04 12:14:43','43b75452-73d7-11ed-940f-0242ac110004'),
+ (8788,'S-88','Registo da Assistência às Reuniões',100,5,0,'2022-12-04 12:14:43','43b7581c-73d7-11ed-940f-0242ac110004'),
+ (9172,'dpa','Cartão DPA',100,5,0,'2022-12-04 12:14:43','43b75bee-73d7-11ed-940f-0242ac110004'),
+ (65423,'krlpi','O Reino de Deus já Governa! (L. Grande) ',100,3,0,'2022-12-04 12:14:43','43b75fab-73d7-11ed-940f-0242ac110004'),
+ (65445,'lffi',' Seja Feliz Para Sempre! (brochura)',100,4,0,'2022-12-04 12:14:43','43b7638e-73d7-11ed-940f-0242ac110004'),
+ (88519,'mvplbt','Aprenda o que a Bíblia ensina',100,6,0,'2022-12-04 12:14:43','43b76761-73d7-11ed-940f-0242ac110004'),
+ (88521,'mvpnvt','Está Convidado',100,6,0,'2022-12-04 12:14:43','43b76b36-73d7-11ed-940f-0242ac110004'),
+ (88523,'mvppce','Haverá paz algum dia?',100,6,0,'2022-12-04 12:14:43','43b76f02-73d7-11ed-940f-0242ac110004'),
+ (88525,'mvptrs','O que significa ter sucesso na vida?',100,6,0,'2022-12-04 12:14:43','43b772e1-73d7-11ed-940f-0242ac110004'),
+ (88527,'mvpsff','Quando acabará o sofrimento?',100,6,0,'2022-12-04 12:14:43','43b77c3e-73d7-11ed-940f-0242ac110004'),
+ (88529,'mvpwlc','Será que a vida teve um Criador?',100,6,0,'2022-12-04 12:14:43','43b78010-73d7-11ed-940f-0242ac110004'),
+ (88531,'mvpffy','Como ter uma família feliz',100,6,0,'2022-12-04 12:14:43','43b78401-73d7-11ed-940f-0242ac110004');
+/*!40000 ALTER TABLE `dat_literatura` ENABLE KEYS */;
+
+
+--
+-- Definition of table `dat_tipos_literatura`
+--
+
+DROP TABLE IF EXISTS `dat_tipos_literatura`;
+CREATE TABLE `dat_tipos_literatura` (
+  `Id` int unsigned NOT NULL AUTO_INCREMENT,
+  `Descricao` varchar(45) NOT NULL,
+  PRIMARY KEY (`Id`)
+) ENGINE=InnoDB AUTO_INCREMENT=8 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+--
+-- Dumping data for table `dat_tipos_literatura`
+--
+
+/*!40000 ALTER TABLE `dat_tipos_literatura` DISABLE KEYS */;
+INSERT INTO `dat_tipos_literatura` (`Id`,`Descricao`) VALUES 
+ (1,'Folhetos'),
+ (2,'Biblias'),
+ (3,'Livros'),
+ (4,'Brochuras'),
+ (5,'Formulários'),
+ (6,'Testemunho Público'),
+ (7,'Periódicos');
+/*!40000 ALTER TABLE `dat_tipos_literatura` ENABLE KEYS */;
+
+
+
+
+/*!40101 SET SQL_MODE=@OLD_SQL_MODE */;
+/*!40014 SET FOREIGN_KEY_CHECKS=@OLD_FOREIGN_KEY_CHECKS */;
+/*!40014 SET UNIQUE_CHECKS=@OLD_UNIQUE_CHECKS */;
+/*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
+/*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;
+/*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
+/*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
