@@ -1,5 +1,6 @@
 ﻿namespace JW_Management.Models
 {
+    using Microsoft.AspNetCore.Identity;
     using MySql.Simple;
 
     public class DbContext
@@ -20,15 +21,32 @@
             }
         }
 
-        public List<Literatura> ObterLiteratura(int idGrupo, string filtro)
+        public bool ExecutarQuery(string SQL_Query)
         {
-            List<Literatura> LstLiteratura = new List<Literatura>();
-            List<Grupo> LstGrupos = ObterGrupos();
+            try
+            {
+                Database db = ConnectionString;
+
+                var res = db.Execute(SQL_Query);
+                db.Connection.Close();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.Message);
+                return false;
+
+            }
+            return true;
+        }
+
+        public List<Literatura> ObterLiteraturas(string filtro)
+        {
+            List<Literatura> LstLiteratura = new();
             List<TipoLiteratura> LstTiposLiteratura = ObterTiposLiteratura();
 
             using (Database db = ConnectionString)
             {
-                string sql = "SELECT * FROM dat_literatura where IdGrupo="+idGrupo+" and Descricao like '%"+filtro+"%';";
+                string sql = "SELECT *, IFNULL((SELECT SUM(Quantidade) from l_movimentos where l_pubs.STAMP=l_movimentos.StampLiteratura), 0) as Quantidade FROM l_pubs where Descricao like '%" + filtro + "%' or Referencia like '%" + filtro + "%';";
                 using var result = db.Query(sql);
                 while (result.Read())
                 {
@@ -39,8 +57,60 @@
                         Referencia = result["Referencia"],
                         Descricao = result["Descricao"],
                         Quantidade = result["Quantidade"],
-                        Grupo = LstGrupos.Where(g => g.Id == result["IdGrupo"]).FirstOrDefault(new Grupo()),
                         Tipo = LstTiposLiteratura.Where(g => g.Id == result["IdTipo"]).FirstOrDefault(new TipoLiteratura())
+                    });
+                }
+            }
+
+            return LstLiteratura.OrderBy(l => l.Descricao.Trim()).ToList();
+        }
+
+        public List<Literatura> ObterPeriodicos()
+        {
+            List<Literatura> LstLiteratura = new();
+            List<TipoLiteratura> LstTiposLiteratura = ObterTiposLiteratura();
+
+            using (Database db = ConnectionString)
+            {
+                string sql = "SELECT *, IFNULL((SELECT SUM(Quantidade) from l_movimentos where l_pubs.STAMP=l_movimentos.StampLiteratura), 0) as Quantidade FROM l_pubs where IdTipo=7 and IFNULL((SELECT SUM(Quantidade) from l_movimentos where l_pubs.STAMP=l_movimentos.StampLiteratura), 0) > 0;";
+                using var result = db.Query(sql);
+                while (result.Read())
+                {
+                    LstLiteratura.Add(new Literatura()
+                    {
+                        Stamp = result["STAMP"],
+                        Id = result["Id"],
+                        Referencia = result["Referencia"],
+                        Descricao = result["Descricao"],
+                        Quantidade = result["Quantidade"],
+                        Tipo = LstTiposLiteratura.Where(g => g.Id == result["IdTipo"]).FirstOrDefault(new TipoLiteratura())
+                    });
+                }
+            }
+
+            return LstLiteratura.OrderBy(l => l.Descricao.Trim()).ToList();
+        }
+
+        public List<Literatura> ObterPeriodicos(string stamp)
+        {
+            List<Literatura> LstLiteratura = new();
+            List<TipoLiteratura> LstTiposLiteratura = ObterTiposLiteratura();
+
+            using (Database db = ConnectionString)
+            {
+                string sql = "select l_pubs.STAMP, l_pubs.Id, l_pubs.Referencia, l_pubs.Descricao, l_periodicos.Quantidade, l_pubs.IdTipo, sys_utilizadores.* from l_periodicos inner join l_pubs on l_pubs.Referencia=l_periodicos.Referencia left join sys_utilizadores on sys_utilizadores.IdUtilizador=l_periodicos.IdPublicador\r\nwhere Quantidade<IFNULL((SELECT SUM(Quantidade) from l_movimentos where l_pubs.STAMP=l_movimentos.StampLiteratura  and l_movimentos.IdPublicador=l_periodicos.IdPublicador), 0) and l_pubs.STAMP='" + stamp + "';";
+                using var result = db.Query(sql);
+                while (result.Read())
+                {
+                    LstLiteratura.Add(new Literatura()
+                    {
+                        Stamp = result["STAMP"],
+                        Id = result["Id"],
+                        Referencia = result["Referencia"],
+                        Descricao = result["Descricao"],
+                        Quantidade = result["Quantidade"],
+                        Tipo = LstTiposLiteratura.Where(g => g.Id == result["IdTipo"]).FirstOrDefault(new TipoLiteratura()),
+                        Publicador = new Publicador() { Id = result["IdUtilizador"], Nome = result["Nome"] }
                     });
                 }
             }
@@ -50,13 +120,12 @@
 
         public Literatura ObterLiteratura(string STAMP)
         {
-            List<Literatura> LstLiteratura = new List<Literatura>();
-            List<Grupo> LstGrupos = ObterGrupos();
+            List<Literatura> LstLiteratura = new();
             List<TipoLiteratura> LstTiposLiteratura = ObterTiposLiteratura();
 
             using (Database db = ConnectionString)
             {
-                string sql = "SELECT * FROM dat_literatura where STAMP='" + STAMP + "';";
+                string sql = "SELECT *, IFNULL((SELECT SUM(Quantidade) from l_movimentos where l_pubs.STAMP=l_movimentos.StampLiteratura), 0) as Quantidade FROM l_pubs where STAMP='" + STAMP + "';";
                 using var result = db.Query(sql);
                 while (result.Read())
                 {
@@ -67,7 +136,6 @@
                         Referencia = result["Referencia"],
                         Descricao = result["Descricao"],
                         Quantidade = result["Quantidade"],
-                        Grupo = LstGrupos.Where(g => g.Id == result["IdGrupo"]).FirstOrDefault(new Grupo()),
                         Tipo = LstTiposLiteratura.Where(g => g.Id == result["IdTipo"]).FirstOrDefault(new TipoLiteratura())
                     });
                 }
@@ -76,51 +144,33 @@
             return LstLiteratura.OrderBy(l => l.Descricao.Trim()).FirstOrDefault(new Literatura());
         }
 
-        public bool AtualizarLiteratura(Literatura l)
+        public bool NovaLiteratura(Literatura l)
         {
 
-            string sql = "INSERT INTO dat_literatura(Id, Referencia, Descricao, Quantidade, IdGrupo, IdTipo) VALUES ";
-            sql += ("('" + l.Id + "', '" + l.Referencia + "', '" + l.Descricao + "', '" + l.Quantidade + "', '" + l.Grupo.Id + "', '" + l.Tipo.Id + "') ");
-            sql += " ON DUPLICATE KEY UPDATE Id = VALUES(Id), Referencia = VALUES(Referencia), Descricao = VALUES(Descricao), Quantidade = VALUES(Quantidade), IdGrupo = VALUES(IdGrupo), IdTipo = VALUES(IdTipo);";
+            string sql = "INSERT INTO l_pubs(Id, Referencia, Descricao, IdTipo, STAMP) VALUES ";
+            sql += ("('" + l.Id + "', '" + l.Referencia + "', '" + l.Descricao + "', '" + l.Tipo.Id + "', '" + l.Stamp + "') ");
+            sql += " ON DUPLICATE KEY UPDATE Id = VALUES(Id), Referencia = VALUES(Referencia), Descricao = VALUES(Descricao), IdTipo = VALUES(IdTipo);";
 
-            Database db = ConnectionString;
+            return ExecutarQuery(sql);
+        }
 
-            var res = db.Execute(sql);
-            db.Connection.Close();
+        public bool ApagarLiteratura(string stamp)
+        {
 
-            return res > 0;
+            string sql = "DELETE FROM l_pubs where STAMP = '" + stamp + "';";
+            sql += "DELETE FROM l_movimentos where StampLiteratura = '" + stamp + "';";
+
+            return ExecutarQuery(sql);
         }
 
 
-        public List<Grupo> ObterGrupos()
-        {
-            List<Grupo> LstGrupos = new List<Grupo>();
-
-            using (Database db = ConnectionString)
-            {
-                string sql = "SELECT * FROM dat_grupos;";
-                using var result = db.Query(sql);
-                while (result.Read())
-                {
-                    LstGrupos.Add(new Grupo()
-                    {
-                        Id = result["Id"],
-                        Responsavel = result["Responsavel"],
-                        Ajudante = result["Ajudante"],
-                        Nome = result["Nome"]
-                    });
-                }
-            }
-
-            return LstGrupos;
-        }
         public List<TipoLiteratura> ObterTiposLiteratura()
         {
-            List<TipoLiteratura> LstTiposLiteratura = new List<TipoLiteratura>();
+            List<TipoLiteratura> LstTiposLiteratura = new();
 
             using (Database db = ConnectionString)
             {
-                string sql = "SELECT * FROM dat_tipos_literatura;";
+                string sql = "SELECT * FROM l_tipos;";
                 using var result = db.Query(sql);
                 while (result.Read())
                 {
@@ -133,6 +183,44 @@
             }
 
             return LstTiposLiteratura;
+        }
+
+        public List<Movimentos> ObterMovimentos(int tipo)
+        {
+            List<Movimentos> LstMovimentos = new();
+
+            using (Database db = ConnectionString)
+            {
+                string sql = "SELECT * FROM l_movimentos where " + (tipo == 1 ? "Quantidade > 0" : "Quantidade < 0") + ";";
+                using var result = db.Query(sql);
+                while (result.Read())
+                {
+                    LstMovimentos.Add(new Movimentos()
+                    {
+                        Stamp = result["Id"],
+                        Literatura = ObterLiteratura(result["StampLiteratura"]),
+                        Quantidade = int.Parse(result["Quantidade"]),
+                        DataMovimento = DateTime.Parse(result["Data"])
+                    });
+                }
+            }
+
+            return LstMovimentos;
+        }
+
+        public bool AdicionarMovimento(Movimentos m)
+        {
+            string sql = "INSERT INTO l_movimentos(Id, StampLiteratura, Quantidade, Data, IdPublicador) VALUES ";
+            sql += ("('" + m.Stamp + "', '" + m.Literatura.Stamp + "', '" + m.Quantidade + "', '" + m.DataMovimento.ToString("yyyy-MM-dd HH:mm:ss") + "', '" + m.Publicador.Id + "');");
+
+            return ExecutarQuery(sql);
+        }
+        public bool ApagarMovimento(string stamp)
+        {
+
+            string sql = "DELETE FROM l_movimentos where id = '" + stamp + "';";
+
+            return ExecutarQuery(sql);
         }
     }
 }

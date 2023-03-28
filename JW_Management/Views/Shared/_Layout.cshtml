@@ -28,30 +28,30 @@
 </head>
 
 <div class=' hero is-fullheight'>
-<body>
-    <header>
-        <nav class="navbar is-light has-shadow" role="navigation" aria-label="main navigation">
-            <div class="navbar-brand">
-                <a class="navbar-item" href="~/">
-                    <img src="~/img/jw_logo.svg" style="width:60px;height:60px">
-                </a>
+    <body>
+        <header>
+            <nav class="navbar is-light has-shadow" role="navigation" aria-label="main navigation">
+                <div class="navbar-brand">
+                    <a class="navbar-item" href="~/">
+                        <img src="~/img/jw_logo.svg" style="width:60px;height:60px">
+                    </a>
 
-                <a role="button" class="navbar-burger" aria-label="menu" aria-expanded="false" data-target="navbarBasicExample">
-                    <span aria-hidden="true"></span>
-                    <span aria-hidden="true"></span>
-                    <span aria-hidden="true"></span>
-                </a>
-            </div>
+                    <a role="button" class="navbar-burger" aria-label="menu" aria-expanded="false" data-target="navbarBasicExample">
+                        <span aria-hidden="true"></span>
+                        <span aria-hidden="true"></span>
+                        <span aria-hidden="true"></span>
+                    </a>
+                </div>
 
-            <div id="navbarBasicExample" class="navbar-menu">
+                <div id="navbarBasicExample" class="navbar-menu">
                     <div class="navbar-start">
                         <div class="navbar-item has-dropdown is-hoverable">
-                                <a class="navbar-link">
-                                    <span class="icon mr-2">
-                                        <img src="~/img/literatura.png">
-                                    </span>
-                                    <span>Literatura</span>
-                                </a>
+                            <a class="navbar-link">
+                                <span class="icon mr-2">
+                                    <img src="~/img/literatura.png">
+                                </span>
+                                <span>Literatura</span>
+                            </a>
 
                             <div class="navbar-dropdown buttons">
                                 <p class="control mx-1">
@@ -59,11 +59,11 @@
                                         <span class="icon">
                                             <i class="fa-solid fa-book"></i>
                                         </span>
-                                        <span>Stocks</span>
+                                        <span>Stock</span>
                                     </a>
                                 </p>
                                 <p class="control mx-1">
-                                    <a class="button is-info is-rounded is-fullwidth" href="~/Dashboard/Pendentes">
+                                    <a class="button is-info is-rounded is-fullwidth" href="~/Literatura/Movimentos/1">
                                         <span class="icon">
                                             <i class="fa-regular fa-square-plus"></i>
                                         </span>
@@ -71,38 +71,63 @@
                                     </a>
                                 </p>
                                 <p class="control mx-1">
-                                    <a class="button is-info is-rounded is-fullwidth" href="~/Dashboard/Marcacoes">
+                                    <a class="button is-info is-rounded is-fullwidth" href="~/Literatura/Movimentos/2">
                                         <span class="icon">
-                                            <i class="fa-solid fa-right-left"></i>
+                                            <i class="fa-regular fa-square-minus"></i>
                                         </span>
-                                        <span>Movimentos</span>
+                                        <span>Saidas</span>
                                     </a>
                                 </p>
                             </div>
                         </div>
-                </div> 
+                    </div>
 
-                <div class="navbar-end">
+                    <div class="navbar-end">
+                    </div>
                 </div>
-            </div>
-        </nav>
-    </header>
-    <div class="">
-        <main role="main">
-            &nbsp;
-            @RenderBody()
-            &nbsp;
-        </main>
-    </div>
-    <footer class="has-text-centered is-flex-align-items-flex-end mt-auto">
-        <div class="content has-text-centered">
-            <p>
-                <strong>Jorge Monteiro</strong> (V.@GetType().Assembly.GetName().Version.ToString())
-            </p>
+            </nav>
+        </header>
+        <div class="">
+            <main role="main">
+                &nbsp;
+                @RenderBody()
+                &nbsp;
+            </main>
         </div>
-        &nbsp;
-    </footer>
-    @RenderSection("Scripts", required: false)
-</body>
+        <footer class="has-text-centered is-flex-align-items-flex-end mt-auto">
+            <div class="content has-text-centered">
+                <p>
+                    <strong>Jorge Monteiro</strong> (V.@GetType().Assembly.GetName().Version.ToString())
+                </p>
+            </div>
+            &nbsp;
+        </footer>
+        @RenderSection("Scripts", required: false)
+    </body>
 </div>
 </html>
+
+<script>
+    function notifyError(mensagem) {
+        bulmaToast.toast({
+            message: mensagem,
+            type: 'is-danger',
+            closeOnClick: true,
+            pauseOnHover: true,
+            opacity: 0.8,
+            duration: 5000,
+            position: 'top-center'
+        });
+    }
+    function notify(mensagem) {
+        bulmaToast.toast({
+            message: mensagem,
+            type: 'is-success',
+            closeOnClick: true,
+            pauseOnHover: true,
+            opacity: 0.8,
+            duration: 5000,
+            position: 'top-center'
+        });
+    }
+</script>

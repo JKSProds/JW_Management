@@ -1,0 +1,269 @@
+﻿@model IEnumerable<JW_Management.Models.Movimentos>
+@{
+    ViewData["Title"] = "Literatura - Entradas";
+}
+
+<div class="container">
+    <div class="columns">
+        <div class="column">
+            <div class="tile">
+                <div class="tile is-parent is-vertical">
+                    <article class="tile is-child notification is-info">
+                        <p class="title">
+                            <span class="icon mr-3">
+                                <img src="~/img/literatura.png">
+                            </span>
+                            <span>Literatura - Movimentos de Saida</span>
+                        </p>
+                    </article>
+                </div>
+            </div>
+        </div>
+        <div class="column">
+            <div class="field has-addons has-addons-right mx-1 is-flex-wrap-wrap">
+
+                <div class="buttons is-right">
+                    <p class="control">
+                        <button type="button" class="button is-info is-large" onclick="Bulma('#modalSaidaPublicacoes').modal().open();">
+                            <span class="icon">
+                                <i class="fa-solid fa-book"></i>
+                            </span>
+                            <span>Publicações</span>
+                        </button>
+                    </p>
+                    <p class="control">
+                        <a class="button is-primary is-large" href="~/Periodicos">
+                            <span class="icon">
+                                <i class="fa-solid fa-newspaper"></i>
+                            </span>
+                            <span>Periódicos</span>
+                        </a>
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<hr />
+<div class="container">
+    @if (Model.Count() == 0)
+    {
+        <br />
+        <button class="button is-danger is-large is-rounded is-fullwidth is-disabled">Não foram encontrados movimentos!</button>
+    }
+    else
+    {
+        <div class="b-table">
+            <div class="table-wrapper has-mobile-cards">
+                <table class="table is-hoverable is-fullwidth">
+                    <thead>
+                        <tr>
+                            <th>
+                                @Html.DisplayNameFor(model => model.FirstOrDefault().Literatura.Descricao)
+                            </th>
+                            <th>
+                                @Html.DisplayNameFor(model => model.FirstOrDefault().Quantidade)
+                            </th>
+                            <th>
+                                @Html.DisplayNameFor(model => model.FirstOrDefault().DataMovimento)
+                            </th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var item in Model)
+                        {
+                            <tr>
+                                <td data-label="@Html.DisplayNameFor(model => model.FirstOrDefault().Literatura.Descricao)">
+                                    <span>@item.Literatura.Descricao</span>
+                                </td>
+                                <td data-label="@Html.DisplayNameFor(model => model.FirstOrDefault().Quantidade)">
+                                    <span>@item.Quantidade</span>
+                                </td>
+                                <td data-label="@Html.DisplayNameFor(model => model.FirstOrDefault().DataMovimento)">
+                                    <span>@item.DataMovimento</span>
+                                </td>
+                                <td class="is-actions-cell">
+                                    <div class="buttons is-pulled-right is-flex-wrap-nowrap">
+                                        <button class="button is-danger is-fullwidth is-large"
+                                                onclick="ConfirmApagar('@item.Stamp')">
+                                            <i class="fas fa-trash-can"></i>
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    }
+</div>
+
+<div id="modalSaidaPublicacoes" class="modal">
+    <div class="modal-background"></div>
+    <div class="modal-card">
+        <header class="modal-card-head">
+            <p class="modal-card-title">Movimento de Saida - Publicacoes</p>
+            <button type="button" class="delete" aria-label="close"></button>
+        </header>
+        <section class="modal-card-body">
+            <div class="modal-body">
+                <div class="field ">
+                    <label class="label">Publicação</label>
+                    <div class="field has-addons">
+                        <div class="control" style="width:100%">
+                            <input type="hidden"
+                                   id="txtPubStamp" />
+                            <p class="control">
+                                <input type="text" class="input" id="txtPub">
+                            </p>
+                        </div>
+                    </div>
+                </div>
+                <div class="field">
+                    <label class="label">Quantidade</label>
+                    <div class="field has-addons">
+                        <div class="control">
+                            <button type="button" class="button is-danger disable-dbl-tap-zoom"
+                                    onclick="document.getElementById('txtQtd').value = parseInt(document.getElementById('txtQtd').value) - 1">
+                                <span class="icon">
+                                    <i class="fas fa-minus"></i>
+                                </span>
+                            </button>
+                        </div>
+                        <div class="control" style="width:100%">
+                            <input type="number" class="input has-text-centered" min="1" id="txtQtd" value="1">
+                        </div>
+                        <div class="control">
+                            <button type="button" class="button is-success disable-dbl-tap-zoom"
+                                    onclick="document.getElementById('txtQtd').value = parseInt(document.getElementById('txtQtd').value) + 1">
+                                <span class="icon">
+                                    <i class="fas fa-plus"></i>
+                                </span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+        <footer class="modal-card-foot">
+            <a class="button is-info is-large is-fullwidth"
+               onclick="GerarMovimento(document.getElementById('txtPubStamp').value, -document.getElementById('txtQtd').value)">
+                <span class="icon">
+                    <i class="fa-solid fa-file-export"></i>
+                </span>
+                <span>Guardar Movimento</span>
+            </a>
+            <button type="button" class="button is-large is-fullwidth is-danger"
+                    onclick="Bulma('#modalSaidaPublicacoes').modal().close();" href="javascript:;">
+                <span class="icon">
+                    <i class="fa-regular fa-circle-xmark"></i>
+                </span>
+                <span>Fechar</span>
+            </button>
+        </footer>
+    </div>
+</div>
+
+<div class="modal" id="ModalConfirmApagar">
+    <div class="modal-background"></div>
+    <div class="modal-card">
+        <header class="modal-card-head">
+            <p class="modal-card-title">Apagar Publicação</p>
+        </header>
+        <section class="modal-card-body">
+            <div class="modal-body">
+                <p>Tem a certeza que deseja apagar este movimento?</p>
+            </div>
+        </section>
+        <footer class="modal-card-foot">
+            <button class="button is-danger is-fullwidth is-large"
+                    onclick="Apagar(document.getElementById('txtHiddenStamp').value);">
+                <span class="icon">
+                    <i class="fas fa-trash-can"></i>
+                </span>
+                <span>Confirmar</span>
+            </button>
+            <button class="button is-fullwidth is-large" onclick="Bulma('#ModalConfirmApagar').modal().close();">
+                <span class="icon">
+                    <i class="fa-solid fa-circle-xmark"></i>
+                </span>
+                <span>Não</span>
+            </button>
+        </footer>
+    </div>
+</div>
+<input id="txtHiddenStamp" hidden />
+
+<script>
+    function ConfirmApagar(id) {
+        document.getElementById('txtHiddenStamp').value = id;
+        Bulma('#ModalConfirmApagar').modal().open();
+    }
+
+    function Apagar(id) {
+        $.ajax({
+            url: '/Literatura/Movimentos/',
+            data: { "stamp": id },
+            type: "DELETE",
+            success: function (data) {
+                window.location.reload();
+            },
+            error: function (data) {
+                notifyError('Ocorreu um erro ao apagar essa publicação!');
+            },
+            failure: function (data) {
+                notifyError('Falha ao apagar essa publicação!');
+            }
+        });
+    }
+
+    $(function () {
+        $("#txtPub").autocomplete({
+            source: function (request, response) {
+                $.ajax({
+                    url: '/Literatura/Literatura/',
+                    data: { "filtro": request.term, "periodico": false },
+                    type: "GET",
+                    success: function (data) {
+                        response($.map(data, function (item) {
+                            return {
+                                label: "[" + item.referencia + "] " + item.descricao,
+                                val: item.stamp
+                            };
+                        }))
+                    },
+                    error: function (response) {
+                        notifyError('Ocorreu um erro ao obter as publicações!');
+                    },
+                    failure: function (response) {
+                        notifyError('Falha ao obter as publicações');
+                    }
+                });
+            },
+            select: function (e, i) {
+                $("#txtPubStamp").val(i.item.val);
+            },
+            minLength: 1
+        }).css('z-index', 50);
+    });
+
+
+    function GerarMovimento(stamp, qtd) {
+        $.ajax({
+            url: '/Literatura/Movimentos/',
+            data: { "stamp": stamp, "qtd": qtd },
+            type: "POST",
+            success: function (data) {
+                window.location.reload();
+            },
+            error: function (response) {
+                notifyError('Ocorreu um erro ao gerar um movimento!');
+            },
+            failure: function (response) {
+                notifyError('Falha ao gerar um movimento!');
+            }
+        });
+    }
+</script>

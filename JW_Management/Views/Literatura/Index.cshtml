@@ -21,34 +21,24 @@
                 </div>
             </div>
             <div class="column">
-                    <div class="field has-addons has-addons-right mx-1 is-flex-wrap-wrap">
+                <div class="field has-addons has-addons-right mx-1 is-flex-wrap-wrap">
                     <p class="control has-icons-left">
                         <input type="text" class="input" placeholder="Descrição" id="filtro" name="filtro" value="@ViewData["filtro"]">
                         <span class="icon is-small is-left">
                             <i class="fa-solid fa-arrow-down-a-z"></i>
                         </span>
                     </p>
-                <p class="control has-icons-left">
-                    <span class="select" style="width:100%">
-                        <select class="select" style="width:100%" id="grupo" name="grupo" onchange="document.getElementById('frmFiltrar').submit();" style="height: auto" 
-                                asp-items="@(new SelectList(@ViewBag.Grupos, "Value", "Text", ViewData["grupo"]))">
-                        </select>
-                    </span>
-                    <span class="icon is-small is-left">
-                        <i class="fa-solid fa-user"></i>
-                    </span>
-                </p>
-                <div class="buttons is-right">
-                    <p class="control">
-                        <button type="submit" class="button is-info is-outlined">
-                            <span class="icon">
-                                <i class="fas fa-search fa-lg"></i>
-                            </span>
-                            <span>Pesquisar</span>
-                        </button>
-                    </p>
-            </div>
-            </div>
+                    <div class="buttons is-right">
+                        <p class="control">
+                            <button type="submit" class="button is-info is-outlined">
+                                <span class="icon">
+                                    <i class="fas fa-search fa-lg"></i>
+                                </span>
+                                <span>Pesquisar</span>
+                            </button>
+                        </p>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
@@ -63,122 +53,107 @@
     else
     {
         <div class="b-table">
-        <div class="table-wrapper has-mobile-cards">
-        <table class="table is-hoverable is-fullwidth">
-            <thead>
-                <tr>
-                    <th>
-                        @Html.DisplayNameFor(model => model.FirstOrDefault().Referencia)
-                    </th>
-                    <th>
-                        @Html.DisplayNameFor(model => model.FirstOrDefault().Descricao)
-                    </th>
-                    <th class="is-hidden-touch">
-                        @Html.DisplayNameFor(model => model.FirstOrDefault().Quantidade)
-                    </th>
-                    <th class="is-hidden-touch">
-                        @Html.DisplayNameFor(model => model.FirstOrDefault().Tipo)
-                    </th>
-                    <th class="is-hidden-touch">
-                        @Html.DisplayNameFor(model => model.FirstOrDefault().Grupo)
-                    </th>
-                    <th class="is-hidden-touch"></th>
-                </tr>
-            </thead>
-            <tbody>
-                @foreach (var item in Model)
-                {
-                    <tr >
-                        <td data-label="@Html.DisplayNameFor(model => model.FirstOrDefault().Referencia)">
-                            <span>@item.Referencia</span>
-                        </td>
-                        <td data-label="@Html.DisplayNameFor(model => model.FirstOrDefault().Descricao)">
-                            <span>@item.Descricao</span>
-                        </td>
-                        <td data-label="@Html.DisplayNameFor(model => model.FirstOrDefault().Quantidade)">
-                            <span>@item.Quantidade</span>
-                        </td>
-                        <td data-label="@Html.DisplayNameFor(model => model.FirstOrDefault().Tipo)">
-                            <span>@item.Tipo.Descricao</span>
-                        </td>
-                        <td data-label="@Html.DisplayNameFor(model => model.FirstOrDefault().Grupo)">
-                            <span>@item.Grupo.Nome</span>
-                        </td>
-                        <td class="is-actions-cell">
-                            <div class="buttons is-pulled-right is-flex-wrap-nowrap">
-                                 <a class="button is-info" onclick="document.getElementById('txtStampAtual').value = '@item.Stamp';Bulma('#modalAtualizarStock').modal().open();"><i class="fa-solid fa-rotate"></i></a>
-                                 <a class="button is-danger" disabled><i class="fas fa-trash"></i></a>
-                            </div>
-                        </td>
-                    </tr>
-                }
-            </tbody>
-        </table>
-        </div>
+            <div class="table-wrapper has-mobile-cards">
+                <table class="table is-hoverable is-fullwidth">
+                    <thead>
+                        <tr>
+                            <th>
+                                @Html.DisplayNameFor(model => model.FirstOrDefault().Referencia)
+                            </th>
+                            <th>
+                                @Html.DisplayNameFor(model => model.FirstOrDefault().Descricao)
+                            </th>
+                            <th class="is-hidden-touch">
+                                @Html.DisplayNameFor(model => model.FirstOrDefault().Quantidade)
+                            </th>
+                            <th class="is-hidden-touch">
+                                @Html.DisplayNameFor(model => model.FirstOrDefault().Tipo)
+                            </th>
+                            <th class="is-hidden-touch"></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var item in Model)
+                        {
+                            <tr>
+                                <td data-label="@Html.DisplayNameFor(model => model.FirstOrDefault().Referencia)">
+                                    <span>@item.Referencia</span>
+                                </td>
+                                <td data-label="@Html.DisplayNameFor(model => model.FirstOrDefault().Descricao)">
+                                    <span>@item.Descricao</span>
+                                </td>
+                                <td data-label="@Html.DisplayNameFor(model => model.FirstOrDefault().Quantidade)">
+                                    <span>@item.Quantidade</span>
+                                </td>
+                                <td data-label="@Html.DisplayNameFor(model => model.FirstOrDefault().Tipo)">
+                                    <span>@item.Tipo.Descricao</span>
+                                </td>
+                                <td class="is-actions-cell">
+                                    <div class="buttons is-pulled-right is-flex-wrap-nowrap">
+                                        <button class="button is-danger is-fullwidth is-large"
+                                                onclick="ConfirmApagar('@item.Stamp')">
+                                            <i class="fas fa-trash-can"></i>
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
         </div>
     }
 </div>
-<input hidden id="txtStampAtual" />
-<div id="modalAtualizarStock" class="modal">
+
+<div class="modal" id="ModalConfirmApagar">
     <div class="modal-background"></div>
     <div class="modal-card">
         <header class="modal-card-head">
-            <p class="modal-card-title">
-                <span class="icon">
-                    <i class="fas fa-info-circle"></i>
-                </span>
-                <span>Atualizar Stock</span>
-            </p>
-            <button class="delete" aria-label="close"></button>
+            <p class="modal-card-title">Apagar Publicação</p>
         </header>
         <section class="modal-card-body">
-            <input type="number" class="input" value="1" id="txtQtd" />
+            <div class="modal-body">
+                <p>Tem a certeza que deseja apagar esta publicação e todos os movimentos associados a ela?</p>
+            </div>
         </section>
         <footer class="modal-card-foot">
-            <a class="button is-info" onclick="AtualizarQuantidade(document.getElementById('txtStampAtual').value, document.getElementById('txtQtd').value);">
+            <button class="button is-danger is-fullwidth is-large"
+                    onclick="Apagar(document.getElementById('txtHiddenStamp').value);">
                 <span class="icon">
-                    <i class="fa-solid fa-rotate"></i>
+                    <i class="fas fa-trash-can"></i>
                 </span>
-                <span>Atualizar</span>
-            </a>
+                <span>Confirmar</span>
+            </button>
+            <button class="button is-fullwidth is-large" onclick="Bulma('#ModalConfirmApagar').modal().close();">
+                <span class="icon">
+                    <i class="fa-solid fa-circle-xmark"></i>
+                </span>
+                <span>Não</span>
+            </button>
         </footer>
     </div>
 </div>
+<input id="txtHiddenStamp" hidden />
 
 <script>
-    function AtualizarQuantidade(stamp, qtd) {
-        var json = {
-            stamp: stamp,
-            qtd: qtd
-        };
+    function ConfirmApagar(id) {
+        document.getElementById('txtHiddenStamp').value = id;
+        Bulma('#ModalConfirmApagar').modal().open();
+    }
 
+    function Apagar(id) {
         $.ajax({
-            type: "POST",
-            url: "/Literatura/AtualizarStock",
-            data: json,
-            traditional: true,
-            success: function (result) {
-                $(function () {
-                    if (result) window.location.reload();
-                        bulmaToast.toast({
-                          message: 'Ocorreu um erro ao atualizar o stock atual da publicação selecionada!',
-                          type: 'is-danger',
-                          closeOnClick: true,
-                          pauseOnHover: true,
-                          opacity: 0.8,
-                          duration: 5000
-                        })
-                });
+            url: '/Literatura/Literatura/',
+            data: { "stamp": id },
+            type: "DELETE",
+            success: function (data) {
+                window.location.reload();
             },
-            error: function () {
-               bulmaToast.toast({
-                    message: 'Ocorreu um erro ao atualizar o stock atual da publicação selecionada!',
-                    type: 'is-danger',
-                    closeOnClick: true,
-                    pauseOnHover: true,
-                    opacity: 0.8,
-                    duration: 5000
-                })
+            error: function (data) {
+                notifyError('Ocorreu um erro ao apagar essa publicação!');
+            },
+            failure: function (data) {
+                notifyError('Falha ao apagar essa publicação!');
             }
         });
     }

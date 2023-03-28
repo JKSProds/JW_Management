@@ -7,7 +7,7 @@
         public string? Referencia { get; set; }
         public string? Descricao { get; set; }
         public int Quantidade { get; set; }
-        public Grupo? Grupo { get; set; }
         public TipoLiteratura? Tipo { get; set; }
+        public Publicador? Publicador { get; set; }
     }
 }
