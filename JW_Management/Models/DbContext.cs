@@ -100,7 +100,7 @@
 
             using (Database db = ConnectionString)
             {
-                string sql = "select l_pubs.STAMP, l_pubs.Id, l_pubs.Referencia, l_pubs.Descricao, l_periodicos.Quantidade, l_pubs.IdTipo, sys_utilizadores.* from l_periodicos inner join l_pubs on l_pubs.Referencia=l_periodicos.Referencia left join sys_utilizadores on sys_utilizadores.IdUtilizador=l_periodicos.IdPublicador\r\nwhere Quantidade>IFNULL((SELECT SUM(Quantidade) from l_movimentos where l_pubs.STAMP=l_movimentos.StampLiteratura  and l_movimentos.IdPublicador=l_periodicos.IdPublicador), 0) and l_pubs.STAMP='" + stamp + "';";
+                string sql = "select l_pubs.STAMP, l_pubs.Id, l_pubs.Referencia, l_pubs.Descricao, l_periodicos.Quantidade, l_pubs.IdTipo, sys_utilizadores.* from l_periodicos inner join l_pubs on l_pubs.Referencia=l_periodicos.Referencia left join sys_utilizadores on sys_utilizadores.IdUtilizador=l_periodicos.IdPublicador\r\nwhere Quantidade>IFNULL((SELECT SUM(Quantidade) from l_movimentos where l_pubs.STAMP=l_movimentos.StampLiteratura  and l_movimentos.IdPublicador=l_periodicos.IdPublicador), 0) and l_pubs.STAMP='" + stamp + "' order by Nome;";
                 using var result = db.Query(sql);
                 while (result.Read())
                 {
@@ -193,7 +193,7 @@
 
             using (Database db = ConnectionString)
             {
-                string sql = "SELECT * FROM sys_utilizadores;";
+                string sql = "SELECT * FROM sys_utilizadores order by Nome;";
                 using var result = db.Query(sql);
                 while (result.Read())
                 {

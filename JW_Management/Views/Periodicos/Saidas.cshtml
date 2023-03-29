@@ -11,16 +11,16 @@
                     <article class="tile is-child notification is-info">
                         <p class="title">
                             <span class="icon mr-3">
-                                <img src="~/img/literatura.png">
+                                <i class="fa-solid fa-newspaper"></i>
                             </span>
-                            <span>Literatura - Saida de Periodicos</span>
+                            <span>Saida de Periódicos</span>
                         </p>
                     </article>
                 </div>
             </div>
         </div>
-        <div class="column">
-            <button class="button is-info is-large is-pulled-right" disabled>@Math.Abs(Model.Sum(l =>
+        <div class="column is-4">
+            <button class="button is-info is-large is-pulled-right is-fullwidth " disabled>@Math.Abs(Model.Sum(l =>
                 l.Quantidade))</button>
         </div>
     </div>
@@ -31,48 +31,44 @@
     {
         <br />
         <button class="button is-danger is-large is-rounded is-fullwidth is-disabled">Não foram encontrados
-            periodicos!</button>
+            periódicos!</button>
     }
     else
     {
-        <div class="b-table">
-            <div class="table-wrapper has-mobile-cards">
-                <table class="table is-hoverable is-fullwidth">
-                    <thead>
-                        <tr>
-                            <th>
-                                @Html.DisplayNameFor(model => model.FirstOrDefault().Publicador.Nome)
-                            </th>
-                            <th>
-                                @Html.DisplayNameFor(model => model.FirstOrDefault().Quantidade)
-                            </th>
-                            <th></th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @foreach (var item in Model)
-                        {
-                            <tr>
-                                <td data-label="@Html.DisplayNameFor(model => model.FirstOrDefault().Publicador.Nome)">
-                                    <span>@item.Publicador.Nome</span>
-                                </td>
-                                <td data-label="@Html.DisplayNameFor(model => model.FirstOrDefault().Quantidade)">
-                                    <span>@Math.Abs(item.Quantidade)</span>
-                                </td>
-                                <td class="is-actions-cell">
-                                    <div class="buttons is-pulled-right is-flex-wrap-nowrap">
-                                        <button class="button is-success is-fullwidth is-large"
-                                    onclick="GerarMovimento('@item.Stamp', @item.Quantidade, @item.Publicador.Id)">
-                                            <i class="fas fa-circle-check"></i>
-                                        </button>
-                                    </div>
-                                </td>
-                            </tr>
-                        }
-                    </tbody>
-                </table>
-            </div>
-        </div>
+        <table class="table is-hoverable is-fullwidth">
+            <thead>
+                <tr>
+                    <th>
+                        @Html.DisplayNameFor(model => model.FirstOrDefault().Publicador.Nome)
+                    </th>
+                    <th>
+                        @Html.DisplayNameFor(model => model.FirstOrDefault().Quantidade)
+                    </th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var item in Model)
+                {
+                    <tr>
+                        <td data-label="@Html.DisplayNameFor(model => model.FirstOrDefault().Publicador.Nome)">
+                            <span>@item.Publicador.Nome</span>
+                        </td>
+                        <td data-label="@Html.DisplayNameFor(model => model.FirstOrDefault().Quantidade)">
+                            <span>@Math.Abs(item.Quantidade)</span>
+                        </td>
+                        <td class="is-actions-cell">
+                            <div class="buttons is-pulled-right is-flex-wrap-nowrap">
+                                <button class="button is-success is-fullwidth is-large"
+                            onclick="GerarMovimento('@item.Stamp', @item.Quantidade, @item.Publicador.Id)">
+                                    <i class="fas fa-circle-check"></i>
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
     }
 </div>
 

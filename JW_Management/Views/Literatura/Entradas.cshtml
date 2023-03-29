@@ -11,20 +11,20 @@
                     <article class="tile is-child notification is-info">
                         <p class="title">
                             <span class="icon mr-3">
-                                <img src="~/img/literatura.png">
+                                <i class="fa-solid fa-right-to-bracket"></i>
                             </span>
-                            <span>Literatura - Movimentos de Entrada</span>
+                            <span>Entrada</span>
                         </p>
                     </article>
                 </div>
             </div>
         </div>
         <div class="column">
-            <div class="field has-addons has-addons-right mx-1 is-flex-wrap-wrap">
+            <div class="field has-addons has-addons-right mx-1 is-flex-wrap-wrap" style="width:100%">
 
                 <div class="buttons is-right">
                     <p class="control">
-                        <button type="button" class="button is-info is-large"
+                        <button type="button" class="button is-info is-large is-fullwidth "
                             onclick="Bulma('#modalEntradaPublicacoes').modal().open();">
                             <span class="icon">
                                 <i class="fa-solid fa-book"></i>
@@ -33,7 +33,7 @@
                         </button>
                     </p>
                     <p class="control">
-                        <button type="submit" class="button is-primary is-large"
+                        <button type="submit" class="button is-primary is-large is-fullwidth "
                             onclick="Bulma('#modalEntradaPeriodicos').modal().open();">
                             <span class="icon">
                                 <i class="fa-solid fa-newspaper"></i>
@@ -93,7 +93,7 @@
                                     <span>@item.DataMovimento</span>
                                 </td>
                                 <td class="is-actions-cell">
-                                    <div class="buttons is-pulled-right is-flex-wrap-nowrap">
+                                    <div class="buttons is-pulled-right is-flex-wrap-nowrap" style="width:100%">
                                         <button class="button is-danger is-fullwidth is-large"
                                     onclick="ConfirmApagar('@item.Stamp')">
                                             <i class="fas fa-trash-can"></i>
@@ -113,21 +113,22 @@
     <div class="modal-background"></div>
     <div class="modal-card">
         <header class="modal-card-head">
-            <p class="modal-card-title">Movimento de Entrada - Publicacoes</p>
+            <p class="modal-card-title">
+                <span class="icon">
+                    <i class="fas fa-circle-plus"></i>
+                </span>
+                <span>Entrada - Publicações</span>
+            </p>
             <button type="button" class="delete" aria-label="close"></button>
         </header>
         <section class="modal-card-body">
             <div class="modal-body">
-                <div class="field ">
+                <input type="hidden" id="txtPubStamp" />
+                <div class="field">
                     <label class="label">Publicação</label>
-                    <div class="field has-addons">
-                        <div class="control" style="width:100%">
-                            <input type="hidden" id="txtPubStamp" />
-                            <p class="control">
-                                <input type="text" class="input" id="txtPub">
-                            </p>
-                        </div>
-                    </div>
+                    <p class="control ">
+                        <input type="text" class="input" id="txtPub">
+                    </p>
                 </div>
                 <div class="field">
                     <label class="label">Quantidade</label>
@@ -179,7 +180,12 @@
     <div class="modal-background"></div>
     <div class="modal-card">
         <header class="modal-card-head">
-            <p class="modal-card-title">Movimento de Entrada - Periodicos</p>
+            <p class="modal-card-title">
+                <span class="icon">
+                    <i class="fas fa-circle-plus"></i>
+                </span>
+                <span>Entrada - Periódicos</span>
+            </p>
             <button type="button" class="delete" aria-label="close"></button>
         </header>
         <section class="modal-card-body">
@@ -192,11 +198,11 @@
                                 <select id="periodico" style="width:100%" class="select">
                                     <option value="w">Sentinela de Estudo</option>
                                     <option value="wlp">Sentinela de Estudo (Letra Grande)</option>
-                                    <option value="mvpwp">Sentinela Público</option>
-                                    <option value="mvpg">Despertai</option>
                                     <option value="mwb">Manuais de Atividades</option>
                                     <option value="es">Examine as Escrituras Diariamente</option>
                                     <option value="eslp">Examine as Escrituras Diariamente (Letra Grande)</option>
+                                    <option value="mvpwp">Sentinela Público</option>
+                                    <option value="mvpg">Despertai</option>
                                 </select>
                             </span>
                             <span class="icon is-small is-left">
@@ -212,7 +218,6 @@
                         <p class="control has-icons-left">
                             <span class="select" style="width:100%">
                                 <select id="mes" class="select" style="width:100%">
-                                    <option>Escolha o mês</option>
                                     <option value="01">Janeiro</option>
                                     <option value="02">Fevereiro</option>
                                     <option value="03">Março</option>
@@ -228,17 +233,20 @@
                                 </select>
                             </span>
                             <span class="icon is-small is-left">
-                                <i class="fas fa-hourglass"></i>
+                                <i class="fa-solid fa-calendar-days"></i>
                             </span>
                         </p>
 
                     </div>
                 </div>
                 <div class="field">
-                    <div class="control" style="width:100%">
-                        <label class="label">Ano:</label>
+                    <label class="label">Ano:</label>
+                    <p class="control has-icons-left">
                         <input class="input" id="ano" type="number" value="@DateTime.Now.Year" />
-                    </div>
+                        <span class="icon is-small is-left">
+                            <i class="fa-regular fa-calendar"></i>
+                        </span>
+                    </p>
                 </div>
                 <div class="field">
                     <label class="label">Quantidade</label>
@@ -289,7 +297,12 @@
     <div class="modal-background"></div>
     <div class="modal-card">
         <header class="modal-card-head">
-            <p class="modal-card-title">Apagar Publicação</p>
+            <p class="modal-card-title">
+                <span class="icon">
+                    <i class="fas fa-trash-can"></i>
+                </span>
+                <span>Apagar Movimento</span>
+            </p>
         </header>
         <section class="modal-card-body">
             <div class="modal-body">

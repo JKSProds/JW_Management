@@ -21,16 +21,28 @@
                 </div>
             </div>
             <div class="column">
-                <div class="field has-addons has-addons-right mx-1 is-flex-wrap-wrap">
+                <div class="field has-addons has-addons-right mx-1 is-flex-wrap-wrap" style="width:100%">
                     <p class="control has-icons-left">
-                        <input type="text" class="input" placeholder="Descrição" id="filtro" name="filtro" value="@ViewData["filtro"]">
+                        <input type="text" class="input" placeholder="Descrição" id="filtro" name="filtro"
+                            value="@ViewData["filtro"]">
                         <span class="icon is-small is-left">
                             <i class="fa-solid fa-arrow-down-a-z"></i>
                         </span>
                     </p>
+                    <p class="control has-icons-left">
+                        <span class="select is-fullwidth">
+                            <select class="select" id="txtTipo" name="tipo"
+                                onchange="document.getElementById('frmFiltrar').submit();" style="height: auto"
+                                asp-items="@(new SelectList(@ViewBag.Tipos, "Value", "Text", ViewData["tipo"]))">
+                            </select>
+                        </span>
+                        <span class="icon is-small is-left">
+                            <i class="fa-solid fa-user-tie"></i>
+                        </span>
+                    </p>
                     <div class="buttons is-right">
                         <p class="control">
-                            <button type="submit" class="button is-info is-outlined">
+                            <button type="submit" class="button is-info is-outlined is-fullwidth ">
                                 <span class="icon">
                                     <i class="fas fa-search fa-lg"></i>
                                 </span>
@@ -48,7 +60,8 @@
     @if (Model.Count() == 0)
     {
         <br />
-        <button class="button is-danger is-large is-rounded is-fullwidth is-disabled">Não foram encontradas publicações!</button>
+        <button class="button is-danger is-large is-rounded is-fullwidth is-disabled">Não foram encontradas
+            publicações!</button>
     }
     else
     {
@@ -89,9 +102,9 @@
                                     <span>@item.Tipo.Descricao</span>
                                 </td>
                                 <td class="is-actions-cell">
-                                    <div class="buttons is-pulled-right is-flex-wrap-nowrap">
+                                    <div class="buttons is-pulled-right is-flex-wrap-nowrap" style="width:100%">
                                         <button class="button is-danger is-fullwidth is-large"
-                                                onclick="ConfirmApagar('@item.Stamp')">
+                                    onclick="ConfirmApagar('@item.Stamp')">
                                             <i class="fas fa-trash-can"></i>
                                         </button>
                                     </div>
@@ -118,7 +131,7 @@
         </section>
         <footer class="modal-card-foot">
             <button class="button is-danger is-fullwidth is-large"
-                    onclick="Apagar(document.getElementById('txtHiddenStamp').value);">
+                onclick="Apagar(document.getElementById('txtHiddenStamp').value);">
                 <span class="icon">
                     <i class="fas fa-trash-can"></i>
                 </span>

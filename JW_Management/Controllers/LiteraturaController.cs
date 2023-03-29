@@ -6,20 +6,28 @@ namespace JW_Management.Controllers
 {
     public class LiteraturaController : Controller
     {
-        public IActionResult Index(string filtro)
+        public IActionResult Index(string filtro, int tipo)
         {
             DbContext context = HttpContext.RequestServices.GetService(typeof(DbContext)) as DbContext;
 
             if (string.IsNullOrEmpty(filtro)) filtro = "";
             ViewData["filtro"] = filtro;
+            ViewData["tipo"] = tipo;
 
-            return View("Index", context.ObterLiteraturas(filtro, 0));
+            List<TipoLiteratura> LstTiposLiteratura = context.ObterTiposLiteratura();
+            LstTiposLiteratura.Insert(0, new TipoLiteratura() { Id = 0, Descricao = "Todos" });
+            ViewBag.Tipos = LstTiposLiteratura.Select(l => new SelectListItem() { Value = l.Id.ToString(), Text = l.Descricao });
+
+            if (tipo == 0) { return View("Index", context.ObterLiteraturas(filtro, 0)); }
+            return View("Index", context.ObterLiteraturas(filtro, 0).Where(l => l.Tipo.Id == tipo));
         }
 
         [HttpGet]
         public IActionResult Movimentos(int id)
         {
             DbContext context = HttpContext.RequestServices.GetService(typeof(DbContext)) as DbContext;
+
+            ViewBag.Publicadores = context.ObterPublicadores().Select(l => new SelectListItem() { Value = l.Id.ToString(), Text = l.Nome });
 
             if (id == 1) return View("Entradas", context.ObterMovimentos(id));
             return View("Saidas", context.ObterMovimentos(id));
