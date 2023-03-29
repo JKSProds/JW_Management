@@ -24,7 +24,8 @@
 
                 <div class="buttons is-right">
                     <p class="control">
-                        <button type="button" class="button is-info is-large" onclick="Bulma('#modalSaidaPublicacoes').modal().open();">
+                        <button type="button" class="button is-info is-large"
+                            onclick="Bulma('#modalSaidaPublicacoes').modal().open();">
                             <span class="icon">
                                 <i class="fa-solid fa-book"></i>
                             </span>
@@ -49,7 +50,8 @@
     @if (Model.Count() == 0)
     {
         <br />
-        <button class="button is-danger is-large is-rounded is-fullwidth is-disabled">Não foram encontrados movimentos!</button>
+        <button class="button is-danger is-large is-rounded is-fullwidth is-disabled">Não foram encontrados
+            movimentos!</button>
     }
     else
     {
@@ -63,6 +65,9 @@
                             </th>
                             <th>
                                 @Html.DisplayNameFor(model => model.FirstOrDefault().Quantidade)
+                            </th>
+                            <th>
+                                @Html.DisplayNameFor(model => model.FirstOrDefault().Publicador.Nome)
                             </th>
                             <th>
                                 @Html.DisplayNameFor(model => model.FirstOrDefault().DataMovimento)
@@ -80,13 +85,16 @@
                                 <td data-label="@Html.DisplayNameFor(model => model.FirstOrDefault().Quantidade)">
                                     <span>@item.Quantidade</span>
                                 </td>
+                                <td data-label="@Html.DisplayNameFor(model => model.FirstOrDefault().Publicador.Nome)">
+                                    <span>@item.Publicador.Nome</span>
+                                </td>
                                 <td data-label="@Html.DisplayNameFor(model => model.FirstOrDefault().DataMovimento)">
                                     <span>@item.DataMovimento</span>
                                 </td>
                                 <td class="is-actions-cell">
                                     <div class="buttons is-pulled-right is-flex-wrap-nowrap">
                                         <button class="button is-danger is-fullwidth is-large"
-                                                onclick="ConfirmApagar('@item.Stamp')">
+                                    onclick="ConfirmApagar('@item.Stamp')">
                                             <i class="fas fa-trash-can"></i>
                                         </button>
                                     </div>
@@ -113,8 +121,7 @@
                     <label class="label">Publicação</label>
                     <div class="field has-addons">
                         <div class="control" style="width:100%">
-                            <input type="hidden"
-                                   id="txtPubStamp" />
+                            <input type="hidden" id="txtPubStamp" />
                             <p class="control">
                                 <input type="text" class="input" id="txtPub">
                             </p>
@@ -126,7 +133,7 @@
                     <div class="field has-addons">
                         <div class="control">
                             <button type="button" class="button is-danger disable-dbl-tap-zoom"
-                                    onclick="document.getElementById('txtQtd').value = parseInt(document.getElementById('txtQtd').value) - 1">
+                                onclick="document.getElementById('txtQtd').value = parseInt(document.getElementById('txtQtd').value) - 1">
                                 <span class="icon">
                                     <i class="fas fa-minus"></i>
                                 </span>
@@ -137,7 +144,7 @@
                         </div>
                         <div class="control">
                             <button type="button" class="button is-success disable-dbl-tap-zoom"
-                                    onclick="document.getElementById('txtQtd').value = parseInt(document.getElementById('txtQtd').value) + 1">
+                                onclick="document.getElementById('txtQtd').value = parseInt(document.getElementById('txtQtd').value) + 1">
                                 <span class="icon">
                                     <i class="fas fa-plus"></i>
                                 </span>
@@ -149,14 +156,14 @@
         </section>
         <footer class="modal-card-foot">
             <a class="button is-info is-large is-fullwidth"
-               onclick="GerarMovimento(document.getElementById('txtPubStamp').value, -document.getElementById('txtQtd').value)">
+                onclick="GerarMovimento(document.getElementById('txtPubStamp').value, -document.getElementById('txtQtd').value)">
                 <span class="icon">
                     <i class="fa-solid fa-file-export"></i>
                 </span>
                 <span>Guardar Movimento</span>
             </a>
             <button type="button" class="button is-large is-fullwidth is-danger"
-                    onclick="Bulma('#modalSaidaPublicacoes').modal().close();" href="javascript:;">
+                onclick="Bulma('#modalSaidaPublicacoes').modal().close();" href="javascript:;">
                 <span class="icon">
                     <i class="fa-regular fa-circle-xmark"></i>
                 </span>
@@ -179,7 +186,7 @@
         </section>
         <footer class="modal-card-foot">
             <button class="button is-danger is-fullwidth is-large"
-                    onclick="Apagar(document.getElementById('txtHiddenStamp').value);">
+                onclick="Apagar(document.getElementById('txtHiddenStamp').value);">
                 <span class="icon">
                     <i class="fas fa-trash-can"></i>
                 </span>

@@ -20,7 +20,8 @@
             </div>
         </div>
         <div class="column">
-            <button class="button is-info is-large is-pulled-right" disabled>@Math.Abs(Model.Sum(l => l.Quantidade))</button>
+            <button class="button is-info is-large is-pulled-right" disabled>@Math.Abs(Model.Sum(l =>
+                l.Quantidade))</button>
         </div>
     </div>
 </div>
@@ -29,7 +30,8 @@
     @if (Model.Count() == 0)
     {
         <br />
-        <button class="button is-danger is-large is-rounded is-fullwidth is-disabled">Não foram encontrados periodicos!</button>
+        <button class="button is-danger is-large is-rounded is-fullwidth is-disabled">Não foram encontrados
+            periodicos!</button>
     }
     else
     {
@@ -60,7 +62,7 @@
                                 <td class="is-actions-cell">
                                     <div class="buttons is-pulled-right is-flex-wrap-nowrap">
                                         <button class="button is-success is-fullwidth is-large"
-                                                onclick="GerarMovimento('@item.Stamp', @item.Quantidade, @item.Publicador.Id)">
+                                    onclick="GerarMovimento('@item.Stamp', @item.Quantidade, @item.Publicador.Id)">
                                             <i class="fas fa-circle-check"></i>
                                         </button>
                                     </div>
@@ -79,10 +81,23 @@
     function GerarMovimento(stamp, qtd, idpub) {
         $.ajax({
             url: '/Literatura/Movimentos/',
-            data: { "stamp": stamp, "qtd": qtd, "idpub": idpub },
+            data: { "stamp": stamp, "qtd": -qtd, "idpub": 0 },
             type: "POST",
             success: function (data) {
-                window.location.reload();
+                $.ajax({
+                    url: '/Literatura/Movimentos/',
+                    data: { "stamp": stamp, "qtd": qtd, "idpub": idpub },
+                    type: "POST",
+                    success: function (data) {
+                        window.location.reload();
+                    },
+                    error: function (response) {
+                        notifyError('Ocorreu um erro ao gerar um movimento!');
+                    },
+                    failure: function (response) {
+                        notifyError('Falha ao gerar um movimento!');
+                    }
+                });
             },
             error: function (response) {
                 notifyError('Ocorreu um erro ao gerar um movimento!');

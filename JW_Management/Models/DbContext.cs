@@ -39,14 +39,15 @@
             return true;
         }
 
-        public List<Literatura> ObterLiteraturas(string filtro)
+        public List<Literatura> ObterLiteraturas(string filtro, int idpub)
         {
             List<Literatura> LstLiteratura = new();
             List<TipoLiteratura> LstTiposLiteratura = ObterTiposLiteratura();
+            List<Publicador> LstPublicador = ObterPublicadores();
 
             using (Database db = ConnectionString)
             {
-                string sql = "SELECT *, IFNULL((SELECT SUM(Quantidade) from l_movimentos where l_pubs.STAMP=l_movimentos.StampLiteratura), 0) as Quantidade FROM l_pubs where Descricao like '%" + filtro + "%' or Referencia like '%" + filtro + "%';";
+                string sql = "SELECT *, IFNULL((SELECT SUM(Quantidade) from l_movimentos where l_pubs.STAMP=l_movimentos.StampLiteratura and l_movimentos.IdPublicador=" + idpub + "), 0) as Quantidade FROM l_pubs where Descricao like '%" + filtro + "%' or Referencia like '%" + filtro + "%';";
                 using var result = db.Query(sql);
                 while (result.Read())
                 {
@@ -57,7 +58,8 @@
                         Referencia = result["Referencia"],
                         Descricao = result["Descricao"],
                         Quantidade = result["Quantidade"],
-                        Tipo = LstTiposLiteratura.Where(g => g.Id == result["IdTipo"]).FirstOrDefault(new TipoLiteratura())
+                        Tipo = LstTiposLiteratura.Where(g => g.Id == result["IdTipo"]).FirstOrDefault(new TipoLiteratura()),
+                        Publicador = LstPublicador.Where(g => g.Id == idpub).FirstOrDefault(new Publicador())
                     });
                 }
             }
@@ -72,7 +74,7 @@
 
             using (Database db = ConnectionString)
             {
-                string sql = "SELECT *, IFNULL((SELECT SUM(Quantidade) from l_movimentos where l_pubs.STAMP=l_movimentos.StampLiteratura), 0) as Quantidade FROM l_pubs where IdTipo=7 and IFNULL((SELECT SUM(Quantidade) from l_movimentos where l_pubs.STAMP=l_movimentos.StampLiteratura), 0) > 0;";
+                string sql = "SELECT *, IFNULL((SELECT SUM(Quantidade) from l_movimentos where l_pubs.STAMP=l_movimentos.StampLiteratura and l_movimentos.IdPublicador=0), 0) as Quantidade FROM l_pubs where IdTipo=7 and IFNULL((SELECT SUM(Quantidade) from l_movimentos where l_pubs.STAMP=l_movimentos.StampLiteratura), 0) > 0;";
                 using var result = db.Query(sql);
                 while (result.Read())
                 {
@@ -98,7 +100,7 @@
 
             using (Database db = ConnectionString)
             {
-                string sql = "select l_pubs.STAMP, l_pubs.Id, l_pubs.Referencia, l_pubs.Descricao, l_periodicos.Quantidade, l_pubs.IdTipo, sys_utilizadores.* from l_periodicos inner join l_pubs on l_pubs.Referencia=l_periodicos.Referencia left join sys_utilizadores on sys_utilizadores.IdUtilizador=l_periodicos.IdPublicador\r\nwhere Quantidade<IFNULL((SELECT SUM(Quantidade) from l_movimentos where l_pubs.STAMP=l_movimentos.StampLiteratura  and l_movimentos.IdPublicador=l_periodicos.IdPublicador), 0) and l_pubs.STAMP='" + stamp + "';";
+                string sql = "select l_pubs.STAMP, l_pubs.Id, l_pubs.Referencia, l_pubs.Descricao, l_periodicos.Quantidade, l_pubs.IdTipo, sys_utilizadores.* from l_periodicos inner join l_pubs on l_pubs.Referencia=l_periodicos.Referencia left join sys_utilizadores on sys_utilizadores.IdUtilizador=l_periodicos.IdPublicador\r\nwhere Quantidade>IFNULL((SELECT SUM(Quantidade) from l_movimentos where l_pubs.STAMP=l_movimentos.StampLiteratura  and l_movimentos.IdPublicador=l_periodicos.IdPublicador), 0) and l_pubs.STAMP='" + stamp + "';";
                 using var result = db.Query(sql);
                 while (result.Read())
                 {
@@ -185,9 +187,31 @@
             return LstTiposLiteratura;
         }
 
+        public List<Publicador> ObterPublicadores()
+        {
+            List<Publicador> LstPublicador = new();
+
+            using (Database db = ConnectionString)
+            {
+                string sql = "SELECT * FROM sys_utilizadores;";
+                using var result = db.Query(sql);
+                while (result.Read())
+                {
+                    LstPublicador.Add(new Publicador()
+                    {
+                        Id = result["IdUtilizador"],
+                        Nome = result["Nome"]
+                    });
+                }
+            }
+
+            return LstPublicador;
+        }
+
         public List<Movimentos> ObterMovimentos(int tipo)
         {
             List<Movimentos> LstMovimentos = new();
+            List<Publicador> LstPublicador = ObterPublicadores();
 
             using (Database db = ConnectionString)
             {
@@ -200,7 +224,8 @@
                         Stamp = result["Id"],
                         Literatura = ObterLiteratura(result["StampLiteratura"]),
                         Quantidade = int.Parse(result["Quantidade"]),
-                        DataMovimento = DateTime.Parse(result["Data"])
+                        DataMovimento = DateTime.Parse(result["Data"]),
+                        Publicador = LstPublicador.Where(g => g.Id == result["IdPublicador"]).FirstOrDefault(new Publicador())
                     });
                 }
             }

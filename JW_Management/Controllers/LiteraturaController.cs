@@ -13,7 +13,7 @@ namespace JW_Management.Controllers
             if (string.IsNullOrEmpty(filtro)) filtro = "";
             ViewData["filtro"] = filtro;
 
-            return View("Index", context.ObterLiteraturas(filtro));
+            return View("Index", context.ObterLiteraturas(filtro, 0));
         }
 
         [HttpGet]
@@ -57,8 +57,8 @@ namespace JW_Management.Controllers
         {
             DbContext context = HttpContext.RequestServices.GetService(typeof(DbContext)) as DbContext;
 
-            if (periodico) return Json(context.ObterLiteraturas(filtro).Where(l => l.Tipo.Id == 7));
-            return Json(context.ObterLiteraturas(filtro).Where(l => l.Tipo.Id != 7));
+            if (periodico) return Json(context.ObterLiteraturas(filtro, 0).Where(l => l.Tipo.Id == 7));
+            return Json(context.ObterLiteraturas(filtro, 0).Where(l => l.Tipo.Id != 7));
         }
 
         [HttpPost]
