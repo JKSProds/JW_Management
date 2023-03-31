@@ -214,15 +214,49 @@
             return LstPublicador;
         }
 
-        //Obter movimentos de um determinado tipo 
-        public List<Movimentos> ObterMovimentos(bool In, int IdPub)
+        //Obter Publicador
+        public Publicador ObterPublicador(int id, bool LoadMovimentos)
         {
-            List<Movimentos> LstMovimentos = new();
-            List<Publicador> LstPublicador = ObterPublicadores();
+            Publicador p = new();
 
             using (Database db = ConnectionString)
             {
-                string sql = "SELECT * FROM l_movimentos where " + (In ? "Quantidade > 0" : "Quantidade < 0") + " and IdPublicador="+IdPub+";";
+                string sql = "SELECT * FROM sys_utilizadores where IdUtilizador="+id+";";
+                using var result = db.Query(sql);
+                while (result.Read())
+                {
+                    p = new Publicador()
+                    {
+                        Id = result["IdUtilizador"],
+                        Nome = result["Nome"]
+                    };
+                    if (LoadMovimentos) p.Movimentos = ObterMovimentos(true, true, int.Parse(result["IdUtilizador"]));
+                }
+            }
+
+            return p;
+        }
+
+
+        //Apagar um publicador em especifico
+        public bool ApagarPublicador(int id)
+        {
+            string sql = "DELETE FROM sys_utilizadores where IdUtilizador = '" + id + "';";
+             sql += "DELETE FROM l_movimentos where IdPublicador = '" + id + "';";
+             sql += "DELETE FROM l_periodicos where IdPublicador = '" + id + "';";
+
+            return ExecutarQuery(sql);
+        }
+
+        //Obter movimentos de um determinado tipo 
+        public List<Movimentos> ObterMovimentos(bool In, bool Out, int IdPub)
+        {
+            List<Movimentos> LstMovimentos = new();
+            Publicador p = ObterPublicador(IdPub,false);
+
+            using (Database db = ConnectionString)
+            {
+                string sql = "SELECT * FROM l_movimentos where IdPublicador="+IdPub + " AND (" + (In ? "Quantidade > 0" : "") + (In && Out ? " OR ": "") + (Out ? "Quantidade < 0" : "") + ");";
                 using var result = db.Query(sql);
                 while (result.Read())
                 {
@@ -232,7 +266,7 @@
                         Literatura = ObterLiteratura(result["StampLiteratura"]),
                         Quantidade = int.Parse(result["Quantidade"]),
                         DataMovimento = DateTime.Parse(result["Data"]),
-                        Publicador = LstPublicador.Where(g => g.Id == result["IdPublicador"]).FirstOrDefault(new Publicador())
+                        Publicador = p
                     });
                 }
             }

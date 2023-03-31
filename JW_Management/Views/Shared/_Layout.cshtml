@@ -1,6 +1,17 @@
 ﻿<!DOCTYPE html>
 <html lang="pt-pt">
 
+<style>
+    .tabs-content li {
+        display: none;
+        list-style: none;
+    }
+
+        .tabs-content li.is-active {
+            display: block;
+        }
+</style>
+
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -84,7 +95,13 @@
                                 </p>
                             </div>
                         </div>
-                    </div>
+                        <a class="navbar-item" href="~/Publicadores">
+                            <span class="icon mr-2">
+                                <img src="~/img/publicadores.png">
+                            </span>
+                            <span>Publicadores</span>
+                        </a>
+                        </div>
 
                     <div class="navbar-end">
                     </div>

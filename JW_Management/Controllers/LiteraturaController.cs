@@ -29,8 +29,8 @@ namespace JW_Management.Controllers
 
             ViewBag.Publicadores = context.ObterPublicadores().Select(l => new SelectListItem() { Value = l.Id.ToString(), Text = l.Nome });
 
-            if (id == 1) return View("Entradas", context.ObterMovimentos(id == 1, 0));
-            return View("Saidas", context.ObterMovimentos(id == 1, 0));
+            if (id == 1) return View("Entradas", context.ObterMovimentos(true, false, 0));
+            return View("Saidas", context.ObterMovimentos(false, true, 0));
         }
 
         [HttpPost]

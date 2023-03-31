@@ -7,5 +7,6 @@
         public int Quantidade { get; set; }
         public DateTime DataMovimento { get; set; }
         public Publicador? Publicador { get; set; }
+        public bool In { get { return this.Quantidade > 0; } }
     }
 }

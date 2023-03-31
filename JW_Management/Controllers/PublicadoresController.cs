@@ -3,14 +3,14 @@ using JW_Management.Models;
 
 namespace JW_Management.Controllers
 {
-    public class PublicadorController : Controller
+    public class PublicadoresController : Controller
     {
         [HttpGet]
         public IActionResult Index()
         {
             DbContext context = HttpContext.RequestServices.GetService(typeof(DbContext)) as DbContext;
 
-            return View(context.ObterPublicadores());
+            return View(context.ObterPublicadores().OrderBy(p => p.Id));
         }
 
         [HttpGet]
@@ -18,7 +18,7 @@ namespace JW_Management.Controllers
         {
             DbContext context = HttpContext.RequestServices.GetService(typeof(DbContext)) as DbContext;
 
-            return View(context.ObterPublicador(id));
+            return View(context.ObterPublicador(id, true));
         }
 
         [HttpDelete]

@@ -21,25 +21,120 @@
                 </div>
             </div>
             <div class="column">
-               
+
             </div>
         </div>
     </div>
 </form>
 <hr />
 <div class="container">
-    <div class="field">
-        <label class="label" asp-for="Id"></label>
-        <p class="control ">
-            <input type="text" class="input" readonly asp-for="Id">
-        </p>
-        <span asp-validation-for="DataServico" class="has-text-danger"></span>
-    </div>
-    <div class="field">
-        <label class="label">Publicação</label>
-        <p class="control ">
-            <input type="text" class="input" id="txtPub">
-        </p>
-    </div>
+        <div class="tabs-wrapper">
+            <div class="tabs is-centered is-boxed">
+                <ul>
+                    <li class="is-active">
+                        <a>
+                            <span>Dados</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a>
+                            <span>Movimentos</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a>
+                            <span>Pedidos</span>
+                        </a>
+                    </li>
+                </ul>
+            </div>
 
+            <div class="tabs-content mx-2">
+                <ul>
+                    <li class="is-active">
+                        <div class="columns is-multiline">
+                            <div class="column is-2">
+                                <div class="field">
+                                    <label class="label" asp-for="Id"></label>
+                                    <p class="control ">
+                                        <input type="text" class="input" readonly asp-for="Id">
+                                    </p>
+                                    <span asp-validation-for="Id" class="has-text-danger"></span>
+                                </div>
+                            </div>
+                            <div class="column is-10">
+                                <div class="field">
+                                    <label class="label" asp-for="Nome"></label>
+                                    <p class="control ">
+                                        <input type="text" class="input" readonly asp-for="Nome">
+                                    </p>
+                                    <span asp-validation-for="Nome" class="has-text-danger"></span>
+                                </div>
+                            </div>
+                        </div>
+                    </li>
+                    <li>
+                            @if (Model.Movimentos!.Count() == 0)
+                            {
+                                <br />
+                                <button class="button is-danger is-large is-rounded is-fullwidth is-disabled">
+                                    Não foram encontrados
+                                    movimentos!
+                                </button>
+                            }
+                            else
+                            {
+                                <div class="b-table">
+                                    <div class="table-wrapper has-mobile-cards">
+                                        <table class="table is-hoverable is-fullwidth">
+                                            <thead>
+                                                <tr>
+                                                    <th>
+                                                        @Html.DisplayNameFor(model => model.Movimentos!.FirstOrDefault()!.Literatura!.Descricao)
+                                                    </th>
+                                                    <th>
+                                                        @Html.DisplayNameFor(model => model.Movimentos!.FirstOrDefault()!.Quantidade)
+                                                    </th>
+                                                    <th>
+                                                        @Html.DisplayNameFor(model => model.Movimentos!.FirstOrDefault()!.Publicador!.Nome)
+                                                    </th>
+                                                    <th>
+                                                        @Html.DisplayNameFor(model => model.Movimentos!.FirstOrDefault()!.DataMovimento)
+                                                    </th>
+                                                    <th></th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                @foreach (var item in Model.Movimentos!)
+                                                {
+                                                    <tr @(item.In ? "class=has-background-success" : "class=has-background-danger")>
+                                                        <td data-label="@Html.DisplayNameFor(model => model.Movimentos!.FirstOrDefault()!.Literatura!.Descricao)">
+                                                            <span>@item.Literatura!.Descricao</span>
+                                                        </td>
+                                                        <td data-label="@Html.DisplayNameFor(model => model.Movimentos!.FirstOrDefault()!.Quantidade)">
+                                                            <span>@item.Quantidade</span>
+                                                        </td>
+                                                        <td data-label="@Html.DisplayNameFor(model => model.Movimentos!.FirstOrDefault()!.Publicador!.Nome)">
+                                                            <span>@item.Publicador!.Nome</span>
+                                                        </td>
+                                                        <td data-label="@Html.DisplayNameFor(model => model.Movimentos!.FirstOrDefault()!.DataMovimento)">
+                                                            <span>@item.DataMovimento</span>
+                                                        </td>
+                                                        <td class="is-actions-cell">
+                                                            <div class="buttons is-pulled-right is-flex-wrap-nowrap" style="width:100%">
+
+                                                            </div>
+                                                        </td>
+                                                    </tr>
+                                                }
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            }
+                    </li>
+                    <li></li>
+                </ul>
+            </div>
+        </div>
 </div>
