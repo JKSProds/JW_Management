@@ -92,5 +92,21 @@ namespace JW_Management.Controllers
 
             return Json(context.ApagarLiteratura(stamp) ? StatusCode(200) : StatusCode(500));
         }
+
+        [HttpGet]
+        public IActionResult Periodicos()
+        {
+            DbContext context = HttpContext.RequestServices.GetService(typeof(DbContext)) as DbContext;
+
+            return View(context.ObterPeriodicos());
+        }
+
+        [HttpGet]
+        public IActionResult Periodico(string id)
+        {
+            DbContext context = HttpContext.RequestServices.GetService(typeof(DbContext)) as DbContext;
+
+            return View(context.ObterPeriodicos(id));
+        }
     }
 }
