@@ -278,7 +278,7 @@
         public bool AdicionarMovimento(Movimentos m)
         {
             string sql = "INSERT INTO l_movimentos(Id, StampLiteratura, Quantidade, Data, IdPublicador) VALUES ";
-            sql += ("('" + m.Stamp + "', '" + m.Literatura.Stamp + "', '" + m.Quantidade + "', '" + m.DataMovimento.ToString("yyyy-MM-dd HH:mm:ss") + "', '" + m.Publicador.Id + "');");
+            sql += ("('" + m.Stamp + "', '" + m.Literatura!.Stamp + "', '" + m.Quantidade + "', '" + m.DataMovimento.ToString("yyyy-MM-dd HH:mm:ss") + "', '" + m.Publicador!.Id + "');");
 
             return ExecutarQuery(sql);
         }
