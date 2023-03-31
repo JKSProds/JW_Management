@@ -16,7 +16,6 @@
             }
             catch (Exception)
             {
-
                 throw new Exception("Não foi possivel conectar á BD!");
             }
         }
