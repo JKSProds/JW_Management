@@ -61,16 +61,16 @@
                     <thead>
                         <tr>
                             <th>
-                                @Html.DisplayNameFor(model => model.FirstOrDefault().Literatura.Descricao)
+                                @Html.DisplayNameFor(model => model.FirstOrDefault()!.Literatura!.Descricao)
                             </th>
                             <th>
-                                @Html.DisplayNameFor(model => model.FirstOrDefault().Quantidade)
+                                @Html.DisplayNameFor(model => model.FirstOrDefault()!.Quantidade)
                             </th>
                             <th>
-                                @Html.DisplayNameFor(model => model.FirstOrDefault().Publicador.Nome)
+                                @Html.DisplayNameFor(model => model.FirstOrDefault()!.Publicador!.Nome)
                             </th>
                             <th>
-                                @Html.DisplayNameFor(model => model.FirstOrDefault().DataMovimento)
+                                @Html.DisplayNameFor(model => model.FirstOrDefault()!.DataMovimento)
                             </th>
                             <th></th>
                         </tr>
@@ -79,16 +79,16 @@
                         @foreach (var item in Model)
                         {
                             <tr>
-                                <td data-label="@Html.DisplayNameFor(model => model.FirstOrDefault().Literatura.Descricao)">
-                                    <span>@item.Literatura.Descricao</span>
+                                <td data-label="@Html.DisplayNameFor(model => model.FirstOrDefault()!.Literatura!.Descricao)">
+                                    <span>@item.Literatura!.Descricao</span>
                                 </td>
-                                <td data-label="@Html.DisplayNameFor(model => model.FirstOrDefault().Quantidade)">
+                                <td data-label="@Html.DisplayNameFor(model => model.FirstOrDefault()!.Quantidade)">
                                     <span>@item.Quantidade</span>
                                 </td>
-                                <td data-label="@Html.DisplayNameFor(model => model.FirstOrDefault().Publicador.Nome)">
-                                    <span>@item.Publicador.Nome</span>
+                                <td data-label="@Html.DisplayNameFor(model => model.FirstOrDefault()!.Publicador!.Nome)">
+                                    <span>@item.Publicador!.Nome</span>
                                 </td>
-                                <td data-label="@Html.DisplayNameFor(model => model.FirstOrDefault().DataMovimento)">
+                                <td data-label="@Html.DisplayNameFor(model => model.FirstOrDefault()!.DataMovimento)">
                                     <span>@item.DataMovimento</span>
                                 </td>
                                 <td class="is-actions-cell">

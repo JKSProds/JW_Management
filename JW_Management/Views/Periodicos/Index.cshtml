@@ -39,16 +39,16 @@
                     <thead>
                         <tr>
                             <th>
-                                @Html.DisplayNameFor(model => model.FirstOrDefault().Referencia)
+                                @Html.DisplayNameFor(model => model.FirstOrDefault()!.Referencia)
                             </th>
                             <th>
-                                @Html.DisplayNameFor(model => model.FirstOrDefault().Descricao)
+                                @Html.DisplayNameFor(model => model.FirstOrDefault()!.Descricao)
                             </th>
                             <th>
-                                @Html.DisplayNameFor(model => model.FirstOrDefault().Quantidade)
+                                @Html.DisplayNameFor(model => model.FirstOrDefault()!.Quantidade)
                             </th>
                             <th class="is-hidden-touch">
-                                @Html.DisplayNameFor(model => model.FirstOrDefault().Tipo)
+                                @Html.DisplayNameFor(model => model.FirstOrDefault()!.Tipo)
                             </th>
                             <th></th>
                         </tr>
@@ -57,17 +57,17 @@
                         @foreach (var item in Model)
                         {
                             <tr @(item.Quantidade==0 ? "class=has-background-success" : "")>
-                                <td data-label="@Html.DisplayNameFor(model => model.FirstOrDefault().Referencia)">
+                                <td data-label="@Html.DisplayNameFor(model => model.FirstOrDefault()!.Referencia)">
                                     <span>@item.Referencia</span>
                                 </td>
-                                <td data-label="@Html.DisplayNameFor(model => model.FirstOrDefault().Descricao)">
+                                <td data-label="@Html.DisplayNameFor(model => model.FirstOrDefault()!.Descricao)">
                                     <span>@item.Descricao</span>
                                 </td>
-                                <td data-label="@Html.DisplayNameFor(model => model.FirstOrDefault().Quantidade)">
+                                <td data-label="@Html.DisplayNameFor(model => model.FirstOrDefault()!.Quantidade)">
                                     <span>@item.Quantidade</span>
                                 </td>
-                                <td data-label="@Html.DisplayNameFor(model => model.FirstOrDefault().Tipo)">
-                                    <span>@item.Tipo.Descricao</span>
+                                <td data-label="@Html.DisplayNameFor(model => model.FirstOrDefault()!.Tipo)">
+                                    <span>@item.Tipo!.Descricao</span>
                                 </td>
                                 <td class="is-actions-cell">
                                     @if (item.Quantidade > 0)

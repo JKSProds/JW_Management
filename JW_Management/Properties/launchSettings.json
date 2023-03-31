@@ -11,10 +11,10 @@
     "JW_Management": {
       "commandName": "Project",
       "launchBrowser": true,
+      "applicationUrl": "http://localhost:5299",
       "environmentVariables": {
         "ASPNETCORE_ENVIRONMENT": "Development"
       },
-      "applicationUrl": "http://localhost:5299",
       "dotnetRunMessages": true
     },
     "IIS Express": {
@@ -28,6 +28,7 @@
       "commandName": "Docker",
       "launchBrowser": true,
       "launchUrl": "{Scheme}://{ServiceHost}:{ServicePort}",
+      "environmentVariables": {},
       "publishAllPorts": true
     }
   }

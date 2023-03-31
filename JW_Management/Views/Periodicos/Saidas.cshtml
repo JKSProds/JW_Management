@@ -39,10 +39,10 @@
             <thead>
                 <tr>
                     <th>
-                        @Html.DisplayNameFor(model => model.FirstOrDefault().Publicador.Nome)
+                        @Html.DisplayNameFor(model => model.FirstOrDefault()!.Publicador!.Nome)
                     </th>
                     <th>
-                        @Html.DisplayNameFor(model => model.FirstOrDefault().Quantidade)
+                        @Html.DisplayNameFor(model => model.FirstOrDefault()!.Quantidade)
                     </th>
                     <th></th>
                 </tr>
@@ -51,10 +51,10 @@
                 @foreach (var item in Model)
                 {
                     <tr>
-                        <td data-label="@Html.DisplayNameFor(model => model.FirstOrDefault().Publicador.Nome)">
-                            <span>@item.Publicador.Nome</span>
+                        <td data-label="@Html.DisplayNameFor(model => model.FirstOrDefault()!.Publicador!.Nome)">
+                            <span>@item.Publicador!.Nome</span>
                         </td>
-                        <td data-label="@Html.DisplayNameFor(model => model.FirstOrDefault().Quantidade)">
+                        <td data-label="@Html.DisplayNameFor(model => model.FirstOrDefault()!.Quantidade)">
                             <span>@Math.Abs(item.Quantidade)</span>
                         </td>
                         <td class="is-actions-cell">
