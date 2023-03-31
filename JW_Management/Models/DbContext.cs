@@ -38,6 +38,7 @@
             return true;
         }
 
+        //Obter todas as literaturas com os stocks especificos de um publicador e um filtro
         public List<Literatura> ObterLiteraturas(string filtro, int idpub)
         {
             List<Literatura> LstLiteratura = new();
@@ -66,6 +67,77 @@
             return LstLiteratura.OrderBy(l => l.Descricao.Trim()).ToList();
         }
 
+        //Obter uma literatura em especifico
+        public Literatura ObterLiteratura(string STAMP)
+        {
+            List<Literatura> LstLiteratura = new();
+            List<TipoLiteratura> LstTiposLiteratura = ObterTiposLiteratura();
+
+            using (Database db = ConnectionString)
+            {
+                string sql = "SELECT *, IFNULL((SELECT SUM(Quantidade) from l_movimentos where l_pubs.STAMP=l_movimentos.StampLiteratura), 0) as Quantidade FROM l_pubs where STAMP='" + STAMP + "';";
+                using var result = db.Query(sql);
+                while (result.Read())
+                {
+                    LstLiteratura.Add(new Literatura()
+                    {
+                        Stamp = result["STAMP"],
+                        Id = result["Id"],
+                        Referencia = result["Referencia"],
+                        Descricao = result["Descricao"],
+                        Quantidade = result["Quantidade"],
+                        Tipo = LstTiposLiteratura.Where(g => g.Id == result["IdTipo"]).FirstOrDefault(new TipoLiteratura())
+                    });
+                }
+            }
+
+            return LstLiteratura.OrderBy(l => l.Descricao.Trim()).FirstOrDefault(new Literatura());
+        }
+
+        //Obter tipos de literatura
+        public List<TipoLiteratura> ObterTiposLiteratura()
+        {
+            List<TipoLiteratura> LstTiposLiteratura = new();
+
+            using (Database db = ConnectionString)
+            {
+                string sql = "SELECT * FROM l_tipos;";
+                using var result = db.Query(sql);
+                while (result.Read())
+                {
+                    LstTiposLiteratura.Add(new TipoLiteratura()
+                    {
+                        Id = result["Id"],
+                        Descricao = result["Descricao"]
+                    });
+                }
+            }
+
+            return LstTiposLiteratura;
+        }
+
+        //Adicionar literatura ou atualizar existente
+        public bool NovaLiteratura(Literatura l)
+        {
+
+            string sql = "INSERT INTO l_pubs(Id, Referencia, Descricao, IdTipo, STAMP) VALUES ";
+            sql += ("('" + l.Id + "', '" + l.Referencia + "', '" + l.Descricao + "', '" + l.Tipo.Id + "', '" + l.Stamp + "') ");
+            sql += " ON DUPLICATE KEY UPDATE Id = VALUES(Id), Referencia = VALUES(Referencia), Descricao = VALUES(Descricao), IdTipo = VALUES(IdTipo);";
+
+            return ExecutarQuery(sql);
+        }
+
+        //Apagar uma literatura e todos os movimentos associados
+        public bool ApagarLiteratura(string stamp)
+        {
+
+            string sql = "DELETE FROM l_pubs where STAMP = '" + stamp + "';";
+            sql += "DELETE FROM l_movimentos where StampLiteratura = '" + stamp + "';";
+
+            return ExecutarQuery(sql);
+        }
+
+        //Obter todos os periodicos em stocks
         public List<Literatura> ObterPeriodicos()
         {
             List<Literatura> LstLiteratura = new();
@@ -92,6 +164,7 @@
             return LstLiteratura.OrderBy(l => l.Descricao.Trim()).ToList();
         }
 
+        //Obter todos os periodicos especificos de uma literatura para entregar aos publicador
         public List<Literatura> ObterPeriodicos(string stamp)
         {
             List<Literatura> LstLiteratura = new();
@@ -119,73 +192,7 @@
             return LstLiteratura.OrderBy(l => l.Descricao.Trim()).ToList();
         }
 
-        public Literatura ObterLiteratura(string STAMP)
-        {
-            List<Literatura> LstLiteratura = new();
-            List<TipoLiteratura> LstTiposLiteratura = ObterTiposLiteratura();
-
-            using (Database db = ConnectionString)
-            {
-                string sql = "SELECT *, IFNULL((SELECT SUM(Quantidade) from l_movimentos where l_pubs.STAMP=l_movimentos.StampLiteratura), 0) as Quantidade FROM l_pubs where STAMP='" + STAMP + "';";
-                using var result = db.Query(sql);
-                while (result.Read())
-                {
-                    LstLiteratura.Add(new Literatura()
-                    {
-                        Stamp = result["STAMP"],
-                        Id = result["Id"],
-                        Referencia = result["Referencia"],
-                        Descricao = result["Descricao"],
-                        Quantidade = result["Quantidade"],
-                        Tipo = LstTiposLiteratura.Where(g => g.Id == result["IdTipo"]).FirstOrDefault(new TipoLiteratura())
-                    });
-                }
-            }
-
-            return LstLiteratura.OrderBy(l => l.Descricao.Trim()).FirstOrDefault(new Literatura());
-        }
-
-        public bool NovaLiteratura(Literatura l)
-        {
-
-            string sql = "INSERT INTO l_pubs(Id, Referencia, Descricao, IdTipo, STAMP) VALUES ";
-            sql += ("('" + l.Id + "', '" + l.Referencia + "', '" + l.Descricao + "', '" + l.Tipo.Id + "', '" + l.Stamp + "') ");
-            sql += " ON DUPLICATE KEY UPDATE Id = VALUES(Id), Referencia = VALUES(Referencia), Descricao = VALUES(Descricao), IdTipo = VALUES(IdTipo);";
-
-            return ExecutarQuery(sql);
-        }
-
-        public bool ApagarLiteratura(string stamp)
-        {
-
-            string sql = "DELETE FROM l_pubs where STAMP = '" + stamp + "';";
-            sql += "DELETE FROM l_movimentos where StampLiteratura = '" + stamp + "';";
-
-            return ExecutarQuery(sql);
-        }
-
-
-        public List<TipoLiteratura> ObterTiposLiteratura()
-        {
-            List<TipoLiteratura> LstTiposLiteratura = new();
-
-            using (Database db = ConnectionString)
-            {
-                string sql = "SELECT * FROM l_tipos;";
-                using var result = db.Query(sql);
-                while (result.Read())
-                {
-                    LstTiposLiteratura.Add(new TipoLiteratura()
-                    {
-                        Id = result["Id"],
-                        Descricao = result["Descricao"]
-                    });
-                }
-            }
-
-            return LstTiposLiteratura;
-        }
-
+        //Obter Publicadores
         public List<Publicador> ObterPublicadores()
         {
             List<Publicador> LstPublicador = new();
@@ -207,14 +214,15 @@
             return LstPublicador;
         }
 
-        public List<Movimentos> ObterMovimentos(int tipo)
+        //Obter movimentos de um determinado tipo 
+        public List<Movimentos> ObterMovimentos(bool In, int IdPub)
         {
             List<Movimentos> LstMovimentos = new();
             List<Publicador> LstPublicador = ObterPublicadores();
 
             using (Database db = ConnectionString)
             {
-                string sql = "SELECT * FROM l_movimentos where " + (tipo == 1 ? "Quantidade > 0" : "Quantidade < 0") + ";";
+                string sql = "SELECT * FROM l_movimentos where " + (In ? "Quantidade > 0" : "Quantidade < 0") + " and IdPublicador="+IdPub+";";
                 using var result = db.Query(sql);
                 while (result.Read())
                 {
@@ -232,6 +240,7 @@
             return LstMovimentos;
         }
 
+        //Adicionar movimentos
         public bool AdicionarMovimento(Movimentos m)
         {
             string sql = "INSERT INTO l_movimentos(Id, StampLiteratura, Quantidade, Data, IdPublicador) VALUES ";
@@ -239,6 +248,8 @@
 
             return ExecutarQuery(sql);
         }
+
+        //Apagar um movimento em especifico
         public bool ApagarMovimento(string stamp)
         {
 
