@@ -1,0 +1,45 @@
+﻿@model JW_Management.Models.Publicador
+@{
+    ViewData["Title"] = "Publicador";
+}
+
+<form asp-action="Index" method="get" id="frmFiltrar">
+    <div class="container">
+        <div class="columns">
+            <div class="column">
+                <div class="tile">
+                    <div class="tile is-parent is-vertical">
+                        <article class="tile is-child notification is-info">
+                            <p class="title">
+                                <span class="icon mr-3">
+                                    <i class="fa-solid fa-user-tie"></i>
+                                </span>
+                                <span>Publicador - @Model.Nome</span>
+                            </p>
+                        </article>
+                    </div>
+                </div>
+            </div>
+            <div class="column">
+               
+            </div>
+        </div>
+    </div>
+</form>
+<hr />
+<div class="container">
+    <div class="field">
+        <label class="label" asp-for="Id"></label>
+        <p class="control ">
+            <input type="text" class="input" readonly asp-for="Id">
+        </p>
+        <span asp-validation-for="DataServico" class="has-text-danger"></span>
+    </div>
+    <div class="field">
+        <label class="label">Publicação</label>
+        <p class="control ">
+            <input type="text" class="input" id="txtPub">
+        </p>
+    </div>
+
+</div>
