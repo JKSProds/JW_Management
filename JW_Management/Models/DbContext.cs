@@ -137,6 +137,30 @@
             return ExecutarQuery(sql);
         }
 
+
+        //Obter tipos de periodicos
+        public List<Literatura> ObterTipoPeriodicos()
+        {
+            List<Literatura> LstLiteratura = new();
+
+            using (Database db = ConnectionString)
+            {
+                string sql = "SELECT * from l_periodicos order by Id";
+                using var result = db.Query(sql);
+                while (result.Read())
+                {
+                    LstLiteratura.Add(new Literatura()
+                    {
+                        Id = result["Id"],
+                        Referencia = result["Referencia"],
+                        Descricao = result["Descricao"]
+                    });
+                }
+            }
+
+            return LstLiteratura;
+        }
+
         //Obter todos os periodicos em stocks
         public List<Literatura> ObterPeriodicos()
         {
@@ -172,7 +196,7 @@
 
             using (Database db = ConnectionString)
             {
-                string sql = "select l_pubs.STAMP, l_pubs.Id, l_pubs.Referencia, l_pubs.Descricao, l_periodicos.Quantidade, l_pubs.IdTipo, sys_utilizadores.* from l_periodicos inner join l_pubs on l_pubs.Referencia=l_periodicos.Referencia left join sys_utilizadores on sys_utilizadores.IdUtilizador=l_periodicos.IdPublicador\r\nwhere Quantidade>IFNULL((SELECT SUM(Quantidade) from l_movimentos where l_pubs.STAMP=l_movimentos.StampLiteratura  and l_movimentos.IdPublicador=l_periodicos.IdPublicador), 0) and l_pubs.STAMP='" + stamp + "' order by Nome;";
+                string sql = "select l_pubs.STAMP, l_pubs.Id, l_pubs.Referencia, l_pubs.Descricao, l_pedidos_periodicos.Quantidade, l_pubs.IdTipo, sys_utilizadores.* from l_pedidos_periodicos inner join l_pubs on l_pubs.Referencia=l_pedidos_periodicos.Referencia left join sys_utilizadores on sys_utilizadores.IdUtilizador=l_pedidos_periodicos.IdPublicador\r\nwhere Quantidade>IFNULL((SELECT SUM(Quantidade) from l_movimentos where l_pubs.STAMP=l_movimentos.StampLiteratura  and l_movimentos.IdPublicador=l_pedidos_periodicos.IdPublicador), 0) and l_pubs.STAMP='" + stamp + "' order by Nome;";
                 using var result = db.Query(sql);
                 while (result.Read())
                 {
@@ -243,7 +267,7 @@
         {
             string sql = "DELETE FROM sys_utilizadores where IdUtilizador = '" + id + "';";
              sql += "DELETE FROM l_movimentos where IdPublicador = '" + id + "';";
-             sql += "DELETE FROM l_periodicos where IdPublicador = '" + id + "';";
+             sql += "DELETE FROM l_pedidos_periodicos where IdPublicador = '" + id + "';";
 
             return ExecutarQuery(sql);
         }
@@ -288,6 +312,50 @@
         {
 
             string sql = "DELETE FROM l_movimentos where id = '" + stamp + "';";
+
+            return ExecutarQuery(sql);
+        }
+
+        //Obter pedidos periodicos
+        public List<Literatura> ObterPedidosPeriodico()
+        {
+            List<Literatura> LstLiteratura = new();
+            List<Publicador> LstPublicador = ObterPublicadores();
+
+            using (Database db = ConnectionString)
+            {
+                string sql = "SELECT l_pedidos_periodicos.*, l_periodicos.Descricao from l_pedidos_periodicos inner join l_periodicos on l_pedidos_periodicos.Referencia = l_periodicos.Referencia;";
+                using var result = db.Query(sql);
+                while (result.Read())
+                {
+                    LstLiteratura.Add(new Literatura()
+                    {
+                        Stamp = result["Id"],
+                        Referencia = result["Referencia"],
+                        Descricao = result["Descricao"],
+                        Quantidade = int.Parse(result["Quantidade"]),
+                        Publicador = LstPublicador.Where(p => p.Id == int.Parse(result["IdPublicador"]!)).DefaultIfEmpty(new Publicador()).First()
+                    });
+                }
+            }
+
+            return LstLiteratura;
+        }
+
+        //Adicionar periodicos
+        public bool AdicionarPedidoPeriodico(Literatura l)
+        {
+            string sql = "INSERT INTO l_pedidos_periodicos(Id, IdPublicador, Quantidade, Referencia) VALUES ";
+            sql += ("('" + l.Stamp + "', '" + l.Publicador.Id + "', '" + l.Quantidade + "', '" + l.Referencia + "') ON DUPLICATE KEY UPDATE Quantidade=Quantidade+"+l.Quantidade+";");
+
+            return ExecutarQuery(sql);
+        }
+
+        //Apagar um pedido periodico em especifico
+        public bool ApagarPeriodico(string stamp)
+        {
+
+            string sql = "DELETE FROM l_pedidos_periodicos where id = '" + stamp + "';";
 
             return ExecutarQuery(sql);
         }

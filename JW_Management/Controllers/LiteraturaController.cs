@@ -28,6 +28,7 @@ namespace JW_Management.Controllers
             DbContext context = HttpContext.RequestServices.GetService(typeof(DbContext)) as DbContext;
 
             ViewBag.Publicadores = context.ObterPublicadores().Select(l => new SelectListItem() { Value = l.Id.ToString(), Text = l.Nome });
+            ViewBag.Periodicos = context.ObterTipoPeriodicos().Select(l => new SelectListItem() { Value = l.Referencia, Text = l.Descricao });
 
             if (id == 1) return View("Entradas", context.ObterMovimentos(true, false, 0));
             return View("Saidas", context.ObterMovimentos(false, true, 0));
@@ -98,7 +99,7 @@ namespace JW_Management.Controllers
         {
             DbContext context = HttpContext.RequestServices.GetService(typeof(DbContext)) as DbContext;
 
-            return View(context.ObterPeriodicos());
+            return View(context.ObterPeriodicos().Where(l => l.Quantidade > 0));
         }
 
         [HttpGet]
@@ -107,6 +108,56 @@ namespace JW_Management.Controllers
             DbContext context = HttpContext.RequestServices.GetService(typeof(DbContext)) as DbContext;
 
             return View(context.ObterPeriodicos(id));
+        }
+
+        [HttpPost]
+        public IActionResult Periodico(string referencia, int idpub, int qtd)
+        {
+            DbContext context = HttpContext.RequestServices.GetService(typeof(DbContext)) as DbContext;
+
+            Literatura l = new Literatura()
+            {
+                Referencia = referencia,
+                Publicador = context.ObterPublicador(idpub, false),
+                Quantidade = qtd,
+                Stamp = DateTime.Now.Ticks.ToString()
+            };
+
+            return Json(context.AdicionarPedidoPeriodico(l) ? l.Stamp : StatusCode(500));
+        }
+
+        [HttpDelete]
+        public IActionResult Periodico(string id, bool apagar)
+        {
+            DbContext context = HttpContext.RequestServices.GetService(typeof(DbContext)) as DbContext;
+
+            return Json(context.ApagarPeriodico(id) ? StatusCode(200) : StatusCode(500));
+        }
+
+        [HttpGet]
+        public IActionResult Pedidos()
+        {
+            DbContext context = HttpContext.RequestServices.GetService(typeof(DbContext)) as DbContext;
+
+            ViewBag.Publicadores = context.ObterPublicadores().Select(l => new SelectListItem() { Value = l.Id.ToString(), Text = l.Nome });
+            ViewBag.Periodicos = context.ObterTipoPeriodicos().Select(l => new SelectListItem() { Value = l.Referencia, Text = l.Descricao });
+
+            return View(context.ObterPedidosPeriodico().Where(l => l.Quantidade > 0));
+        }
+
+        [HttpPost]
+        public IActionResult Pedido(string stamp, int idpub, int qtd)
+        {
+            DbContext context = HttpContext.RequestServices.GetService(typeof(DbContext)) as DbContext;
+
+            Literatura l = new Literatura()
+            {
+                Publicador = context.ObterPublicador(idpub, false),
+                Quantidade = qtd,
+                Stamp = stamp
+            };
+
+            return Json(context.AdicionarPedidoPeriodico(l) ? l.Stamp : StatusCode(500));
         }
     }
 }

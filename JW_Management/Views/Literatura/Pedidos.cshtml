@@ -1,6 +1,6 @@
-﻿@model IEnumerable<JW_Management.Models.Movimentos>
+﻿@model IEnumerable<JW_Management.Models.Literatura>
 @{
-    ViewData["Title"] = "Literatura - Entradas";
+    ViewData["Title"] = "Literatura - Pedidos";
 }
 
 <div class="container">
@@ -11,9 +11,9 @@
                     <article class="tile is-child notification is-info">
                         <p class="title">
                             <span class="icon mr-3">
-                                <i class="fa-solid fa-right-to-bracket"></i>
+                                <i class="fa-solid fa-book-medical"></i>
                             </span>
-                            <span>Entradas</span>
+                            <span>Pedidos</span>
                         </p>
                     </article>
                 </div>
@@ -24,8 +24,8 @@
 
                 <div class="buttons is-right">
                     <p class="control">
-                        <button type="button" class="button is-info is-large is-fullwidth "
-                            onclick="Bulma('#modalEntradaPublicacoes').modal().open();">
+                        <button type="button" class="button is-info is-large is-fullwidth " disabled
+                            onclick="Bulma('#modalPedidoPublicacoes').modal().open();">
                             <span class="icon">
                                 <i class="fa-solid fa-book"></i>
                             </span>
@@ -34,7 +34,7 @@
                     </p>
                     <p class="control">
                         <button type="button" class="button is-primary is-large is-fullwidth "
-                            onclick="Bulma('#modalEntradaPeriodicos').modal().open();">
+                            onclick="Bulma('#modalPedidoPeriodicos').modal().open();">
                             <span class="icon">
                                 <i class="fa-solid fa-newspaper"></i>
                             </span>
@@ -52,7 +52,7 @@
     {
         <br />
         <button class="button is-danger is-large is-rounded is-fullwidth is-disabled">Não foram encontrados
-            movimentos!</button>
+            pedidos!</button>
     }
     else
     {
@@ -62,16 +62,16 @@
                     <thead>
                         <tr>
                             <th>
-                                @Html.DisplayNameFor(model => model.FirstOrDefault()!.Literatura!.Descricao)
+                                @Html.DisplayNameFor(model => model.FirstOrDefault()!.Referencia)
+                            </th>
+                            <th>
+                                @Html.DisplayNameFor(model => model.FirstOrDefault()!.Descricao)
                             </th>
                             <th>
                                 @Html.DisplayNameFor(model => model.FirstOrDefault()!.Quantidade)
                             </th>
                             <th>
                                 @Html.DisplayNameFor(model => model.FirstOrDefault()!.Publicador!.Nome)
-                            </th>
-                            <th>
-                                @Html.DisplayNameFor(model => model.FirstOrDefault()!.DataMovimento)
                             </th>
                             <th></th>
                         </tr>
@@ -80,22 +80,22 @@
                         @foreach (var item in Model)
                         {
                             <tr>
-                                <td data-label="@Html.DisplayNameFor(model => model.FirstOrDefault()!.Literatura!.Descricao)">
-                                    <span>@item.Literatura!.Descricao</span>
+                                <td data-label="@Html.DisplayNameFor(model => model.FirstOrDefault()!.Referencia)">
+                                    <span>@item.Referencia</span>
+                                </td>
+                                <td data-label="@Html.DisplayNameFor(model => model.FirstOrDefault()!.Descricao)">
+                                    <span>@item.Descricao</span>
                                 </td>
                                 <td data-label="@Html.DisplayNameFor(model => model.FirstOrDefault()!.Quantidade)">
                                     <span>@item.Quantidade</span>
                                 </td>
-                                <td data-label="@Html.DisplayNameFor(model => model.FirstOrDefault()!.Publicador!.Nome)">
+                                <td data-label="@Html.DisplayNameFor(model => model.FirstOrDefault()!.Tipo)">
                                     <span>@item.Publicador!.Nome</span>
-                                </td>
-                                <td data-label="@Html.DisplayNameFor(model => model.FirstOrDefault()!.DataMovimento)">
-                                    <span>@item.DataMovimento</span>
                                 </td>
                                 <td class="is-actions-cell">
                                     <div class="buttons is-pulled-right is-flex-wrap-nowrap" style="width:100%">
                                         <button class="button is-danger is-fullwidth is-large"
-                                    onclick="ConfirmApagar('@item.Stamp')">
+                                                onclick="ConfirmApagarPeriodico('@item.Stamp')">
                                             <i class="fas fa-trash-can"></i>
                                         </button>
                                     </div>
@@ -109,7 +109,7 @@
     }
 </div>
 
-<div id="modalEntradaPublicacoes" class="modal">
+<div id="modalPedidoPublicacoes" class="modal">
     <div class="modal-background"></div>
     <div class="modal-card">
         <header class="modal-card-head">
@@ -117,12 +117,25 @@
                 <span class="icon">
                     <i class="fas fa-circle-plus"></i>
                 </span>
-                <span>Entrada - Publicações</span>
+                <span>Pedido - Publicações</span>
             </p>
             <button type="button" class="delete" aria-label="close"></button>
         </header>
         <section class="modal-card-body">
             <div class="modal-body">
+                <div class="field">
+                    <label class="label">Publicador</label>
+                    <p class="control has-icons-left">
+                        <span class="select is-fullwidth">
+                            <select class="select" id="txtIdPublicador" style="height: auto"
+                                    asp-items="@(new SelectList(@ViewBag.Publicadores, "Value", "Text"))">
+                            </select>
+                        </span>
+                        <span class="icon is-small is-left">
+                            <i class="fa-solid fa-user-tie"></i>
+                        </span>
+                    </p>
+                </div>
                 <input type="hidden" id="txtPubStamp" />
                 <div class="field">
                     <label class="label">Publicação</label>
@@ -135,7 +148,7 @@
                     <div class="field has-addons">
                         <div class="control">
                             <button type="button" class="button is-danger disable-dbl-tap-zoom"
-                                onclick="document.getElementById('txtQtd').value = parseInt(document.getElementById('txtQtd').value) - 1">
+                                    onclick="document.getElementById('txtQtd').value = parseInt(document.getElementById('txtQtd').value) - 1">
                                 <span class="icon">
                                     <i class="fas fa-minus"></i>
                                 </span>
@@ -146,7 +159,7 @@
                         </div>
                         <div class="control">
                             <button type="button" class="button is-success disable-dbl-tap-zoom"
-                                onclick="document.getElementById('txtQtd').value = parseInt(document.getElementById('txtQtd').value) + 1">
+                                    onclick="document.getElementById('txtQtd').value = parseInt(document.getElementById('txtQtd').value) + 1">
                                 <span class="icon">
                                     <i class="fas fa-plus"></i>
                                 </span>
@@ -158,7 +171,7 @@
         </section>
         <footer class="modal-card-foot">
             <a class="button is-info is-large is-fullwidth"
-                onclick="GerarMovimento(document.getElementById('txtPubStamp').value, document.getElementById('txtQtd').value)">
+                onclick="CriarPedido(document.getElementById('txtPubStamp').value, document.getElementById('txtQtd').value, document.getElementById('txtIdPublicador').value)">
                 <span class="icon">
                     <i class="fa-regular fa-floppy-disk"></i>
                 </span>
@@ -166,7 +179,7 @@
                 </span>
             </a>
             <button type="button" class="button is-large is-fullwidth is-danger"
-                onclick="Bulma('#modalEntradaPublicacoes').modal().close();" href="javascript:;">
+                onclick="Bulma('#modalPedidoPublicacoes').modal().close();" href="javascript:;">
                 <span class="icon">
                     <i class="fa-regular fa-circle-xmark"></i>
                 </span>
@@ -176,7 +189,7 @@
     </div>
 </div>
 
-<div id="modalEntradaPeriodicos" class="modal">
+<div id="modalPedidoPeriodicos" class="modal">
     <div class="modal-background"></div>
     <div class="modal-card">
         <header class="modal-card-head">
@@ -184,12 +197,25 @@
                 <span class="icon">
                     <i class="fas fa-circle-plus"></i>
                 </span>
-                <span>Entrada - Periódicos</span>
+                <span>Pedido - Periódicos</span>
             </p>
             <button type="button" class="delete" aria-label="close"></button>
         </header>
         <section class="modal-card-body">
             <div class="modal-body">
+                <div class="field">
+                    <label class="label">Publicador</label>
+                    <p class="control has-icons-left">
+                        <span class="select is-fullwidth">
+                            <select class="select" id="txtIdPublicador2" style="height: auto"
+                                    asp-items="@(new SelectList(@ViewBag.Publicadores, "Value", "Text"))">
+                            </select>
+                        </span>
+                        <span class="icon is-small is-left">
+                            <i class="fa-solid fa-user-tie"></i>
+                        </span>
+                    </p>
+                </div>
                 <div class="field">
                     <div class="control" style="width:100%">
                         <label class="label" l>Escolha a publicação:</label>
@@ -207,47 +233,11 @@
                     </div>
                 </div>
                 <div class="field">
-                    <div class="control" style="width:100%">
-                        <label class="label">Escolha o mês:</label>
-                        <p class="control has-icons-left">
-                            <span class="select" style="width:100%">
-                                <select id="mes" class="select" style="width:100%">
-                                    <option value="01">Janeiro</option>
-                                    <option value="02">Fevereiro</option>
-                                    <option value="03">Março</option>
-                                    <option value="04">Abril</option>
-                                    <option value="05">Maio</option>
-                                    <option value="06">Junho</option>
-                                    <option value="07">Julho</option>
-                                    <option value="08">Agosto</option>
-                                    <option value="09">Setembro</option>
-                                    <option value="10">Outubro</option>
-                                    <option value="11">Novembro</option>
-                                    <option value="12">Dezembro</option>
-                                </select>
-                            </span>
-                            <span class="icon is-small is-left">
-                                <i class="fa-solid fa-calendar-days"></i>
-                            </span>
-                        </p>
-
-                    </div>
-                </div>
-                <div class="field">
-                    <label class="label">Ano:</label>
-                    <p class="control has-icons-left">
-                        <input class="input" id="ano" type="number" value="@DateTime.Now.Year" />
-                        <span class="icon is-small is-left">
-                            <i class="fa-regular fa-calendar"></i>
-                        </span>
-                    </p>
-                </div>
-                <div class="field">
                     <label class="label">Quantidade</label>
                     <div class="field has-addons">
                         <div class="control">
                             <button type="button" class="button is-danger disable-dbl-tap-zoom"
-                                onclick="document.getElementById('txtQtdPeriodico').value = parseInt(document.getElementById('txtQtdPeriodico').value) - 1">
+                                    onclick="document.getElementById('txtQtdPeriodico').value = parseInt(document.getElementById('txtQtdPeriodico').value) - 1">
                                 <span class="icon">
                                     <i class="fas fa-minus"></i>
                                 </span>
@@ -258,7 +248,7 @@
                         </div>
                         <div class="control">
                             <button type="button" class="button is-success disable-dbl-tap-zoom"
-                                onclick="document.getElementById('txtQtdPeriodico').value = parseInt(document.getElementById('txtQtdPeriodico').value) + 1">
+                                    onclick="document.getElementById('txtQtdPeriodico').value = parseInt(document.getElementById('txtQtdPeriodico').value) + 1">
                                 <span class="icon">
                                     <i class="fas fa-plus"></i>
                                 </span>
@@ -270,14 +260,14 @@
         </section>
         <footer class="modal-card-foot">
             <a class="button is-info is-large is-fullwidth"
-                onclick="CriarPeriodico(document.getElementById('periodico').value, document.getElementById('periodico')[document.getElementById('periodico').selectedIndex].text, document.getElementById('mes').value, document.getElementById('ano').value, document.getElementById('txtQtdPeriodico').value)">
+                onclick="CriarPedidoPeriodico(document.getElementById('periodico').value, document.getElementById('txtQtdPeriodico').value, document.getElementById('txtIdPublicador2').value)">
                 <span class="icon">
                     <i class="fa-regular fa-floppy-disk"></i>
                 </span>
                 <span>Guardar</span>
             </a>
             <button type="button" class="button is-large is-fullwidth is-danger"
-                onclick="Bulma('#modalEntradaPeriodicos').modal().close();" href="javascript:;">
+                onclick="Bulma('#modalPedidoPeriodicos').modal().close();" href="javascript:;">
                 <span class="icon">
                     <i class="fa-regular fa-circle-xmark"></i>
                 </span>
@@ -295,17 +285,17 @@
                 <span class="icon">
                     <i class="fas fa-trash-can"></i>
                 </span>
-                <span>Apagar Movimento</span>
+                <span>Apagar Pedido</span>
             </p>
         </header>
         <section class="modal-card-body">
             <div class="modal-body">
-                <p>Tem a certeza que deseja apagar este movimento?</p>
+                <p>Tem a certeza que deseja apagar este pedido?</p>
             </div>
         </section>
         <footer class="modal-card-foot">
             <button class="button is-danger is-fullwidth is-large"
-                onclick="Apagar(document.getElementById('txtHiddenStamp').value);">
+                onclick="ApagarPeriodico(document.getElementById('txtHiddenStamp').value);">
                 <span class="icon">
                     <i class="fas fa-trash-can"></i>
                 </span>
@@ -323,15 +313,15 @@
 <input id="txtHiddenStamp" hidden />
 
 <script>
-    function ConfirmApagar(id) {
+    function ConfirmApagarPeriodico(id) {
         document.getElementById('txtHiddenStamp').value = id;
         Bulma('#ModalConfirmApagar').modal().open();
     }
 
-    function Apagar(id) {
+    function ApagarPeriodico(id) {
         $.ajax({
-            url: '/Literatura/Movimentos/',
-            data: { "stamp": id },
+            url: '/Literatura/Periodico/',
+            data: { "id": id },
             type: "DELETE",
             success: function (data) {
                 window.location.reload();
@@ -375,46 +365,20 @@
         }).css('z-index', 50);
     });
 
-
-    function GerarMovimento(stamp, qtd) {
+    function CriarPedidoPeriodico(referencia, qtd, idpub) {
         $.ajax({
-            url: '/Literatura/Movimentos/',
-            data: { "stamp": stamp, "qtd": qtd },
+            url: '/Literatura/Periodico/',
+            data: { "referencia": referencia, "idpub": idpub, "qtd": qtd },
             type: "POST",
             success: function (data) {
-                notify('Movimento criado com sucesso!');
+                notify('Pedido periodico criada com sucesso!');
                 window.location.reload();
             },
             error: function (response) {
-                notifyError('Ocorreu um erro ao gerar um movimento!');
+                notifyError('Ocorreu um erro ao criar o pedido periodico!');
             },
             failure: function (response) {
-                notifyError('Falha ao gerar um movimento!');
-            }
-        });
-    }
-
-    function CriarPeriodico(referencia, descricao, mes, ano, qtd) {
-        if (referencia == "es") {
-            //referencia += ano.slice(-2);
-            descricao += " - " + ano;
-        } else {
-            //referencia += mes.slice(-2) + ano.slice(-2);
-            descricao += " - Nº" + parseInt(mes) + " (" + ano + ")";
-        }
-        $.ajax({
-            url: '/Literatura/Literatura/',
-            data: { "referencia": referencia, "descricao": descricao, "tipo": 7 },
-            type: "POST",
-            success: function (data) {
-                notify('Publicação criada com sucesso!');
-                GerarMovimento(data, qtd);
-            },
-            error: function (response) {
-                notifyError('Ocorreu um erro ao criar uma publicação!');
-            },
-            failure: function (response) {
-                notifyError('Falha ao criar uma publicação!');
+                notifyError('Falha ao criar o pedido periodico!');
             }
         });
     }
