@@ -18,7 +18,7 @@ namespace JW_Management.Controllers
         {
             DbContext context = HttpContext.RequestServices.GetService(typeof(DbContext)) as DbContext;
 
-            return View(context.ObterPublicador(id, true));
+            return View(context.ObterPublicador(id, true, true));
         }
 
         [HttpDelete]

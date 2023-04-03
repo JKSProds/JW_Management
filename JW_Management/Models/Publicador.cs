@@ -6,5 +6,6 @@
         public string? Nome { get; set; }
 
         public List<Movimentos>? Movimentos { get; set; }
+        public List<Literatura>? Pedidos { get; set; }
     }
 }

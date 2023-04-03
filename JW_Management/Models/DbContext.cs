@@ -117,7 +117,7 @@
         }
 
         //Adicionar literatura ou atualizar existente
-        public bool NovaLiteratura(Literatura l)
+        public bool AdicionarLiteratura(Literatura l)
         {
 
             string sql = "INSERT INTO l_pubs(Id, Referencia, Descricao, IdTipo, STAMP) VALUES ";
@@ -239,7 +239,7 @@
         }
 
         //Obter Publicador
-        public Publicador ObterPublicador(int id, bool LoadMovimentos)
+        public Publicador ObterPublicador(int id, bool LoadMovimentos, bool LoadPedidos)
         {
             Publicador p = new();
 
@@ -255,6 +255,11 @@
                         Nome = result["Nome"]
                     };
                     if (LoadMovimentos) p.Movimentos = ObterMovimentos(true, true, int.Parse(result["IdUtilizador"]));
+                    if (LoadPedidos)
+                    {
+                        p.Pedidos = ObterPedidosPeriodico(p.Id);
+                        p.Pedidos.AddRange(ObterPedidosEspeciais(p.Id));
+                    }
                 }
             }
 
@@ -276,7 +281,7 @@
         public List<Movimentos> ObterMovimentos(bool In, bool Out, int IdPub)
         {
             List<Movimentos> LstMovimentos = new();
-            Publicador p = ObterPublicador(IdPub,false);
+            Publicador p = ObterPublicador(IdPub,false,false);
 
             using (Database db = ConnectionString)
             {
@@ -321,6 +326,7 @@
         {
             List<Literatura> LstLiteratura = new();
             List<Publicador> LstPublicador = ObterPublicadores();
+            List<TipoLiteratura> LstTiposLiteratura = ObterTiposLiteratura();
 
             using (Database db = ConnectionString)
             {
@@ -334,7 +340,36 @@
                         Referencia = result["Referencia"],
                         Descricao = result["Descricao"],
                         Quantidade = int.Parse(result["Quantidade"]),
+                        Tipo = LstTiposLiteratura.Where(g => g.Id == 7).FirstOrDefault(new TipoLiteratura()),
                         Publicador = LstPublicador.Where(p => p.Id == int.Parse(result["IdPublicador"]!)).DefaultIfEmpty(new Publicador()).First()
+                    });
+                }
+            }
+
+            return LstLiteratura;
+        }
+
+        //Obtem todos os pedidos periodicos de um utilizador
+        public List<Literatura> ObterPedidosPeriodico(int IdPub)
+        {
+            List<Literatura> LstLiteratura = new();
+            Publicador p = ObterPublicador(IdPub, false, false);
+            List<TipoLiteratura> LstTiposLiteratura = ObterTiposLiteratura();
+
+            using (Database db = ConnectionString)
+            {
+                string sql = "SELECT l_pedidos_periodicos.*, l_periodicos.Descricao from l_pedidos_periodicos inner join l_periodicos on l_pedidos_periodicos.Referencia = l_periodicos.Referencia Where l_pedidos_periodicos.IdPublicador="+IdPub+";";
+                using var result = db.Query(sql);
+                while (result.Read())
+                {
+                    LstLiteratura.Add(new Literatura()
+                    {
+                        Stamp = result["Id"],
+                        Referencia = result["Referencia"],
+                        Descricao = result["Descricao"],
+                        Quantidade = int.Parse(result["Quantidade"]),
+                        Tipo = LstTiposLiteratura.Where(g => g.Id == 7).FirstOrDefault(new TipoLiteratura()),
+                        Publicador = p
                     });
                 }
             }
@@ -352,10 +387,93 @@
         }
 
         //Apagar um pedido periodico em especifico
-        public bool ApagarPeriodico(string stamp)
+        public bool ApagarPedidoPeriodico(string stamp)
         {
 
             string sql = "DELETE FROM l_pedidos_periodicos where id = '" + stamp + "';";
+
+            return ExecutarQuery(sql);
+        }
+
+        //Obtem todos os pedidos especiais
+        public List<Literatura> ObterPedidosEspeciais()
+        {
+            List<Literatura> LstLiteratura = new();
+            List<Publicador> LstPublicador = ObterPublicadores();
+            List<TipoLiteratura> LstTiposLiteratura = ObterTiposLiteratura();
+
+            using (Database db = ConnectionString)
+            {
+                string sql = "SELECT l_pedidos_especiais.*, l_pubs.Referencia, l_pubs.Descricao, l_pubs.IdTipo from l_pedidos_especiais inner join l_pubs on l_pedidos_especiais.StampLiteratura = l_pubs.STAMP;";
+                using var result = db.Query(sql);
+                while (result.Read())
+                {
+                    LstLiteratura.Add(new Literatura()
+                    {
+                        Stamp = result["Id"],
+                        Referencia = result["Referencia"],
+                        Descricao = result["Descricao"],
+                        Quantidade = int.Parse(result["Quantidade"]),
+                        Tipo = LstTiposLiteratura.Where(g => g.Id == result["IdTipo"]).FirstOrDefault(new TipoLiteratura()),
+                        Publicador = LstPublicador.Where(p => p.Id == int.Parse(result["IdPublicador"]!)).DefaultIfEmpty(new Publicador()).First()
+                    });
+                }
+            }
+
+            return LstLiteratura;
+        }
+
+
+        //Obtem todos os pedidos especiais de um utilziador em especifico
+        public List<Literatura> ObterPedidosEspeciais(int IdPub)
+        {
+            List<Literatura> LstLiteratura = new();
+            Publicador p = ObterPublicador(IdPub, false, false);
+            List<TipoLiteratura> LstTiposLiteratura = ObterTiposLiteratura();
+
+            using (Database db = ConnectionString)
+            {
+                string sql = "SELECT l_pedidos_especiais.*, l_pubs.Referencia, l_pubs.Descricao, l_pubs.IdTipo from l_pedidos_especiais inner join l_pubs on l_pedidos_especiais.StampLiteratura = l_pubs.STAMP Where IdPublicador = "+IdPub+";";
+                using var result = db.Query(sql);
+                while (result.Read())
+                {
+                    LstLiteratura.Add(new Literatura()
+                    {
+                        Stamp = result["Id"],
+                        Referencia = result["Referencia"],
+                        Descricao = result["Descricao"],
+                        Quantidade = int.Parse(result["Quantidade"]),
+                        Tipo = LstTiposLiteratura.Where(g => g.Id == result["IdTipo"]).FirstOrDefault(new TipoLiteratura()),
+                        Publicador = p
+                    });
+                }
+            }
+
+            return LstLiteratura;
+        }
+
+        //Adicionar pedidos especiais
+        public bool AdicionarPedidoEspecial(Literatura l, EstadoPedido e)
+        {
+            string sql = "INSERT INTO l_pedidos_especiais(Id, IdPublicador, Quantidade, StampLiteratura, Estado, Fornecido) VALUES ";
+            sql += ("('" + DateTime.Now.Ticks.ToString() + "', '" + l.Publicador.Id + "', '" + l.Quantidade + "', '" + l.Stamp + "', '"+e.Id+"', "+e.Fornecido+") ON DUPLICATE KEY UPDATE Quantidade=Quantidade+" + l.Quantidade + ";");
+
+            return ExecutarQuery(sql);
+        }
+
+        //Atualiza o estado de um pedido
+        public bool AtualizarEstadoPedidoEspecial(Literatura l, EstadoPedido e)
+        {
+            string sql = "UDPATE l_pedidos_especiais SET Estado='"+e.Id+"', Fornecido='"+e.Fornecido+"' WHERE Id='"+l.Stamp+"';";
+
+            return ExecutarQuery(sql);
+        }
+
+        //Apagar um pedido especial em especifico
+        public bool ApagarPedidoEspecial(string stamp)
+        {
+
+            string sql = "DELETE FROM l_pedidos_especiais where id = '" + stamp + "';";
 
             return ExecutarQuery(sql);
         }
