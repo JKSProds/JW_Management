@@ -50,7 +50,7 @@
 <hr />
 <div class="container">
     <div class="tabs-wrapper">
-        <div class="tabs is-toggle is-toggle-rounded is-fullwidth is-large">
+        <div class="tabs is-toggle is-toggle-rounded is-fullwidth">
             <ul>
                 <li class="is-active"><a>Especiais</a></li>
                 <li><a>Periódicos</a></li>
@@ -102,7 +102,7 @@
                                                 <td data-label="@Html.DisplayNameFor(model => model.FirstOrDefault()!.Quantidade)">
                                                     <span>@item.Quantidade</span>
                                                 </td>
-                                                <td data-label="@Html.DisplayNameFor(model => model.FirstOrDefault()!.Tipo)">
+                                                <td data-label="@Html.DisplayNameFor(model => model.FirstOrDefault()!.Publicador!.Nome)">
                                                     <span>@item.Publicador!.Nome</span>
                                                 </td>
                                                 <td class="is-actions-cell">
@@ -169,7 +169,7 @@
                                                 <td data-label="@Html.DisplayNameFor(model => model.FirstOrDefault()!.Quantidade)">
                                                     <span>@item.Quantidade</span>
                                                 </td>
-                                                <td data-label="@Html.DisplayNameFor(model => model.FirstOrDefault()!.Tipo)">
+                                                <td data-label="@Html.DisplayNameFor(model => model.FirstOrDefault()!.Publicador!.Nome)">
                                                     <span>@item.Publicador!.Nome</span>
                                                 </td>
                                                 <td class="is-actions-cell">
@@ -387,7 +387,7 @@
                 </span>
                 <span>Confirmar</span>
             </button>
-            <button class="button is-fullwidth is-large" onclick="Bulma('#ModalConfirmApagar').modal().close();">
+            <button class="button is-fullwidth is-large" onclick="Bulma('#ModalConfirmApagarPeriodico').modal().close();">
                 <span class="icon">
                     <i class="fa-solid fa-circle-xmark"></i>
                 </span>

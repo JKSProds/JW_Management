@@ -24,7 +24,7 @@
                 <div class="field has-addons has-addons-right mx-1 is-flex-wrap-wrap" style="width:100%">
                     <p class="control has-icons-left">
                         <input type="text" class="input" placeholder="Descrição" id="filtro" name="filtro"
-                            value="@ViewData["filtro"]">
+                               value="@ViewData["filtro"]">
                         <span class="icon is-small is-left">
                             <i class="fa-solid fa-arrow-down-a-z"></i>
                         </span>
@@ -32,12 +32,12 @@
                     <p class="control has-icons-left">
                         <span class="select is-fullwidth">
                             <select class="select" id="txtTipo" name="tipo"
-                                onchange="document.getElementById('frmFiltrar').submit();" style="height: auto"
-                                asp-items="@(new SelectList(@ViewBag.Tipos, "Value", "Text", ViewData["tipo"]))">
+                                    onchange="document.getElementById('frmFiltrar').submit();" style="height: auto"
+                                    asp-items="@(new SelectList(@ViewBag.Tipos, "Value", "Text", ViewData["tipo"]))">
                             </select>
                         </span>
                         <span class="icon is-small is-left">
-                            <i class="fa-solid fa-user-tie"></i>
+                            <i class="fa-solid fa-book"></i>
                         </span>
                     </p>
                     <div class="buttons is-right">
@@ -60,8 +60,10 @@
     @if (Model.Count() == 0)
     {
         <br />
-        <button class="button is-danger is-large is-rounded is-fullwidth is-disabled">Não foram encontradas
-            publicações!</button>
+        <button class="button is-danger is-large is-rounded is-fullwidth is-disabled">
+            Não foram encontradas
+            publicações!
+        </button>
     }
     else
     {
@@ -76,7 +78,7 @@
                             <th>
                                 @Html.DisplayNameFor(model => model.FirstOrDefault()!.Descricao)
                             </th>
-                            <th >
+                            <th>
                                 @Html.DisplayNameFor(model => model.FirstOrDefault()!.Quantidade)
                             </th>
                             <th>
@@ -102,12 +104,16 @@
                                     <span>@item.Tipo!.Descricao</span>
                                 </td>
                                 <td class="is-actions-cell">
-                                    <div class="buttons is-pulled-right is-flex-wrap-nowrap" style="width:100%">
-                                        <button class="button is-danger is-fullwidth is-large"
-                                    onclick="ConfirmApagar('@item.Stamp')">
-                                            <i class="fas fa-trash-can"></i>
-                                        </button>
-                                    </div>
+                                            <div class="buttons is-pulled-right is-flex-wrap-nowrap" style="width:100%">
+                                                <button class="button is-info is-fullwidth is-large mr-1"
+                                                        onclick="AtualizarQuantidade('@item.Stamp', @item.Quantidade)">
+                                                    <i class="fas fa-refresh"></i>
+                                                </button>
+                                                <button class="button is-danger is-fullwidth is-large"
+                                                        onclick="ConfirmApagar('@item.Stamp')">
+                                                    <i class="fas fa-trash-can"></i>
+                                                </button>
+                                            </div>
                                 </td>
                             </tr>
                         }
@@ -117,6 +123,67 @@
         </div>
     }
 </div>
+<div id="modalAtualizarQuantidade" class="modal">
+    <div class="modal-background"></div>
+    <div class="modal-card">
+        <header class="modal-card-head">
+            <p class="modal-card-title">
+                <span class="icon">
+                    <i class="fas fa-circle-plus"></i>
+                </span>
+                <span>Entrada - Publicações</span>
+            </p>
+            <button type="button" class="delete" aria-label="close"></button>
+        </header>
+        <section class="modal-card-body">
+            <div class="modal-body">
+                <div class="field">
+                    <label class="label">Quantidade</label>
+                    <div class="field has-addons">
+                        <div class="control">
+                            <button type="button" class="button is-danger disable-dbl-tap-zoom"
+                                    onclick="document.getElementById('txtQtd').value = parseInt(document.getElementById('txtQtd').value) - 1">
+                                <span class="icon">
+                                    <i class="fas fa-minus"></i>
+                                </span>
+                            </button>
+                        </div>
+                        <div class="control" style="width:100%">
+                            <input type="number" class="input has-text-centered" min="1" id="txtQtd" value="1">
+                        </div>
+                        <div class="control">
+                            <button type="button" class="button is-success disable-dbl-tap-zoom"
+                                    onclick="document.getElementById('txtQtd').value = parseInt(document.getElementById('txtQtd').value) + 1">
+                                <span class="icon">
+                                    <i class="fas fa-plus"></i>
+                                </span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+        <footer class="modal-card-foot">
+            <a class="button is-info is-large is-fullwidth"
+               onclick="GerarMovimento(document.getElementById('txtHiddenStamp').value, document.getElementById('txtHiddenQtd').value, document.getElementById('txtQtd').value)">
+                <span class="icon">
+                    <i class="fa-regular fa-floppy-disk"></i>
+                </span>
+                <span>
+                    Guardar
+                </span>
+            </a>
+            <button type="button" class="button is-large is-fullwidth is-danger"
+                    onclick="Bulma('#modalAtualizarQuantidade').modal().close();" href="javascript:;">
+                <span class="icon">
+                    <i class="fa-regular fa-circle-xmark"></i>
+                </span>
+                <span>Fechar</span>
+            </button>
+        </footer>
+    </div>
+</div>
+
 
 <div class="modal" id="ModalConfirmApagar">
     <div class="modal-background"></div>
@@ -131,7 +198,7 @@
         </section>
         <footer class="modal-card-foot">
             <button class="button is-danger is-fullwidth is-large"
-                onclick="Apagar(document.getElementById('txtHiddenStamp').value);">
+                    onclick="Apagar(document.getElementById('txtHiddenStamp').value);">
                 <span class="icon">
                     <i class="fas fa-trash-can"></i>
                 </span>
@@ -147,11 +214,36 @@
     </div>
 </div>
 <input id="txtHiddenStamp" hidden />
+<input id="txtHiddenQtd" hidden />
 
 <script>
     function ConfirmApagar(id) {
         document.getElementById('txtHiddenStamp').value = id;
         Bulma('#ModalConfirmApagar').modal().open();
+}
+
+    function AtualizarQuantidade(id, qtd) {
+        document.getElementById('txtHiddenStamp').value = id;
+        document.getElementById('txtHiddenQtd').value = qtd;
+        Bulma('#modalAtualizarQuantidade').modal().open();
+    }
+
+    function GerarMovimento(stamp, qtdOriginal, qtdFinal) {
+        $.ajax({
+            url: '/Literatura/Movimentos/',
+            data: { "stamp": stamp, "qtd": qtdFinal - (+qtdOriginal)},
+            type: "POST",
+            success: function (data) {
+                notify('Movimento criado com sucesso!');
+                window.location.reload();
+            },
+            error: function (response) {
+                notifyError('Ocorreu um erro ao gerar um movimento!');
+            },
+            failure: function (response) {
+                notifyError('Falha ao gerar um movimento!');
+            }
+        });
     }
 
     function Apagar(id) {
@@ -169,5 +261,4 @@
                 notifyError('Falha ao apagar essa publicação!');
             }
         });
-    }
-</script>
+    }</script>
