@@ -116,6 +116,56 @@
             return LstTiposLiteratura;
         }
 
+        //Obter todos os grupos
+        public List<Grupo> ObterGrupos()
+        {
+            List<Grupo> LstGrupos = new();
+            List<Publicador> LstPublicadores = ObterPublicadores();
+
+            using (Database db = ConnectionString)
+            {
+                string sql = "SELECT * FROM l_grupos;";
+                using var result = db.Query(sql);
+                while (result.Read())
+                {
+                    LstGrupos.Add(new Grupo()
+                    {
+                        Id = result["Id"],
+                        Nome = result["Nome"],
+                        Responsavel = LstPublicadores.Where(p => p.Id == int.Parse(result["IdResponsavel"])).DefaultIfEmpty(new Publicador()).First(),
+                        Ajudante = LstPublicadores.Where(p => p.Id == int.Parse(result["IdAjudante"])).DefaultIfEmpty(new Publicador()).First(),
+                    });
+                }
+            }
+
+            return LstGrupos;
+        }
+
+        //Obter todos os grupos
+        public Grupo ObterGrupo(int id)
+        {
+            Grupo g = new();
+            List<Publicador> LstPublicadores = ObterPublicadores();
+
+            using (Database db = ConnectionString)
+            {
+                string sql = "SELECT * FROM l_grupos where Id="+id+";";
+                using var result = db.Query(sql);
+                while (result.Read())
+                {
+                   g = new Grupo()
+                    {
+                        Id = result["Id"],
+                        Nome = result["Nome"],
+                        Responsavel = LstPublicadores.Where(p => p.Id == int.Parse(result["IdResponsavel"])).DefaultIfEmpty(new Publicador()).First(),
+                        Ajudante = LstPublicadores.Where(p => p.Id == int.Parse(result["IdAjudante"])).DefaultIfEmpty(new Publicador()).First(),
+                    };
+                }
+            }
+
+            return g;
+        }
+
         //Adicionar literatura ou atualizar existente
         public bool AdicionarLiteratura(Literatura l)
         {
@@ -230,7 +280,9 @@
                     LstPublicador.Add(new Publicador()
                     {
                         Id = result["IdUtilizador"],
-                        Nome = result["Nome"]
+                        Nome = result["Nome"],
+                        Email = result["Email"],
+                        Telemovel = result["Telemovel"]
                     });
                 }
             }
@@ -239,7 +291,7 @@
         }
 
         //Obter Publicador
-        public Publicador ObterPublicador(int id, bool LoadMovimentos, bool LoadPedidos)
+        public Publicador ObterPublicador(int id, bool LoadMovimentos, bool LoadPedidos, bool LoadGrupos)
         {
             Publicador p = new();
 
@@ -252,7 +304,9 @@
                     p = new Publicador()
                     {
                         Id = result["IdUtilizador"],
-                        Nome = result["Nome"]
+                        Nome = result["Nome"],
+                        Email = result["Email"],
+                        Telemovel = result["Telemovel"]
                     };
                     if (LoadMovimentos) p.Movimentos = ObterMovimentos(true, true, int.Parse(result["IdUtilizador"]), DateOnly.MinValue);
                     if (LoadPedidos)
@@ -260,12 +314,21 @@
                         p.Pedidos = ObterPedidosPeriodico(p.Id);
                         p.Pedidos.AddRange(ObterPedidosEspeciais(p.Id));
                     }
+                    if (LoadGrupos) p.Grupo = ObterGrupo(int.Parse(result["IdGrupo"]));
                 }
             }
 
             return p;
         }
 
+        //Adicionar publicador
+        public bool AdicionarPublicador(Publicador p)
+        {
+            string sql = "INSERT INTO sys_utilizadores(IdUtilizador, Nome, Telemovel, Email, IdGrupo) VALUES ";
+            sql += ("('" + p.Id + "', '" + p.Nome + "', '" + p.Telemovel + "', '" + p.Email + "', '" + p.Grupo.Id + "') ON DUPLICATE KEY UPDATE Telemovel=VALUES(Telemovel), Email=VALUES(Email), IdGrupo=VALUES(IdGrupo), Nome=VALUES(Nome);");
+
+            return ExecutarQuery(sql);
+        }
 
         //Apagar um publicador em especifico
         public bool ApagarPublicador(int id)
@@ -281,7 +344,7 @@
         public List<Movimentos> ObterMovimentos(bool In, bool Out, int IdPub, DateOnly data)
         {
             List<Movimentos> LstMovimentos = new();
-            Publicador p = ObterPublicador(IdPub,false,false);
+            Publicador p = ObterPublicador(IdPub,false,false,false);
             DateOnly dF = data == DateOnly.MinValue ? DateOnly.MaxValue : data.AddDays(1);
 
             using (Database db = ConnectionString)
@@ -354,7 +417,7 @@
         public List<Literatura> ObterPedidosPeriodico(int IdPub)
         {
             List<Literatura> LstLiteratura = new();
-            Publicador p = ObterPublicador(IdPub, false, false);
+            Publicador p = ObterPublicador(IdPub, false, false,false);
             List<TipoLiteratura> LstTiposLiteratura = ObterTiposLiteratura();
 
             using (Database db = ConnectionString)
@@ -429,7 +492,7 @@
         public List<Literatura> ObterPedidosEspeciais(int IdPub)
         {
             List<Literatura> LstLiteratura = new();
-            Publicador p = ObterPublicador(IdPub, false, false);
+            Publicador p = ObterPublicador(IdPub, false, false,false);
             List<TipoLiteratura> LstTiposLiteratura = ObterTiposLiteratura();
 
             using (Database db = ConnectionString)

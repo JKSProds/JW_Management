@@ -135,7 +135,7 @@ namespace JW_Management.Controllers
             Literatura l = new Literatura()
             {
                 Referencia = referencia,
-                Publicador = context.ObterPublicador(idpub, false,false),
+                Publicador = context.ObterPublicador(idpub, false,false,false),
                 Quantidade = qtd,
                 Stamp = DateTime.Now.Ticks.ToString()
             };
@@ -174,7 +174,7 @@ namespace JW_Management.Controllers
 
             Literatura l = new Literatura()
             {
-                Publicador = context.ObterPublicador(idpub, false,false),
+                Publicador = context.ObterPublicador(idpub, false,false,false),
                 Quantidade = qtd,
                 Stamp = stamp
             };

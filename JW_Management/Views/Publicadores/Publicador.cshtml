@@ -41,26 +41,68 @@
         <div class="tabs-content mx-2">
             <ul>
                 <li class="is-active">
-                    <div class="columns is-multiline">
-                        <div class="column is-2">
-                            <div class="field">
-                                <label class="label" asp-for="Id"></label>
-                                <p class="control ">
-                                    <input type="text" class="input" readonly asp-for="Id">
-                                </p>
-                                <span asp-validation-for="Id" class="has-text-danger"></span>
+                    <form method="post">
+                        <div class="columns is-multiline">
+                            <div class="column is-2">
+                                <div class="field">
+                                    <label class="label" asp-for="Id"></label>
+                                    <p class="control ">
+                                        <input type="text" class="input" readonly asp-for="Id">
+                                    </p>
+                                    <span asp-validation-for="Id" class="has-text-danger"></span>
+                                </div>
+                            </div>
+                            <div class="column is-6">
+                                <div class="field">
+                                    <label class="label" asp-for="Nome"></label>
+                                    <p class="control ">
+                                        <input type="text" class="input" readonly asp-for="Nome">
+                                    </p>
+                                    <span asp-validation-for="Nome" class="has-text-danger"></span>
+                                </div>
+                            </div>
+                            <div class="column is-4">
+                                <div class="field">
+                                    <label class="label" asp-for="Grupo"></label>
+                                    <p class="control has-icons-left">
+                                        <span class="select is-fullwidth">
+                                            <select class="select" asp-for="Grupo.Id" style="height: auto"
+                                                    asp-items="@(new SelectList(@ViewBag.Grupos!, "Value", "Text", Model.Grupo!.Id))">
+                                            </select>
+                                        </span>
+                                        <span class="icon is-small is-left">
+                                            <i class="fa-solid fa-user-group"></i>
+                                        </span>
+                                    </p>
+                                    <span asp-validation-for="Grupo" class="has-text-danger"></span>
+                                </div>
+                            </div>
+                            <div class="column is-8">
+                                <div class="field">
+                                    <label class="label" asp-for="Email"></label>
+                                    <p class="control ">
+                                        <input type="email" class="input" asp-for="Email">
+                                    </p>
+                                    <span asp-validation-for="Email" class="has-text-danger"></span>
+                                </div>
+                            </div>
+                            <div class="column is-4">
+                                <div class="field">
+                                    <label class="label" asp-for="Telemovel"></label>
+                                    <p class="control ">
+                                        <input type="tel" class="input" asp-for="Telemovel">
+                                    </p>
+                                    <span asp-validation-for="Telemovel" class="has-text-danger"></span>
+                                </div>
+                            </div>
+                            <div class="column is-12">
+                                <button class="button is-large is-success is-fullwidth" type="submit">
+                                    <span class="icon"><i class="fa-regular fa-floppy-disk"></i></span>
+                                    <span>Guardar</span>
+                                </button>
                             </div>
                         </div>
-                        <div class="column is-10">
-                            <div class="field">
-                                <label class="label" asp-for="Nome"></label>
-                                <p class="control ">
-                                    <input type="text" class="input" readonly asp-for="Nome">
-                                </p>
-                                <span asp-validation-for="Nome" class="has-text-danger"></span>
-                            </div>
-                        </div>
-                    </div>
+                    </form>
                 </li>
                 <li>
                     @if (Model.Movimentos!.Count() == 0)
