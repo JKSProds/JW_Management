@@ -112,6 +112,43 @@
                         </div>
 
                     <div class="navbar-end">
+                        @if (User.Identity.IsAuthenticated)
+                        {
+                            <div class="navbar-item has-dropdown">
+                                <a class="navbar-link">
+                                    <figure style="width:30px;heigth:30px;">
+                                        <img class="is-rounded" src="~/img/user.png" alt="user_image">
+                                    </figure>
+                                    <span>@this.User.Claims.Last().Value</span>
+                                </a>
+
+                                <div class="navbar-dropdown">
+                                    <div class="navbar-item">
+                                        <a class="button is-danger is-light is-fullwidth" href="~/Home/Logout">
+                                            <span class="icon">
+                                                <i class="fas fa-sign-out-alt"></i>
+                                            </span>
+                                            <span>Terminar Sessão</span>
+                                        </a>
+                                    </div>
+                                    <hr class="navbar-divider">
+                                    <div class="navbar-item has-text-centered">
+                                        Versão @GetType().Assembly.GetName().Version.ToString()@(Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") == "Development" ?" - DEV" : "")
+                                    </div>
+                                </div>
+                            </div>
+                        }
+                        else
+                        {
+                            <div class="navbar-item">
+                                <a class="button is-info is-light" href="~/Home/Login">
+                                    <span class="icon">
+                                        <i class="fas fa-sign-in-alt"></i>
+                                    </span>
+                                    <span>Iniciar Sessão</span>
+                                </a>
+                            </div>
+                        }
                     </div>
                 </div>
             </nav>

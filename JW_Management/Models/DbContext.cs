@@ -280,6 +280,8 @@
                     LstPublicador.Add(new Publicador()
                     {
                         Id = result["IdUtilizador"],
+                        Username = result["Username"],
+                        Password = result["Password"],
                         Nome = result["Nome"],
                         Email = result["Email"],
                         Telemovel = result["Telemovel"]
@@ -304,6 +306,8 @@
                     p = new Publicador()
                     {
                         Id = result["IdUtilizador"],
+                        Username = result["Username"],
+                        Password = result["Password"],
                         Nome = result["Nome"],
                         Email = result["Email"],
                         Telemovel = result["Telemovel"]
@@ -324,8 +328,8 @@
         //Adicionar publicador
         public bool AdicionarPublicador(Publicador p)
         {
-            string sql = "INSERT INTO sys_utilizadores(IdUtilizador, Nome, Telemovel, Email, IdGrupo) VALUES ";
-            sql += ("('" + p.Id + "', '" + p.Nome + "', '" + p.Telemovel + "', '" + p.Email + "', '" + p.Grupo.Id + "') ON DUPLICATE KEY UPDATE Telemovel=VALUES(Telemovel), Email=VALUES(Email), IdGrupo=VALUES(IdGrupo), Nome=VALUES(Nome);");
+            string sql = "INSERT INTO sys_utilizadores(IdUtilizador, Username, Password, Nome, Telemovel, Email, IdGrupo) VALUES ";
+            sql += ("('" + p.Id + "', '" + p.Username + "', '" + p.Password + "', '" + p.Nome + "', '" + p.Telemovel + "', '" + p.Email + "', '" + p.Grupo.Id + "') ON DUPLICATE KEY UPDATE Username=VALUES(Username), Password=VALUES(Password), Telemovel=VALUES(Telemovel), Email=VALUES(Email), IdGrupo=VALUES(IdGrupo), Nome=VALUES(Nome);");
 
             return ExecutarQuery(sql);
         }

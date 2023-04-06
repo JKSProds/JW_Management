@@ -1,0 +1,120 @@
+﻿@model JW_Management.Models.Publicador
+
+@{
+    ViewData["Title"] = "Iniciar Sessão";
+}
+
+<style>
+    /* Add your custom styles here */
+    .logo {
+        animation: zoom-out 1s ease-out;
+    }
+
+    @@keyframes zoom-out {
+        0% {
+            transform: scale(2);
+            opacity: 0;
+        }
+
+        100% {
+            transform: scale(1);
+            opacity: 1;
+        }
+    }
+
+    @@keyframes shake {
+        0% {
+            transform: translateX(0);
+        }
+
+        20% {
+            transform: translateX(10px);
+        }
+
+        40% {
+            transform: translateX(-10px);
+        }
+
+        60% {
+            transform: translateX(10px);
+        }
+
+        80% {
+            transform: translateX(-10px);
+        }
+
+        100% {
+            transform: translateX(0);
+        }
+    }
+    /* Add a shake animation to the login box or submit button on incorrect input */
+    .login-box {
+        animation: shake 0.3s;
+    }
+</style>
+
+<section class="section">
+    <div class="container" id="frmShake">
+        <div class="columns is-centered">
+            <div class="column is-9-tablet is-8-desktop is-6-widescreen">
+                <div class="has-text-centered">
+                    <img class="logo" src="~/img/jw_logo.svg" width="200" height="200">
+                </div>
+                <div class="container">
+                    <div class="box">
+                        <form method="post">
+                            <div class="field">
+                                <label class="label">Nome de Utilizador</label>
+                                <div class="control has-icons-left">
+                                    <input class="input" type="text" placeholder="Insira o seu nome de utilizador"
+                                           asp-for="Username">
+                                    <span class="icon is-small is-left">
+                                        <i class="fas fa-user"></i>
+                                    </span>
+                                </div>
+                            </div>
+                            <div class="field">
+                                <label class="label">Palavra-Passe</label>
+                                <div class="control has-icons-left">
+                                    <input class="input" type="password" placeholder="Insira a sua palavra-passe"
+                                           asp-for="Password" id="inputPassword">
+                                    <span class="icon is-small is-left">
+                                        <i class="fas fa-lock"></i>
+                                    </span>
+                                </div>
+                            </div>
+
+                            <div class="field">
+                                <div class="control">
+                                    <button class="button is-link is-fullwidth is-large" type="submit" id="login-button">
+                                        Iniciar
+                                        Sessão
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="has-text-centered">
+                                <p>
+                                    <div asp-validation-summary="ModelOnly" id="divError" class="has-text-danger"></div>
+                                </p>
+                            </div>
+                            <input hidden name="ReturnUrl" value=@ViewData["ReturnUrl"]>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+
+<script>
+    if (document.getElementById("divError")) shake(document.getElementById("frmShake"))
+    function shake(element) {
+        element.classList.add('login-box');
+        if (navigator.vibrate) navigator.vibrate([500]);
+        setTimeout(() => {
+            element.classList.remove('login-box');
+        }, 300);
+    }
+
+    }</script>
