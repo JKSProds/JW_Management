@@ -24,16 +24,19 @@ namespace JW_Management.Controllers
         }
 
         [HttpGet]
-        public IActionResult Movimentos(int id)
+        public IActionResult Movimentos(int id, string data)
         {
             DbContext context = HttpContext.RequestServices.GetService(typeof(DbContext)) as DbContext;
 
+            DateOnly.TryParse(data, out DateOnly d);
+            if (d == DateOnly.MinValue) d = DateOnly.FromDateTime(DateTime.Now);
             ViewBag.Publicadores = context.ObterPublicadores().Select(l => new SelectListItem() { Value = l.Id.ToString(), Text = l.Nome });
             ViewBag.Periodicos = context.ObterTipoPeriodicos().Select(l => new SelectListItem() { Value = l.Referencia, Text = l.Descricao });
+            ViewData["Data"] = d;
 
-            if (id == 1) return View("Entradas", context.ObterMovimentos(true, false, 0));
-            return View("Saidas", context.ObterMovimentos(false, true, 0));
-        }
+            if (id == 1) return View("Entradas", context.ObterMovimentos(true, false, 0, d));
+            return View("Saidas", context.ObterMovimentos(false, true, 0, d));
+        } 
 
         [HttpPost]
         public IActionResult Movimentos(string stamp, int qtd, int idpub)
@@ -63,13 +66,23 @@ namespace JW_Management.Controllers
         }
 
         [HttpGet]
-        public IActionResult Literatura(string filtro, bool periodico)
+        public IActionResult Literaturas(string filtro, bool periodico)
         {
             DbContext context = HttpContext.RequestServices.GetService(typeof(DbContext)) as DbContext;
 
             if (periodico) return Json(context.ObterLiteraturas(filtro, 0).Where(l => l.Tipo.Id == 7));
             return Json(context.ObterLiteraturas(filtro, 0).Where(l => l.Tipo.Id != 7));
         }
+
+        [HttpGet]
+        public IActionResult Literatura(string id)
+        {
+            DbContext context = HttpContext.RequestServices.GetService(typeof(DbContext)) as DbContext;
+
+            
+            return Json(context.ObterLiteratura(id));
+        }
+
 
         [HttpPost]
         public IActionResult Literatura(string referencia, string descricao, int tipo)
@@ -88,7 +101,7 @@ namespace JW_Management.Controllers
         }
 
         [HttpDelete]
-        public IActionResult Literatura(string stamp)
+        public IActionResult Literatura(string stamp, bool apagar)
         {
             DbContext context = HttpContext.RequestServices.GetService(typeof(DbContext)) as DbContext;
             if (string.IsNullOrEmpty(stamp)) return StatusCode(500);

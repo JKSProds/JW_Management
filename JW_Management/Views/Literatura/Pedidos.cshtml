@@ -498,7 +498,7 @@
         $("#txtPub").autocomplete({
             source: function (request, response) {
                 $.ajax({
-                    url: '/Literatura/Literatura/',
+                    url: '/Literatura/Literaturas/',
                     data: { "filtro": request.term, "periodico": false },
                     type: "GET",
                     success: function (data) {

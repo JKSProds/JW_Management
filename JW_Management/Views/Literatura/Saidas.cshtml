@@ -21,11 +21,29 @@
         </div>
         <div class="column">
             <div class="field has-addons has-addons-right mx-1 is-flex-wrap-wrap" style="width:100%">
-
-                <div class="buttons is-right">
+                <form style="width:100%">
+                    <p class="control has-icons-left">
+                        <input class="input" type="date"
+                               value="@(DateTime.Parse(ViewData["Data"].ToString()).ToString("yyyy-MM-dd"))" id="txtData"
+                               name="data" />
+                        <script>bulmaCalendar.attach('#txtData', {
+                                color: 'info',
+                                lang: 'pt',
+                                dateFormat: 'dd/MM/yyyy',
+                                todayLabel: 'Hoje',
+                                showClearButton: false,
+                                cancelLabel: 'Cancelar'
+                            });
+                            document.getElementById('txtData').bulmaCalendar.on('select', function (datepicker) {
+                                document.getElementById('txtData').value = datepicker.data.value();
+                                $('form').submit();
+                            });</script>
+                    </p>
+                </form>
+                <div class="buttons is-right mt-2">
                     <p class="control">
                         <button type="button" class="button is-info is-large is-fullwidth "
-                            onclick="Bulma('#modalSaidaPublicacoes').modal().open();">
+                                onclick="Bulma('#modalSaidaPublicacoes').modal().open();">
                             <span class="icon">
                                 <i class="fa-solid fa-book"></i>
                             </span>
@@ -253,7 +271,7 @@
         $("#txtPub").autocomplete({
             source: function (request, response) {
                 $.ajax({
-                    url: '/Literatura/Literatura/',
+                    url: '/Literatura/Literaturas/',
                     data: { "filtro": request.term, "periodico": false },
                     type: "GET",
                     success: function (data) {
