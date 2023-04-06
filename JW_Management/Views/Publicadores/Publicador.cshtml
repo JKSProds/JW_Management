@@ -66,8 +66,8 @@
                                     <label class="label" asp-for="Grupo"></label>
                                     <p class="control has-icons-left">
                                         <span class="select is-fullwidth">
-                                            <select class="select" asp-for="Grupo.Id" style="height: auto"
-                                                    asp-items="@(new SelectList(@ViewBag.Grupos!, "Value", "Text", Model.Grupo!.Id))">
+                                            <select class="select" asp-for="Grupo!.Id" style="height: auto"
+                                                    asp-items="@(new SelectList(@ViewBag.Grupos, "Value", "Text", Model.Grupo!.Id))">
                                             </select>
                                         </span>
                                         <span class="icon is-small is-left">
