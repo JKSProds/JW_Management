@@ -59,7 +59,7 @@
         <div class="tabs-content mx-2">
             <ul>
                 <li class="is-active">
-                    @if (Model.Where(l => l.Tipo.Id != 7).Count() == 0)
+                    @if (Model.Where(l => l.Tipo!.Id != 7).Count() == 0)
                     {
                         <br />
                         <button class="button is-danger is-large is-rounded is-fullwidth is-disabled">
@@ -90,7 +90,7 @@
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        @foreach (var item in Model.Where(l => l.Tipo.Id != 7))
+                                        @foreach (var item in Model.Where(l => l.Tipo!.Id != 7))
                                         {
                                             <tr>
                                                 <td data-label="@Html.DisplayNameFor(model => model.FirstOrDefault()!.Referencia)">
@@ -126,7 +126,7 @@
                     }
                 </li>
                 <li>
-                    @if (Model.Where(l => l.Tipo.Id == 7).Count() == 0)
+                    @if (Model.Where(l => l.Tipo!.Id == 7).Count() == 0)
                     {
                         <br />
                         <button class="button is-danger is-large is-rounded is-fullwidth is-disabled">
@@ -157,7 +157,7 @@
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        @foreach (var item in Model.Where(l => l.Tipo.Id == 7))
+                                        @foreach (var item in Model.Where(l => l.Tipo!.Id == 7))
                                         {
                                             <tr>
                                                 <td data-label="@Html.DisplayNameFor(model => model.FirstOrDefault()!.Referencia)">

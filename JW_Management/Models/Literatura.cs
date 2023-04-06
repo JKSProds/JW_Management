@@ -9,6 +9,6 @@
         public int Quantidade { get; set; }
         public TipoLiteratura? Tipo { get; set; }
         public Publicador? Publicador { get; set; }
-        public EstadoPedido EstadoPedido { get; set; }
+        public EstadoPedido? EstadoPedido { get; set; }
     }
 }
