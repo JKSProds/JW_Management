@@ -36,7 +36,15 @@ namespace JW_Management.Controllers
             Publicador pOriginal = context.ObterPublicador(p.Id, false, false, false);
 
             var passwordHasher = new PasswordHasher<string>();
-            if (pOriginal.Password != p.Password && !string.IsNullOrEmpty(p.Password)) p.Password = passwordHasher.HashPassword(p.Username, p.Password);
+            if (pOriginal.Password != p.Password && !string.IsNullOrEmpty(p.Password))
+            {
+                p.Password = passwordHasher.HashPassword(p.Username!, p.Password);
+            }
+            else
+            {
+                p.Password = pOriginal.Password;
+            }
+
             return context.AdicionarPublicador(p) ? RedirectToAction("Publicador", p.Id) : StatusCode(500);
         }
 
