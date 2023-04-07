@@ -33,10 +33,10 @@ namespace JW_Management.Controllers
         public IActionResult Publicador(Publicador p)
         {
             DbContext context = HttpContext.RequestServices.GetService(typeof(DbContext)) as DbContext;
-            Publicador pOriginal = context.ObterPublicador(p.Id, false, false,false);
+            Publicador pOriginal = context.ObterPublicador(p.Id, false, false, false);
 
             var passwordHasher = new PasswordHasher<string>();
-            if (pOriginal.Password != p.Password) p.Password = passwordHasher.HashPassword(p.Username, p.Password);
+            if (pOriginal.Password != p.Password && !string.IsNullOrEmpty(p.Password)) p.Password = passwordHasher.HashPassword(p.Username, p.Password);
             return context.AdicionarPublicador(p) ? RedirectToAction("Publicador", p.Id) : StatusCode(500);
         }
 

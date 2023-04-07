@@ -38,7 +38,7 @@ namespace JW_Management.Controllers
 
             if (id == 1) return View("Entradas", context.ObterMovimentos(true, false, 0, d));
             return View("Saidas", context.ObterMovimentos(false, true, 0, d));
-        } 
+        }
 
         [HttpPost]
         public IActionResult Movimentos(string stamp, int qtd, int idpub)
@@ -81,7 +81,7 @@ namespace JW_Management.Controllers
         {
             DbContext context = HttpContext.RequestServices.GetService(typeof(DbContext)) as DbContext;
 
-            
+
             return Json(context.ObterLiteratura(id));
         }
 
@@ -137,7 +137,7 @@ namespace JW_Management.Controllers
             Literatura l = new Literatura()
             {
                 Referencia = referencia,
-                Publicador = context.ObterPublicador(idpub, false,false,false),
+                Publicador = context.ObterPublicador(idpub, false, false, false),
                 Quantidade = qtd,
                 Stamp = DateTime.Now.Ticks.ToString()
             };
@@ -162,8 +162,8 @@ namespace JW_Management.Controllers
             ViewBag.Publicadores = context.ObterPublicadores().Select(l => new SelectListItem() { Value = l.Id.ToString(), Text = l.Nome });
             ViewBag.Periodicos = context.ObterTipoPeriodicos().Select(l => new SelectListItem() { Value = l.Referencia, Text = l.Descricao });
 
-            List<Literatura> LstPedidos = context.ObterPedidosPeriodico().Where(l => l.Quantidade > 0).ToList();
-            LstPedidos.AddRange(context.ObterPedidosEspeciais().Where(l => l.Quantidade > 0));
+            List<Literatura> LstPedidos = context.ObterPedidosPeriodico().Where(l => l.Quantidade > 0).OrderBy(l => l.Publicador.Nome).ToList();
+            LstPedidos.AddRange(context.ObterPedidosEspeciais().Where(l => l.Quantidade > 0).OrderBy(l => l.Publicador.Nome));
 
             return View(LstPedidos);
         }
@@ -176,7 +176,7 @@ namespace JW_Management.Controllers
 
             Literatura l = new Literatura()
             {
-                Publicador = context.ObterPublicador(idpub, false,false,false),
+                Publicador = context.ObterPublicador(idpub, false, false, false),
                 Quantidade = qtd,
                 Stamp = stamp
             };

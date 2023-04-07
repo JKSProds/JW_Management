@@ -22,178 +22,506 @@ CREATE DATABASE IF NOT EXISTS sys_jw;
 USE sys_jw;
 
 --
--- Definition of table `dat_grupos`
+-- Definition of table `l_grupos`
 --
 
-DROP TABLE IF EXISTS `dat_grupos`;
-CREATE TABLE `dat_grupos` (
-  `Id` int unsigned NOT NULL AUTO_INCREMENT,
-  `Nome` varchar(45) NOT NULL,
-  `Responsavel` varchar(45) NOT NULL,
-  `Ajudante` varchar(45) NOT NULL,
-  PRIMARY KEY (`Id`)
-) ENGINE=InnoDB AUTO_INCREMENT=101 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
-
---
--- Dumping data for table `dat_grupos`
---
-
-/*!40000 ALTER TABLE `dat_grupos` DISABLE KEYS */;
-INSERT INTO `dat_grupos` (`Id`,`Nome`,`Responsavel`,`Ajudante`) VALUES 
- (1,'Grupo 1','Nuno Pereira','Diogo Ferreira'),
- (100,'Salão do Reino','Jorge Monteiro','David Costa');
-/*!40000 ALTER TABLE `dat_grupos` ENABLE KEYS */;
-
-
---
--- Definition of table `dat_literatura`
---
-
-DROP TABLE IF EXISTS `dat_literatura`;
-CREATE TABLE `dat_literatura` (
-  `Id` int unsigned NOT NULL AUTO_INCREMENT,
-  `Referencia` varchar(45) NOT NULL,
-  `Descricao` varchar(128) NOT NULL,
-  `IdGrupo` int unsigned NOT NULL,
-  `IdTipo` int unsigned NOT NULL,
-  `Quantidade` int unsigned NOT NULL DEFAULT '0',
+DROP TABLE IF EXISTS `l_grupos`;
+CREATE TABLE `l_grupos` (
+  `Id` int NOT NULL AUTO_INCREMENT,
+  `Nome` varchar(50) DEFAULT NULL,
+  `IdResponsavel` int DEFAULT NULL,
+  `IdAjudante` int DEFAULT NULL,
   `timestamp` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  `STAMP` varchar(45) NOT NULL DEFAULT 'UUID()',
-  PRIMARY KEY (`Id`,`IdGrupo`) USING BTREE
-) ENGINE=InnoDB AUTO_INCREMENT=88532 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+  PRIMARY KEY (`Id`)
+) ENGINE=InnoDB AUTO_INCREMENT=9 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 --
--- Dumping data for table `dat_literatura`
+-- Dumping data for table `l_grupos`
 --
 
-/*!40000 ALTER TABLE `dat_literatura` DISABLE KEYS */;
-INSERT INTO `dat_literatura` (`Id`,`Referencia`,`Descricao`,`IdGrupo`,`IdTipo`,`Quantidade`,`timestamp`,`STAMP`) VALUES 
- (1,'es22','Examine as Escrituras Diariamente — 2022',100,7,0,'2022-12-04 12:14:43','43b5717d-73d7-11ed-940f-0242ac110004'),
- (2,'eslp22','Examine as Escrituras Diariamente — 2022 - L.G.',100,7,0,'2022-12-04 12:14:43','43b59178-73d7-11ed-940f-0242ac110004'),
- (3,'w012022','Sentinela Nº1 2022',100,7,0,'2022-12-04 12:14:43','43b59efa-73d7-11ed-940f-0242ac110004'),
- (4,'g012022','Despertai Nº1 2022',100,7,0,'2022-12-04 12:14:43','43b5ab92-73d7-11ed-940f-0242ac110004'),
- (3503,'pte','Envelope Plástico para Cartão de Território',100,5,0,'2022-12-04 12:14:43','43b5b7e9-73d7-11ed-940f-0242ac110004'),
- (3505,'bdg','Porta-cartão de lapela (Plástico)',100,5,0,'2022-12-04 12:14:43','43b5c4bc-73d7-11ed-940f-0242ac110004'),
- (3515,'ldcrt','Carrinho de publicações ',100,6,0,'2022-12-04 12:14:43','43b5d188-73d7-11ed-940f-0242ac110004'),
- (3520,'ldcrtadp','Carrinho — Peças de acrílico das prateleiras ',100,6,0,'2022-12-04 12:14:43','43b5ddeb-73d7-11ed-940f-0242ac110004'),
- (3521,'ldcrtrcv','Carrinho — Capa para a chuva ',100,6,0,'2022-12-04 12:14:43','43b5ea67-73d7-11ed-940f-0242ac110004'),
- (3522,'ldcrtrkt','Carrinho — Toda a ferragem do carrinho ',100,6,0,'2022-12-04 12:14:43','43b5fce4-73d7-11ed-940f-0242ac110004'),
- (3523,'ldcrtwhl','Carrinho — Rodas ',100,6,0,'2022-12-04 12:14:43','43b60fc8-73d7-11ed-940f-0242ac110004'),
- (3526,'ldcrtmbd','Placa magnética ',100,6,0,'2022-12-04 12:14:43','43b61474-73d7-11ed-940f-0242ac110004'),
- (3528,'ldcrtpbd','Placa de PVC preta (não magnética) ',100,6,0,'2022-12-04 12:14:43','43b6191b-73d7-11ed-940f-0242ac110004'),
- (3535,'ldcrtmsk','Kit inicial',100,6,0,'2022-12-04 12:14:43','43b61dfc-73d7-11ed-940f-0242ac110004'),
- (5112,'Hbi12','TNM (capa dura)',100,2,0,'2022-12-04 12:14:43','43b622a1-73d7-11ed-940f-0242ac110004'),
- (5117,'DLbi12','TNM de luxo (cinza)',100,2,0,'2022-12-04 12:14:43','43b62742-73d7-11ed-940f-0242ac110004'),
- (5140,'nwt','Tradução do Novo Mundo',100,2,0,'2022-12-04 12:14:43','43b62be4-73d7-11ed-940f-0242ac110004'),
- (5227,'fy','Família Feliz 6632 dg Importa-se Deus?',100,3,0,'2022-12-04 12:14:43','43b630ad-73d7-11ed-940f-0242ac110004'),
- (5326,'sh','Busca de Deus ',100,3,0,'2022-12-04 12:14:43','43b63d2a-73d7-11ed-940f-0242ac110004'),
- (5332,'od','Organizados ',100,3,0,'2022-12-04 12:14:43','43b641e5-73d7-11ed-940f-0242ac110004'),
- (5334,'bh','O que a Bíblia Realmente Ensina?',100,3,0,'2022-12-04 12:14:43','43b64698-73d7-11ed-940f-0242ac110004'),
- (5335,'lv','‘Amor de Deus ',100,3,0,'2022-12-04 12:14:43','43b64b43-73d7-11ed-940f-0242ac110004'),
- (5336,'yp2','Os Jovens Perguntam, Volume 2 ',100,3,0,'2022-12-04 12:14:43','43b64fea-73d7-11ed-940f-0242ac110004'),
- (5339,'yp1','Os Jovens Perguntam, Volume 1 ',100,3,0,'2022-12-04 12:14:43','43b654bc-73d7-11ed-940f-0242ac110004'),
- (5340,'bhs',' O Que Nos Ensina a Bíblia?',100,3,0,'2022-12-04 12:14:43','43b65970-73d7-11ed-940f-0242ac110004'),
- (5341,'sjj','Cantemos com Alegria a Jeová ',100,3,0,'2022-12-04 12:14:43','43b65e20-73d7-11ed-940f-0242ac110004'),
- (5343,'lvs','Amar a Deus',100,3,0,'2022-12-04 12:14:43','43b66306-73d7-11ed-940f-0242ac110004'),
- (5413,'jv','Proclamadores',100,3,0,'2022-12-04 12:14:43','43b667b4-73d7-11ed-940f-0242ac110004'),
- (5414,'be','Escola do Ministério',100,3,0,'2022-12-04 12:14:43','43b66c4a-73d7-11ed-940f-0242ac110004'),
- (5415,'lr','Instrutor ',100,3,0,'2022-12-04 12:14:43','43b670f4-73d7-11ed-940f-0242ac110004'),
- (5416,'bt','Dê Testemunho Cabal sobre o Reino de Deus',100,3,0,'2022-12-04 12:14:43','43b674df-73d7-11ed-940f-0242ac110004'),
- (5422,'kr','O Reino de Deus já Governa! ',100,3,0,'2022-12-04 12:14:43','43b678b5-73d7-11ed-940f-0242ac110004'),
- (5423,'krlp','O Reino de Deus já Governa!',100,3,0,'2022-12-04 12:14:43','43b67c9d-73d7-11ed-940f-0242ac110004'),
- (5425,'jy','Jesus—o Caminho, a Verdade e a Vida ',100,3,0,'2022-12-04 12:14:43','43b68064-73d7-11ed-940f-0242ac110004'),
- (5427,'lfb','Aprende com as Histórias da Bíblia ',100,3,0,'2022-12-04 12:14:43','43b68432-73d7-11ed-940f-0242ac110004'),
- (5434,'jylp','Jesus — o Caminho, a Verdade e a Vida',100,3,0,'2022-12-04 12:14:43','43b68801-73d7-11ed-940f-0242ac110004'),
- (5441,'sjjls','Cantemos com Alegria a Jeová (Grande) ',100,3,0,'2022-12-04 12:14:43','43b68bcf-73d7-11ed-940f-0242ac110004'),
- (5442,'sjjyls','Cantemos com Alegria a Jeová – S/Pauta',100,3,0,'2022-12-04 12:14:43','43b690f7-73d7-11ed-940f-0242ac110004'),
- (5445,'lff','Seja Feliz Para Sempre! (livro)',100,3,0,'2022-12-04 12:14:43','43b694cd-73d7-11ed-940f-0242ac110004'),
- (6219,'ialp','Imite Sua Fé',100,4,0,'2022-12-04 12:14:43','43b698a2-73d7-11ed-940f-0242ac110004'),
- (6235,'lvlp','Mantenha-se no Amor de Deus',100,4,0,'2022-12-04 12:14:43','43b69c73-73d7-11ed-940f-0242ac110004'),
- (6630,'sp','Espíritos dos Mortos',100,4,0,'2022-12-04 12:14:43','43b6a041-73d7-11ed-940f-0242ac110004'),
- (6636,'pr','Objetivo da Vida',100,4,0,'2022-12-04 12:14:43','43b6a41f-73d7-11ed-940f-0242ac110004'),
- (6637,'we','Quando Morre Alguém',100,4,0,'2022-12-04 12:14:43','43b6a7fb-73d7-11ed-940f-0242ac110004'),
- (6639,'pc','Verdadeira Paz e Felicidade (Para Chineses)',100,4,0,'2022-12-04 12:14:43','43b6abe9-73d7-11ed-940f-0242ac110004'),
- (6642,'ie','Quando Morremos',100,4,0,'2022-12-04 12:14:43','43b6afb4-73d7-11ed-940f-0242ac110004'),
- (6645,'gf','Amigo de Deus ',100,4,0,'2022-12-04 12:14:43','43b6b397-73d7-11ed-940f-0242ac110004'),
- (6647,'la','Vida Satisfatória',100,4,0,'2022-12-04 12:14:43','43b6b759-73d7-11ed-940f-0242ac110004'),
- (6648,'ol','Caminho para a Vida (Para Muçulmanos)',100,4,0,'2022-12-04 12:14:43','43b6bb2c-73d7-11ed-940f-0242ac110004'),
- (6652,'bm','Mensagem da Bíblia',100,4,0,'2022-12-04 12:14:43','43b6befc-73d7-11ed-940f-0242ac110004'),
- (6653,'ph','O Caminho (Para Budistas)',100,4,0,'2022-12-04 12:14:43','43b6c2ca-73d7-11ed-940f-0242ac110004'),
- (6654,'lc','A vida—teve um Criador?',100,4,0,'2022-12-04 12:14:43','43b6c694-73d7-11ed-940f-0242ac110004'),
- (6655,'lf','A origem da vida ',100,4,0,'2022-12-04 12:14:43','43b6ca5f-73d7-11ed-940f-0242ac110004'),
- (6656,'rk','Verdadeira fé (Para Muçulmanos)',100,4,0,'2022-12-04 12:14:43','43b6ce3f-73d7-11ed-940f-0242ac110004'),
- (6657,'ll','Escute e viva ',100,4,0,'2022-12-04 12:14:43','43b6d2c9-73d7-11ed-940f-0242ac110004'),
- (6658,'ld','Escute a Deus',100,4,0,'2022-12-04 12:14:43','43b6d69a-73d7-11ed-940f-0242ac110004'),
- (6659,'fg','Boas Notícias de Deus Para Si!',100,4,0,'2022-12-04 12:14:43','43b6da5a-73d7-11ed-940f-0242ac110004'),
- (6660,'jl','Vontade de Deus',100,4,0,'2022-12-04 12:14:43','43b6de40-73d7-11ed-940f-0242ac110004'),
- (6662,'hl','Vida Feliz (Para Judeus)',100,4,0,'2022-12-04 12:14:43','43b6e211-73d7-11ed-940f-0242ac110004'),
- (6663,'mb','Minhas Primeiras Lições da Bíblia',100,4,0,'2022-12-04 12:14:43','43b6e5e0-73d7-11ed-940f-0242ac110004'),
- (6664,'yc','Ensine Seus Filhos',100,4,0,'2022-12-04 12:14:43','43b6e9b6-73d7-11ed-940f-0242ac110004'),
- (6665,'hf','Você Pode Ter uma Família Feliz!',100,4,0,'2022-12-04 12:14:43','43b6edae-73d7-11ed-940f-0242ac110004'),
- (6671,'rj','Volte para Jeová',100,4,0,'2022-12-04 12:14:43','43b6f1a7-73d7-11ed-940f-0242ac110004'),
- (6674,'np','Boas Novas para Pessoas de Todas as Nações',100,4,0,'2022-12-04 12:14:43','43b6f576-73d7-11ed-940f-0242ac110004'),
- (6684,'ypq','Respostas 10 Perguntas Que os Jovens Fazem',100,4,0,'2022-12-04 12:14:43','43b6f945-73d7-11ed-940f-0242ac110004'),
- (7074,'kt','Conhecer a Verdade ',100,1,0,'2022-12-04 12:14:43','43b6fd2b-73d7-11ed-940f-0242ac110004'),
- (7130,'T-30','O Que Acha da Bíblia?',100,1,0,'2022-12-04 12:14:43','43b700f9-73d7-11ed-940f-0242ac110004'),
- (7131,'T-31','O Que Espera do Futuro? ',100,1,0,'2022-12-04 12:14:43','43b704ff-73d7-11ed-940f-0242ac110004'),
- (7132,'T-32','Qual o Segredo para Ter uma Família Feliz? ',100,1,0,'2022-12-04 12:14:43','43b708ca-73d7-11ed-940f-0242ac110004'),
- (7133,'T-33','Quem controla o mundo?',100,1,0,'2022-12-04 12:14:43','43b70c97-73d7-11ed-940f-0242ac110004'),
- (7134,'T-34','Sofrimento vai acabar?',100,1,0,'2022-12-04 12:14:43','43b71062-73d7-11ed-940f-0242ac110004'),
- (7135,'T-35','Será Que os Mortos Podem Voltar a Viver? ',100,1,0,'2022-12-04 12:14:43','43b71440-73d7-11ed-940f-0242ac110004'),
- (7136,'T-36','O Que É o Reino de Deus?',100,1,0,'2022-12-04 12:14:43','43b7180d-73d7-11ed-940f-0242ac110004'),
- (7137,'T-37','Respostas Importantes',100,1,0,'2022-12-04 12:14:43','43b71bd8-73d7-11ed-940f-0242ac110004'),
- (7305,'inv','Convite para reuniões congregacionais',100,1,0,'2022-12-04 12:14:43','43b71fa6-73d7-11ed-940f-0242ac110004'),
- (8388,'ic','Cartão - Identificação (criança)',100,5,0,'2022-12-04 12:14:43','43b7237e-73d7-11ed-940f-0242ac110004'),
- (8410,'jwcd1','Cartão de visita para jw.org',100,5,0,'2022-12-04 12:14:43','43b72748-73d7-11ed-940f-0242ac110004'),
- (8416,'jwcdsl1','Cartão de visita para jw.org [língua gestual]',100,5,0,'2022-12-04 12:14:43','43b73105-73d7-11ed-940f-0242ac110004'),
- (8422,'jwcd3','Cartão de visita para jw.org',100,5,0,'2022-12-04 12:14:43','43b73514-73d7-11ed-940f-0242ac110004'),
- (8423,'jwcdsl2','Cartão de visita para jw.org [língua gestual]',100,5,0,'2022-12-04 12:14:43','43b738f3-73d7-11ed-940f-0242ac110004'),
- (8525,'jwcd1br','Cartão de visita para o jw.org [Braile]',100,5,0,'2022-12-04 12:14:43','43b73d15-73d7-11ed-940f-0242ac110004'),
- (8703,'S-3','Relatório de Assistência às Reuniões',100,5,0,'2022-12-04 12:14:43','43b740e0-73d7-11ed-940f-0242ac110004'),
- (8704,'S-4','Relatório de Serviço de Campo',100,5,0,'2022-12-04 12:14:43','43b744b4-73d7-11ed-940f-0242ac110004'),
- (8712,'S-12','Cartão de Mapa de Território',100,5,0,'2022-12-04 12:14:43','43b7488b-73d7-11ed-940f-0242ac110004'),
- (8713,'S-13','Registo de Designação de Território',100,5,0,'2022-12-04 12:14:43','43b74c89-73d7-11ed-940f-0242ac110004'),
- (8721,'S-21','Cartão Registo de Publicador de Congregação',100,5,0,'2022-12-04 12:14:43','43b7507d-73d7-11ed-940f-0242ac110004'),
- (8724,'S-24','Recibo (Maços de 100 unidades)',100,5,0,'2022-12-04 12:14:43','43b75452-73d7-11ed-940f-0242ac110004'),
- (8788,'S-88','Registo da Assistência às Reuniões',100,5,0,'2022-12-04 12:14:43','43b7581c-73d7-11ed-940f-0242ac110004'),
- (9172,'dpa','Cartão DPA',100,5,0,'2022-12-04 12:14:43','43b75bee-73d7-11ed-940f-0242ac110004'),
- (65423,'krlpi','O Reino de Deus já Governa! (L. Grande) ',100,3,0,'2022-12-04 12:14:43','43b75fab-73d7-11ed-940f-0242ac110004'),
- (65445,'lffi',' Seja Feliz Para Sempre! (brochura)',100,4,0,'2022-12-04 12:14:43','43b7638e-73d7-11ed-940f-0242ac110004'),
- (88519,'mvplbt','Aprenda o que a Bíblia ensina',100,6,0,'2022-12-04 12:14:43','43b76761-73d7-11ed-940f-0242ac110004'),
- (88521,'mvpnvt','Está Convidado',100,6,0,'2022-12-04 12:14:43','43b76b36-73d7-11ed-940f-0242ac110004'),
- (88523,'mvppce','Haverá paz algum dia?',100,6,0,'2022-12-04 12:14:43','43b76f02-73d7-11ed-940f-0242ac110004'),
- (88525,'mvptrs','O que significa ter sucesso na vida?',100,6,0,'2022-12-04 12:14:43','43b772e1-73d7-11ed-940f-0242ac110004'),
- (88527,'mvpsff','Quando acabará o sofrimento?',100,6,0,'2022-12-04 12:14:43','43b77c3e-73d7-11ed-940f-0242ac110004'),
- (88529,'mvpwlc','Será que a vida teve um Criador?',100,6,0,'2022-12-04 12:14:43','43b78010-73d7-11ed-940f-0242ac110004'),
- (88531,'mvpffy','Como ter uma família feliz',100,6,0,'2022-12-04 12:14:43','43b78401-73d7-11ed-940f-0242ac110004');
-/*!40000 ALTER TABLE `dat_literatura` ENABLE KEYS */;
+/*!40000 ALTER TABLE `l_grupos` DISABLE KEYS */;
+INSERT INTO `l_grupos` (`Id`,`Nome`,`IdResponsavel`,`IdAjudante`,`timestamp`) VALUES 
+ (1,'Grupo 1',78,0,'2023-04-07 00:56:26'),
+ (2,'Grupo 2',36,0,'2023-04-07 00:56:26'),
+ (3,'Grupo 3',7,0,'2023-04-07 00:56:26'),
+ (4,'Grupo 4',55,0,'2023-04-07 00:56:26'),
+ (5,'Grupo 5',79,49,'2023-04-07 00:56:26'),
+ (6,'Grupo 6',50,0,'2023-04-07 00:56:26'),
+ (7,'Grupo 7',9,0,'2023-04-07 00:56:26'),
+ (8,'Grupo 8',70,0,'2023-04-07 00:56:26');
+/*!40000 ALTER TABLE `l_grupos` ENABLE KEYS */;
 
 
 --
--- Definition of table `dat_tipos_literatura`
+-- Definition of table `l_movimentos`
 --
 
-DROP TABLE IF EXISTS `dat_tipos_literatura`;
-CREATE TABLE `dat_tipos_literatura` (
-  `Id` int unsigned NOT NULL AUTO_INCREMENT,
-  `Descricao` varchar(45) NOT NULL,
+DROP TABLE IF EXISTS `l_movimentos`;
+CREATE TABLE `l_movimentos` (
+  `Id` varchar(50) NOT NULL,
+  `StampLiteratura` varchar(50) DEFAULT NULL,
+  `Quantidade` decimal(10,0) DEFAULT NULL,
+  `Data` datetime DEFAULT NULL,
+  `IdPublicador` int DEFAULT NULL,
+  `timestamp` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`Id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+--
+-- Dumping data for table `l_movimentos`
+--
+
+/*!40000 ALTER TABLE `l_movimentos` DISABLE KEYS */;
+INSERT INTO `l_movimentos` (`Id`,`StampLiteratura`,`Quantidade`,`Data`,`IdPublicador`,`timestamp`) VALUES 
+ ('638164249266857981','638164249266338785','60','2023-04-07 00:42:06',0,'2023-04-07 00:56:45'),
+ ('638164249643637478','638164249642873574','15','2023-04-07 00:42:44',0,'2023-04-07 00:56:45'),
+ ('638164249714950898','638164249714191983','60','2023-04-07 00:42:51',0,'2023-04-07 00:56:45'),
+ ('638164254523580697','638164254522186436','60','2023-04-07 00:50:52',0,'2023-04-07 00:56:45');
+/*!40000 ALTER TABLE `l_movimentos` ENABLE KEYS */;
+
+
+--
+-- Definition of table `l_pedidos_especiais`
+--
+
+DROP TABLE IF EXISTS `l_pedidos_especiais`;
+CREATE TABLE `l_pedidos_especiais` (
+  `Id` varchar(50) NOT NULL,
+  `StampLiteratura` varchar(50) DEFAULT NULL,
+  `Quantidade` decimal(10,0) DEFAULT NULL,
+  `IdPublicador` int DEFAULT NULL,
+  `timestamp` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`Id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+--
+-- Dumping data for table `l_pedidos_especiais`
+--
+
+/*!40000 ALTER TABLE `l_pedidos_especiais` DISABLE KEYS */;
+/*!40000 ALTER TABLE `l_pedidos_especiais` ENABLE KEYS */;
+
+
+--
+-- Definition of table `l_pedidos_periodicos`
+--
+
+DROP TABLE IF EXISTS `l_pedidos_periodicos`;
+CREATE TABLE `l_pedidos_periodicos` (
+  `Id` varchar(25) NOT NULL,
+  `Referencia` varchar(45) NOT NULL,
+  `Quantidade` decimal(10,0) NOT NULL,
+  `IdPublicador` int unsigned NOT NULL,
+  `timestamp` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`Id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+--
+-- Dumping data for table `l_pedidos_periodicos`
+--
+
+/*!40000 ALTER TABLE `l_pedidos_periodicos` DISABLE KEYS */;
+INSERT INTO `l_pedidos_periodicos` (`Id`,`Referencia`,`Quantidade`,`IdPublicador`,`timestamp`) VALUES 
+ ('1','mwb','1',1,'2023-04-07 00:37:57'),
+ ('101','w','1',4,'2023-04-07 00:49:59'),
+ ('103','wlp','1',6,'2023-04-07 00:49:59'),
+ ('105','w','1',8,'2023-04-07 00:49:59'),
+ ('108','w','1',11,'2023-04-07 00:49:59'),
+ ('109','w','1',12,'2023-04-07 00:49:59'),
+ ('11','mwb','1',11,'2023-04-07 00:37:57'),
+ ('111','w','1',14,'2023-04-07 00:49:59'),
+ ('112','w','1',15,'2023-04-07 00:49:59'),
+ ('113','w','1',16,'2023-04-07 00:49:59'),
+ ('115','wlp','1',18,'2023-04-07 00:49:59'),
+ ('116','w','1',19,'2023-04-07 00:49:59'),
+ ('118','w','1',21,'2023-04-07 00:49:59'),
+ ('119','w','1',22,'2023-04-07 00:49:59'),
+ ('12','mwb','1',12,'2023-04-07 00:37:57'),
+ ('124','w','1',27,'2023-04-07 00:49:59'),
+ ('129','w','1',32,'2023-04-07 00:49:59'),
+ ('130','w','1',33,'2023-04-07 00:49:59'),
+ ('131','w','1',34,'2023-04-07 00:49:59'),
+ ('132','w','1',35,'2023-04-07 00:49:59'),
+ ('133','w','1',36,'2023-04-07 00:49:59'),
+ ('136','wlp','1',39,'2023-04-07 00:49:59'),
+ ('137','w','1',40,'2023-04-07 00:49:59'),
+ ('139','w','1',42,'2023-04-07 00:49:59'),
+ ('14','mwb','1',14,'2023-04-07 00:37:57'),
+ ('140','wlp','1',43,'2023-04-07 00:49:59'),
+ ('142','w','1',45,'2023-04-07 00:49:59'),
+ ('144','wlp','1',47,'2023-04-07 00:49:59'),
+ ('150','w','1',53,'2023-04-07 00:49:59'),
+ ('152','w','1',55,'2023-04-07 00:49:59'),
+ ('155','w','1',58,'2023-04-07 00:49:59'),
+ ('156','w','2',59,'2023-04-07 00:49:59'),
+ ('157','w','1',60,'2023-04-07 00:49:59'),
+ ('159','w','1',62,'2023-04-07 00:49:59'),
+ ('16','mwb','1',16,'2023-04-07 00:37:57'),
+ ('160','wlp','1',63,'2023-04-07 00:49:59'),
+ ('162','w','1',65,'2023-04-07 00:49:59'),
+ ('164','w','1',67,'2023-04-07 00:49:59'),
+ ('166','wlp','1',69,'2023-04-07 00:49:59'),
+ ('168','w','1',71,'2023-04-07 00:49:59'),
+ ('170','w','1',73,'2023-04-07 00:49:59'),
+ ('178','w','3',81,'2023-04-07 00:49:59'),
+ ('179','w','1',82,'2023-04-07 00:49:59'),
+ ('18','mwb','1',18,'2023-04-07 00:37:57'),
+ ('180','w','1',83,'2023-04-07 00:49:59'),
+ ('182','wlp','1',85,'2023-04-07 00:49:59'),
+ ('183','w','1',86,'2023-04-07 00:49:59'),
+ ('185','w','1',88,'2023-04-07 00:49:59'),
+ ('187','w','2',90,'2023-04-07 00:49:59'),
+ ('19','mwb','1',19,'2023-04-07 00:37:57'),
+ ('190','w','1',93,'2023-04-07 00:49:59'),
+ ('192','w','1',95,'2023-04-07 00:49:59'),
+ ('193','w','1',96,'2023-04-07 00:49:59'),
+ ('194','w','1',97,'2023-04-07 00:49:59'),
+ ('21','mwb','1',21,'2023-04-07 00:37:57'),
+ ('22','mwb','1',22,'2023-04-07 00:37:57'),
+ ('27','mwb','1',27,'2023-04-07 00:37:57'),
+ ('28','mwb','1',28,'2023-04-07 00:37:57'),
+ ('29','mwb','1',29,'2023-04-07 00:37:57'),
+ ('31','mwb','1',31,'2023-04-07 00:37:57'),
+ ('32','mwb','1',32,'2023-04-07 00:37:57'),
+ ('33','mwb','1',33,'2023-04-07 00:37:57'),
+ ('34','mwb','1',34,'2023-04-07 00:37:57'),
+ ('35','mwb','1',35,'2023-04-07 00:37:57'),
+ ('36','mwb','1',36,'2023-04-07 00:37:57'),
+ ('39','mwb','1',39,'2023-04-07 00:37:57'),
+ ('42','mwb','1',42,'2023-04-07 00:37:57'),
+ ('43','mwb','1',43,'2023-04-07 00:37:57'),
+ ('45','mwb','1',45,'2023-04-07 00:37:57'),
+ ('47','mwb','1',47,'2023-04-07 00:37:57'),
+ ('53','mwb','1',53,'2023-04-07 00:37:57'),
+ ('55','mwb','1',55,'2023-04-07 00:37:57'),
+ ('58','mwb','1',58,'2023-04-07 00:37:57'),
+ ('59','mwb','2',59,'2023-04-07 00:37:57'),
+ ('6','mwb','1',6,'2023-04-07 00:37:57'),
+ ('60','mwb','1',60,'2023-04-07 00:37:57'),
+ ('62','mwb','1',62,'2023-04-07 00:37:57'),
+ ('63','mwb','1',63,'2023-04-07 00:37:57'),
+ ('65','mwb','1',65,'2023-04-07 00:37:57'),
+ ('67','mwb','1',67,'2023-04-07 00:37:57'),
+ ('69','mwb','1',69,'2023-04-07 00:37:57'),
+ ('71','mwb','1',71,'2023-04-07 00:37:57'),
+ ('72','mwb','1',72,'2023-04-07 00:37:57'),
+ ('73','mwb','1',73,'2023-04-07 00:37:57'),
+ ('8','mwb','1',8,'2023-04-07 00:37:57'),
+ ('81','mwb','1',81,'2023-04-07 00:37:57'),
+ ('82','mwb','1',82,'2023-04-07 00:37:57'),
+ ('83','mwb','1',83,'2023-04-07 00:37:57'),
+ ('85','mwb','1',85,'2023-04-07 00:37:57'),
+ ('86','mwb','1',86,'2023-04-07 00:37:57'),
+ ('88','mwb','1',88,'2023-04-07 00:37:57'),
+ ('90','mwb','2',90,'2023-04-07 00:37:57'),
+ ('93','mwb','1',93,'2023-04-07 00:37:57'),
+ ('95','mwb','1',95,'2023-04-07 00:37:57'),
+ ('96','mwb','1',96,'2023-04-07 00:37:57'),
+ ('97','mwb','1',97,'2023-04-07 00:37:57'),
+ ('98','w','1',1,'2023-04-07 00:49:59');
+/*!40000 ALTER TABLE `l_pedidos_periodicos` ENABLE KEYS */;
+
+
+--
+-- Definition of table `l_periodicos`
+--
+
+DROP TABLE IF EXISTS `l_periodicos`;
+CREATE TABLE `l_periodicos` (
+  `Id` int NOT NULL AUTO_INCREMENT,
+  `Referencia` varchar(10) DEFAULT NULL,
+  `Descricao` varchar(100) DEFAULT NULL,
+  `timestamp` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`Id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=8 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 --
--- Dumping data for table `dat_tipos_literatura`
+-- Dumping data for table `l_periodicos`
 --
 
-/*!40000 ALTER TABLE `dat_tipos_literatura` DISABLE KEYS */;
-INSERT INTO `dat_tipos_literatura` (`Id`,`Descricao`) VALUES 
- (1,'Folhetos'),
- (2,'Biblias'),
- (3,'Livros'),
- (4,'Brochuras'),
- (5,'Formulários'),
- (6,'Testemunho Público'),
- (7,'Periódicos');
-/*!40000 ALTER TABLE `dat_tipos_literatura` ENABLE KEYS */;
+/*!40000 ALTER TABLE `l_periodicos` DISABLE KEYS */;
+INSERT INTO `l_periodicos` (`Id`,`Referencia`,`Descricao`,`timestamp`) VALUES 
+ (1,'w','Sentinela de Estudo','2023-04-07 00:57:23'),
+ (2,'wlp','Sentinela de Estudo - Letra Grande','2023-04-07 00:57:23'),
+ (3,'mwb','Nossa Vida e Ministério Cristão - Apostila da Reunião','2023-04-07 00:57:23'),
+ (4,'es','Examine as Escrituras Diariamente','2023-04-07 00:57:23'),
+ (5,'eslp','Examine as Escrituras Diariamente - Letra Grande','2023-04-07 00:57:23'),
+ (6,'mvpwp','A Sentinela - Público','2023-04-07 00:57:23'),
+ (7,'mvpg','Despertai','2023-04-07 00:57:23');
+/*!40000 ALTER TABLE `l_periodicos` ENABLE KEYS */;
+
+
+--
+-- Definition of table `l_pubs`
+--
+
+DROP TABLE IF EXISTS `l_pubs`;
+CREATE TABLE `l_pubs` (
+  `id` int NOT NULL AUTO_INCREMENT,
+  `STAMP` varchar(50) DEFAULT NULL,
+  `Referencia` varchar(10) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci DEFAULT NULL,
+  `Descricao` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci DEFAULT NULL,
+  `IdTipo` int DEFAULT NULL,
+  `timestamp` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=88539 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+--
+-- Dumping data for table `l_pubs`
+--
+
+/*!40000 ALTER TABLE `l_pubs` DISABLE KEYS */;
+INSERT INTO `l_pubs` (`id`,`STAMP`,`Referencia`,`Descricao`,`IdTipo`,`timestamp`) VALUES 
+ (3503,'43b5b7e9-73d7-11ed-940f-0242ac110004','pte','Envelope Plástico para Cartão de Território',5,'2022-12-04 12:14:43'),
+ (3505,'43b5c4bc-73d7-11ed-940f-0242ac110004','bdg','Porta-cartão de lapela (Plástico)',5,'2022-12-04 12:14:43'),
+ (3515,'43b5d188-73d7-11ed-940f-0242ac110004','ldcrt','Carrinho de publicações ',6,'2022-12-04 12:14:43'),
+ (3520,'43b5ddeb-73d7-11ed-940f-0242ac110004','ldcrtadp','Carrinho — Peças de acrílico das prateleiras ',6,'2022-12-04 12:14:43'),
+ (3521,'43b5ea67-73d7-11ed-940f-0242ac110004','ldcrtrcv','Carrinho — Capa para a chuva ',6,'2022-12-04 12:14:43'),
+ (3522,'43b5fce4-73d7-11ed-940f-0242ac110004','ldcrtrkt','Carrinho — Toda a ferragem do carrinho ',6,'2022-12-04 12:14:43'),
+ (3523,'43b60fc8-73d7-11ed-940f-0242ac110004','ldcrtwhl','Carrinho — Rodas ',6,'2022-12-04 12:14:43'),
+ (3526,'43b61474-73d7-11ed-940f-0242ac110004','ldcrtmbd','Placa magnética ',6,'2022-12-04 12:14:43'),
+ (3528,'43b6191b-73d7-11ed-940f-0242ac110004','ldcrtpbd','Placa de PVC preta (não magnética) ',6,'2022-12-04 12:14:43'),
+ (3535,'43b61dfc-73d7-11ed-940f-0242ac110004','ldcrtmsk','Kit inicial',6,'2022-12-04 12:14:43'),
+ (5112,'43b622a1-73d7-11ed-940f-0242ac110004','Hbi12','TNM (capa dura)',2,'2022-12-04 12:14:43'),
+ (5117,'43b62742-73d7-11ed-940f-0242ac110004','DLbi12','TNM de luxo (cinza)',2,'2022-12-04 12:14:43'),
+ (5140,'43b62be4-73d7-11ed-940f-0242ac110004','nwt','Tradução do Novo Mundo',2,'2022-12-04 12:14:43'),
+ (5227,'43b630ad-73d7-11ed-940f-0242ac110004','fy','Família Feliz 6632 dg Importa-se Deus?',3,'2022-12-04 12:14:43'),
+ (5326,'43b63d2a-73d7-11ed-940f-0242ac110004','sh','Busca de Deus ',3,'2022-12-04 12:14:43'),
+ (5332,'43b641e5-73d7-11ed-940f-0242ac110004','od','Organizados ',3,'2022-12-04 12:14:43'),
+ (5334,'43b64698-73d7-11ed-940f-0242ac110004','bh','O que a Bíblia Realmente Ensina?',3,'2022-12-04 12:14:43'),
+ (5335,'43b64b43-73d7-11ed-940f-0242ac110004','lv','‘Amor de Deus ',3,'2022-12-04 12:14:43'),
+ (5336,'43b64fea-73d7-11ed-940f-0242ac110004','yp2','Os Jovens Perguntam, Volume 2 ',3,'2022-12-04 12:14:43'),
+ (5339,'43b654bc-73d7-11ed-940f-0242ac110004','yp1','Os Jovens Perguntam, Volume 1 ',3,'2022-12-04 12:14:43'),
+ (5340,'43b65970-73d7-11ed-940f-0242ac110004','bhs',' O Que Nos Ensina a Bíblia?',3,'2022-12-04 12:14:43'),
+ (5341,'43b65e20-73d7-11ed-940f-0242ac110004','sjj','Cantemos com Alegria a Jeová ',3,'2022-12-04 12:14:43'),
+ (5343,'43b66306-73d7-11ed-940f-0242ac110004','lvs','Amar a Deus',3,'2022-12-04 12:14:43'),
+ (5413,'43b667b4-73d7-11ed-940f-0242ac110004','jv','Proclamadores',3,'2022-12-04 12:14:43'),
+ (5414,'43b66c4a-73d7-11ed-940f-0242ac110004','be','Escola do Ministério',3,'2022-12-04 12:14:43'),
+ (5415,'43b670f4-73d7-11ed-940f-0242ac110004','lr','Instrutor ',3,'2022-12-04 12:14:43'),
+ (5416,'43b674df-73d7-11ed-940f-0242ac110004','bt','Dê Testemunho Cabal sobre o Reino de Deus',3,'2022-12-04 12:14:43'),
+ (5422,'43b678b5-73d7-11ed-940f-0242ac110004','kr','O Reino de Deus já Governa! ',3,'2022-12-04 12:14:43'),
+ (5423,'43b67c9d-73d7-11ed-940f-0242ac110004','krlp','O Reino de Deus já Governa!',3,'2022-12-04 12:14:43'),
+ (5425,'43b68064-73d7-11ed-940f-0242ac110004','jy','Jesus—o Caminho, a Verdade e a Vida ',3,'2022-12-04 12:14:43'),
+ (5427,'43b68432-73d7-11ed-940f-0242ac110004','lfb','Aprende com as Histórias da Bíblia ',3,'2022-12-04 12:14:43'),
+ (5434,'43b68801-73d7-11ed-940f-0242ac110004','jylp','Jesus — o Caminho, a Verdade e a Vida',3,'2022-12-04 12:14:43'),
+ (5441,'43b68bcf-73d7-11ed-940f-0242ac110004','sjjls','Cantemos com Alegria a Jeová (Grande) ',3,'2022-12-04 12:14:43'),
+ (5442,'43b690f7-73d7-11ed-940f-0242ac110004','sjjyls','Cantemos com Alegria a Jeová – S/Pauta',3,'2022-12-04 12:14:43'),
+ (5445,'43b694cd-73d7-11ed-940f-0242ac110004','lff','Seja Feliz Para Sempre! (livro)',3,'2022-12-04 12:14:43'),
+ (6219,'43b698a2-73d7-11ed-940f-0242ac110004','ialp','Imite Sua Fé',4,'2022-12-04 12:14:43'),
+ (6235,'43b69c73-73d7-11ed-940f-0242ac110004','lvlp','Mantenha-se no Amor de Deus',4,'2022-12-04 12:14:43'),
+ (6630,'43b6a041-73d7-11ed-940f-0242ac110004','sp','Espíritos dos Mortos',4,'2022-12-04 12:14:43'),
+ (6636,'43b6a41f-73d7-11ed-940f-0242ac110004','pr','Objetivo da Vida',4,'2022-12-04 12:14:43'),
+ (6637,'43b6a7fb-73d7-11ed-940f-0242ac110004','we','Quando Morre Alguém',4,'2022-12-04 12:14:43'),
+ (6639,'43b6abe9-73d7-11ed-940f-0242ac110004','pc','Verdadeira Paz e Felicidade (Para Chineses)',4,'2022-12-04 12:14:43'),
+ (6642,'43b6afb4-73d7-11ed-940f-0242ac110004','ie','Quando Morremos',4,'2022-12-04 12:14:43'),
+ (6645,'43b6b397-73d7-11ed-940f-0242ac110004','gf','Amigo de Deus ',4,'2022-12-04 12:14:43'),
+ (6647,'43b6b759-73d7-11ed-940f-0242ac110004','la','Vida Satisfatória',4,'2022-12-04 12:14:43'),
+ (6648,'43b6bb2c-73d7-11ed-940f-0242ac110004','ol','Caminho para a Vida (Para Muçulmanos)',4,'2022-12-04 12:14:43'),
+ (6652,'43b6befc-73d7-11ed-940f-0242ac110004','bm','Mensagem da Bíblia',4,'2022-12-04 12:14:43'),
+ (6653,'43b6c2ca-73d7-11ed-940f-0242ac110004','ph','O Caminho (Para Budistas)',4,'2022-12-04 12:14:43'),
+ (6654,'43b6c694-73d7-11ed-940f-0242ac110004','lc','A vida—teve um Criador?',4,'2022-12-04 12:14:43'),
+ (6655,'43b6ca5f-73d7-11ed-940f-0242ac110004','lf','A origem da vida ',4,'2022-12-04 12:14:43'),
+ (6656,'43b6ce3f-73d7-11ed-940f-0242ac110004','rk','Verdadeira fé (Para Muçulmanos)',4,'2022-12-04 12:14:43'),
+ (6657,'43b6d2c9-73d7-11ed-940f-0242ac110004','ll','Escute e viva ',4,'2022-12-04 12:14:43'),
+ (6658,'43b6d69a-73d7-11ed-940f-0242ac110004','ld','Escute a Deus',4,'2022-12-04 12:14:43'),
+ (6659,'43b6da5a-73d7-11ed-940f-0242ac110004','fg','Boas Notícias de Deus Para Si!',4,'2022-12-04 12:14:43'),
+ (6660,'43b6de40-73d7-11ed-940f-0242ac110004','jl','Vontade de Deus',4,'2022-12-04 12:14:43'),
+ (6662,'43b6e211-73d7-11ed-940f-0242ac110004','hl','Vida Feliz (Para Judeus)',4,'2022-12-04 12:14:43'),
+ (6663,'43b6e5e0-73d7-11ed-940f-0242ac110004','mb','Minhas Primeiras Lições da Bíblia',4,'2022-12-04 12:14:43'),
+ (6664,'43b6e9b6-73d7-11ed-940f-0242ac110004','yc','Ensine Seus Filhos',4,'2022-12-04 12:14:43'),
+ (6665,'43b6edae-73d7-11ed-940f-0242ac110004','hf','Você Pode Ter uma Família Feliz!',4,'2022-12-04 12:14:43'),
+ (6671,'43b6f1a7-73d7-11ed-940f-0242ac110004','rj','Volte para Jeová',4,'2022-12-04 12:14:43'),
+ (6674,'43b6f576-73d7-11ed-940f-0242ac110004','np','Boas Novas para Pessoas de Todas as Nações',4,'2022-12-04 12:14:43'),
+ (6684,'43b6f945-73d7-11ed-940f-0242ac110004','ypq','Respostas 10 Perguntas Que os Jovens Fazem',4,'2022-12-04 12:14:43'),
+ (7074,'43b6fd2b-73d7-11ed-940f-0242ac110004','kt','Conhecer a Verdade ',1,'2022-12-04 12:14:43'),
+ (7130,'43b700f9-73d7-11ed-940f-0242ac110004','T-30','O Que Acha da Bíblia?',1,'2022-12-04 12:14:43'),
+ (7131,'43b704ff-73d7-11ed-940f-0242ac110004','T-31','O Que Espera do Futuro? ',1,'2022-12-04 12:14:43'),
+ (7132,'43b708ca-73d7-11ed-940f-0242ac110004','T-32','Qual o Segredo para Ter uma Família Feliz? ',1,'2022-12-04 12:14:43'),
+ (7133,'43b70c97-73d7-11ed-940f-0242ac110004','T-33','Quem controla o mundo?',1,'2022-12-04 12:14:43'),
+ (7134,'43b71062-73d7-11ed-940f-0242ac110004','T-34','Sofrimento vai acabar?',1,'2022-12-04 12:14:43'),
+ (7135,'43b71440-73d7-11ed-940f-0242ac110004','T-35','Será Que os Mortos Podem Voltar a Viver? ',1,'2022-12-04 12:14:43'),
+ (7136,'43b7180d-73d7-11ed-940f-0242ac110004','T-36','O Que É o Reino de Deus?',1,'2022-12-04 12:14:43'),
+ (7137,'43b71bd8-73d7-11ed-940f-0242ac110004','T-37','Respostas Importantes',1,'2022-12-04 12:14:43'),
+ (7305,'43b71fa6-73d7-11ed-940f-0242ac110004','inv','Convite para reuniões congregacionais',1,'2022-12-04 12:14:43'),
+ (8388,'43b7237e-73d7-11ed-940f-0242ac110004','ic','Cartão - Identificação (criança)',5,'2022-12-04 12:14:43'),
+ (8410,'43b72748-73d7-11ed-940f-0242ac110004','jwcd1','Cartão de visita para jw.org',5,'2022-12-04 12:14:43'),
+ (8416,'43b73105-73d7-11ed-940f-0242ac110004','jwcdsl1','Cartão de visita para jw.org [língua gestual]',5,'2022-12-04 12:14:43'),
+ (8422,'43b73514-73d7-11ed-940f-0242ac110004','jwcd3','Cartão de visita para jw.org',5,'2022-12-04 12:14:43'),
+ (8423,'43b738f3-73d7-11ed-940f-0242ac110004','jwcdsl2','Cartão de visita para jw.org [língua gestual]',5,'2022-12-04 12:14:43'),
+ (8525,'43b73d15-73d7-11ed-940f-0242ac110004','jwcd1br','Cartão de visita para o jw.org [Braile]',5,'2022-12-04 12:14:43'),
+ (8703,'43b740e0-73d7-11ed-940f-0242ac110004','S-3','Relatório de Assistência às Reuniões',5,'2022-12-04 12:14:43'),
+ (8704,'43b744b4-73d7-11ed-940f-0242ac110004','S-4','Relatório de Serviço de Campo',5,'2022-12-04 12:14:43'),
+ (8712,'43b7488b-73d7-11ed-940f-0242ac110004','S-12','Cartão de Mapa de Território',5,'2022-12-04 12:14:43'),
+ (8713,'43b74c89-73d7-11ed-940f-0242ac110004','S-13','Registo de Designação de Território',5,'2022-12-04 12:14:43'),
+ (8721,'43b7507d-73d7-11ed-940f-0242ac110004','S-21','Cartão Registo de Publicador de Congregação',5,'2022-12-04 12:14:43'),
+ (8724,'43b75452-73d7-11ed-940f-0242ac110004','S-24','Recibo (Maços de 100 unidades)',5,'2022-12-04 12:14:43'),
+ (8788,'43b7581c-73d7-11ed-940f-0242ac110004','S-88','Registo da Assistência às Reuniões',5,'2022-12-04 12:14:43'),
+ (9172,'43b75bee-73d7-11ed-940f-0242ac110004','dpa','Cartão DPA',5,'2022-12-04 12:14:43'),
+ (65423,'43b75fab-73d7-11ed-940f-0242ac110004','krlpi','O Reino de Deus já Governa! (L. Grande) ',3,'2022-12-04 12:14:43'),
+ (65445,'43b7638e-73d7-11ed-940f-0242ac110004','lffi',' Seja Feliz Para Sempre! (brochura)',4,'2022-12-04 12:14:43'),
+ (88519,'43b76761-73d7-11ed-940f-0242ac110004','mvplbt','Aprenda o que a Bíblia ensina',6,'2022-12-04 12:14:43'),
+ (88521,'43b76b36-73d7-11ed-940f-0242ac110004','mvpnvt','Está Convidado',6,'2022-12-04 12:14:43'),
+ (88523,'43b76f02-73d7-11ed-940f-0242ac110004','mvppce','Haverá paz algum dia?',6,'2022-12-04 12:14:43'),
+ (88525,'43b772e1-73d7-11ed-940f-0242ac110004','mvptrs','O que significa ter sucesso na vida?',6,'2022-12-04 12:14:43'),
+ (88527,'43b77c3e-73d7-11ed-940f-0242ac110004','mvpsff','Quando acabará o sofrimento?',6,'2022-12-04 12:14:43'),
+ (88529,'43b78010-73d7-11ed-940f-0242ac110004','mvpwlc','Será que a vida teve um Criador?',6,'2022-12-04 12:14:43'),
+ (88531,'43b78401-73d7-11ed-940f-0242ac110004','mvpffy','Como ter uma família feliz',6,'2022-12-04 12:14:43'),
+ (88534,'638164249266338785','w','Sentinela de Estudo - Nº5 (2023)',7,'2023-04-07 00:42:06'),
+ (88536,'638164249642873574','wlp','Sentinela de Estudo - Letra Grande - Nº5 (2023)',7,'2023-04-07 00:42:44'),
+ (88537,'638164249714191983','w','Sentinela de Estudo - Nº6 (2023)',7,'2023-04-07 00:42:51'),
+ (88538,'638164254522186436','mwb','Nossa Vida e Ministério Cristão - Apostila da Reunião - Nº5 (2023)',7,'2023-04-07 00:50:52');
+/*!40000 ALTER TABLE `l_pubs` ENABLE KEYS */;
+
+
+--
+-- Definition of table `l_tipos`
+--
+
+DROP TABLE IF EXISTS `l_tipos`;
+CREATE TABLE `l_tipos` (
+  `Id` int NOT NULL AUTO_INCREMENT,
+  `Descricao` varchar(50) DEFAULT NULL,
+  `timestamp` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`Id`)
+) ENGINE=InnoDB AUTO_INCREMENT=8 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+--
+-- Dumping data for table `l_tipos`
+--
+
+/*!40000 ALTER TABLE `l_tipos` DISABLE KEYS */;
+INSERT INTO `l_tipos` (`Id`,`Descricao`,`timestamp`) VALUES 
+ (1,'Folhetos','2023-04-07 00:57:46'),
+ (2,'Biblias','2023-04-07 00:57:46'),
+ (3,'Livros','2023-04-07 00:57:46'),
+ (4,'Brochuras','2023-04-07 00:57:46'),
+ (5,'Formulários','2023-04-07 00:57:46'),
+ (6,'Testemunho Público','2023-04-07 00:57:46'),
+ (7,'Periódicos','2023-04-07 00:57:46');
+/*!40000 ALTER TABLE `l_tipos` ENABLE KEYS */;
+
+
+--
+-- Definition of table `sys_utilizadores`
+--
+
+DROP TABLE IF EXISTS `sys_utilizadores`;
+CREATE TABLE `sys_utilizadores` (
+  `IdUtilizador` int NOT NULL AUTO_INCREMENT,
+  `Username` varchar(50) DEFAULT NULL,
+  `Password` varchar(200) DEFAULT NULL,
+  `Nome` varchar(50) DEFAULT NULL,
+  `Telemovel` varchar(20) DEFAULT NULL,
+  `Email` varchar(50) DEFAULT NULL,
+  `IdGrupo` int DEFAULT NULL,
+  `timestamp` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`IdUtilizador`)
+) ENGINE=InnoDB AUTO_INCREMENT=98 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+--
+-- Dumping data for table `sys_utilizadores`
+--
+
+/*!40000 ALTER TABLE `sys_utilizadores` DISABLE KEYS */;
+INSERT INTO `sys_utilizadores` (`IdUtilizador`,`Username`,`Password`,`Nome`,`Telemovel`,`Email`,`IdGrupo`,`timestamp`) VALUES 
+ (1,'adãocouto',NULL,'Adão Couto ',NULL,NULL,0,'2023-04-07 00:57:59'),
+ (2,'albertinacosta',NULL,'Albertina Costa',NULL,NULL,0,'2023-04-07 00:57:59'),
+ (3,'alcidacarvalho',NULL,'Alcida Carvalho',NULL,NULL,0,'2023-04-07 00:57:59'),
+ (4,'almerinda',NULL,'Almerinda',NULL,NULL,0,'2023-04-07 00:57:59'),
+ (5,'anaxavier',NULL,'Ana Xavier ',NULL,NULL,0,'2023-04-07 00:57:59'),
+ (6,'anabelasampaio',NULL,'Anabela Sampaio',NULL,NULL,0,'2023-04-07 00:57:59'),
+ (7,'antóniomonteiro',NULL,'António Monteiro ',NULL,NULL,0,'2023-04-07 00:57:59'),
+ (8,'armindatravanca',NULL,'Arminda Travanca ',NULL,NULL,0,'2023-04-07 00:57:59'),
+ (9,'arturalves',NULL,'Artur Alves',NULL,NULL,0,'2023-04-07 00:57:59'),
+ (10,'auroraxavier',NULL,'Aurora Xavier',NULL,NULL,0,'2023-04-07 00:57:59'),
+ (11,'beatrizpontes',NULL,'Beatriz Pontes ',NULL,NULL,0,'2023-04-07 00:57:59'),
+ (12,'belémpinto',NULL,'Belém Pinto',NULL,NULL,0,'2023-04-07 00:57:59'),
+ (13,'cacilda',NULL,'Cacilda',NULL,NULL,0,'2023-04-07 00:57:59'),
+ (14,'catarinanovo',NULL,'Catarina Novo',NULL,NULL,0,'2023-04-07 00:57:59'),
+ (15,'céliaoliveira',NULL,'Célia Oliveira ',NULL,NULL,0,'2023-04-07 00:57:59'),
+ (16,'conceiçãobessa',NULL,'Conceição Bessa',NULL,NULL,0,'2023-04-07 00:57:59'),
+ (17,'conceiçãocoelho',NULL,'Conceição Coelho ',NULL,NULL,0,'2023-04-07 00:57:59'),
+ (18,'conceiçãoneto',NULL,'Conceição Neto ',NULL,NULL,0,'2023-04-07 00:57:59'),
+ (19,'conceiçãopimentel',NULL,'Conceição Pimentel ',NULL,NULL,0,'2023-04-07 00:57:59'),
+ (20,'conceiçãoribeiro',NULL,'Conceição Ribeiro',NULL,NULL,0,'2023-04-07 00:57:59'),
+ (21,'conceiçãosampaio',NULL,'Conceição Sampaio',NULL,NULL,0,'2023-04-07 00:57:59'),
+ (22,'costaesilva',NULL,'Costa e Silva',NULL,NULL,0,'2023-04-07 00:57:59'),
+ (23,'cristinafonseca',NULL,'Cristina Fonseca ',NULL,NULL,0,'2023-04-07 00:57:59'),
+ (24,'danieladuarte',NULL,'Daniela Duarte ',NULL,NULL,0,'2023-04-07 00:57:59'),
+ (25,'danielagonçalves',NULL,'Daniela Gonçalves',NULL,NULL,0,'2023-04-07 00:57:59'),
+ (26,'diogoferreira',NULL,'Diogo Ferreira ',NULL,NULL,0,'2023-04-07 00:57:59'),
+ (27,'elisabete',NULL,'Elisabete',NULL,NULL,0,'2023-04-07 00:57:59'),
+ (28,'emíliacal',NULL,'Emília Cal ',NULL,NULL,0,'2023-04-07 00:57:59'),
+ (29,'emíliaferreira',NULL,'Emília Ferreira',NULL,NULL,0,'2023-04-07 00:57:59'),
+ (30,'emíliasoares',NULL,'Emília Soares',NULL,NULL,0,'2023-04-07 00:57:59'),
+ (31,'esterfernandes',NULL,'Ester Fernandes',NULL,NULL,0,'2023-04-07 00:57:59'),
+ (32,'fábiooliveira',NULL,'Fábio Oliveira ',NULL,NULL,0,'2023-04-07 00:57:59'),
+ (33,'felisbertomartins',NULL,'Felisberto Martins ',NULL,NULL,0,'2023-04-07 00:57:59'),
+ (34,'fernandacarneiro',NULL,'Fernanda Carneiro',NULL,NULL,0,'2023-04-07 00:57:59'),
+ (35,'filipafernandes',NULL,'Filipa Fernandes ',NULL,NULL,0,'2023-04-07 00:57:59'),
+ (36,'filipemartins',NULL,'Filipe Martins ',NULL,NULL,0,'2023-04-07 00:57:59'),
+ (37,'florentinamartins',NULL,'Florentina Martins ',NULL,NULL,0,'2023-04-07 00:57:59'),
+ (38,'franciscomachado',NULL,'Francisco Machado',NULL,NULL,0,'2023-04-07 00:57:59'),
+ (39,'glóriaoliveira',NULL,'Glória Oliveira',NULL,NULL,0,'2023-04-07 00:57:59'),
+ (40,'glóriasilva',NULL,'Glória Silva ',NULL,NULL,0,'2023-04-07 00:57:59'),
+ (41,'hugocarneiro',NULL,'Hugo Carneiro',NULL,NULL,0,'2023-04-07 00:57:59'),
+ (42,'idalina',NULL,'Idalina',NULL,NULL,0,'2023-04-07 00:57:59'),
+ (43,'ilídiasoares',NULL,'Ilídia Soares',NULL,NULL,0,'2023-04-07 00:57:59'),
+ (44,'isasilva',NULL,'Isa Silva',NULL,NULL,0,'2023-04-07 00:57:59'),
+ (45,'isabelpinheiro',NULL,'Isabel Pinheiro',NULL,NULL,0,'2023-04-07 00:57:59'),
+ (46,'joanaoliveira',NULL,'Joana Oliveira ',NULL,NULL,0,'2023-04-07 00:57:59'),
+ (47,'joãoferreira',NULL,'João Ferreira',NULL,NULL,0,'2023-04-07 00:57:59'),
+ (48,'joaquimpereira',NULL,'Joaquim Pereira',NULL,NULL,0,'2023-04-07 00:57:59'),
+ (49,'jksprods','','Jorge Monteiro ','','',5,'2023-04-07 00:57:59'),
+ (50,'josémachado',NULL,'José Machado ',NULL,NULL,0,'2023-04-07 00:57:59'),
+ (51,'josémanuelsoares',NULL,'José Manuel Soares ',NULL,NULL,0,'2023-04-07 00:57:59'),
+ (52,'josémariaferreira',NULL,'José Maria Ferreira',NULL,NULL,0,'2023-04-07 00:57:59'),
+ (53,'joséoliveira',NULL,'José Oliveira',NULL,NULL,0,'2023-04-07 00:57:59'),
+ (54,'josésantos',NULL,'José Santos',NULL,NULL,0,'2023-04-07 00:57:59'),
+ (55,'josésilva',NULL,'José Silva ',NULL,NULL,0,'2023-04-07 00:57:59'),
+ (56,'josefa',NULL,'Josefa ',NULL,NULL,0,'2023-04-07 00:57:59'),
+ (57,'josefinaalves',NULL,'Josefina Alves ',NULL,NULL,0,'2023-04-07 00:57:59'),
+ (58,'lauradias',NULL,'Laura Dias ',NULL,NULL,0,'2023-04-07 00:57:59'),
+ (59,'lauraoliveira',NULL,'Laura Oliveira ',NULL,NULL,0,'2023-04-07 00:57:59'),
+ (60,'laurinda',NULL,'Laurinda ',NULL,NULL,0,'2023-04-07 00:57:59'),
+ (61,'lúciamachado',NULL,'Lúcia Machado',NULL,NULL,0,'2023-04-07 00:57:59'),
+ (62,'luíspires',NULL,'Luís Pires ',NULL,NULL,0,'2023-04-07 00:57:59'),
+ (63,'luíssoares',NULL,'Luís Soares',NULL,NULL,0,'2023-04-07 00:57:59'),
+ (64,'luísalopes',NULL,'Luísa Lopes',NULL,NULL,0,'2023-04-07 00:57:59'),
+ (65,'lurdesmartins',NULL,'Lurdes Martins ',NULL,NULL,0,'2023-04-07 00:57:59'),
+ (66,'lurdesribeiro',NULL,'Lurdes Ribeiro ',NULL,NULL,0,'2023-04-07 00:57:59'),
+ (67,'lurdessilva',NULL,'Lurdes Silva ',NULL,NULL,0,'2023-04-07 00:57:59'),
+ (68,'manuelborges',NULL,'Manuel Borges',NULL,NULL,0,'2023-04-07 00:57:59'),
+ (69,'manuelferreira',NULL,'Manuel Ferreira',NULL,NULL,0,'2023-04-07 00:57:59'),
+ (70,'manuelxavier',NULL,'Manuel Xavier',NULL,NULL,0,'2023-04-07 00:57:59'),
+ (71,'mariadapaz',NULL,'Maria da Paz ',NULL,NULL,0,'2023-04-07 00:57:59'),
+ (72,'mariajoséborges',NULL,'Maria José Borges',NULL,NULL,0,'2023-04-07 00:57:59'),
+ (73,'mariajosémoreira',NULL,'Maria José Moreira ',NULL,NULL,0,'2023-04-07 00:57:59'),
+ (74,'mariamachado',NULL,'Maria Machado',NULL,NULL,0,'2023-04-07 00:57:59'),
+ (75,'miguelferreira',NULL,'Miguel Ferreira',NULL,NULL,0,'2023-04-07 00:57:59'),
+ (76,'migueloliveira',NULL,'Miguel Oliveira',NULL,NULL,0,'2023-04-07 00:57:59'),
+ (77,'morais',NULL,'Morais ',NULL,NULL,0,'2023-04-07 00:57:59'),
+ (78,'nunopereira',NULL,'Nuno Pereira ',NULL,NULL,0,'2023-04-07 00:57:59'),
+ (79,'nunoteixeira',NULL,'Nuno Teixeira',NULL,NULL,0,'2023-04-07 00:57:59'),
+ (80,'odete',NULL,'Odete',NULL,NULL,0,'2023-04-07 00:57:59'),
+ (81,'olinda',NULL,'Olinda ',NULL,NULL,0,'2023-04-07 00:57:59'),
+ (82,'paulaoliveira',NULL,'Paula Oliveira ',NULL,NULL,0,'2023-04-07 00:57:59'),
+ (83,'raquelbrandão',NULL,'Raquel Brandão ',NULL,NULL,0,'2023-04-07 00:57:59'),
+ (84,'ritasousa',NULL,'Rita Sousa ',NULL,NULL,0,'2023-04-07 00:57:59'),
+ (85,'rosapacheco',NULL,'Rosa Pacheco ',NULL,NULL,0,'2023-04-07 00:57:59'),
+ (86,'rosarodrigues',NULL,'Rosa Rodrigues ',NULL,NULL,0,'2023-04-07 00:57:59'),
+ (87,'rosasantos',NULL,'Rosa Santos',NULL,NULL,0,'2023-04-07 00:57:59'),
+ (88,'silva',NULL,'Silva',NULL,NULL,0,'2023-04-07 00:57:59'),
+ (89,'simãocarneiro',NULL,'Simão Carneiro ',NULL,NULL,0,'2023-04-07 00:57:59'),
+ (90,'simãosampaio',NULL,'Simão Sampaio',NULL,NULL,0,'2023-04-07 00:57:59'),
+ (91,'sousa',NULL,'Sousa',NULL,NULL,0,'2023-04-07 00:57:59'),
+ (92,'susanamartins',NULL,'Susana Martins ',NULL,NULL,0,'2023-04-07 00:57:59'),
+ (93,'susanasoares',NULL,'Susana Soares',NULL,NULL,0,'2023-04-07 00:57:59'),
+ (94,'tâniacarneiro',NULL,'Tânia Carneiro ',NULL,NULL,0,'2023-04-07 00:57:59'),
+ (95,'vítorneto',NULL,'Vítor Neto ',NULL,NULL,0,'2023-04-07 00:57:59'),
+ (96,'joaquimrodrigues',NULL,'Joaquim Rodrigues',NULL,NULL,0,'2023-04-07 00:57:59'),
+ (97,'cátiapereira',NULL,'Cátia Pereira',NULL,NULL,0,'2023-04-07 00:57:59');
+/*!40000 ALTER TABLE `sys_utilizadores` ENABLE KEYS */;
 
 
 
