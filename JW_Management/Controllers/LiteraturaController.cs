@@ -160,6 +160,7 @@ namespace JW_Management.Controllers
             DbContext context = HttpContext.RequestServices.GetService(typeof(DbContext)) as DbContext;
 
             ViewBag.Publicadores = context.ObterPublicadores().Select(l => new SelectListItem() { Value = l.Id.ToString(), Text = l.Nome });
+            ViewBag.Estados = context.ObterEstadosPedido().Select(l => new SelectListItem() { Value = l.Descricao, Text = l.Descricao });
             ViewBag.Periodicos = context.ObterTipoPeriodicos().Select(l => new SelectListItem() { Value = l.Referencia, Text = l.Descricao });
 
             List<Literatura> LstPedidos = context.ObterPedidosPeriodico().Where(l => l.Quantidade > 0).OrderBy(l => l.Publicador.Nome).ToList();
@@ -169,10 +170,24 @@ namespace JW_Management.Controllers
         }
 
         [HttpPost]
+        public IActionResult Pedidos(string Email)
+        {
+            DbContext context = HttpContext.RequestServices.GetService(typeof(DbContext)) as DbContext;
+            List<Literatura> LstLiteratura = context.ObterPedidosEspeciais().Where(l => l.EstadoPedido.Descricao == "Pendente").ToList();
+
+            foreach (var l in LstLiteratura)
+            {
+                context.AtualizarEstadoPedidoEspecial(l, new EstadoPedido("Enviado Email"));
+            }
+
+            return Json(MailContext.MailPedidosEspeciaisPendentes(LstLiteratura, Email) ? StatusCode(200) : StatusCode(500));
+        }
+
+        [HttpPost]
         public IActionResult Pedido(string stamp, int idpub, int qtd)
         {
             DbContext context = HttpContext.RequestServices.GetService(typeof(DbContext)) as DbContext;
-            if (string.IsNullOrEmpty(stamp) || idpub == 0 || qtd == 0) return StatusCode(500);
+            if (string.IsNullOrEmpty(stamp) || qtd == 0) return StatusCode(500);
 
             Literatura l = new Literatura()
             {
@@ -182,6 +197,19 @@ namespace JW_Management.Controllers
             };
 
             return Json(context.AdicionarPedidoEspecial(l, new EstadoPedido()) ? l.Stamp : StatusCode(500));
+        }
+
+        [HttpPut]
+        public IActionResult Pedido(string stamp, int qtd, string estado)
+        {
+            DbContext context = HttpContext.RequestServices.GetService(typeof(DbContext)) as DbContext;
+            if (string.IsNullOrEmpty(stamp) || qtd == 0) return StatusCode(500);
+
+            Literatura l = context.ObterPedidoEspecial(stamp);
+            l.Quantidade = qtd;
+            EstadoPedido e = new EstadoPedido(estado);
+
+            return Json(context.AtualizarEstadoPedidoEspecial(l, e) ? l.Stamp : StatusCode(500));
         }
 
         [HttpDelete]
