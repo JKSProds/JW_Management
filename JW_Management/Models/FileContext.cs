@@ -14,12 +14,45 @@ namespace JW_Management.Models
             PdfStamper pdfStamper = new PdfStamper(pdfReader, outputPdfStream);
             AcroFields pdfFormFields = pdfStamper.AcroFields;
 
-            int x = 902;
+            int x = 901;
             int mes = DateTime.Now.Month >= 3 && DateTime.Now.Month <= 8 ? 3 : 9;
             int ano = DateTime.Now.Year;
 
             pdfFormFields.SetField("900_0_Text", "Português");
             pdfFormFields.SetField("900_1_Text", (DateTime.Now.Month >= 3 && DateTime.Now.Month <= 8 ? "Março -> Agosto" : "Setembro -> Fevereiro") + " " + ano);
+
+            foreach (var l in context.ObterLiteraturas(mes - 1, ano))
+            {
+                if (l.Linha > 0)
+                {
+                    pdfFormFields.SetField(x + "_" + l.Linha + "_S28Value", l.Quantidade.ToString());
+                }
+                else
+                {
+                    if (l.Tipo.Id == 1)
+                    {
+                        if (string.IsNullOrEmpty(pdfFormFields.GetField(x + "_86_S28Value"))) pdfFormFields.SetField(x + "_86_S28Value", "0");
+                        pdfFormFields.SetField(x + "_86_S28Value", (int.Parse(pdfFormFields.GetField(x + "_86_S28Value")) + l.Quantidade).ToString());
+                    }
+                    else if (l.Tipo.Id == 2)
+                    {
+                        if (string.IsNullOrEmpty(pdfFormFields.GetField(x + "_5_S28Value"))) pdfFormFields.SetField(x + "_5_S28Value", "0");
+                        pdfFormFields.SetField(x + "_5_S28Value", (int.Parse(pdfFormFields.GetField(x + "_5_S28Value")) + l.Quantidade).ToString());
+                    }
+                    else if (l.Tipo.Id == 3)
+                    {
+                        if (string.IsNullOrEmpty(pdfFormFields.GetField(x + "_54_S28Value"))) pdfFormFields.SetField(x + "_54_S28Value", "0");
+                        pdfFormFields.SetField(x + "_54_S28Value", (int.Parse(pdfFormFields.GetField(x + "_54_S28Value")) + l.Quantidade).ToString());
+                    }
+                    else if (l.Tipo.Id == 4)
+                    {
+                        if (string.IsNullOrEmpty(pdfFormFields.GetField(x + "_82_S28Value"))) pdfFormFields.SetField(x + "_82_S28Value", "0");
+                        pdfFormFields.SetField(x + "_82_S28Value", (int.Parse(pdfFormFields.GetField(x + "_82_S28Value")) + l.Quantidade).ToString());
+                    }
+                }
+            }
+
+            x++;
 
             for (int i = 0; i < 6; i++)
             {
@@ -71,9 +104,9 @@ namespace JW_Management.Models
                         }
                         else if (l.Tipo.Id == 3)
                         {
-                            pdfFormFields.SetField(x + "_54_S28Value", (int.Parse(pdfFormFields.GetField(x + "_54_S28Value").ToString()) + l.Entradas).ToString());
-                            pdfFormFields.SetField(x + 1 + "_54_S28Value", (int.Parse(pdfFormFields.GetField(x + 1 + "_54_S28Value").ToString()) + l.Quantidade).ToString());
-                            pdfFormFields.SetField(x + 2 + "_54_S28Value", (int.Parse(pdfFormFields.GetField(x + 2 + "_54_S28Calc").ToString()) + l.Saidas).ToString());
+                            pdfFormFields.SetField(x + "_54_S28Value", (int.Parse(pdfFormFields.GetField(x + "_54_S28Value")) + l.Entradas).ToString());
+                            pdfFormFields.SetField(x + 1 + "_54_S28Value", (int.Parse(pdfFormFields.GetField(x + 1 + "_54_S28Value")) + l.Quantidade).ToString());
+                            pdfFormFields.SetField(x + 2 + "_54_S28Value", (int.Parse(pdfFormFields.GetField(x + 2 + "_54_S28Calc")) + l.Saidas).ToString());
                         }
                         else if (l.Tipo.Id == 4)
                         {
