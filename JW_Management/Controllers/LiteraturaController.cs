@@ -6,6 +6,8 @@ using Microsoft.AspNetCore.Authorization;
 
 namespace JW_Management.Controllers
 {
+{
+    [Authorize]
     public class LiteraturaController : Controller
     {
         public IActionResult Index(string filtro, int tipo)
