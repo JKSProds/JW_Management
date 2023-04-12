@@ -67,6 +67,40 @@
             return LstLiteratura.OrderBy(l => l.Descricao.Trim()).ToList();
         }
 
+        //Obter todas as literaturas com os stocks especificos entre duas datas
+        public List<Literatura> ObterLiteraturas(int Mes, int Ano)
+        {
+            List<Literatura> LstLiteratura = new();
+            List<TipoLiteratura> LstTiposLiteratura = ObterTiposLiteratura();
+
+            DateTime dInicial = DateTime.Parse("01/" + Mes + "/" + Ano + " 00:00:00");
+            DateTime dFinal = DateTime.Parse(DateTime.DaysInMonth(Ano, Mes) + "/" + Mes + "/" + Ano + " 23:59:59");
+
+            using (Database db = ConnectionString)
+            {
+                string sql = "SELECT IFNULL(l_form_order.Linha,0) as Linha, l_pubs.*, IFNULL((SELECT SUM(Quantidade) from l_movimentos where l_pubs.STAMP=l_movimentos.StampLiteratura and Data < '" + dFinal.ToString("yyyy-MM-dd HH:mm:ss") + "' and IdPublicador = 0), 0) as Quantidade , IFNULL((SELECT SUM(CASE WHEN Quantidade > 0 THEN Quantidade ELSE 0 END) from l_movimentos where l_pubs.STAMP=l_movimentos.StampLiteratura and Data between '" + dInicial.ToString("yyyy-MM-dd HH:mm:ss") + "' and '" + dFinal.ToString("yyyy-MM-dd HH:mm:ss") + "' and IdPublicador = 0), 0) as Entradas , IFNULL((SELECT SUM(CASE WHEN Quantidade < 0 THEN Quantidade ELSE 0 END) from l_movimentos where l_pubs.STAMP=l_movimentos.StampLiteratura and Data between '" + dInicial.ToString("yyyy-MM-dd HH:mm:ss") + "' and '" + dFinal.ToString("yyyy-MM-dd HH:mm:ss") + "' and IdPublicador = 0), 0) as Saidas FROM l_pubs left join l_form_order on l_pubs.Referencia=l_form_order.Referencia;";
+
+                using var result = db.Query(sql);
+                while (result.Read())
+                {
+                    LstLiteratura.Add(new Literatura()
+                    {
+                        Stamp = result["STAMP"],
+                        Id = result["Id"],
+                        Referencia = result["Referencia"],
+                        Descricao = result["Descricao"],
+                        Quantidade = result["Quantidade"],
+                        Entradas = result["Entradas"],
+                        Saidas = result["Saidas"],
+                        Linha = result["Linha"],
+                        Tipo = LstTiposLiteratura.Where(g => g.Id == result["IdTipo"]).FirstOrDefault(new TipoLiteratura())
+                    });
+                }
+            }
+
+            return LstLiteratura.OrderBy(l => l.Descricao.Trim()).ToList();
+        }
+
         //Obter uma literatura em especifico
         public Literatura ObterLiteratura(string STAMP)
         {

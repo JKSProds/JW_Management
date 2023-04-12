@@ -50,12 +50,12 @@
                             </button>
                         </p>
                         <p class="control">
-                            <button type="submit" class="button  is-fullwidth ">
+                            <a type="button" href="~/Literatura" class="button is-fullwidth ">
                                 <span class="icon">
                                     <i class="fas fa-backspace fa-lg"></i>
                                 </span>
                                 <span>Limpar</span>
-                            </button>
+                            </a>
                         </p>
                         <p class="control">
                             <a class="button is-info is-fullwidth " onclick="Bulma('#modalNovaPublicacao').modal().open();">
@@ -63,6 +63,14 @@
                                     <i class="fa-solid fa-book fa-lg"></i>
                                 </span>
                                 <span>Adicionar</span>
+                            </a>
+                        </p>
+                        <p class="control">
+                            <a type="button" class="button is-success is-fullwidth " href="~/Literatura/Formulario">
+                                <span class="icon">
+                                    <i class="fas fa-file-invoice fa-lg"></i>
+                                </span>
+                                <span>S-28</span>
                             </a>
                         </p>
                     </div>
@@ -120,16 +128,16 @@
                                     <span>@item.Tipo!.Descricao</span>
                                 </td>
                                 <td class="is-actions-cell">
-                                            <div class="buttons is-pulled-right is-flex-wrap-nowrap" style="width:100%">
-                                                <button class="button is-info is-fullwidth is-large mr-1"
-                                                        onclick="AtualizarQuantidade('@item.Stamp')">
-                                                    <i class="fas fa-refresh"></i>
-                                                </button>
-                                                <button class="button is-danger is-fullwidth is-large"
-                                                        onclick="ConfirmApagar('@item.Stamp')">
-                                                    <i class="fas fa-trash-can"></i>
-                                                </button>
-                                            </div>
+                                    <div class="buttons is-pulled-right is-flex-wrap-nowrap" style="width:100%">
+                                        <button class="button is-info is-fullwidth is-large mr-1"
+                                                onclick="AtualizarQuantidade('@item.Stamp')">
+                                            <i class="fas fa-refresh"></i>
+                                        </button>
+                                        <button class="button is-danger is-fullwidth is-large"
+                                                onclick="ConfirmApagar('@item.Stamp')">
+                                            <i class="fas fa-trash-can"></i>
+                                        </button>
+                                    </div>
                                 </td>
                             </tr>
                         }
@@ -322,7 +330,7 @@
     function ConfirmApagar(id) {
         document.getElementById('txtHiddenStamp').value = id;
         Bulma('#ModalConfirmApagar').modal().open();
-}
+    }
 
     function AtualizarQuantidade(id, qtd) {
         document.getElementById('txtHiddenStamp').value = id;
@@ -332,7 +340,7 @@
     function GerarMovimento(stamp, qtd) {
         $.ajax({
             url: '/Literatura/Literatura/',
-            data: { "id": stamp},
+            data: { "id": stamp },
             type: "GET",
             success: function (res) {
                 $.ajax({
@@ -358,7 +366,7 @@
                 notifyError('Falha ao obter a literatura!');
             }
         });
-       
+
     }
 
     function CriarPublicacao(referencia, descricao, tipo, qtd) {
@@ -368,7 +376,6 @@
             type: "POST",
             success: function (data) {
                 notify('Literatura criada com sucesso!');
-                alert(data);
                 GerarMovimento(data, qtd);
             },
             error: function (response) {
