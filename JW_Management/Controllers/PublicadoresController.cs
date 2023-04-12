@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Authorization;
 
 namespace JW_Management.Controllers
 {
+    [Authorize]
     public class PublicadoresController : Controller
     {
         [HttpGet]

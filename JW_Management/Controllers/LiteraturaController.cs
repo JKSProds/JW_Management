@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Authorization;
 
 namespace JW_Management.Controllers
 {
+    [Authorize]
     public class LiteraturaController : Controller
     {
         public IActionResult Index(string filtro, int tipo)
@@ -225,18 +226,18 @@ namespace JW_Management.Controllers
         public IActionResult Formulario()
         {
             DbContext context = HttpContext.RequestServices.GetService(typeof(DbContext)) as DbContext;
-            FileContext fileContext = new FileContext();
+            //FileContext fileContext = new FileContext();
 
-            var file = fileContext.PreencherFormularioS28(context!).ToArray();
+            //var file = fileContext.PreencherFormularioS28(context!).ToArray();
             var output = new MemoryStream();
-            output.Write(file, 0, file.Length);
+            //output.Write(file, 0, file.Length);
             output.Position = 0;
 
             var cd = new System.Net.Mime.ContentDisposition
             {
                 FileName = "S-28_TPO_Preenchido.pdf",
                 Inline = true,
-                Size = file.Length,
+                //Size = file.Length,
                 CreationDate = DateTime.Now,
 
             };
