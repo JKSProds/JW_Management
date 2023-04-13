@@ -20,8 +20,10 @@
             </div>
         </div>
         <div class="column is-4">
-            <button class="button is-info is-large is-pulled-right is-fullwidth " disabled>@Math.Abs(Model.Sum(l =>
-                l.Quantidade))</button>
+            <button class="button is-info is-large is-pulled-right is-fullwidth " disabled>
+                @Math.Abs(Model.Sum(l =>
+                l.Quantidade))
+            </button>
         </div>
     </div>
 </div>
@@ -30,8 +32,10 @@
     @if (Model.Count() == 0)
     {
         <br />
-        <button class="button is-danger is-large is-rounded is-fullwidth is-disabled">Não foram encontrados
-            periódicos!</button>
+        <button class="button is-danger is-large is-rounded is-fullwidth is-disabled">
+            Não foram encontrados
+            periódicos!
+        </button>
     }
     else
     {
@@ -40,6 +44,9 @@
                 <tr>
                     <th>
                         @Html.DisplayNameFor(model => model.FirstOrDefault()!.Publicador!.Nome)
+                    </th>
+                    <th>
+                        @Html.DisplayNameFor(model => model.FirstOrDefault()!.Publicador!.Grupo!)
                     </th>
                     <th>
                         @Html.DisplayNameFor(model => model.FirstOrDefault()!.Quantidade)
@@ -54,13 +61,16 @@
                         <td data-label="@Html.DisplayNameFor(model => model.FirstOrDefault()!.Publicador!.Nome)">
                             <span>@item.Publicador!.Nome</span>
                         </td>
+                        <td data-label="@Html.DisplayNameFor(model => model.FirstOrDefault()!.Publicador!.Grupo!)">
+                            <span>@item.Publicador!.Grupo!.Nome (@item.Publicador!.Grupo!.Responsavel!.Nome)</span>
+                        </td>
                         <td data-label="@Html.DisplayNameFor(model => model.FirstOrDefault()!.Quantidade)">
                             <span>@Math.Abs(item.Quantidade)</span>
                         </td>
                         <td class="is-actions-cell">
                             <div class="buttons is-pulled-right is-flex-wrap-nowrap">
                                 <button class="button is-success is-fullwidth is-large"
-                            onclick="GerarMovimento('@item.Stamp', @item.Quantidade, @item.Publicador.Id)">
+                                        onclick="GerarMovimento('@item.Stamp', @item.Quantidade, @item.Publicador.Id)">
                                     <i class="fas fa-circle-check"></i>
                                 </button>
                             </div>

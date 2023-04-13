@@ -28,7 +28,7 @@
     <link rel="stylesheet" href="~/lib/bulma-pageloader/dist/css/bulma-pageloader.min.css" type="text/css" />
 
     <link href="https://ajax.aspnetcdn.com/ajax/jquery.ui/1.9.2/themes/blitzer/jquery-ui.css" rel="Stylesheet"
-        type="text/css" />
+          type="text/css" />
     <script src="https://ajax.aspnetcdn.com/ajax/jQuery/jquery-1.10.0.min.js" type="text/javascript"></script>
     <script src="https://ajax.aspnetcdn.com/ajax/jquery.ui/1.9.2/jquery-ui.min.js" type="text/javascript"></script>
 
@@ -47,11 +47,11 @@
             <nav class="navbar is-light has-shadow" role="navigation" aria-label="main navigation">
                 <div class="navbar-brand">
                     <a class="navbar-item" href="~/">
-                        <img src="~/img/jw_logo.svg" style="width:60px;height:60px">
+                        <img src="~/img/jw_logo.png" style="width:60px;height:60px;max-height:60px">
                     </a>
 
                     <a role="button" class="navbar-burger" aria-label="menu" aria-expanded="false"
-                        data-target="navbarBasicExample">
+                       data-target="navbarBasicExample">
                         <span aria-hidden="true"></span>
                         <span aria-hidden="true"></span>
                         <span aria-hidden="true"></span>
@@ -109,7 +109,7 @@
                             </span>
                             <span>Publicadores</span>
                         </a>
-                        </div>
+                    </div>
 
                     <div class="navbar-end">
                         @if (User.Identity.IsAuthenticated)
@@ -133,7 +133,7 @@
                                     </div>
                                     <hr class="navbar-divider">
                                     <div class="navbar-item has-text-centered">
-                                        Versão @GetType().Assembly.GetName().Version.ToString()@(Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") == "Development" ?" - DEV" : "")
+                                        Versão @GetType().Assembly.GetName().Version.ToString()@(Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") == "Development" ? " - DEV" : "")
                                     </div>
                                 </div>
                             </div>

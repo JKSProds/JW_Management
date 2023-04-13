@@ -314,7 +314,7 @@
                         Descricao = result["Descricao"],
                         Quantidade = result["Quantidade"],
                         Tipo = LstTiposLiteratura.Where(g => g.Id == result["IdTipo"]).FirstOrDefault(new TipoLiteratura()),
-                        Publicador = new Publicador() { Id = result["IdUtilizador"], Nome = result["Nome"] }
+                        Publicador = ObterPublicador(int.Parse(result["IdUtilizador"]), false, false, true)
                     });
                 }
             }
