@@ -1,29 +1,18 @@
 ﻿<!DOCTYPE html>
 <html lang="pt-pt">
 
-<style>
-    .tabs-content li {
-        display: none;
-        list-style: none;
-    }
-
-        .tabs-content li.is-active {
-            display: block;
-        }
-</style>
-
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>@ViewData["Title"] - Cong. Vila das Aves</title>
 
-    @*<link rel="stylesheet" href="~/css/site.css" />*@
+    <link rel="stylesheet" href="~/css/site.css" />
     <link rel="stylesheet" href="~/lib/font-awesome/css/all.css">
     <link rel="stylesheet" href="~/lib/bulma/css/bulma.min.css" />
     <link rel="stylesheet" href="~/lib/bulma-switch-control/css/main.min.css" />
     <link rel="stylesheet" href="~/lib/bulma-calendar/dist/css/bulma-calendar.min.css">
     <link rel="stylesheet" href="~/lib/bulma-responsive-tables/css/main.min.css" />
-    <link rel="stylesheet" type="text/css" href="~/lib/bulma-list//css/bulma-list.css" />
+    <link rel="stylesheet" type="text/css" href="~/lib/bulma-list/css/bulma-list.css" />
     <link rel="stylesheet" href="~/lib/dropzone/dropzone.min.css" type="text/css" />
     <link rel="stylesheet" href="~/lib/bulma-pageloader/dist/css/bulma-pageloader.min.css" type="text/css" />
 
@@ -39,138 +28,134 @@
     <script src="~/lib/dropzone/dropzone.min.js"></script>
 
 </head>
+<body>
+    <header>
+        <nav class="navbar is-light has-shadow" role="navigation" aria-label="main navigation">
+            <div class="navbar-brand">
+                <a class="navbar-item" href="~/">
+                    <img src="~/img/jw_logo.png" style="width:60px;height:60px;max-height:60px">
+                </a>
 
-<div class=' hero is-fullheight'>
+                <a role="button" class="navbar-burger" aria-label="menu" aria-expanded="false"
+                   data-target="navbarBasicExample">
+                    <span aria-hidden="true"></span>
+                    <span aria-hidden="true"></span>
+                    <span aria-hidden="true"></span>
+                </a>
+            </div>
 
-    <body>
-        <header>
-            <nav class="navbar is-light has-shadow" role="navigation" aria-label="main navigation">
-                <div class="navbar-brand">
-                    <a class="navbar-item" href="~/">
-                        <img src="~/img/jw_logo.png" style="width:60px;height:60px;max-height:60px">
-                    </a>
+            <div id="navbarBasicExample" class="navbar-menu">
+                <div class="navbar-start">
+                    <div class="navbar-item has-dropdown is-hoverable">
+                        <a class="navbar-link">
+                            <span class="icon mr-2">
+                                <img src="~/img/literatura.png">
+                            </span>
+                            <span>Literatura</span>
+                        </a>
 
-                    <a role="button" class="navbar-burger" aria-label="menu" aria-expanded="false"
-                       data-target="navbarBasicExample">
-                        <span aria-hidden="true"></span>
-                        <span aria-hidden="true"></span>
-                        <span aria-hidden="true"></span>
+                        <div class="navbar-dropdown buttons">
+                            <p class="control mx-1">
+                                <a class="button is-info is-rounded  is-fullwidth" href="~/Literatura">
+                                    <span class="icon">
+                                        <i class="fa-solid fa-book"></i>
+                                    </span>
+                                    <span>Stock</span>
+                                </a>
+                            </p>
+                            <p class="control mx-1">
+                                <a class="button is-info is-rounded is-fullwidth" href="~/Literatura/Movimentos/1">
+                                    <span class="icon">
+                                        <i class="fa-solid fa-right-to-bracket"></i>
+                                    </span>
+                                    <span>Entradas</span>
+                                </a>
+                            </p>
+                            <p class="control mx-1">
+                                <a class="button is-info is-rounded is-fullwidth" href="~/Literatura/Movimentos/2">
+                                    <span class="icon">
+                                        <i class="fa-solid fa-right-from-bracket"></i>
+                                    </span>
+                                    <span>Saidas</span>
+                                </a>
+                            </p>
+                            <p class="control mx-1">
+                                <a class="button is-info is-rounded is-fullwidth" href="~/Literatura/Pedidos">
+                                    <span class="icon">
+                                        <i class="fa-solid fa-book-medical"></i>
+                                    </span>
+                                    <span>Pedidos</span>
+                                </a>
+                            </p>
+                        </div>
+                    </div>
+                    <a class="navbar-item" href="~/Publicadores">
+                        <span class="icon mr-2">
+                            <img src="~/img/publicadores.png">
+                        </span>
+                        <span>Publicadores</span>
                     </a>
                 </div>
 
-                <div id="navbarBasicExample" class="navbar-menu">
-                    <div class="navbar-start">
-                        <div class="navbar-item has-dropdown is-hoverable">
+                <div class="navbar-end">
+                    @if (User.Identity.IsAuthenticated)
+                    {
+                        <div class="navbar-item has-dropdown">
                             <a class="navbar-link">
-                                <span class="icon mr-2">
-                                    <img src="~/img/literatura.png">
-                                </span>
-                                <span>Literatura</span>
+                                <figure class="mr-2 mt-1">
+                                    <img class="is-rounded" style="width:50px;max-height:50px;" src="~/img/user.png" alt="user_image">
+                                </figure>
+                                <span>@this.User.Claims.Last().Value</span>
                             </a>
 
-                            <div class="navbar-dropdown buttons">
-                                <p class="control mx-1">
-                                    <a class="button is-info is-rounded  is-fullwidth" href="~/Literatura">
+                            <div class="navbar-dropdown">
+                                <div class="navbar-item">
+                                    <a class="button is-danger is-light is-fullwidth" href="~/Home/Logout">
                                         <span class="icon">
-                                            <i class="fa-solid fa-book"></i>
+                                            <i class="fas fa-sign-out-alt"></i>
                                         </span>
-                                        <span>Stock</span>
+                                        <span>Terminar Sessão</span>
                                     </a>
-                                </p>
-                                <p class="control mx-1">
-                                    <a class="button is-info is-rounded is-fullwidth" href="~/Literatura/Movimentos/1">
-                                        <span class="icon">
-                                            <i class="fa-solid fa-right-to-bracket"></i>
-                                        </span>
-                                        <span>Entradas</span>
-                                    </a>
-                                </p>
-                                <p class="control mx-1">
-                                    <a class="button is-info is-rounded is-fullwidth" href="~/Literatura/Movimentos/2">
-                                        <span class="icon">
-                                            <i class="fa-solid fa-right-from-bracket"></i>
-                                        </span>
-                                        <span>Saidas</span>
-                                    </a>
-                                </p>
-                                <p class="control mx-1">
-                                    <a class="button is-info is-rounded is-fullwidth" href="~/Literatura/Pedidos">
-                                        <span class="icon">
-                                            <i class="fa-solid fa-book-medical"></i>
-                                        </span>
-                                        <span>Pedidos</span>
-                                    </a>
-                                </p>
-                            </div>
-                        </div>
-                        <a class="navbar-item" href="~/Publicadores">
-                            <span class="icon mr-2">
-                                <img src="~/img/publicadores.png">
-                            </span>
-                            <span>Publicadores</span>
-                        </a>
-                    </div>
-
-                    <div class="navbar-end">
-                        @if (User.Identity.IsAuthenticated)
-                        {
-                            <div class="navbar-item has-dropdown">
-                                <a class="navbar-link">
-                                    <figure style="width:30px;heigth:30px;">
-                                        <img class="is-rounded" src="~/img/user.png" alt="user_image">
-                                    </figure>
-                                    <span>@this.User.Claims.Last().Value</span>
-                                </a>
-
-                                <div class="navbar-dropdown">
-                                    <div class="navbar-item">
-                                        <a class="button is-danger is-light is-fullwidth" href="~/Home/Logout">
-                                            <span class="icon">
-                                                <i class="fas fa-sign-out-alt"></i>
-                                            </span>
-                                            <span>Terminar Sessão</span>
-                                        </a>
-                                    </div>
-                                    <hr class="navbar-divider">
-                                    <div class="navbar-item has-text-centered">
-                                        Versão @GetType().Assembly.GetName().Version.ToString()@(Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") == "Development" ? " - DEV" : "")
-                                    </div>
+                                </div>
+                                <hr class="navbar-divider">
+                                <div class="navbar-item has-text-centered">
+                                    Versão @GetType().Assembly.GetName().Version.ToString()@(Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") == "Development" ? " - DEV" : "")
                                 </div>
                             </div>
-                        }
-                        else
-                        {
-                            <div class="navbar-item">
-                                <a class="button is-info is-light" href="~/Home/Login">
-                                    <span class="icon">
-                                        <i class="fas fa-sign-in-alt"></i>
-                                    </span>
-                                    <span>Iniciar Sessão</span>
-                                </a>
-                            </div>
-                        }
-                    </div>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="navbar-item">
+                            <a class="button is-info is-light" href="~/Home/Login">
+                                <span class="icon">
+                                    <i class="fas fa-sign-in-alt"></i>
+                                </span>
+                                <span>Iniciar Sessão</span>
+                            </a>
+                        </div>
+                    }
                 </div>
-            </nav>
-        </header>
-        <div class="">
-            <main role="main">
-                &nbsp;
-                @RenderBody()
-                &nbsp;
-            </main>
-        </div>
-        <footer class="has-text-centered is-flex-align-items-flex-end mt-auto">
-            <div class="content has-text-centered">
-                <p>
-                    <strong>Jorge Monteiro</strong> (V.@GetType().Assembly.GetName().Version!.ToString())
-                </p>
             </div>
+        </nav>
+    </header>
+    <div class="">
+        <main role="main">
             &nbsp;
-        </footer>
-        @RenderSection("Scripts", required: false)
-    </body>
-</div>
+            @RenderBody()
+            &nbsp;
+        </main>
+    </div>
+    <footer class="has-text-centered is-flex-align-items-flex-end mt-auto">
+        <div class="content has-text-centered">
+            <p>
+                <strong>Jorge Monteiro</strong> (V.@GetType().Assembly.GetName().Version!.ToString())
+            </p>
+        </div>
+        &nbsp;
+    </footer>
+    @RenderSection("Scripts", required: false)
+</body>
 
 </html>
 

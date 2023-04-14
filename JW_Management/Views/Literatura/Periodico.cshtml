@@ -48,7 +48,7 @@
                     <th>
                         @Html.DisplayNameFor(model => model.FirstOrDefault()!.Publicador!.Grupo!)
                     </th>
-                    <th>
+                    <th style="max-width:30px">
                         @Html.DisplayNameFor(model => model.FirstOrDefault()!.Quantidade)
                     </th>
                     <th></th>
@@ -62,7 +62,7 @@
                             <span>@item.Publicador!.Nome</span>
                         </td>
                         <td data-label="@Html.DisplayNameFor(model => model.FirstOrDefault()!.Publicador!.Grupo!)">
-                            <span>@item.Publicador!.Grupo!.Nome (@item.Publicador!.Grupo!.Responsavel!.Nome)</span>
+                            <span>@item.Publicador?.Grupo?.Responsavel?.Nome [@item.Publicador?.Grupo?.Id]</span>
                         </td>
                         <td data-label="@Html.DisplayNameFor(model => model.FirstOrDefault()!.Quantidade)">
                             <span>@Math.Abs(item.Quantidade)</span>
