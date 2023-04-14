@@ -3,7 +3,7 @@ namespace JW_Management.Models
 {
     public static class MailContext
     {
-        private static bool EnviarMail(string EmailDestino, string Assunto, string Mensagem, Attachment anexo)
+        private static bool EnviarMail(string EmailDestino, string Assunto, string Mensagem, List<Attachment> Anexos)
         {
             var configuration = new ConfigurationBuilder().AddJsonFile("appsettings.json").Build();
 
@@ -49,7 +49,13 @@ namespace JW_Management.Models
                 //Assinatura
                 myMail.Body += "<br><br><i>Atenção este é um email automático, por favor não responda a este email!</i><br><br>Powered by: JKSProds - Software";
 
-                if (anexo != null) myMail.Attachments.Add(anexo);
+                if (Anexos.Count > 0)
+                {
+                    foreach (var a in Anexos)
+                    {
+                        myMail.Attachments.Add(a);
+                    }
+                }
 
                 mySmtpClient.SendMailAsync(myMail);
             }
@@ -83,6 +89,7 @@ namespace JW_Management.Models
         public static bool MailTerritorioAtribuido(Territorio t, string EmailDestino)
         {
             if (string.IsNullOrEmpty(t.Stamp) || string.IsNullOrEmpty(EmailDestino)) return false;
+            FileContext f = new();
 
             string Mensagem = "Abaixo segue o território atribuido a si para trabalhar num prazo máximo de 6 meses:<br><br>";
 
@@ -90,9 +97,16 @@ namespace JW_Management.Models
             Mensagem += "Nome: <b>" + t.Nome + "</b><br>";
             Mensagem += "Descrição: " + t.Descricao + "<br><br>";
 
-            Mensagem += "<a href='" + t.Url + "' class='button'></a>";
+            Mensagem += "<a href='" + t.Url + "' class='button'>Mapa</a>";
 
-            return EnviarMail(EmailDestino, "Território Atribuido - " + t.Nome + " (" + t.Id + ")", Mensagem, null);
+            List<Attachment> Anexos = new();
+
+            foreach (var a in t.Anexos)
+            {
+                Anexos.Add(new Attachment(new MemoryStream(f.ObterFicheiro(a.CaminhoFicheiro + a.NomeFicheiro)), a.NomeFicheiro));
+            }
+
+            return EnviarMail(EmailDestino, "Território Atribuido - " + t.Nome + " (" + t.Id + ")", Mensagem, Anexos);
         }
         public static bool MailTerritorioDevolver(Territorio t, string EmailDestino)
         {

@@ -87,7 +87,10 @@
                                 @Html.DisplayNameFor(model => model.FirstOrDefault()!.Dificuldade)
                             </th>
                             <th>
-                                @Html.DisplayNameFor(model => model.FirstOrDefault()!.PublicadorAtribuido!)
+                                @Html.DisplayNameFor(model => model.FirstOrDefault()!.UltimoMovimento!.Publicador!)
+                            </th>
+                            <th>
+                                @Html.DisplayNameFor(model => model.FirstOrDefault()!.UltimoMovimento!.DataMovimento!)
                             </th>
                             <th></th>
                         </tr>
@@ -105,12 +108,15 @@
                                 <td data-label="@Html.DisplayNameFor(model => model.FirstOrDefault()!.Dificuldade)">
                                     <span>@item.Dificuldade</span>
                                 </td>
-                                <td data-label="@Html.DisplayNameFor(model => model.FirstOrDefault()!.PublicadorAtribuido!)">
-                                    <span>@item.PublicadorAtribuido?.Nome</span>
+                                <td data-label="@Html.DisplayNameFor(model => model.FirstOrDefault()!.UltimoMovimento!.Publicador!)">
+                                    <span>@item.UltimoMovimento?.Publicador?.Nome</span>
+                                </td>
+                                <td data-label="@Html.DisplayNameFor(model => model.FirstOrDefault()!.UltimoMovimento!.DataMovimento!)">
+                                    <span>@item.UltimoMovimento?.DataMovimento</span>
                                 </td>
                                 <td class="is-actions-cell">
                                     <div class="buttons is-pulled-right is-flex-wrap-nowrap" style="width:100%">
-                                        @if (item.PublicadorAtribuido.Id == 0)
+                                        @if (item.UltimoMovimento?.Publicador?.Id == 0 || item.UltimoMovimento?.Publicador == null)
                                         {
                                             <button class="button is-info is-fullwidth is-large mr-1"
                                                     onclick="CriarMovimento('@item.Stamp', 1, document.getElementById('txtIdPublicador').value)">
@@ -120,7 +126,7 @@
                                         else
                                         {
                                             <button class="button is-success is-fullwidth is-large mr-1"
-                                                    onclick="CriarMovimento('@item.Stamp', 2, @item.PublicadorAtribuido.Id)">
+                                                    onclick="CriarMovimento('@item.Stamp', 2, @item.UltimoMovimento?.Publicador?.Id)">
                                                 <i class="fa-solid fa-file-circle-xmark"></i>
                                             </button>
                                         }
@@ -189,7 +195,7 @@
                 <div class="field">
                     <label class="label">Descrição</label>
                     <p class="control">
-                        <textarea type="text" class="input" rows="4" id="txtDescricaoTerritorio"></textarea>
+                        <textarea type="text" class="textarea" rows="4" id="txtDescricaoTerritorio"></textarea>
                     </p>
                 </div>
                 <div class="field">
@@ -284,7 +290,12 @@
     <div class="modal-background"></div>
     <div class="modal-card">
         <header class="modal-card-head">
-            <p class="modal-card-title">Devolver Território</p>
+            <p class="modal-card-title">
+                <span class="icon">
+                    <i class="fa-solid fa-file-circle-xmark"></i>
+                </span>
+                <span>Devolver - Territorio</span>
+            </p>
         </header>
         <section class="modal-card-body">
             <div class="modal-body">
@@ -370,7 +381,7 @@
         $.ajax({
             url: '/Territorios/Territorio/',
             data: { "id": id, "nome": nome, "dificuldade": dificuldade, "descricao": descricao, "url": url },
-            type: "POST",
+            type: "PUT",
             success: function (data) {
                 notify('Territorio criado com sucesso!');
                 window.location.reload();

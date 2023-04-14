@@ -637,28 +637,37 @@
 
         #region Territorios
         //Obter todos os territorios
-        public List<Territorio> ObterTerritorios()
+        public List<Territorio> ObterTerritorios(string filtro, bool LoadUltimoMovimento, bool LoadMovimentos, bool LoadFicheiros)
         {
             List<Territorio> LstTerritorios = new();
 
             using (Database db = ConnectionString)
             {
-                string sql = "SELECT * FROM t_territorios LEFT JOIN t_movimentos on t_movimentos.StampMovimento=(SELECT StampMovimento FROM t_movimentos Order By DataMovimento DESC LIMIT 1);";
+                string sql = "SELECT *, (SELECT StampMovimento FROM t_movimentos where StampTerritorio=t_territorios.Stamp Order By DataMovimento DESC LIMIT 1) as StampMovimento FROM t_territorios WHERE Id like '%" + filtro + "%' OR Nome like '%" + filtro + "%';";
                 using var result = db.Query(sql);
                 while (result.Read())
                 {
-                    int.TryParse(result["IdPublicador"], out int idpub);
-
                     LstTerritorios.Add(new Territorio()
                     {
                         Stamp = result["Stamp"],
                         Id = result["Id"],
                         Nome = result["Nome"],
                         Descricao = result["Descricao"],
-                        Dificuldade = result["Dificuldade"] == "1" ? DificuldadeTerritorio.FACIL : result["Dificuldade"] == "2" ? DificuldadeTerritorio.MODERADO : DificuldadeTerritorio.DIFICIL,
-                        Url = result["Url"],
-                        PublicadorAtribuido = ObterPublicador(idpub, false, false, false)
+                        Dificuldade = result["Dificuldade"] == "0" ? DificuldadeTerritorio.FACIL : result["Dificuldade"] == "1" ? DificuldadeTerritorio.MODERADO : DificuldadeTerritorio.DIFICIL,
+                        Url = result["Url"]
                     });
+                    if (LoadUltimoMovimento)
+                    {
+                        LstTerritorios.Last().UltimoMovimento = ObterMovimentoTerritorio(result["StampMovimento"]);
+                    }
+                    if (LoadMovimentos)
+                    {
+                        LstTerritorios.Last().Movimentos = ObterMovimentosTerritorio(result["Stamp"]);
+                    }
+                    if (LoadFicheiros)
+                    {
+                        LstTerritorios.Last().Anexos = ObterAnexosTerritorio(result["Stamp"]);
+                    }
                 }
             }
 
@@ -666,27 +675,38 @@
         }
 
         //Obter um territorio em especifico
-        public Territorio ObterTerritorio(string stamp)
+        public Territorio ObterTerritorio(string stamp, bool LoadUltimoMovimento, bool LoadMovimentos, bool LoadFicheiros)
         {
             Territorio t = new();
 
             using (Database db = ConnectionString)
             {
-                string sql = "SELECT * FROM t_territorios LEFT JOIN t_movimentos on t_movimentos.StampMovimento=(SELECT StampMovimento FROM t_movimentos Order By DataMovimento DESC LIMIT 1);";
+                string sql = "SELECT *, (SELECT StampMovimento FROM t_movimentos where StampTerritorio=t_territorios.Stamp Order By DataMovimento DESC LIMIT 1) as StampMovimento FROM t_territorios where Stamp='" + stamp + "';";
                 using var result = db.Query(sql);
                 while (result.Read())
                 {
-                    int.TryParse(result["IdPublicador"], out int idpub);
                     t = new Territorio()
                     {
                         Stamp = result["Stamp"],
                         Id = result["Id"],
                         Nome = result["Nome"],
                         Descricao = result["Descricao"],
-                        Dificuldade = result["Dificuldade"] == "1" ? DificuldadeTerritorio.FACIL : result["Dificuldade"] == "2" ? DificuldadeTerritorio.MODERADO : DificuldadeTerritorio.DIFICIL,
-                        Url = result["Url"],
-                        PublicadorAtribuido = ObterPublicador(idpub, false, false, false)
+                        Dificuldade = result["Dificuldade"] == "0" ? DificuldadeTerritorio.FACIL : result["Dificuldade"] == "1" ? DificuldadeTerritorio.MODERADO : DificuldadeTerritorio.DIFICIL,
+                        Url = result["Url"]
                     };
+
+                    if (LoadUltimoMovimento)
+                    {
+                        t.UltimoMovimento = ObterMovimentoTerritorio(result["StampMovimento"]);
+                    }
+                    if (LoadMovimentos)
+                    {
+                        t.Movimentos = ObterMovimentosTerritorio(result["Stamp"]);
+                    }
+                    if (LoadFicheiros)
+                    {
+                        t.Anexos = ObterAnexosTerritorio(result["Stamp"]);
+                    }
                 }
             }
 
@@ -698,7 +718,7 @@
         {
 
             string sql = "INSERT INTO t_territorios(Stamp, Id, Nome, Descricao, Dificuldade, Url) VALUES ";
-            sql += ("('" + t.Stamp + "', '" + t.Id + "', '" + t.Nome + "', '" + t.Descricao + "', '" + (t.Dificuldade == DificuldadeTerritorio.FACIL ? "1" : t.Dificuldade == DificuldadeTerritorio.MODERADO ? "2" : "3") + "', '" + t.Url + "') ");
+            sql += ("('" + t.Stamp + "', '" + t.Id + "', '" + t.Nome + "', '" + t.Descricao + "', '" + (t.Dificuldade == DificuldadeTerritorio.FACIL ? "0" : t.Dificuldade == DificuldadeTerritorio.MODERADO ? "1" : "2") + "', '" + t.Url + "') ");
             sql += " ON DUPLICATE KEY UPDATE Id = VALUES(Id), Nome = VALUES(Nome), Dificuldade = VALUES(Dificuldade), Descricao = VALUES(Descricao), Url = VALUES(Url);";
 
             return ExecutarQuery(sql);
@@ -709,8 +729,64 @@
         {
             string sql = "DELETE FROM t_territorios where Stamp='" + stamp + "';";
             sql += "DELETE FROM t_movimentos where StampTerritorio='" + stamp + "';";
+            sql += "DELETE FROM t_anexos where StampTerritorio='" + stamp + "';";
 
             return ExecutarQuery(sql);
+        }
+
+        //Obter todos os movimentos de um territorio
+        public List<MovimentosTerritorio> ObterMovimentosTerritorio(string stamp)
+        {
+            List<MovimentosTerritorio> LstMovimentosTerritorio = new();
+            Territorio t = ObterTerritorio(stamp, false, false, false);
+
+            using (Database db = ConnectionString)
+            {
+                string sql = "SELECT * FROM t_movimentos where StampTerritorio='" + stamp + "';";
+                using var result = db.Query(sql);
+                while (result.Read())
+                {
+
+                    LstMovimentosTerritorio.Add(new MovimentosTerritorio()
+                    {
+                        Stamp = result["StampMovimento"],
+                        Territorio = t,
+                        Publicador = ObterPublicador(result["IdPublicador"], false, false, false),
+                        DataMovimento = result["DataMovimento"],
+                        Tipo = result["TipoMovimento"] == "1" ? TipoMovimentoTerritorio.ENTRADA : TipoMovimentoTerritorio.SAIDA
+
+                    });
+                }
+            }
+
+            return LstMovimentosTerritorio.OrderBy(l => l.DataMovimento).ToList();
+        }
+
+        //Obter o ultimo movimento de um territorio
+        public MovimentosTerritorio ObterMovimentoTerritorio(string stamp)
+        {
+            MovimentosTerritorio m = new();
+
+            using (Database db = ConnectionString)
+            {
+                string sql = "SELECT * FROM t_movimentos where StampMovimento='" + stamp + "';";
+                using var result = db.Query(sql);
+                while (result.Read())
+                {
+
+                    m = new MovimentosTerritorio()
+                    {
+                        Stamp = result["StampMovimento"],
+                        Territorio = ObterTerritorio(result["StampTerritorio"], false, false, false),
+                        Publicador = ObterPublicador(result["IdPublicador"], false, false, false),
+                        DataMovimento = result["DataMovimento"],
+                        Tipo = result["TipoMovimento"] == "1" ? TipoMovimentoTerritorio.ENTRADA : TipoMovimentoTerritorio.SAIDA
+
+                    };
+                }
+            }
+
+            return m;
         }
 
         //Adicionar um movimento a um territorio
@@ -720,6 +796,79 @@
             string sql = "INSERT INTO t_movimentos(StampMovimento, StampTerritorio, IdPublicador, DataMovimento,TipoMovimento) VALUES ";
             sql += ("('" + m.Stamp + "', '" + m.Territorio.Stamp + "', '" + m.Publicador.Id + "', '" + m.DataMovimento.ToString("yyyy-MM-dd HH:mm:ss") + "', '" + (m.Tipo == TipoMovimentoTerritorio.ENTRADA ? "1" : "2") + "');");
             ;
+            return ExecutarQuery(sql);
+        }
+
+
+        //Obter todos os anexos de um territorio
+        public List<AnexosTerritorio> ObterAnexosTerritorio(string stamp)
+        {
+            List<AnexosTerritorio> LstAnexosTerritorio = new();
+            Territorio t = ObterTerritorio(stamp, false, false, false);
+
+            using (Database db = ConnectionString)
+            {
+                string sql = "SELECT * FROM t_anexos where StampTerritorio='" + stamp + "';";
+                using var result = db.Query(sql);
+                while (result.Read())
+                {
+                    LstAnexosTerritorio.Add(new AnexosTerritorio()
+                    {
+                        Stamp = result["StampAnexo"],
+                        Territorio = t,
+                        NomeFicheiro = result["Ficheiro"],
+                        CaminhoFicheiro = result["Caminho"],
+                        Extensao = result["Extensao"],
+                        Descricao = result["Descricao"]
+                    });
+                }
+            }
+
+            return LstAnexosTerritorio;
+        }
+
+        //Obter um anexo em especifico
+        public AnexosTerritorio ObterAnexo(string stamp)
+        {
+            AnexosTerritorio a = new();
+
+            using (Database db = ConnectionString)
+            {
+                string sql = "SELECT * FROM t_anexos where StampAnexo='" + stamp + "';";
+                using var result = db.Query(sql);
+                while (result.Read())
+                {
+                    a = new AnexosTerritorio()
+                    {
+                        Stamp = result["StampAnexo"],
+                        Territorio = ObterTerritorio(result["StampTerritorio"], false, false, false),
+                        NomeFicheiro = result["Ficheiro"],
+                        CaminhoFicheiro = result["Caminho"],
+                        Extensao = result["Extensao"],
+                        Descricao = result["Descricao"]
+                    };
+                }
+            }
+
+            return a;
+        }
+
+        //Adicionar um anexo a um territorio
+        public bool AdicionarAnexoTerritorio(AnexosTerritorio a)
+        {
+
+            string sql = "INSERT INTO t_anexos(StampAnexo, StampTerritorio, Descricao, Ficheiro, Caminho, Extensao) VALUES ";
+            sql += ("('" + a.Stamp + "', '" + a.Territorio.Stamp + "', '" + a.Descricao + "', '" + a.NomeFicheiro + "', '" + a.CaminhoFicheiro.Replace("\\", "\\\\") + "', '" + a.Extensao + "');");
+
+            return ExecutarQuery(sql);
+        }
+
+        //Apagar um anexo a um territorio
+        public bool ApagarAnexoTerritorio(string stamp)
+        {
+
+            string sql = "DELETE FROM t_anexos where StampAnexo = '" + stamp + "';";
+
             return ExecutarQuery(sql);
         }
 

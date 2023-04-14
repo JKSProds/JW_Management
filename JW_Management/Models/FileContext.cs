@@ -5,6 +5,84 @@ namespace JW_Management.Models
 {
     public class FileContext
     {
+        private string CaminhoTerritorios = "C:\\Users\\Jorge Monteiro\\Desktop\\Territorios\\";
+        private string CaminhoTerritoriosLinux = "/app/img/territorios/";
+        public string ObterCaminhoTerritorios()
+        {
+#if DEBUG
+            CriarPasta(CaminhoTerritorios);
+            return CaminhoTerritorios;
+#else
+            CriarPasta(CaminhoTerritoriosLinux);
+            return CaminhoTerritoriosLinux;
+#endif
+        }
+
+        private bool CriarPasta(string Caminho)
+        {
+            try
+            {
+                if (!Directory.Exists(Caminho)) Directory.CreateDirectory(Caminho);
+            }
+            catch
+            {
+                return false;
+            }
+            return true;
+        }
+
+        private bool CriarFicheiro(string Caminho, IFormFile ficheiro)
+        {
+            try
+            {
+                using (Stream fileStream = new FileStream(Caminho, FileMode.Create))
+                {
+                    ficheiro.CopyTo(fileStream);
+                }
+            }
+            catch
+            {
+                return false;
+            }
+            return true;
+        }
+
+        public byte[] ObterFicheiro(string Caminho)
+        {
+            try
+            {
+                if (File.Exists(Caminho))
+                {
+                    return File.ReadAllBytes(Caminho);
+                }
+            }
+            catch
+            {
+                return null;
+            }
+            return null;
+        }
+
+        public bool ApagarFicheiro(string Caminho)
+        {
+            try
+            {
+                if (File.Exists(Caminho))
+                {
+                    File.Delete(Caminho);
+                }
+            }
+            catch
+            {
+                return false;
+            }
+            return true;
+        }
+
+        public bool GuardarAnexoTerritorio(IFormFile file, string Name)
+        {
+            return CriarFicheiro(ObterCaminhoTerritorios() + Name, file);
+        }
 
         public MemoryStream PreencherFormularioS28(DbContext context)
         {
@@ -133,6 +211,8 @@ namespace JW_Management.Models
             return outputPdfStream;
 
         }
+
+
 
     }
 }

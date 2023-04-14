@@ -9,8 +9,8 @@
         public string? Descricao { get; set; }
         public string? Url { get; set; }
         public List<MovimentosTerritorio>? Movimentos { get; set; }
-        public List<string>? Ficheiros { get; set; }
-        public Publicador? PublicadorAtribuido { get; set; }
+        public List<AnexosTerritorio>? Anexos { get; set; }
+        public MovimentosTerritorio? UltimoMovimento { get; set; }
     }
 
     public enum DificuldadeTerritorio
