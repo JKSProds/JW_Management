@@ -107,12 +107,17 @@
                                     <span asp-validation-for="UltimoMovimento.DataMovimento" class="has-text-danger"></span>
                                 </div>
                             </div>
-                            <div class="column is-6">
-                                <div class="field">
-                                    <label class="label" asp-for="Url"></label>
-                                    <p class="control ">
+                            <div class="column is-12">
+                                <label class="label" asp-for="Url"></label>
+                                <div class="field has-addons">
+                                    <p class="control" style="width:100%">
                                         <input type="text" class="input" asp-for="Url">
                                     </p>
+                                    <div class="control">
+                                        <a class="button is-info" href="@Model.Url">
+                                            <span class="icon"><i class="fa-solid fa-qrcode"></i></span>
+                                        </a>
+                                    </div>
                                     <span asp-validation-for="Url" class="has-text-danger"></span>
                                 </div>
                             </div>
