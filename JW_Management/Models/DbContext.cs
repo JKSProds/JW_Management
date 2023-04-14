@@ -376,7 +376,7 @@
                         p.Pedidos.AddRange(ObterPedidosEspeciais(p.Id));
                     }
                     if (LoadGrupos) p.Grupo = ObterGrupo(int.Parse(result["IdGrupo"]));
-                    if (LoadTerritorios) p.Territorios = ObterTerritorios("", true, false, false).Where(t => t.UltimoMovimento.Publicador.Id == p.Id).ToList();
+                    if (LoadTerritorios) p.Territorios = ObterTerritorios("", true, false, false).Where(t => t.UltimoMovimento.Publicador?.Id == p.Id).ToList();
                 }
             }
 
