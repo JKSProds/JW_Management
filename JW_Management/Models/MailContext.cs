@@ -79,5 +79,32 @@ namespace JW_Management.Models
 
             return EnviarMail(EmailDestino, "Pedidos Novos - " + DateTime.Now.ToShortDateString(), Mensagem, null);
         }
+
+        public static bool MailTerritorioAtribuido(Territorio t, string EmailDestino)
+        {
+            if (string.IsNullOrEmpty(t.Stamp) || string.IsNullOrEmpty(EmailDestino)) return false;
+
+            string Mensagem = "Abaixo segue o território atribuido a si para trabalhar num prazo máximo de 6 meses:<br><br>";
+
+            Mensagem += "Núm. do Território: <b>" + t.Id + "</b><br>";
+            Mensagem += "Nome: <b>" + t.Nome + "</b><br>";
+            Mensagem += "Descrição: " + t.Descricao + "<br><br>";
+
+            Mensagem += "<a href='" + t.Url + "' class='button'></a>";
+
+            return EnviarMail(EmailDestino, "Território Atribuido - " + t.Nome + " (" + t.Id + ")", Mensagem, null);
+        }
+        public static bool MailTerritorioDevolver(Territorio t, string EmailDestino)
+        {
+            if (string.IsNullOrEmpty(t.Stamp) || string.IsNullOrEmpty(EmailDestino)) return false;
+
+            string Mensagem = "Serve o presente para informar que o territorio abaixo foi devolvido:<br><br>";
+
+            Mensagem += "Núm. do Território: <b>" + t.Id + "</b><br>";
+            Mensagem += "Nome: <b>" + t.Nome + "</b><br><br>";
+            Mensagem += "<b>SE AINDA O TEM FISICAMENTE POR FAVOR ENTREGUE-O AO SERVO DOS TERRITÓRIOS O MAIS DEPRESA POSSIVEL E NÃO O TRABALHE ENTRETANTO!</b>";
+
+            return EnviarMail(EmailDestino, "Território Devolvido - " + t.Nome + " (" + t.Id + ")", Mensagem, null);
+        }
     }
 }

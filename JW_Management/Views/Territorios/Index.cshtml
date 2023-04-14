@@ -110,24 +110,24 @@
                                 </td>
                                 <td class="is-actions-cell">
                                     <div class="buttons is-pulled-right is-flex-wrap-nowrap" style="width:100%">
-                                        @if (item.PublicadorAtribuido == null)
+                                        @if (item.PublicadorAtribuido.Id == 0)
                                         {
                                             <button class="button is-info is-fullwidth is-large mr-1"
-                                                    onclick="LevantarTerritorio('@item.Stamp')">
+                                                    onclick="CriarMovimento('@item.Stamp', 1, document.getElementById('txtIdPublicador').value)">
                                                 <i class="fa-solid fa-file-circle-check"></i>
                                             </button>
                                         }
                                         else
                                         {
                                             <button class="button is-success is-fullwidth is-large mr-1"
-                                                    onclick="DevolverTerritorio('@item.Stamp')">
+                                                    onclick="CriarMovimento('@item.Stamp', 2, @item.PublicadorAtribuido.Id)">
                                                 <i class="fa-solid fa-file-circle-xmark"></i>
                                             </button>
                                         }
 
                                         <a class="button is-warning is-fullwidth is-large mr-1"
                                            href="~/Territorios/Territorio/@item.Stamp">
-                                            <i class="fas fa-trash-can"></i>
+                                            <i class="fas fa-pencil"></i>
                                         </a>
                                         <button class="button is-danger is-fullwidth is-large"
                                                 onclick="ConfirmApagarTerritorio('@item.Stamp')">
@@ -226,9 +226,146 @@
     </div>
 </div>
 
+<div id="modalAtribuirTerritorio" class="modal">
+    <div class="modal-background"></div>
+    <div class="modal-card">
+        <header class="modal-card-head">
+            <p class="modal-card-title">
+                <span class="icon">
+                    <i class="fa-solid fa-file-circle-check"></i>
+                </span>
+                <span>Atribuir - Territorio</span>
+            </p>
+            <button type="button" class="delete" aria-label="close"></button>
+        </header>
+        <section class="modal-card-body">
+            <div class="modal-body">
+                <div class="field">
+                    <label class="label">Publicador</label>
+                    <p class="control has-icons-left">
+                        <span class="select is-fullwidth">
+                            <select class="select" id="txtIdPublicador" style="height: auto" onchange="PreencherEmail(document.getElementById('txtIdPublicador').value)"
+                                    asp-items="@(new SelectList(@ViewBag.Publicadores, "Value", "Text"))">
+                            </select>
+                        </span>
+                        <span class="icon is-small is-left">
+                            <i class="fa-solid fa-user-tie"></i>
+                        </span>
+                    </p>
+                </div>
+                <div class="field">
+                    <label class="label">Email do Publicador</label>
+                    <p class="control">
+                        <input type="email" class="input" id="txtEmailPublicador">
+                    </p>
+                </div>
+            </div>
+        </section>
+        <footer class="modal-card-foot">
+            <a class="button is-success is-large is-fullwidth"
+               onclick="GerarMovimento(document.getElementById('txtIdPublicador').value, document.getElementById('txtHiddenStamp').value, document.getElementById('txtEmailPublicador').value, 1)">
+                <span class="icon">
+                    <i class="fa-regular fa-floppy-disk"></i>
+                </span>
+                <span>Atribuir</span>
+            </a>
+            <button type="button" class="button is-large is-fullwidth is-danger"
+                    onclick="Bulma('#modalAtribuirTerritorio').modal().close();" href="javascript:;">
+                <span class="icon">
+                    <i class="fa-regular fa-circle-xmark"></i>
+                </span>
+                <span>Fechar</span>
+            </button>
+        </footer>
+    </div>
+</div>
+
+<div class="modal" id="modalDevolverTerritorio">
+    <div class="modal-background"></div>
+    <div class="modal-card">
+        <header class="modal-card-head">
+            <p class="modal-card-title">Devolver Território</p>
+        </header>
+        <section class="modal-card-body">
+            <div class="modal-body">
+                <p>Tem a certeza que deseja devolver este território ao stock da Congregação?</p>
+            </div>
+            &nbsp;
+            <div class="field">
+                <label class="label">Email do Publicador</label>
+                <p class="control">
+                    <input type="email" class="input" id="txtEmailPublicadorDevolver">
+                </p>
+            </div>
+        </section>
+        <footer class="modal-card-foot">
+            <button class="button is-success is-fullwidth is-large"
+                    onclick="GerarMovimento(0, document.getElementById('txtHiddenStamp').value, document.getElementById('txtEmailPublicadorDevolver').value, 2);">
+                <span class="icon">
+                    <i class="fa-regular fa-floppy-disk"></i>
+                </span>
+                <span>Devolver</span>
+            </button>
+            <button class="button is-fullwidth is-large" onclick="Bulma('#modalDevolverTerritorio').modal().close();">
+                <span class="icon">
+                    <i class="fa-solid fa-circle-xmark"></i>
+                </span>
+                <span>Não</span>
+            </button>
+        </footer>
+    </div>
+</div>
+
+<div class="modal" id="ModalConfirmApagar">
+    <div class="modal-background"></div>
+    <div class="modal-card">
+        <header class="modal-card-head">
+            <p class="modal-card-title">Apagar Território</p>
+        </header>
+        <section class="modal-card-body">
+            <div class="modal-body">
+                <p>Tem a certeza que deseja apagar este território e todos os movimentos associados a ele?</p>
+            </div>
+        </section>
+        <footer class="modal-card-foot">
+            <button class="button is-danger is-fullwidth is-large"
+                    onclick="ApagarTerritorio(document.getElementById('txtHiddenStamp').value);">
+                <span class="icon">
+                    <i class="fas fa-trash-can"></i>
+                </span>
+                <span>Confirmar</span>
+            </button>
+            <button class="button is-fullwidth is-large" onclick="Bulma('#ModalConfirmApagar').modal().close();">
+                <span class="icon">
+                    <i class="fa-solid fa-circle-xmark"></i>
+                </span>
+                <span>Não</span>
+            </button>
+        </footer>
+    </div>
+</div>
+
+
 <input id="txtHiddenStamp" hidden />
 
 <script>
+
+    function ConfirmApagarTerritorio(id) {
+        document.getElementById("txtHiddenStamp").value = id;
+        Bulma('#ModalConfirmApagar').modal().open();
+    }
+
+    function CriarMovimento(id, tipo, idpub) {
+        document.getElementById("txtHiddenStamp").value = id;
+        PreencherEmail(idpub);
+        if (tipo == 1) {
+
+            Bulma('#modalAtribuirTerritorio').modal().open();
+        } else {
+            Bulma('#modalDevolverTerritorio').modal().open();
+        }
+    }
+
     function CriarTerritorio(id, nome, dificuldade, descricao, url) {
         $.ajax({
             url: '/Territorios/Territorio/',
@@ -243,6 +380,61 @@
             },
             failure: function (response) {
                 notifyError('Falha ao criar o territorio!');
+            }
+        });
+    }
+
+    function GerarMovimento(idpub, id, email, tipo) {
+        $.ajax({
+            url: '/Territorios/Movimento/',
+            data: { "id": id, "idpub": idpub, "email": email, "tipo": tipo },
+            type: "POST",
+            success: function (data) {
+                notify('Movimento criado com sucesso!');
+                window.location.reload();
+            },
+            error: function (response) {
+                notifyError('Ocorreu um erro ao criar o Movimento!');
+            },
+            failure: function (response) {
+                notifyError('Falha ao criar o Movimento!');
+            }
+        });
+    }
+
+    function ApagarTerritorio(id) {
+        $.ajax({
+            url: '/Territorios/Territorio/',
+            data: { "stamp": id },
+            type: "DELETE",
+            success: function (data) {
+                notify('Territorio apagado com sucesso!');
+                window.location.reload();
+            },
+            error: function (response) {
+                notifyError('Ocorreu um erro ao apagar o territorio!');
+            },
+            failure: function (response) {
+                notifyError('Falha ao apagar o territorio!');
+            }
+        });
+    }
+
+
+    function PreencherEmail(idpub) {
+        $.ajax({
+            url: '/Publicadores/ObterPublicador/',
+            data: { "id": idpub },
+            type: "GET",
+            success: function (data) {
+                document.getElementById('txtEmailPublicador').value = data.email;
+                document.getElementById('txtEmailPublicadorDevolver').value = data.email;
+            },
+            error: function (response) {
+                notifyError('Ocorreu um erro ao criar o Movimento!');
+            },
+            failure: function (response) {
+                notifyError('Falha ao criar o Movimento!');
             }
         });
     }

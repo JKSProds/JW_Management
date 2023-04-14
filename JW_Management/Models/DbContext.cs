@@ -2,7 +2,6 @@
 {
     using Microsoft.AspNetCore.Identity;
     using MySql.Simple;
-    using Org.BouncyCastle.Utilities.IO;
 
     public class DbContext
     {
@@ -644,10 +643,12 @@
 
             using (Database db = ConnectionString)
             {
-                string sql = "SELECT * FROM t_territorios;";
+                string sql = "SELECT * FROM t_territorios LEFT JOIN t_movimentos on t_movimentos.StampMovimento=(SELECT StampMovimento FROM t_movimentos Order By DataMovimento DESC LIMIT 1);";
                 using var result = db.Query(sql);
                 while (result.Read())
                 {
+                    int.TryParse(result["IdPublicador"], out int idpub);
+
                     LstTerritorios.Add(new Territorio()
                     {
                         Stamp = result["Stamp"],
@@ -655,12 +656,41 @@
                         Nome = result["Nome"],
                         Descricao = result["Descricao"],
                         Dificuldade = result["Dificuldade"] == "1" ? DificuldadeTerritorio.FACIL : result["Dificuldade"] == "2" ? DificuldadeTerritorio.MODERADO : DificuldadeTerritorio.DIFICIL,
-                        Url = result["Url"]
+                        Url = result["Url"],
+                        PublicadorAtribuido = ObterPublicador(idpub, false, false, false)
                     });
                 }
             }
 
             return LstTerritorios.OrderBy(l => l.Id).ToList();
+        }
+
+        //Obter um territorio em especifico
+        public Territorio ObterTerritorio(string stamp)
+        {
+            Territorio t = new();
+
+            using (Database db = ConnectionString)
+            {
+                string sql = "SELECT * FROM t_territorios LEFT JOIN t_movimentos on t_movimentos.StampMovimento=(SELECT StampMovimento FROM t_movimentos Order By DataMovimento DESC LIMIT 1);";
+                using var result = db.Query(sql);
+                while (result.Read())
+                {
+                    int.TryParse(result["IdPublicador"], out int idpub);
+                    t = new Territorio()
+                    {
+                        Stamp = result["Stamp"],
+                        Id = result["Id"],
+                        Nome = result["Nome"],
+                        Descricao = result["Descricao"],
+                        Dificuldade = result["Dificuldade"] == "1" ? DificuldadeTerritorio.FACIL : result["Dificuldade"] == "2" ? DificuldadeTerritorio.MODERADO : DificuldadeTerritorio.DIFICIL,
+                        Url = result["Url"],
+                        PublicadorAtribuido = ObterPublicador(idpub, false, false, false)
+                    };
+                }
+            }
+
+            return t;
         }
 
         //Adicionar um territorio ou atualizar existente
@@ -671,6 +701,25 @@
             sql += ("('" + t.Stamp + "', '" + t.Id + "', '" + t.Nome + "', '" + t.Descricao + "', '" + (t.Dificuldade == DificuldadeTerritorio.FACIL ? "1" : t.Dificuldade == DificuldadeTerritorio.MODERADO ? "2" : "3") + "', '" + t.Url + "') ");
             sql += " ON DUPLICATE KEY UPDATE Id = VALUES(Id), Nome = VALUES(Nome), Dificuldade = VALUES(Dificuldade), Descricao = VALUES(Descricao), Url = VALUES(Url);";
 
+            return ExecutarQuery(sql);
+        }
+
+        //Apagar um territorio e todos os movimentos asssociados
+        public bool ApagarTerritorio(string stamp)
+        {
+            string sql = "DELETE FROM t_territorios where Stamp='" + stamp + "';";
+            sql += "DELETE FROM t_movimentos where StampTerritorio='" + stamp + "';";
+
+            return ExecutarQuery(sql);
+        }
+
+        //Adicionar um movimento a um territorio
+        public bool AdicionarMovimentoTerritorio(MovimentosTerritorio m)
+        {
+
+            string sql = "INSERT INTO t_movimentos(StampMovimento, StampTerritorio, IdPublicador, DataMovimento,TipoMovimento) VALUES ";
+            sql += ("('" + m.Stamp + "', '" + m.Territorio.Stamp + "', '" + m.Publicador.Id + "', '" + m.DataMovimento.ToString("yyyy-MM-dd HH:mm:ss") + "', '" + (m.Tipo == TipoMovimentoTerritorio.ENTRADA ? "1" : "2") + "');");
+            ;
             return ExecutarQuery(sql);
         }
 

@@ -29,6 +29,14 @@ namespace JW_Management.Controllers
             return View(context.ObterPublicador(id, true, true, true));
         }
 
+        [HttpGet]
+        public IActionResult ObterPublicador(int id)
+        {
+            DbContext context = HttpContext.RequestServices.GetService(typeof(DbContext)) as DbContext;
+
+            return Json(context.ObterPublicador(id, false, false, false));
+        }
+
         [HttpPost]
         public IActionResult Publicador(Publicador p)
         {
