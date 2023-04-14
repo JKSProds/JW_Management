@@ -2,6 +2,7 @@
 {
     using Microsoft.AspNetCore.Identity;
     using MySql.Simple;
+    using Org.BouncyCastle.Utilities.IO;
 
     public class DbContext
     {
@@ -38,6 +39,7 @@
             return true;
         }
 
+        #region Literatura
         //Obter todas as literaturas com os stocks especificos de um publicador e um filtro
         public List<Literatura> ObterLiteraturas(string filtro, int idpub)
         {
@@ -632,5 +634,46 @@
 
             return ExecutarQuery(sql);
         }
+        #endregion
+
+        #region Territorios
+        //Obter todos os territorios
+        public List<Territorio> ObterTerritorios()
+        {
+            List<Territorio> LstTerritorios = new();
+
+            using (Database db = ConnectionString)
+            {
+                string sql = "SELECT * FROM t_territorios;";
+                using var result = db.Query(sql);
+                while (result.Read())
+                {
+                    LstTerritorios.Add(new Territorio()
+                    {
+                        Stamp = result["Stamp"],
+                        Id = result["Id"],
+                        Nome = result["Nome"],
+                        Descricao = result["Descricao"],
+                        Dificuldade = result["Dificuldade"] == "1" ? DificuldadeTerritorio.FACIL : result["Dificuldade"] == "2" ? DificuldadeTerritorio.MODERADO : DificuldadeTerritorio.DIFICIL,
+                        Url = result["Url"]
+                    });
+                }
+            }
+
+            return LstTerritorios.OrderBy(l => l.Id).ToList();
+        }
+
+        //Adicionar um territorio ou atualizar existente
+        public bool AdicionarTerritorio(Territorio t)
+        {
+
+            string sql = "INSERT INTO t_territorios(Stamp, Id, Nome, Descricao, Dificuldade, Url) VALUES ";
+            sql += ("('" + t.Stamp + "', '" + t.Id + "', '" + t.Nome + "', '" + t.Descricao + "', '" + (t.Dificuldade == DificuldadeTerritorio.FACIL ? "1" : t.Dificuldade == DificuldadeTerritorio.MODERADO ? "2" : "3") + "', '" + t.Url + "') ");
+            sql += " ON DUPLICATE KEY UPDATE Id = VALUES(Id), Nome = VALUES(Nome), Dificuldade = VALUES(Dificuldade), Descricao = VALUES(Descricao), Url = VALUES(Url);";
+
+            return ExecutarQuery(sql);
+        }
+
+        #endregion
     }
 }

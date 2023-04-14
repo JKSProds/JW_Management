@@ -10,6 +10,7 @@
         public string? Url { get; set; }
         public List<MovimentosTerritorio>? Movimentos { get; set; }
         public List<string>? Ficheiros { get; set; }
+        public Publicador? PublicadorAtribuido { get; set; }
     }
 
     public enum DificuldadeTerritorio
