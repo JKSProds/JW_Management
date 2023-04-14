@@ -7,7 +7,7 @@ using Microsoft.AspNetCore.StaticFiles;
 
 namespace JW_Management.Controllers
 {
-    [Authorize]
+    [Authorize(Roles = "Master, Territorios")]
     public class TerritoriosController : Controller
     {
         [HttpGet]
@@ -77,7 +77,7 @@ namespace JW_Management.Controllers
             if (string.IsNullOrEmpty(id) || tipo < 0) return StatusCode(500);
 
             Territorio t = context.ObterTerritorio(id, false, false, true);
-            Publicador p = context.ObterPublicador(idpub, false, false, true);
+            Publicador p = context.ObterPublicador(idpub, false, false, true, false);
 
             if (p.Email != email && !string.IsNullOrEmpty(email))
             {

@@ -21,7 +21,6 @@
                 </div>
             </div>
             <div class="column">
-
             </div>
         </div>
     </div>
@@ -36,6 +35,7 @@
                 <li class="is-active"><a>Dados</a></li>
                 <li><a>Movimentos</a></li>
                 <li><a>Pedidos</a></li>
+                <li><a>Territórios</a></li>
             </ul>
         </div>
         <div class="tabs-content mx-2">
@@ -99,7 +99,7 @@
                                 <div class="field">
                                     <label class="label" asp-for="Username"></label>
                                     <p class="control ">
-                                        <input type="tel" class="input"  readonly asp-for="Username">
+                                        <input type="tel" class="input" readonly asp-for="Username">
                                     </p>
                                     <span asp-validation-for="Username" class="has-text-danger"></span>
                                 </div>
@@ -172,7 +172,6 @@
                                                 </td>
                                                 <td class="is-actions-cell">
                                                     <div class="buttons is-pulled-right is-flex-wrap-nowrap" style="width:100%">
-
                                                     </div>
                                                 </td>
                                             </tr>
@@ -226,7 +225,59 @@
                                                 </td>
                                                 <td class="is-actions-cell">
                                                     <div class="buttons is-pulled-right is-flex-wrap-nowrap" style="width:100%">
-
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                        }
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    }
+                </li>
+                <li>
+                    @if (Model.Territorios!.Count() == 0)
+                    {
+                        <br />
+                        <button class="button is-danger is-large is-rounded is-fullwidth is-disabled">
+                            Não foram encontrados
+                            territórios a trabalhar!
+                        </button>
+                    }
+                    else
+                    {
+                        <div class="b-table">
+                            <div class="table-wrapper has-mobile-cards">
+                                <table class="table is-hoverable is-fullwidth">
+                                    <thead>
+                                        <tr>
+                                            <th>
+                                                @Html.DisplayNameFor(model => model.Territorios!.FirstOrDefault()!.Id)
+                                            </th>
+                                            <th>
+                                                @Html.DisplayNameFor(model => model.Territorios!.FirstOrDefault()!.Nome)
+                                            </th>
+                                            <th>
+                                                @Html.DisplayNameFor(model => model.Territorios!.FirstOrDefault()!.UltimoMovimento!.DataMovimento)
+                                            </th>
+                                            <th></th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @foreach (var item in Model.Territorios!)
+                                        {
+                                            <tr>
+                                                <td data-label="@Html.DisplayNameFor(model =>  model.Territorios!.FirstOrDefault()!.Id)">
+                                                    <span>@item.Id</span>
+                                                </td>
+                                                <td data-label="@Html.DisplayNameFor(model =>  model.Territorios!.FirstOrDefault()!.Nome)">
+                                                    <span>@item.Nome</span>
+                                                </td>
+                                                <td data-label="@Html.DisplayNameFor(model => model.Territorios!.FirstOrDefault()!.UltimoMovimento!.DataMovimento)">
+                                                    <span>@item.UltimoMovimento!.DataMovimento</span>
+                                                </td>
+                                                <td class="is-actions-cell">
+                                                    <div class="buttons is-pulled-right is-flex-wrap-nowrap" style="width:100%">
                                                     </div>
                                                 </td>
                                             </tr>

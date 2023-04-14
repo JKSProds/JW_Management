@@ -12,5 +12,6 @@
 
         public List<Movimentos>? Movimentos { get; set; }
         public List<Literatura>? Pedidos { get; set; }
+        public List<Territorio>? Territorios { get; set; }
     }
 }

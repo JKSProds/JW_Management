@@ -13,7 +13,7 @@ namespace JW_Management.Controllers
     {
         public IActionResult Index()
         {
-           
+
             return View();
         }
 
@@ -34,32 +34,38 @@ namespace JW_Management.Controllers
             {
                 var passwordHasher = new PasswordHasher<string>();
 
-                if (passwordHasher.VerifyHashedPassword(null, u.Password, p.Password) == PasswordVerificationResult.Success)
+                if (passwordHasher.VerifyHashedPassword(null, u.Password!, p.Password!) == PasswordVerificationResult.Success)
                 {
-                   
-                        var claims = new List<Claim>
+
+                    var claims = new List<Claim>
                         {
                             new Claim(ClaimTypes.Name, u.Id.ToString()),
-                            new Claim(ClaimTypes.GivenName, u.Nome)
-                        };
-                        var claimsIdentity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
-                        await HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, new ClaimsPrincipal(claimsIdentity));
-                       
-                        if (ReturnUrl != "" && ReturnUrl != null)
-                        {
-                            Response.Redirect(ReturnUrl, true);
-                        }
-                        else
-                        {
-                            return RedirectToAction("Index", "Home");
-                        }
+                            new Claim(ClaimTypes.Role, (u.Id == 49 ? "Master" : u.Id == 41 ? "Territorios" : "")),
+                            new Claim(ClaimTypes.GivenName, u.Nome!)
+                };
+                    var claimsIdentity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
+                    await HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, new ClaimsPrincipal(claimsIdentity));
+
+                    if (ReturnUrl != "" && ReturnUrl != null)
+                    {
+                        Response.Redirect(ReturnUrl, true);
                     }
+                    else
+                    {
+                        return RedirectToAction("Index", "Home");
+                    }
+                }
                 else
                 {
                     ModelState.AddModelError("", "Password errada!");
                 }
             }
 
+            return View();
+        }
+
+        public IActionResult Error()
+        {
             return View();
         }
 

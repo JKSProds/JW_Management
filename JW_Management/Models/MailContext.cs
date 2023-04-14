@@ -49,7 +49,7 @@ namespace JW_Management.Models
                 //Assinatura
                 myMail.Body += "<br><br><i>Atenção este é um email automático, por favor não responda a este email!</i><br><br>Powered by: JKSProds - Software";
 
-                if (Anexos.Count > 0)
+                if (Anexos != null)
                 {
                     foreach (var a in Anexos)
                     {

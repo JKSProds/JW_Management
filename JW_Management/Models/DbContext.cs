@@ -315,7 +315,7 @@
                         Descricao = result["Descricao"],
                         Quantidade = result["Quantidade"],
                         Tipo = LstTiposLiteratura.Where(g => g.Id == result["IdTipo"]).FirstOrDefault(new TipoLiteratura()),
-                        Publicador = ObterPublicador(int.Parse(result["IdUtilizador"]), false, false, true)
+                        Publicador = ObterPublicador(int.Parse(result["IdUtilizador"]), false, false, true, false)
                     });
                 }
             }
@@ -350,7 +350,7 @@
         }
 
         //Obter Publicador
-        public Publicador ObterPublicador(int id, bool LoadMovimentos, bool LoadPedidos, bool LoadGrupos)
+        public Publicador ObterPublicador(int id, bool LoadMovimentos, bool LoadPedidos, bool LoadGrupos, bool LoadTerritorios)
         {
             Publicador p = new();
 
@@ -376,6 +376,7 @@
                         p.Pedidos.AddRange(ObterPedidosEspeciais(p.Id));
                     }
                     if (LoadGrupos) p.Grupo = ObterGrupo(int.Parse(result["IdGrupo"]));
+                    if (LoadTerritorios) p.Territorios = ObterTerritorios("", true, false, false).Where(t => t.UltimoMovimento.Publicador.Id == p.Id).ToList();
                 }
             }
 
@@ -405,7 +406,7 @@
         public List<Movimentos> ObterMovimentos(bool In, bool Out, int IdPub, DateOnly data)
         {
             List<Movimentos> LstMovimentos = new();
-            Publicador p = ObterPublicador(IdPub, false, false, false);
+            Publicador p = ObterPublicador(IdPub, false, false, false, false);
             DateOnly dF = data == DateOnly.MinValue ? DateOnly.MaxValue : data.AddDays(1);
 
             using (Database db = ConnectionString)
@@ -478,7 +479,7 @@
         public List<Literatura> ObterPedidosPeriodico(int IdPub)
         {
             List<Literatura> LstLiteratura = new();
-            Publicador p = ObterPublicador(IdPub, false, false, false);
+            Publicador p = ObterPublicador(IdPub, false, false, false, false);
             List<TipoLiteratura> LstTiposLiteratura = ObterTiposLiteratura();
 
             using (Database db = ConnectionString)
@@ -554,7 +555,7 @@
         public List<Literatura> ObterPedidosEspeciais(int IdPub)
         {
             List<Literatura> LstLiteratura = new();
-            Publicador p = ObterPublicador(IdPub, false, false, false);
+            Publicador p = ObterPublicador(IdPub, false, false, false, false);
             List<TipoLiteratura> LstTiposLiteratura = ObterTiposLiteratura();
 
             using (Database db = ConnectionString)
@@ -600,7 +601,7 @@
                         Descricao = result["Descricao"],
                         Quantidade = int.Parse(result["Quantidade"]),
                         Tipo = LstTiposLiteratura.Where(g => g.Id == result["IdTipo"]).FirstOrDefault(new TipoLiteratura()),
-                        Publicador = ObterPublicador(int.Parse(result["IdPublicador"]), false, false, false)
+                        Publicador = ObterPublicador(int.Parse(result["IdPublicador"]), false, false, false, false)
                     };
                 }
             }
@@ -751,7 +752,7 @@
                     {
                         Stamp = result["StampMovimento"],
                         Territorio = t,
-                        Publicador = ObterPublicador(result["IdPublicador"], false, false, false),
+                        Publicador = ObterPublicador(result["IdPublicador"], false, false, false, false),
                         DataMovimento = result["DataMovimento"],
                         Tipo = result["TipoMovimento"] == "1" ? TipoMovimentoTerritorio.ENTRADA : TipoMovimentoTerritorio.SAIDA
 
@@ -778,7 +779,7 @@
                     {
                         Stamp = result["StampMovimento"],
                         Territorio = ObterTerritorio(result["StampTerritorio"], false, false, false),
-                        Publicador = ObterPublicador(result["IdPublicador"], false, false, false),
+                        Publicador = ObterPublicador(result["IdPublicador"], false, false, false, false),
                         DataMovimento = result["DataMovimento"],
                         Tipo = result["TipoMovimento"] == "1" ? TipoMovimentoTerritorio.ENTRADA : TipoMovimentoTerritorio.SAIDA
 

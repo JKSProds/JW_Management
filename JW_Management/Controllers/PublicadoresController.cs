@@ -6,7 +6,7 @@ using Microsoft.AspNetCore.Authorization;
 
 namespace JW_Management.Controllers
 {
-    [Authorize]
+    [Authorize(Roles = "Master")]
     public class PublicadoresController : Controller
     {
         [HttpGet]
@@ -26,7 +26,7 @@ namespace JW_Management.Controllers
             LstGrupos.Insert(0, new Grupo() { Id = 0, Nome = "N/D", Responsavel = new Publicador() { Nome = "N/D" } });
             ViewBag.Grupos = LstGrupos.Select(l => new SelectListItem() { Value = l.Id.ToString(), Text = l.Nome + " (" + l.Responsavel.Nome + ")" });
 
-            return View(context.ObterPublicador(id, true, true, true));
+            return View(context.ObterPublicador(id, true, true, true, true));
         }
 
         [HttpGet]
@@ -34,14 +34,14 @@ namespace JW_Management.Controllers
         {
             DbContext context = HttpContext.RequestServices.GetService(typeof(DbContext)) as DbContext;
 
-            return Json(context.ObterPublicador(id, false, false, false));
+            return Json(context.ObterPublicador(id, false, false, false, false));
         }
 
         [HttpPost]
         public IActionResult Publicador(Publicador p)
         {
             DbContext context = HttpContext.RequestServices.GetService(typeof(DbContext)) as DbContext;
-            Publicador pOriginal = context.ObterPublicador(p.Id, false, false, false);
+            Publicador pOriginal = context.ObterPublicador(p.Id, false, false, false, false);
 
             var passwordHasher = new PasswordHasher<string>();
             if (pOriginal.Password != p.Password && !string.IsNullOrEmpty(p.Password))
