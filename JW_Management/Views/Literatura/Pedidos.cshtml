@@ -41,15 +41,6 @@
                             <span>Periódicos</span>
                         </button>
                     </p>
-                    <p class="control">
-                        <button type="button" class="button is-success is-large is-fullwidth "
-                                onclick="Bulma('#modalMailPedidos').modal().open();">
-                            <span class="icon">
-                                <i class="fa-solid fa-paper-plane"></i>
-                            </span>
-                            <span>Mail Pedidos Especiais</span>
-                        </button>
-                    </p>
                 </div>
             </div>
         </div>
@@ -78,6 +69,15 @@
                     }
                     else
                     {
+                        <p class="control">
+                            <button type="button" class="button is-success is-large is-fullwidth "
+                                    onclick="Bulma('#modalMailPedidos').modal().open();">
+                                <span class="icon">
+                                    <i class="fa-solid fa-paper-plane"></i>
+                                </span>
+                                <span>Enviar Pedidos Novos</span>
+                            </button>
+                        </p>
                         <div class="b-table">
                             <div class="table-wrapper has-mobile-cards">
                                 <table class="table is-hoverable is-fullwidth">
@@ -145,11 +145,20 @@
                         <br />
                         <button class="button is-danger is-large is-rounded is-fullwidth is-disabled">
                             Não foram encontrados
-                            pedidos especiais!
+                            pedidos periodicos!
                         </button>
                     }
                     else
                     {
+                        <p class="control">
+                            <button type="button" class="button is-success is-large is-fullwidth "
+                                    onclick="Bulma('#modalMailPeriodicos').modal().open();">
+                                <span class="icon">
+                                    <i class="fa-solid fa-paper-plane"></i>
+                                </span>
+                                <span>Enviar Pedidos Periodicos</span>
+                            </button>
+                        </p>
                         <div class="b-table">
                             <div class="table-wrapper has-mobile-cards">
                                 <table class="table is-hoverable is-fullwidth">
@@ -339,7 +348,6 @@
                                 <i class="fas fa-newspaper"></i>
                             </span>
                         </p>
-
                     </div>
                 </div>
                 <div class="field">
@@ -582,7 +590,7 @@
             <div class="modal-body">
                 <p>Tem a certeza que deseja enviar todos os pedidos pendentes para o email indicado abaixo?</p>
                 &nbsp;                <div class="control" style="width:100%">
-                    <input type="email" class="input has-text-centered" id="txtEmailPedidos" value="jfmmonteiro1997@gmail.com">
+                    <input type="email" class="input has-text-centered" id="txtEmailPedidos" value="nnopereira84@gmail.com">
                 </div>
             </div>
         </section>
@@ -595,6 +603,59 @@
                 <span>Enviar</span>
             </button>
             <button class="button is-fullwidth is-large" onclick="Bulma('#modalMailPedidos').modal().close();">
+                <span class="icon">
+                    <i class="fa-solid fa-circle-xmark"></i>
+                </span>
+                <span>Não</span>
+            </button>
+        </footer>
+    </div>
+</div>
+
+<div class="modal" id="modalMailPeriodicos">
+    <div class="modal-background"></div>
+    <div class="modal-card">
+        <header class="modal-card-head">
+            <p class="modal-card-title">
+                <span class="icon">
+                    <i class="fas fa-paper-plane"></i>
+                </span>
+                <span>Enviar Listagem - Pedidos Periodicos</span>
+            </p>
+        </header>
+        <section class="modal-card-body">
+            <div class="modal-body">
+                <p>Tem a certeza que deseja enviar os pedidos periodicos para o email indicado abaixo?</p>
+                &nbsp;
+                <div class="control" style="width:100%">
+                    <input type="email" class="input has-text-centered" id="txtEmailPeriodicos" value="nnopereira84@gmail.com">
+                </div>
+                <div class="field">
+                    <div class="control" style="width:100%">
+                        <label class="label" l>Escolha a publicação:</label>
+                        <p class="control has-icons-left">
+                            <span class="select is-fullwidth" style="width:100%">
+                                <select class="select" id="mailperiodico" style="height: auto"
+                                        asp-items="@(new SelectList(@ViewBag.Periodicos, "Value", "Text"))">
+                                </select>
+                            </span>
+                            <span class="icon is-small is-left">
+                                <i class="fas fa-newspaper"></i>
+                            </span>
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </section>
+        <footer class="modal-card-foot">
+            <button class="button is-info is-fullwidth is-large"
+                    onclick="EnviarEmailPedidosPeriodicos(document.getElementById('txtEmailPeriodicos').value, document.getElementById('mailperiodico').value);">
+                <span class="icon">
+                    <i class="fas fa-paper-plane"></i>
+                </span>
+                <span>Enviar</span>
+            </button>
+            <button class="button is-fullwidth is-large" onclick="Bulma('#modalMailPeriodicos').modal().close();">
                 <span class="icon">
                     <i class="fa-solid fa-circle-xmark"></i>
                 </span>
@@ -766,6 +827,24 @@
             },
             failure: function (response) {
                 notifyError('Falha ao enviar os pedidos especiais!');
+            }
+        });
+    }
+
+    function EnviarEmailPedidosPeriodicos(email, publicacao) {
+        $.ajax({
+            url: '/Literatura/Periodicos/' + publicacao,
+            data: { "email": email },
+            type: "POST",
+            success: function (data) {
+                notify('Pedidos periodicos enviados com sucesso!');
+                window.location.reload();
+            },
+            error: function (response) {
+                notifyError('Ocorreu um erro ao enviar os pedidos periodicos!');
+            },
+            failure: function (response) {
+                notifyError('Falha ao enviar os pedidos periodicos!');
             }
         });
     }

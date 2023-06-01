@@ -86,6 +86,26 @@ namespace JW_Management.Models
             return EnviarMail(EmailDestino, "Pedidos Novos - " + DateTime.Now.ToShortDateString(), Mensagem, null);
         }
 
+        public static bool MailPedidosPeriodicos(List<Literatura> LstLiteratura, string EmailDestino)
+        {
+            if (LstLiteratura.Count() == 0 || string.IsNullOrEmpty(EmailDestino)) return false;
+
+            string Mensagem = "Abaixo segue uma listagem com todos os pedidos periodicos requisitados pelos irmãos da seguinte publicação: <br><br>";
+
+            Mensagem += "Referência: <b>" + LstLiteratura.First().Referencia + "</b><br>Designação: <b>" + LstLiteratura.First().Descricao + "</b><br>Quantidade: <b>" + LstLiteratura.Sum(p => p.Quantidade) + " UN</b><br><br>";
+
+            Mensagem += "<table class='table' style='width:100%;border-width:1px;' border='1'><tr><th>Publicador</th><th>Quantidade</th></tr>";
+
+            foreach (var l in LstLiteratura)
+            {
+                Mensagem += "<tr><td style='padding: 5px;'>" + l.Publicador.Nome + "</td><td style='padding: 5px;'>" + l.Quantidade + "</td></tr>";
+            }
+
+            Mensagem += "</table>";
+
+            return EnviarMail(EmailDestino, "Pedidos Periodicos - " + DateTime.Now.ToShortDateString(), Mensagem, null);
+        }
+
         public static bool MailTerritorioAtribuido(Territorio t, string EmailDestino)
         {
             if (string.IsNullOrEmpty(t.Stamp) || string.IsNullOrEmpty(EmailDestino)) return false;

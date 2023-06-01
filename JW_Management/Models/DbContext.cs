@@ -26,7 +26,7 @@
             {
                 Database db = ConnectionString;
 
-                var res = db.Execute(SQL_Query);
+                db.Execute(SQL_Query);
                 db.Connection.Close();
             }
             catch (Exception ex)
@@ -229,7 +229,7 @@
 
             string sql = "INSERT INTO l_pubs(Id, Referencia, Descricao, IdTipo, STAMP) VALUES ";
             sql += ("('" + l.Id + "', '" + l.Referencia + "', '" + l.Descricao + "', '" + l.Tipo.Id + "', '" + l.Stamp + "') ");
-            sql += " ON DUPLICATE KEY UPDATE Id = VALUES(Id), Referencia = VALUES(Referencia), Descricao = VALUES(Descricao), IdTipo = VALUES(IdTipo);";
+            // sql += " ON DUPLICATE KEY UPDATE Id = VALUES(Id), Referencia = VALUES(Referencia), Descricao = VALUES(Descricao), IdTipo = VALUES(IdTipo);";
 
             return ExecutarQuery(sql);
         }

@@ -119,6 +119,16 @@ namespace JW_Management.Controllers
             return View(context.ObterPeriodicos().Where(l => l.Quantidade > 0));
         }
 
+        [HttpPost]
+        public IActionResult Periodicos(string Email, string id)
+        {
+            DbContext context = HttpContext.RequestServices.GetService(typeof(DbContext)) as DbContext;
+            List<Literatura> LstLiteratura = context.ObterPedidosPeriodico().Where(l => l.Referencia == id).OrderBy(l => l.Publicador.Nome).ToList();
+
+
+            return Json(MailContext.MailPedidosPeriodicos(LstLiteratura, Email) ? StatusCode(200) : StatusCode(500));
+        }
+
         [HttpGet]
         public IActionResult Periodico(string id)
         {
@@ -163,7 +173,7 @@ namespace JW_Management.Controllers
             ViewBag.Estados = context.ObterEstadosPedido().Select(l => new SelectListItem() { Value = l.Descricao, Text = l.Descricao });
             ViewBag.Periodicos = context.ObterTipoPeriodicos().Select(l => new SelectListItem() { Value = l.Referencia, Text = l.Descricao });
 
-            List<Literatura> LstPedidos = context.ObterPedidosPeriodico().Where(l => l.Quantidade > 0).OrderBy(l => l.Publicador.Nome).ToList();
+            List<Literatura> LstPedidos = context.ObterPedidosPeriodico().Where(l => l.Quantidade > 0).OrderBy(l => l.Publicador.Nome).OrderBy(l => l.Referencia).ToList();
             LstPedidos.AddRange(context.ObterPedidosEspeciais().Where(l => l.Quantidade > 0).OrderBy(l => l.Publicador.Nome));
 
             return View(LstPedidos);

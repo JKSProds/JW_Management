@@ -26,7 +26,8 @@
                         <input class="input" type="date"
                                value="@(DateTime.Parse(ViewData["Data"]!.ToString()!).ToString("yyyy-MM-dd"))" id="txtData"
                                name="data" />
-                        <script>bulmaCalendar.attach('#txtData', {
+                        <script>
+                            bulmaCalendar.attach('#txtData', {
                                 color: 'info',
                                 lang: 'pt',
                                 dateFormat: 'dd/MM/yyyy',
@@ -69,8 +70,10 @@
     @if (Model.Count() == 0)
     {
         <br />
-        <button class="button is-danger is-large is-rounded is-fullwidth is-disabled">Não foram encontrados
-            movimentos!</button>
+        <button class="button is-danger is-large is-rounded is-fullwidth is-disabled">
+            Não foram encontrados
+            movimentos!
+        </button>
     }
     else
     {
@@ -113,7 +116,7 @@
                                 <td class="is-actions-cell">
                                     <div class="buttons is-pulled-right is-flex-wrap-nowrap" style="width:100%">
                                         <button class="button is-danger is-fullwidth is-large"
-                                    onclick="ConfirmApagar('@item.Stamp')">
+                                                onclick="ConfirmApagar('@item.Stamp')">
                                             <i class="fas fa-trash-can"></i>
                                         </button>
                                     </div>
@@ -153,7 +156,7 @@
                     <div class="field has-addons">
                         <div class="control">
                             <button type="button" class="button is-danger disable-dbl-tap-zoom"
-                                onclick="document.getElementById('txtQtd').value = parseInt(document.getElementById('txtQtd').value) - 1">
+                                    onclick="document.getElementById('txtQtd').value = parseInt(document.getElementById('txtQtd').value) - 1">
                                 <span class="icon">
                                     <i class="fas fa-minus"></i>
                                 </span>
@@ -164,7 +167,7 @@
                         </div>
                         <div class="control">
                             <button type="button" class="button is-success disable-dbl-tap-zoom"
-                                onclick="document.getElementById('txtQtd').value = parseInt(document.getElementById('txtQtd').value) + 1">
+                                    onclick="document.getElementById('txtQtd').value = parseInt(document.getElementById('txtQtd').value) + 1">
                                 <span class="icon">
                                     <i class="fas fa-plus"></i>
                                 </span>
@@ -176,15 +179,16 @@
         </section>
         <footer class="modal-card-foot">
             <a class="button is-info is-large is-fullwidth"
-                onclick="GerarMovimento(document.getElementById('txtPubStamp').value, document.getElementById('txtQtd').value)">
+               onclick="GerarMovimento(document.getElementById('txtPubStamp').value, document.getElementById('txtQtd').value)">
                 <span class="icon">
                     <i class="fa-regular fa-floppy-disk"></i>
                 </span>
-                <span>Guardar
+                <span>
+                    Guardar
                 </span>
             </a>
             <button type="button" class="button is-large is-fullwidth is-danger"
-                onclick="Bulma('#modalEntradaPublicacoes').modal().close();" href="javascript:;">
+                    onclick="Bulma('#modalEntradaPublicacoes').modal().close();" href="javascript:;">
                 <span class="icon">
                     <i class="fa-regular fa-circle-xmark"></i>
                 </span>
@@ -265,7 +269,7 @@
                     <div class="field has-addons">
                         <div class="control">
                             <button type="button" class="button is-danger disable-dbl-tap-zoom"
-                                onclick="document.getElementById('txtQtdPeriodico').value = parseInt(document.getElementById('txtQtdPeriodico').value) - 1">
+                                    onclick="document.getElementById('txtQtdPeriodico').value = parseInt(document.getElementById('txtQtdPeriodico').value) - 1">
                                 <span class="icon">
                                     <i class="fas fa-minus"></i>
                                 </span>
@@ -276,7 +280,7 @@
                         </div>
                         <div class="control">
                             <button type="button" class="button is-success disable-dbl-tap-zoom"
-                                onclick="document.getElementById('txtQtdPeriodico').value = parseInt(document.getElementById('txtQtdPeriodico').value) + 1">
+                                    onclick="document.getElementById('txtQtdPeriodico').value = parseInt(document.getElementById('txtQtdPeriodico').value) + 1">
                                 <span class="icon">
                                     <i class="fas fa-plus"></i>
                                 </span>
@@ -288,14 +292,14 @@
         </section>
         <footer class="modal-card-foot">
             <a class="button is-info is-large is-fullwidth"
-                onclick="CriarPeriodico(document.getElementById('periodico').value, document.getElementById('periodico')[document.getElementById('periodico').selectedIndex].text, document.getElementById('mes').value, document.getElementById('ano').value, document.getElementById('txtQtdPeriodico').value)">
+               onclick="CriarPeriodico(document.getElementById('periodico').value, document.getElementById('periodico')[document.getElementById('periodico').selectedIndex].text, document.getElementById('mes').value, document.getElementById('ano').value, document.getElementById('txtQtdPeriodico').value)">
                 <span class="icon">
                     <i class="fa-regular fa-floppy-disk"></i>
                 </span>
                 <span>Guardar</span>
             </a>
             <button type="button" class="button is-large is-fullwidth is-danger"
-                onclick="Bulma('#modalEntradaPeriodicos').modal().close();" href="javascript:;">
+                    onclick="Bulma('#modalEntradaPeriodicos').modal().close();" href="javascript:;">
                 <span class="icon">
                     <i class="fa-regular fa-circle-xmark"></i>
                 </span>
@@ -323,7 +327,7 @@
         </section>
         <footer class="modal-card-foot">
             <button class="button is-danger is-fullwidth is-large"
-                onclick="Apagar(document.getElementById('txtHiddenStamp').value);">
+                    onclick="Apagar(document.getElementById('txtHiddenStamp').value);">
                 <span class="icon">
                     <i class="fas fa-trash-can"></i>
                 </span>
@@ -426,6 +430,7 @@
             type: "POST",
             success: function (data) {
                 notify('Publicação criada com sucesso!');
+                console.log(data);
                 GerarMovimento(data, qtd);
             },
             error: function (response) {
