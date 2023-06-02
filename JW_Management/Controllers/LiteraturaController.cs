@@ -116,7 +116,7 @@ namespace JW_Management.Controllers
         {
             DbContext context = HttpContext.RequestServices.GetService(typeof(DbContext)) as DbContext;
 
-            return View(context.ObterPeriodicos().Where(l => l.Quantidade > 0));
+            return View(context.ObterPeriodicos().Where(l => l.Quantidade > 0).OrderBy(l => l.DescricaoGeral));
         }
 
         [HttpPost]
