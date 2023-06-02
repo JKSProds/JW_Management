@@ -78,6 +78,7 @@
                                 <span>Enviar Pedidos Novos</span>
                             </button>
                         </p>
+                        <br />
                         <div class="b-table">
                             <div class="table-wrapper has-mobile-cards">
                                 <table class="table is-hoverable is-fullwidth">
@@ -159,9 +160,25 @@
                                 <span>Enviar Pedidos Periodicos</span>
                             </button>
                         </p>
+                        <br />
+                        <div class="control" style="width:100%">
+                            <label class="label" l>Filtrar pela publicação:</label>
+                            <p class="control has-icons-left">
+                                <span class="select is-fullwidth" style="width:100%">
+                                    <select class="select" id="filtrop" style="height: auto"
+                                        asp-items="@(new SelectList(@ViewBag.Periodicos, "Value", "Text"))" onchange="Array.prototype.slice.call(document.querySelector('#tblPeriodicos').childNodes[3].childNodes).forEach(function(v, i, a) { if (v.childNodes[1]) v.hidden = document.getElementById('filtrop').value == 0 ? false : v.childNodes[1].childNodes[1].childNodes[0].textContent != document.getElementById('filtrop').value; });">
+                                        <option value="0">Todos</option>
+                                    </select>
+                                </span>
+                                <span class="icon is-small is-left">
+                                    <i class="fas fa-newspaper"></i>
+                                </span>
+                            </p>
+                        </div>
+                        <br />
                         <div class="b-table">
                             <div class="table-wrapper has-mobile-cards">
-                                <table class="table is-hoverable is-fullwidth">
+                                <table class="table is-hoverable is-fullwidth" id="tblPeriodicos">
                                     <thead>
                                         <tr>
                                             <th>
