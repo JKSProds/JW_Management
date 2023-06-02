@@ -166,7 +166,7 @@
                             <p class="control has-icons-left">
                                 <span class="select is-fullwidth" style="width:100%">
                                     <select class="select" id="filtrop" style="height: auto"
-                                        asp-items="@(new SelectList(@ViewBag.Periodicos, "Value", "Text"))" onchange="Array.prototype.slice.call(document.querySelector('#tblPeriodicos').childNodes[3].childNodes).forEach(function(v, i, a) { if (v.childNodes[1]) v.hidden = document.getElementById('filtrop').value == 0 ? false : v.childNodes[1].childNodes[1].childNodes[0].textContent != document.getElementById('filtrop').value; });">
+                                        asp-items="@(new SelectList(@ViewBag.Periodicos, "Value", "Text"))" onchange="Array.prototype.slice.call(document.querySelector('#tblPeriodicos').childNodes[3].childNodes).forEach(function(v, i, a) { if (v.childNodes[1]) v.style.display = document.getElementById('filtrop').value == 0 ? 'table-row' : (v.childNodes[1].childNodes[1].childNodes[0].textContent != document.getElementById('filtrop').value ? 'none' : 'table-row');  });">
                                         <option value="0">Todos</option>
                                     </select>
                                 </span>
