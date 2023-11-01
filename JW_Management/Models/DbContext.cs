@@ -59,7 +59,7 @@
                         Stamp = result["STAMP"],
                         Id = result["Id"],
                         Referencia = result["Referencia"],
-                        Imagem = "data:image/jpeg;base64," + (string.IsNullOrEmpty(result["Imagem"]) ? Convert.ToBase64String(File.ReadAllBytes("wwwroot/img/l_no_photo.png")) : Convert.ToBase64String(f.ObterFicheiro(f.ObterCaminhoLiteratura() + result["Imagem"]))),
+                        Imagem = "data:image/jpeg;base64," + Convert.ToBase64String(f.ObterFicheiro(f.ObterCaminhoLiteratura() + result["Imagem"])),
                         Descricao = result["Descricao"],
                         Quantidade = result["Quantidade"],
                         Tipo = LstTiposLiteratura.Where(g => g.Id == result["IdTipo"]).FirstOrDefault(new TipoLiteratura()),
@@ -123,7 +123,7 @@
                         Stamp = result["STAMP"],
                         Id = result["Id"],
                         Referencia = result["Referencia"],
-                        Imagem = "data:image/jpeg;base64," + (string.IsNullOrEmpty(result["Imagem"]) ? Convert.ToBase64String(File.ReadAllBytes("wwwroot/img/l_no_photo.png")) : Convert.ToBase64String(f.ObterFicheiro(f.ObterCaminhoLiteratura() + result["Imagem"]))),
+                        Imagem = "data:image/jpeg;base64," + Convert.ToBase64String(f.ObterFicheiro(f.ObterCaminhoLiteratura() + result["Imagem"])),
                         Descricao = result["Descricao"],
                         Quantidade = result["Quantidade"],
                         Tipo = LstTiposLiteratura.Where(g => g.Id == result["IdTipo"]).FirstOrDefault(new TipoLiteratura())
@@ -292,7 +292,7 @@
                         Id = result["Id"],
                         Referencia = result["Referencia"],
                         Descricao = result["Descricao"],
-                        Imagem = "data:image/jpeg;base64," + (string.IsNullOrEmpty(result["Imagem"]) ? Convert.ToBase64String(File.ReadAllBytes("wwwroot/img/l_no_photo.png")) : Convert.ToBase64String(f.ObterFicheiro(f.ObterCaminhoLiteratura() + result["Imagem"]))),
+                        Imagem = "data:image/jpeg;base64," + Convert.ToBase64String(f.ObterFicheiro(f.ObterCaminhoLiteratura() + result["Imagem"])),
                         Quantidade = result["Quantidade"],
                         DescricaoGeral = result["DescAdicional"],
                         Tipo = LstTiposLiteratura.Where(g => g.Id == result["IdTipo"]).FirstOrDefault(new TipoLiteratura())
@@ -300,7 +300,7 @@
                 }
             }
 
-            return LstLiteratura.OrderBy(l => l.Descricao.Trim()).ToList();
+            return LstLiteratura.ToList();
         }
 
         //Obter todos os periodicos especificos de uma literatura para entregar aos publicador
@@ -311,7 +311,7 @@
 
             using (Database db = ConnectionString)
             {
-                string sql = "select l_pubs.STAMP, l_pubs.Id, l_pubs.Referencia, l_pubs.Descricao, l_pedidos_periodicos.Quantidade, l_pubs.IdTipo, sys_utilizadores.* from l_pedidos_periodicos inner join l_pubs on l_pubs.Referencia=l_pedidos_periodicos.Referencia left join sys_utilizadores on sys_utilizadores.IdUtilizador=l_pedidos_periodicos.IdPublicador\r\nwhere Quantidade>IFNULL((SELECT SUM(Quantidade) from l_movimentos where l_pubs.STAMP=l_movimentos.StampLiteratura  and l_movimentos.IdPublicador=l_pedidos_periodicos.IdPublicador), 0) and l_pubs.STAMP='" + stamp + "' order by Nome;";
+                string sql = "select l_pubs.STAMP, l_pubs.Id, l_pubs.Referencia, l_pubs.Descricao, l_pedidos_periodicos.Quantidade, l_pubs.IdTipo, sys_utilizadores.* from l_pedidos_periodicos inner join l_pubs on l_pubs.Referencia=l_pedidos_periodicos.Referencia left join sys_utilizadores on sys_utilizadores.IdUtilizador=l_pedidos_periodicos.IdPublicador\r\nwhere Quantidade>IFNULL((SELECT SUM(Quantidade) from l_movimentos where l_pubs.STAMP=l_movimentos.StampLiteratura  and l_movimentos.IdPublicador=l_pedidos_periodicos.IdPublicador), 0) and l_pubs.STAMP='" + stamp + "';";
                 using var result = db.Query(sql);
                 while (result.Read())
                 {
@@ -328,7 +328,7 @@
                 }
             }
 
-            return LstLiteratura.OrderBy(l => l.Descricao.Trim()).ToList();
+            return LstLiteratura.ToList();
         }
 
         //Obter Publicadores
@@ -472,7 +472,7 @@
                     {
                         Stamp = result["Id"],
                         Referencia = result["Referencia"],
-                        Imagem = "data:image/jpeg;base64," + (string.IsNullOrEmpty(result["Imagem"]) ? Convert.ToBase64String(File.ReadAllBytes("wwwroot/img/l_no_photo.png")) : Convert.ToBase64String(f.ObterFicheiro(f.ObterCaminhoLiteratura() + result["Imagem"]))),
+                        Imagem = "data:image/jpeg;base64," + Convert.ToBase64String(f.ObterFicheiro(f.ObterCaminhoLiteratura() + result["Imagem"])),
                         Descricao = result["Descricao"],
                         Quantidade = int.Parse(result["Quantidade"]),
                         Tipo = LstTiposLiteratura.Where(g => g.Id == 7).FirstOrDefault(new TipoLiteratura()),
@@ -548,7 +548,7 @@
                     {
                         Stamp = result["Id"],
                         Referencia = result["Referencia"],
-                        Imagem = "data:image/jpeg;base64," + (string.IsNullOrEmpty(result["Imagem"]) ? Convert.ToBase64String(File.ReadAllBytes("wwwroot/img/l_no_photo.png")) : Convert.ToBase64String(f.ObterFicheiro(f.ObterCaminhoLiteratura() + result["Imagem"]))),
+                        Imagem = "data:image/jpeg;base64," + Convert.ToBase64String(f.ObterFicheiro(f.ObterCaminhoLiteratura() + result["Imagem"])),
                         EstadoPedido = new EstadoPedido(result["Estado"]),
                         Descricao = result["Descricao"],
                         Quantidade = int.Parse(result["Quantidade"]),

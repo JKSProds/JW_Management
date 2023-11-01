@@ -78,6 +78,10 @@ namespace JW_Management.Models
                 {
                     return File.ReadAllBytes(Caminho);
                 }
+                else
+                {
+                    return File.ReadAllBytes("wwwroot/img/l_no_photo.png");
+                }
             }
             catch
             {
