@@ -407,12 +407,11 @@
         public List<Movimentos> ObterMovimentos(bool In, bool Out, int IdPub, DateOnly data)
         {
             List<Movimentos> LstMovimentos = new();
-            Publicador p = ObterPublicador(IdPub, false, false, false, false);
             DateOnly dF = data == DateOnly.MinValue ? DateOnly.MaxValue : data.AddDays(1);
 
             using (Database db = ConnectionString)
             {
-                string sql = "SELECT * FROM l_movimentos where IdPublicador=" + IdPub + " AND Data between '" + data.ToString("yyyy-MM-dd") + "' and '" + dF.ToString("yyyy-MM-dd") + "' AND  (" + (In ? "Quantidade > 0" : "") + (In && Out ? " OR " : "") + (Out ? "Quantidade < 0" : "") + ") ;";
+                string sql = "SELECT * FROM l_movimentos where " + (Out ? "IdPublicador=" + IdPub + " AND " : "") + "Data between '" + data.ToString("yyyy-MM-dd") + "' and '" + dF.ToString("yyyy-MM-dd") + "' AND(" + (In ? "Quantidade > 0" : "") + (In && Out ? " OR " : "") + (Out ? "Quantidade < 0" : "") + "); ";
                 using var result = db.Query(sql);
                 while (result.Read())
                 {
@@ -422,7 +421,7 @@
                         Literatura = ObterLiteratura(result["StampLiteratura"]),
                         Quantidade = int.Parse(result["Quantidade"]),
                         DataMovimento = DateTime.Parse(result["Data"]),
-                        Publicador = p
+                        Publicador = ObterPublicador(int.Parse(result["IdPublicador"]), false, false, false, false)
                     });
                 }
             }
