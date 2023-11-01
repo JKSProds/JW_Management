@@ -1,0 +1,198 @@
+﻿@model IEnumerable<JW_Management.Models.Literatura>
+@{
+    ViewData["Title"] = "Literatura - Entradas";
+}
+
+<style>
+    /* Estilos para o conteúdo da página */
+    .content {
+        display: flex;
+    }
+
+    /* Estilos para a lista do lado esquerdo (fixa) */
+    .fixed-list {
+        flex: 0 0 200px; /* Define uma largura fixa para a lista esquerda */
+        padding: 20px;
+        position: sticky;
+        top: 0; /* Fixa no topo da janela de visualização */
+    }
+
+    /* Estilos para a coluna do lado direito (rolável) */
+    .scrollable-content {
+        flex-grow: 1;
+        padding: 20px;
+        overflow-y: auto; /* Torna a coluna rolável verticalmente */
+    }
+
+    /* Estilos para a lista de filmes */
+    .movie-list {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 20px;
+    }
+
+    /* Estilos para o cartão de filme */
+    .movie-card {
+        text-align: center;
+    }
+
+    /* Estilos para a imagem do filme */
+    .movie-poster {
+        width: 300px;
+        height: 300px;
+        object-fit: cover;
+    }
+
+    /* Estilos para o nome do filme */
+    .movie-name {
+        font-weight: bold;
+        white-space: normal;
+        overflow-wrap: break-word; /* Permite que o texto quebre em várias linhas */
+    }
+
+    .is-active {
+        color: #DDF2FD;
+    }
+</style>
+
+<div class="m-4">
+    <div class="columns">
+        <!-- Coluna da lista de opções (lado esquerdo) -->
+        <div class="column is-one-quarter fixed-list">
+            <aside class="menu">
+                <p class="menu-label">
+                    Tipos de Publicações
+                </p>
+                <ul class="menu-list">
+                    <li>
+                        <a href="#" class="filter-option is-active" data-filter="option1">
+                            <div class="columns">
+                                <div class="column is-2 image is-rounded">
+                                    <img src="/img/tractsx.png">
+                                </div>
+                                <div class="column" style="justify-content: center;align-items: center; display: flex;">
+                                    <p class="button is-large" style="width:100%;border: none;background: none; cursor: pointer;font-size:45px">
+                                        Folhetos
+                                    </p>
+                                </div>
+                            </div>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="#" class="filter-option" data-filter="option2">
+                            <div class="columns">
+                                <div class="column is-2">
+                                    <img src="/img/bibles.png" class="is-rounded">
+                                </div>
+                                <div class="column" style="justify-content: center;align-items: center; display: flex;">
+                                    <p class="button is-large" style="width:100%;border: none;background: none; cursor: pointer;font-size:45px">
+                                        Biblia
+                                    </p>
+                                </div>
+                            </div>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="#" class="filter-option" data-filter="option3">
+                            <div class="columns">
+                                <div class="column is-2">
+                                    <img src="/img/books.png" class="is-rounded">
+                                </div>
+                                <div class="column" style="justify-content: center;align-items: center; display: flex;">
+                                    <p class="button is-large" style="width:100%;border: none;background: none; cursor: pointer;font-size:45px">
+                                        Livros
+                                    </p>
+                                </div>
+                            </div>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="#" class="filter-option" data-filter="option4">
+                            <div class="columns">
+                                <div class="column is-2">
+                                    <img src="/img/brochures.png" class="is-rounded">
+                                </div>
+                                <div class="column" style="justify-content: center;align-items: center; display: flex;">
+                                    <p class="button is-large" style="width:100%;border: none;background: none; cursor: pointer;font-size:45px">
+                                        Brochuras
+                                    </p>
+                                </div>
+                            </div>
+                        </a>
+                    </li>
+
+                    <!-- Adicione mais opções conforme necessário -->
+                </ul>
+            </aside>
+        </div>
+        <!-- Coluna do conteúdo (lado direito) -->
+        <div class="column">
+            <div class="content">
+                <div class="filtered-content " data-filter="option1">
+                    <div class="movie-list">
+                        @foreach (var item in Model.Where(l => l.Tipo.Id == 1))
+                        {
+                            <div class="movie-card">
+                                <img class="movie-poster" src="@item.Imagem">
+                                <p class="movie-name">@item.Descricao</p>
+                            </div>
+                        }
+                    </div>
+                </div>
+                <div class="filtered-content" data-filter="option2" style="display:none">
+                    <div class="movie-list">
+                        @foreach (var item in Model.Where(l => l.Tipo.Id == 2))
+                        {
+                            <div class="movie-card">
+                                <img class="movie-poster" src="@item.Imagem">
+                                <p class="movie-name">@item.Descricao</p>
+                            </div>
+                        }
+                    </div>
+                </div>
+                <div class="filtered-content" data-filter="option3" style="display:none">
+                    <div class="movie-list">
+                        @foreach (var item in Model.Where(l => l.Tipo.Id == 3))
+                        {
+                            <div class="movie-card">
+                                <img class="movie-poster" src="@item.Imagem">
+                                <p class="movie-name">@item.Descricao</p>
+                            </div>
+                        }
+                    </div>
+                </div>
+                <div class="filtered-content" data-filter="option4" style="display:none">
+                    <div class="movie-list">
+                        @foreach (var item in Model.Where(l => l.Tipo.Id == 4))
+                        {
+                            <div class="movie-card">
+                                <img class="movie-poster" src="@item.Imagem">
+                                <p class="movie-name">@item.Descricao</p>
+                            </div>
+                        }
+                    </div>
+                </div>
+
+                <!-- Adicione mais conteúdo conforme necessário -->
+            </div>
+        </div>
+    </div>
+</div>
+<script>
+    // JavaScript para lidar com a filtragem do conteúdo e destacar o menu selecionado
+    const filterOptions = document.querySelectorAll('.filter-option');
+    filterOptions.forEach(option => {
+        option.addEventListener('click', () => {
+            const filterValue = option.getAttribute('data-filter');
+            const filteredContents = document.querySelectorAll('.filtered-content');
+            filteredContents.forEach(content => {
+                content.style.display = content.getAttribute('data-filter') === filterValue ? 'block' : 'none';
+            });
+            // Remover a classe "is-active" de todos os menus
+            filterOptions.forEach(item => item.classList.remove('is-active'));
+            // Adicionar a classe "is-active" ao menu selecionado
+            option.classList.add('is-active');
+        });
+    });
+</script>

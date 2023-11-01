@@ -36,6 +36,7 @@ namespace JW_Management.Controllers
             ViewBag.Periodicos = context.ObterTipoPeriodicos().Select(l => new SelectListItem() { Value = l.Referencia, Text = l.Descricao });
             ViewData["Data"] = d;
 
+            if (id == 0) return View("Movimentos", context.ObterLiteraturas("", 0));
             if (id == 1) return View("Entradas", context.ObterMovimentos(true, false, 0, d));
             return View("Saidas", context.ObterMovimentos(false, true, 0, d));
         }
