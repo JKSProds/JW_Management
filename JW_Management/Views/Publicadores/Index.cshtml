@@ -21,7 +21,19 @@
                 </div>
             </div>
             <div class="column">
-               
+                <div class="field has-addons has-addons-right mx-1 mt-3 is-flex-wrap-wrap" style="width:100%">
+                    <div class="buttons is-right" style="width:100%">
+                        <p class="control" style="width:100%">
+                            <button type="button" class="button is-primary is-large is-fullwidth "
+                                    onclick="Bulma('#modalAdicionarPublicador').modal().open();">
+                                <span class="icon">
+                                    <i class="fas fa-plus"></i>
+                                </span>
+                                <span>Novo Publicador</span>
+                            </button>
+                        </p>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
@@ -93,7 +105,7 @@
         </section>
         <footer class="modal-card-foot">
             <button class="button is-danger is-fullwidth is-large"
-                onclick="Apagar(document.getElementById('txtHiddenStamp').value);">
+                    onclick="Apagar(document.getElementById('txtHiddenStamp').value);">
                 <span class="icon">
                     <i class="fas fa-trash-can"></i>
                 </span>
@@ -108,6 +120,45 @@
         </footer>
     </div>
 </div>
+
+<div class="modal" id="modalAdicionarPublicador">
+    <div class="modal-background"></div>
+    <div class="modal-card">
+        <header class="modal-card-head">
+            <p class="modal-card-title">
+                <span class="icon">
+                    <i class="fas fa-plus"></i>
+                </span>
+                <span>Novo Publicador</span>
+            </p>
+        </header>
+        <section class="modal-card-body">
+            <div class="modal-body">
+                <p>Insira abaixo o nome do publicador a criar:</p>
+                &nbsp;
+                <div class="control" style="width:100%">
+                    <input type="text" class="input has-text-centered" id="txtNomeNovoPublicador" value="" placeholder="Nome">
+                </div>
+            </div>
+        </section>
+        <footer class="modal-card-foot">
+            <button class="button is-info is-fullwidth is-large"
+                    onclick="CriarPublicador(document.getElementById('txtNomeNovoPublicador').value);">
+                <span class="icon">
+                    <i class="fas fa-plus"></i>
+                </span>
+                <span>Criar Publicador</span>
+            </button>
+            <button class="button is-fullwidth is-large" onclick="Bulma('#modalAdicionarPublicador').modal().close();">
+                <span class="icon">
+                    <i class="fa-solid fa-circle-xmark"></i>
+                </span>
+                <span>Cancelar</span>
+            </button>
+        </footer>
+    </div>
+</div>
+
 <input id="txtHiddenStamp" hidden />
 
 <script>
@@ -118,7 +169,7 @@
 
     function Apagar(id) {
         $.ajax({
-            url: '/Publicador/Publicador/',
+            url: '/Publicadores/Publicador/',
             data: { "id": id, "delete": true },
             type: "DELETE",
             success: function (data) {
@@ -131,5 +182,38 @@
                 notifyError('Falha ao apagar esse publicador!');
             }
         });
+    }
+
+
+    function CriarPublicador(nome) {
+        $.ajax({
+            url: '/Publicadores/ObterPublicadores/',
+            type: "GET",
+            success: function (data) {
+                var id = (data.sort((a, b) => a.id - b.id)[data.length - 1].id) + 1;
+                $.ajax({
+                    url: '/Publicadores/Publicador/',
+                    data: { "nome": nome, "id": id },
+                    type: "POST",
+                    success: function (data) {
+                        notify("Utilizador criado com sucesso!");
+                        window.location.href = 'Publicadores/Publicador/' + id;
+                    },
+                    error: function (data) {
+                        notifyError('Ocorreu um erro ao adicionar esse publicador!');
+                    },
+                    failure: function (data) {
+                        notifyError('Falha ao adicionar esse publicador!');
+                    }
+                });
+            },
+            error: function (data) {
+                notifyError('Ocorreu um erro ao obter todos os publicadores!');
+            },
+            failure: function (data) {
+                notifyError('Falha ao obter todos os publicadores!');
+            }
+        });
+
     }
 </script>

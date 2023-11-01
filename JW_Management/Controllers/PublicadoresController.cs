@@ -14,7 +14,7 @@ namespace JW_Management.Controllers
         {
             DbContext context = HttpContext.RequestServices.GetService(typeof(DbContext)) as DbContext;
 
-            return View(context.ObterPublicadores().OrderBy(p => p.Id));
+            return View(context.ObterPublicadores().OrderBy(p => p.Nome));
         }
 
         [HttpGet]
@@ -37,10 +37,21 @@ namespace JW_Management.Controllers
             return Json(context.ObterPublicador(id, false, false, false, false));
         }
 
+        [HttpGet]
+        public IActionResult ObterPublicadores()
+        {
+            DbContext context = HttpContext.RequestServices.GetService(typeof(DbContext)) as DbContext;
+
+            return Json(context.ObterPublicadores());
+        }
+
         [HttpPost]
         public IActionResult Publicador(Publicador p)
         {
             DbContext context = HttpContext.RequestServices.GetService(typeof(DbContext)) as DbContext;
+            if (p.Id == 0) return StatusCode(500);
+            if (!string.IsNullOrEmpty(p.Nome) && string.IsNullOrEmpty(p.Username)) p.Username = p.Nome.Replace(" ", "").ToLower();
+
             Publicador pOriginal = context.ObterPublicador(p.Id, false, false, false, false);
 
             var passwordHasher = new PasswordHasher<string>();

@@ -13,5 +13,16 @@
         public List<Movimentos>? Movimentos { get; set; }
         public List<Literatura>? Pedidos { get; set; }
         public List<Territorio>? Territorios { get; set; }
+
+        public Publicador()
+        {
+            if (string.IsNullOrEmpty(Username)) Username = string.Empty;
+            if (string.IsNullOrEmpty(Nome)) Nome = string.Empty;
+            if (string.IsNullOrEmpty(Password)) Password = string.Empty;
+            if (string.IsNullOrEmpty(Email)) Email = string.Empty;
+            if (string.IsNullOrEmpty(Telemovel)) Telemovel = string.Empty;
+            if (Grupo == null) Grupo = new Grupo() { Id = 0 };
+        }
+
     }
 }
