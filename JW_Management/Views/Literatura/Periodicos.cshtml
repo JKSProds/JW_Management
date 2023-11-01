@@ -49,6 +49,7 @@
                                     <table class="table is-hoverable is-fullwidth">
                                         <thead>
                                             <tr>
+                                                <th></th>
                                                 <th>
                                                     @Html.DisplayNameFor(model => model.FirstOrDefault()!.Referencia)
                                                 </th>
@@ -68,6 +69,11 @@
                                             @foreach (var item in Model.Where(r => r.DescricaoGeral == p))
                                             {
                                                 <tr @(item.Quantidade == 0 ? "class=has-background-success" : "")>
+                                                    <td class="is-image-cell">
+                                                        <div class="image">
+                                                            <img src="@item.Imagem">
+                                                        </div>
+                                                    </td>
                                                     <td data-label="@Html.DisplayNameFor(model => model.FirstOrDefault()!.Referencia)">
                                                         <span>@item.Referencia</span>
                                                     </td>

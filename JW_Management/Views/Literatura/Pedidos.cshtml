@@ -84,6 +84,7 @@
                                 <table class="table is-hoverable is-fullwidth">
                                     <thead>
                                         <tr>
+                                            <th></th>
                                             <th>
                                                 @Html.DisplayNameFor(model => model.FirstOrDefault()!.Referencia)
                                             </th>
@@ -106,6 +107,11 @@
                                         @foreach (var item in Model.Where(l => l.Tipo!.Id != 7))
                                         {
                                             <tr>
+                                                <td class="is-image-cell">
+                                                    <div class="image">
+                                                        <img src="@item.Imagem">
+                                                    </div>
+                                                </td>
                                                 <td data-label="@Html.DisplayNameFor(model => model.FirstOrDefault()!.Referencia)">
                                                     <span>@item.Referencia</span>
                                                 </td>
@@ -166,7 +172,7 @@
                             <p class="control has-icons-left">
                                 <span class="select is-fullwidth" style="width:100%">
                                     <select class="select" id="filtrop" style="height: auto"
-                                        asp-items="@(new SelectList(@ViewBag.Periodicos, "Value", "Text"))" onchange="Array.prototype.slice.call(document.querySelector('#tblPeriodicos').childNodes[3].childNodes).forEach(function(v, i, a) { if (v.childNodes[1]) v.style.display = document.getElementById('filtrop').value == 0 ? 'table-row' : (v.childNodes[1].childNodes[1].childNodes[0].textContent != document.getElementById('filtrop').value ? 'none' : 'table-row');  });">
+                                        asp-items="@(new SelectList(@ViewBag.Periodicos, "Value", "Text"))" onchange="Array.prototype.slice.call(document.querySelector('#tblPeriodicos').childNodes[3].childNodes).forEach(function(v, i, a) { if (v.childNodes[3]) v.style.display = document.getElementById('filtrop').value == 0 ? 'table-row' : (v.childNodes[3].childNodes[1].childNodes[0].textContent != document.getElementById('filtrop').value ? 'none' : 'table-row');  });">
                                         <option value="0">Todos</option>
                                     </select>
                                 </span>
@@ -181,6 +187,7 @@
                                 <table class="table is-hoverable is-fullwidth" id="tblPeriodicos">
                                     <thead>
                                         <tr>
+                                            <th></th>
                                             <th>
                                                 @Html.DisplayNameFor(model => model.FirstOrDefault()!.Referencia)
                                             </th>
@@ -200,6 +207,11 @@
                                         @foreach (var item in Model.Where(l => l.Tipo!.Id == 7))
                                         {
                                             <tr>
+                                                <td class="is-image-cell">
+                                                    <div class="image">
+                                                        <img src="@item.Imagem">
+                                                    </div>
+                                                </td>
                                                 <td data-label="@Html.DisplayNameFor(model => model.FirstOrDefault()!.Referencia)">
                                                     <span>@item.Referencia</span>
                                                 </td>

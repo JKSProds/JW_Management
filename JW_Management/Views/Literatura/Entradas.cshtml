@@ -82,6 +82,7 @@
                 <table class="table is-hoverable is-fullwidth">
                     <thead>
                         <tr>
+                            <th></th>
                             <th>
                                 @Html.DisplayNameFor(model => model.FirstOrDefault()!.Literatura!.Descricao)
                             </th>
@@ -101,6 +102,11 @@
                         @foreach (var item in Model)
                         {
                             <tr>
+                                <td class="is-image-cell">
+                                    <div class="image">
+                                        <img src="@item.Literatura!.Imagem">
+                                    </div>
+                                </td>
                                 <td data-label="@Html.DisplayNameFor(model => model.FirstOrDefault()!.Literatura!.Descricao)">
                                     <span>@item.Literatura!.Descricao</span>
                                 </td>

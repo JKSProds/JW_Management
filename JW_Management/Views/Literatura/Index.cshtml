@@ -96,6 +96,7 @@
                 <table class="table is-hoverable is-fullwidth">
                     <thead>
                         <tr>
+                            <th></th>
                             <th>
                                 @Html.DisplayNameFor(model => model.FirstOrDefault()!.Referencia)
                             </th>
@@ -115,6 +116,11 @@
                         @foreach (var item in Model)
                         {
                             <tr>
+                                <td class="is-image-cell">
+                                    <div class="image">
+                                        <img src="@item.Imagem">
+                                    </div>
+                                </td>
                                 <td data-label="@Html.DisplayNameFor(model => model.FirstOrDefault()!.Referencia)">
                                     <span>@item.Referencia</span>
                                 </td>
@@ -129,6 +135,10 @@
                                 </td>
                                 <td class="is-actions-cell">
                                     <div class="buttons is-pulled-right is-flex-wrap-nowrap" style="width:100%">
+                                        <button class="button is-primary is-fullwidth is-large mr-1"
+                                                onclick="AtualizarImagem('@item.Stamp')">
+                                            <i class="fas fa-image"></i>
+                                        </button>
                                         <button class="button is-info is-fullwidth is-large mr-1"
                                                 onclick="AtualizarQuantidade('@item.Stamp')">
                                             <i class="fas fa-refresh"></i>
@@ -324,6 +334,36 @@
         </footer>
     </div>
 </div>
+
+<div id="modalAtualizarImagem" class="modal">
+    <div class="modal-background"></div>
+    <div class="modal-card">
+        <header class="modal-card-head">
+            <p class="modal-card-title">Anexos</p>
+        </header>
+        <section class="modal-card-body">
+            <div class="form-group">
+                <form action="/Literatura/Imagem" method="POST" class="dropzone">
+                    <input type="hidden" name="id" id="txtStampLiteraturaImagem">
+                    <div class="dz-message needsclick">
+                        Largue aqui a imagem da publicação para fazer o upload
+                    </div>
+                </form>
+            </div>
+        </section>
+        <footer class="modal-card-foot">
+            <button type="button" class="button is-info is-large is-fullwidth"
+                    onclick="Bulma('#modalAtualizarImagem').modal().close();" id="btnConfirmAddAnexo"
+                    href="javascript:;">
+                <span class="icon">
+                    <i class="fa-solid fa-circle-xmark"></i>
+                </span>
+                <span>Fechar</span>
+            </button>
+        </footer>
+    </div>
+</div>
+
 <input id="txtHiddenStamp" hidden />
 
 <script>
@@ -335,6 +375,12 @@
     function AtualizarQuantidade(id, qtd) {
         document.getElementById('txtHiddenStamp').value = id;
         Bulma('#modalAtualizarQuantidade').modal().open();
+    }
+
+    function AtualizarImagem(id) {
+        document.getElementById('txtHiddenStamp').value = id;
+        document.getElementById('txtStampLiteraturaImagem').value = id;
+        Bulma('#modalAtualizarImagem').modal().open();
     }
 
     function GerarMovimento(stamp, qtd) {

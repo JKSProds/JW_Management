@@ -255,5 +255,20 @@ namespace JW_Management.Controllers
 
             return new FileContentResult(output.ToArray(), System.Net.Mime.MediaTypeNames.Application.Pdf);
         }
+
+        [HttpPost]
+        public IActionResult Imagem(string id, IFormFile file)
+        {
+            DbContext context = HttpContext.RequestServices.GetService(typeof(DbContext)) as DbContext;
+            FileContext f = new();
+            if (string.IsNullOrEmpty(id) || file == null) return StatusCode(500);
+
+            Literatura l = context.ObterLiteratura(id);
+            string FileName = l.Referencia + "_" + DateTime.Now.Ticks.ToString() + "." + file.FileName.Split(".").Last();
+
+            if (f.GuardarImagemLiteratura(file, FileName)) return context.AdicionarImagemLiteratura(l, FileName) ? StatusCode(200) : StatusCode(500);
+
+            return StatusCode(500);
+        }
     }
 }

@@ -45,10 +45,12 @@
             List<Literatura> LstLiteratura = new();
             List<TipoLiteratura> LstTiposLiteratura = ObterTiposLiteratura();
             List<Publicador> LstPublicador = ObterPublicadores();
+            FileContext f = new();
+            f.ObterCaminhoLiteratura();
 
             using (Database db = ConnectionString)
             {
-                string sql = "SELECT *, IFNULL((SELECT SUM(Quantidade) from l_movimentos where l_pubs.STAMP=l_movimentos.StampLiteratura and l_movimentos.IdPublicador=" + idpub + "), 0) as Quantidade FROM l_pubs where Descricao like '%" + filtro + "%' or Referencia like '%" + filtro + "%';";
+                string sql = "SELECT *, IFNULL((SELECT SUM(Quantidade) from l_movimentos where l_pubs.STAMP=l_movimentos.StampLiteratura and l_movimentos.IdPublicador=" + idpub + "), 0) as Quantidade, IFNULL((SELECT Caminho from l_img where l_pubs.Referencia=l_img.Referencia), '') as Imagem FROM l_pubs where Descricao like '%" + filtro + "%' or Referencia like '%" + filtro + "%';";
                 using var result = db.Query(sql);
                 while (result.Read())
                 {
@@ -57,6 +59,7 @@
                         Stamp = result["STAMP"],
                         Id = result["Id"],
                         Referencia = result["Referencia"],
+                        Imagem = "data:image/jpeg;base64," + (string.IsNullOrEmpty(result["Imagem"]) ? Convert.ToBase64String(File.ReadAllBytes("wwwroot/img/l_no_photo.png")) : Convert.ToBase64String(f.ObterFicheiro(f.ObterCaminhoLiteratura() + result["Imagem"]))),
                         Descricao = result["Descricao"],
                         Quantidade = result["Quantidade"],
                         Tipo = LstTiposLiteratura.Where(g => g.Id == result["IdTipo"]).FirstOrDefault(new TipoLiteratura()),
@@ -107,10 +110,11 @@
         {
             List<Literatura> LstLiteratura = new();
             List<TipoLiteratura> LstTiposLiteratura = ObterTiposLiteratura();
+            FileContext f = new();
 
             using (Database db = ConnectionString)
             {
-                string sql = "SELECT *, IFNULL((SELECT SUM(Quantidade) from l_movimentos where l_pubs.STAMP=l_movimentos.StampLiteratura), 0) as Quantidade FROM l_pubs where STAMP='" + STAMP + "';";
+                string sql = "SELECT *, IFNULL((SELECT SUM(Quantidade) from l_movimentos where l_pubs.STAMP=l_movimentos.StampLiteratura), 0) as Quantidade, IFNULL((SELECT Caminho from l_img where l_pubs.Referencia=l_img.Referencia), '') as Imagem FROM l_pubs where STAMP='" + STAMP + "';";
                 using var result = db.Query(sql);
                 while (result.Read())
                 {
@@ -119,6 +123,7 @@
                         Stamp = result["STAMP"],
                         Id = result["Id"],
                         Referencia = result["Referencia"],
+                        Imagem = "data:image/jpeg;base64," + (string.IsNullOrEmpty(result["Imagem"]) ? Convert.ToBase64String(File.ReadAllBytes("wwwroot/img/l_no_photo.png")) : Convert.ToBase64String(f.ObterFicheiro(f.ObterCaminhoLiteratura() + result["Imagem"]))),
                         Descricao = result["Descricao"],
                         Quantidade = result["Quantidade"],
                         Tipo = LstTiposLiteratura.Where(g => g.Id == result["IdTipo"]).FirstOrDefault(new TipoLiteratura())
@@ -273,10 +278,11 @@
         {
             List<Literatura> LstLiteratura = new();
             List<TipoLiteratura> LstTiposLiteratura = ObterTiposLiteratura();
+            FileContext f = new();
 
             using (Database db = ConnectionString)
             {
-                string sql = "SELECT *, (SELECT Descricao FROM l_periodicos WHERE l_pubs.Referencia=l_periodicos.Referencia) as DescAdicional, IFNULL((SELECT SUM(Quantidade) from l_movimentos where l_pubs.STAMP=l_movimentos.StampLiteratura and l_movimentos.IdPublicador=0), 0) as Quantidade FROM l_pubs where IdTipo=7 and IFNULL((SELECT SUM(Quantidade) from l_movimentos where l_pubs.STAMP=l_movimentos.StampLiteratura), 0) > 0;";
+                string sql = "SELECT *, (SELECT Descricao FROM l_periodicos WHERE l_pubs.Referencia=l_periodicos.Referencia) as DescAdicional, IFNULL((SELECT SUM(Quantidade) from l_movimentos where l_pubs.STAMP=l_movimentos.StampLiteratura and l_movimentos.IdPublicador=0), 0) as Quantidade, IFNULL((SELECT Caminho from l_img where l_pubs.Referencia=l_img.Referencia), '') as Imagem FROM l_pubs where IdTipo=7 and IFNULL((SELECT SUM(Quantidade) from l_movimentos where l_pubs.STAMP=l_movimentos.StampLiteratura), 0) > 0;";
                 using var result = db.Query(sql);
                 while (result.Read())
                 {
@@ -286,6 +292,7 @@
                         Id = result["Id"],
                         Referencia = result["Referencia"],
                         Descricao = result["Descricao"],
+                        Imagem = "data:image/jpeg;base64," + (string.IsNullOrEmpty(result["Imagem"]) ? Convert.ToBase64String(File.ReadAllBytes("wwwroot/img/l_no_photo.png")) : Convert.ToBase64String(f.ObterFicheiro(f.ObterCaminhoLiteratura() + result["Imagem"]))),
                         Quantidade = result["Quantidade"],
                         DescricaoGeral = result["DescAdicional"],
                         Tipo = LstTiposLiteratura.Where(g => g.Id == result["IdTipo"]).FirstOrDefault(new TipoLiteratura())
@@ -453,10 +460,11 @@
             List<Literatura> LstLiteratura = new();
             List<Publicador> LstPublicador = ObterPublicadores();
             List<TipoLiteratura> LstTiposLiteratura = ObterTiposLiteratura();
+            FileContext f = new();
 
             using (Database db = ConnectionString)
             {
-                string sql = "SELECT l_pedidos_periodicos.*, l_periodicos.Descricao from l_pedidos_periodicos inner join l_periodicos on l_pedidos_periodicos.Referencia = l_periodicos.Referencia;";
+                string sql = "SELECT l_pedidos_periodicos.*, l_periodicos.Descricao, IFNULL((SELECT Caminho from l_img where l_periodicos.Referencia=l_img.Referencia), '') as Imagem from l_pedidos_periodicos inner join l_periodicos on l_pedidos_periodicos.Referencia = l_periodicos.Referencia;";
                 using var result = db.Query(sql);
                 while (result.Read())
                 {
@@ -464,6 +472,7 @@
                     {
                         Stamp = result["Id"],
                         Referencia = result["Referencia"],
+                        Imagem = "data:image/jpeg;base64," + (string.IsNullOrEmpty(result["Imagem"]) ? Convert.ToBase64String(File.ReadAllBytes("wwwroot/img/l_no_photo.png")) : Convert.ToBase64String(f.ObterFicheiro(f.ObterCaminhoLiteratura() + result["Imagem"]))),
                         Descricao = result["Descricao"],
                         Quantidade = int.Parse(result["Quantidade"]),
                         Tipo = LstTiposLiteratura.Where(g => g.Id == 7).FirstOrDefault(new TipoLiteratura()),
@@ -527,10 +536,11 @@
             List<Literatura> LstLiteratura = new();
             List<Publicador> LstPublicador = ObterPublicadores();
             List<TipoLiteratura> LstTiposLiteratura = ObterTiposLiteratura();
+            FileContext f = new();
 
             using (Database db = ConnectionString)
             {
-                string sql = "SELECT l_pedidos_especiais.*, l_pubs.Referencia, l_pubs.Descricao, l_pubs.IdTipo from l_pedidos_especiais inner join l_pubs on l_pedidos_especiais.StampLiteratura = l_pubs.STAMP;";
+                string sql = "SELECT l_pedidos_especiais.*, l_pubs.Referencia, l_pubs.Descricao, l_pubs.IdTipo, IFNULL((SELECT Caminho from l_img where l_pubs.Referencia=l_img.Referencia), '') as Imagem from l_pedidos_especiais inner join l_pubs on l_pedidos_especiais.StampLiteratura = l_pubs.STAMP;";
                 using var result = db.Query(sql);
                 while (result.Read())
                 {
@@ -538,6 +548,7 @@
                     {
                         Stamp = result["Id"],
                         Referencia = result["Referencia"],
+                        Imagem = "data:image/jpeg;base64," + (string.IsNullOrEmpty(result["Imagem"]) ? Convert.ToBase64String(File.ReadAllBytes("wwwroot/img/l_no_photo.png")) : Convert.ToBase64String(f.ObterFicheiro(f.ObterCaminhoLiteratura() + result["Imagem"]))),
                         EstadoPedido = new EstadoPedido(result["Estado"]),
                         Descricao = result["Descricao"],
                         Quantidade = int.Parse(result["Quantidade"]),
@@ -631,6 +642,16 @@
         {
 
             string sql = "DELETE FROM l_pedidos_especiais where id = '" + stamp + "';";
+
+            return ExecutarQuery(sql);
+        }
+
+        //Inserir imagem
+        public bool AdicionarImagemLiteratura(Literatura l, string FileName)
+        {
+            string sql = "DELETE FROM l_img WHERE Referencia='" + l.Referencia + "';\r\n";
+            sql += "INSERT INTO l_img(Referencia, Caminho) VALUES ";
+            sql += ("('" + l.Referencia + "', '" + FileName + "');");
 
             return ExecutarQuery(sql);
         }

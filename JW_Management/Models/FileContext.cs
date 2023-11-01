@@ -5,16 +5,39 @@ namespace JW_Management.Models
 {
     public class FileContext
     {
-        private string CaminhoTerritorios = "C:\\Users\\Jorge Monteiro\\Desktop\\Territorios\\";
-        private string CaminhoTerritoriosLinux = "/app/img/territorios/";
+        private string Caminho = "C:\\Users\\Jorge Monteiro\\Desktop\\";
+        private string CaminhoLinux = "/app/img/";
+
+        public string ObterCaminho()
+        {
+#if DEBUG
+            CriarPasta(Caminho);
+            return Caminho;
+#else
+            CriarPasta(CaminhoLinux);
+            return CaminhoLinux;
+#endif
+        }
+
         public string ObterCaminhoTerritorios()
         {
 #if DEBUG
-            CriarPasta(CaminhoTerritorios);
-            return CaminhoTerritorios;
+            CriarPasta(Caminho + "Territorios\\");
+            return Caminho + "Territorios\\";
 #else
-            CriarPasta(CaminhoTerritoriosLinux);
-            return CaminhoTerritoriosLinux;
+            CriarPasta(CaminhoLinux + "territorio/");
+            return CaminhoLinux + "territorio/";
+#endif
+        }
+
+        public string ObterCaminhoLiteratura()
+        {
+#if DEBUG
+            CriarPasta(Caminho + "Literatura\\");
+            return Caminho + "Literatura\\";
+#else
+            CriarPasta(CaminhoLinux + "literatura/");
+            return CaminhoLinux + "literatura/";
 #endif
         }
 
@@ -83,6 +106,12 @@ namespace JW_Management.Models
         {
             return CriarFicheiro(ObterCaminhoTerritorios() + Name, file);
         }
+
+        public bool GuardarImagemLiteratura(IFormFile file, string Name)
+        {
+            return CriarFicheiro(ObterCaminhoLiteratura() + Name, file);
+        }
+
 
         public MemoryStream PreencherFormularioS28(DbContext context)
         {
