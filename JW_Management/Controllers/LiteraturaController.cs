@@ -32,7 +32,7 @@ namespace JW_Management.Controllers
 
             DateOnly.TryParse(data, out DateOnly d);
             if (d == DateOnly.MinValue) d = DateOnly.FromDateTime(DateTime.Now);
-            ViewBag.Publicadores = context.ObterPublicadores().Select(l => new SelectListItem() { Value = l.Id.ToString(), Text = l.Nome });
+            ViewBag.Publicadores = context.ObterPublicadores().OrderBy(p => p.Nome).Select(l => new SelectListItem() { Value = l.Id.ToString(), Text = l.Nome });
             ViewBag.Periodicos = context.ObterTipoPeriodicos().Select(l => new SelectListItem() { Value = l.Referencia, Text = l.Descricao });
             ViewData["Data"] = d;
 
@@ -136,7 +136,7 @@ namespace JW_Management.Controllers
             DbContext context = HttpContext.RequestServices.GetService(typeof(DbContext)) as DbContext;
             if (string.IsNullOrEmpty(id)) return StatusCode(500);
 
-            return View(context.ObterPeriodicos(id));
+            return View(context.ObterPeriodicos(id).OrderBy(p => p.Publicador.Nome));
         }
 
         [HttpPost]
@@ -170,7 +170,7 @@ namespace JW_Management.Controllers
         {
             DbContext context = HttpContext.RequestServices.GetService(typeof(DbContext)) as DbContext;
 
-            ViewBag.Publicadores = context.ObterPublicadores().Select(l => new SelectListItem() { Value = l.Id.ToString(), Text = l.Nome });
+            ViewBag.Publicadores = context.ObterPublicadores().OrderBy(p => p.Nome).Select(l => new SelectListItem() { Value = l.Id.ToString(), Text = l.Nome });
             ViewBag.Estados = context.ObterEstadosPedido().Select(l => new SelectListItem() { Value = l.Descricao, Text = l.Descricao });
             ViewBag.Periodicos = context.ObterTipoPeriodicos().Select(l => new SelectListItem() { Value = l.Referencia, Text = l.Descricao });
 

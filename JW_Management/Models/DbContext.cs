@@ -338,7 +338,7 @@
 
             using (Database db = ConnectionString)
             {
-                string sql = "SELECT * FROM sys_utilizadores order by Nome;";
+                string sql = "SELECT * FROM sys_utilizadores";
                 using var result = db.Query(sql);
                 while (result.Read())
                 {

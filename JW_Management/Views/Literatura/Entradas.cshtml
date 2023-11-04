@@ -84,6 +84,9 @@
                         <tr>
                             <th></th>
                             <th>
+                                @Html.DisplayNameFor(model => model.FirstOrDefault()!.Literatura!.Referencia)
+                            </th>
+                            <th>
                                 @Html.DisplayNameFor(model => model.FirstOrDefault()!.Literatura!.Descricao)
                             </th>
                             <th>
@@ -106,6 +109,9 @@
                                     <div class="image">
                                         <img src="@item.Literatura!.Imagem">
                                     </div>
+                                </td>
+                                <td data-label="@Html.DisplayNameFor(model => model.FirstOrDefault()!.Literatura!.Descricao)">
+                                    <span>@item.Literatura!.Referencia</span>
                                 </td>
                                 <td data-label="@Html.DisplayNameFor(model => model.FirstOrDefault()!.Literatura!.Descricao)">
                                     <span>@item.Literatura!.Descricao</span>

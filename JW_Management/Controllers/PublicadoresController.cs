@@ -73,7 +73,7 @@ namespace JW_Management.Controllers
             DbContext context = HttpContext.RequestServices.GetService(typeof(DbContext)) as DbContext;
             if (!delete) return StatusCode(403);
 
-            return View(context.ApagarPublicador(id));
+            return context.ApagarPublicador(id) ? StatusCode(200) : StatusCode(500);
         }
     }
 }
