@@ -328,7 +328,7 @@
             html5QrCode.stop().then((ignore) => {
                 notifyError('Leitura do código QR Concluida');
             }).catch((err) => {
-                notifyError('Ocorreu um erro ao parar a leitura do código QR');
+                notifyError('Ocorreu um erro ao parar a leitura do código QR: ' + err);
             });
         };
         const config = {
@@ -349,7 +349,7 @@
                 }
             }
         }).catch(err => {
-            notifyError('Ocorreu um erro ao iniciar a leitura do código QR');
+            notifyError('Ocorreu um erro ao iniciar a leitura do código QR: ' + err);
         });
     }
 </script>

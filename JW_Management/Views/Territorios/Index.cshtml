@@ -522,7 +522,7 @@
                 }
             }
         }).catch(err => {
-            notifyError('Ocorreu um erro ao iniciar a leitura do código QR');
+            notifyError('Ocorreu um erro ao iniciar a leitura do código QR: ' + err);
         });
     }
 
