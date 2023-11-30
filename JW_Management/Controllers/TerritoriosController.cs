@@ -52,7 +52,7 @@ namespace JW_Management.Controllers
                 Stamp = DateTime.Now.Ticks.ToString(),
                 Id = id,
                 Nome = nome,
-                Dificuldade = dificuldade == 0 ? DificuldadeTerritorio.FACIL : dificuldade == 1 ? DificuldadeTerritorio.MODERADO : DificuldadeTerritorio.DIFICIL,
+                Dificuldade = dificuldade == 1 ? DificuldadeTerritorio.FACIL : dificuldade == 2 ? DificuldadeTerritorio.MODERADO : DificuldadeTerritorio.DIFICIL,
                 Descricao = descricao,
                 Url = url
             };
