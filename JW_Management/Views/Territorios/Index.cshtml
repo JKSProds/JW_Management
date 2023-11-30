@@ -198,16 +198,25 @@
                         <textarea type="text" class="textarea" rows="4" id="txtDescricaoTerritorio"></textarea>
                     </p>
                 </div>
-                <div class="field">
-                    <label class="label">URL</label>
-                    <p class="control has-icons-left">
-                        <span>
-                            <input type="text" class="input" id="txtURLTerritorio">
-                        </span>
-                        <span class="icon is-small is-left">
+
+                <label class="label">URL</label>
+                <div class="field has-addons">
+                    <div class="control" style="width:100%">
+                        <p class="control has-icons-left">
+                            <span>
+                                <input type="text" class="input" id="txtURLTerritorio">
+                            </span>
+                            <span class="icon is-small is-left">
+                                <i class="fa-solid fa-qrcode"></i>
+                            </span>
+                        </p>
+                    </div>
+                    <div class="control">
+                        <a class="button is-info"
+                           onclick="IniciarLeituraQR();Bulma('#modalLeituraQR').modal().open();">
                             <i class="fa-solid fa-qrcode"></i>
-                        </span>
-                    </p>
+                        </a>
+                    </div>
                 </div>
             </div>
         </section>
@@ -357,6 +366,33 @@
 </div>
 
 
+<div id="modalLeituraQR" class="modal">
+    <div class="modal-background"></div>
+    <div class="modal-card">
+        <header class="modal-card-head">
+            <p class="modal-card-title">
+                <span class="icon is-small is-left">
+                    <i class="fa-solid fa-qrcode"></i>
+                </span>
+                <span>Leitura de Código QR</span>
+            </p>
+        </header>
+        <section class="modal-card-body">
+            <div class="form-group">
+                <div id="reader" width="600px" height="600px"></div>
+            </div>
+        </section>
+        <footer class="modal-card-foot">
+            <button type="button" class="button is-info is-large is-fullwidth"
+                    onclick="Bulma('#modalLeituraQR').modal().close();"
+                    href="javascript:;">
+                Fechar
+            </button>
+        </footer>
+    </div>
+</div>
+
+
 <input id="txtHiddenStamp" hidden />
 
 <script>
@@ -447,6 +483,46 @@
             failure: function (response) {
                 notifyError('Falha ao obter o utilizador!');
             }
+        });
+    }
+
+
+    function IniciarLeituraQR() {
+        var cameraId = '';
+        const html5QrCode = new Html5Qrcode("reader");
+        let html5QrcodeScanner = new Html5QrcodeScanner("reader",
+            {
+                fps: 10, qrbox: { width: 250, height: 250 }
+            }, false);
+
+        const qrCodeSuccessCallback = (decodedText, decodedResult) => {
+            Bulma('#modalLerBarcode').modal().close();
+            alert(decodedText);
+            html5QrCode.stop().then((ignore) => {
+                notifyError('Leitura do código QR Concluida');
+            }).catch((err) => {
+                notifyError('Ocorreu um erro ao parar a leitura do código QR');
+            });
+        };
+        const config = {
+            fps: 10, qrbox: { width: 250, height: 250 }
+        };
+
+        Html5Qrcode.getCameras().then(devices => {
+            if (devices && devices.length) {
+                if (devices.length > 3) {
+                    cameraId = devices[3].id;
+                } else if (devices.length > 2) {
+                    cameraId = cameraId = devices[1].id;
+                }
+                if (cameraId != '') {
+                    html5QrCode.start(cameraId, config, qrCodeSuccessCallback);
+                } else {
+                    html5QrCode.start({ facingMode: "environment" }, config, qrCodeSuccessCallback);
+                }
+            }
+        }).catch(err => {
+            notifyError('Ocorreu um erro ao iniciar a leitura do código QR');
         });
     }
 
