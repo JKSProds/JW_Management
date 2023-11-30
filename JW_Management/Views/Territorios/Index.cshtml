@@ -98,7 +98,7 @@
                     <tbody>
                         @foreach (var item in Model)
                         {
-                            <tr>
+                            <tr class="has-background-@item.CorEstado">
                                 <td data-label="@Html.DisplayNameFor(model => model.FirstOrDefault()!.Id)">
                                     <span>@item.Id</span>
                                 </td>
@@ -501,7 +501,7 @@
             html5QrCode.stop().then((ignore) => {
                 notifyError('Leitura do código QR Concluida');
             }).catch((err) => {
-                notifyError('Ocorreu um erro ao parar a leitura do código QR');
+                notifyError('Ocorreu um erro ao parar a leitura do código QR: ' + err);
             });
         };
         const config = {

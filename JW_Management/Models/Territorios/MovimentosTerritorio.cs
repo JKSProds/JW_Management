@@ -7,6 +7,11 @@
         public Publicador? Publicador { get; set; }
         public DateTime DataMovimento { get; set; }
         public TipoMovimentoTerritorio Tipo { get; set; }
+
+        public MovimentosTerritorio()
+        {
+            Tipo = TipoMovimentoTerritorio.SAIDA;
+        }
     }
 
     public enum TipoMovimentoTerritorio
