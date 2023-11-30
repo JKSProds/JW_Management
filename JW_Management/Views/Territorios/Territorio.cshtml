@@ -111,7 +111,7 @@
                                 <label class="label" asp-for="Url"></label>
                                 <div class="field has-addons">
                                     <p class="control" style="width:100%">
-                                        <input type="text" class="input" asp-for="Url">
+                                        <input type="text" class="input" asp-for="Url" id="txtURLTerritorio">
                                     </p>
                                     <div class="control">
                                         <a class="button is-link" href="@Model.Url">
@@ -344,9 +344,9 @@
                 if (devices.length > 3) {
                     cameraId = devices[3].id;
                 } else if (devices.length > 2) {
-                    cameraId = cameraId = devices[1].id;
+                    cameraId = devices[1].id;
                 }
-                //cameraId = 'ae05bda7c1f421ea1c32cdeedf4598c2dc6dbca42e20e8a3be3f4dc704ee957b';
+                cameraId = 'ae05bda7c1f421ea1c32cdeedf4598c2dc6dbca42e20e8a3be3f4dc704ee957b';
                 if (cameraId != '') {
                     html5QrCode.start(cameraId, config, qrCodeSuccessCallback);
                 } else {
