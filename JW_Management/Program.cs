@@ -1,6 +1,7 @@
 using System.Globalization;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.Extensions.Configuration;
+using LettuceEncrypt;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -13,6 +14,8 @@ builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationSc
     cookieOptions.LoginPath = "/Home/Login";
     cookieOptions.AccessDeniedPath = "/Home/Error";
 });
+
+builder.Services.AddLettuceEncrypt().PersistDataToDirectory(new DirectoryInfo("/https/"), "Mon2020@");
 
 var app = builder.Build();
 
