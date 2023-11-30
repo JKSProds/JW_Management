@@ -486,20 +486,22 @@
         });
     }
 
+    const html5QrCode = new Html5Qrcode("reader");
 
     function IniciarLeituraQR() {
         var cameraId = '';
-        const html5QrCode = new Html5Qrcode("reader");
+
         let html5QrcodeScanner = new Html5QrcodeScanner("reader",
             {
                 fps: 10, qrbox: { width: 250, height: 250 }
             }, false);
 
         const qrCodeSuccessCallback = (decodedText, decodedResult) => {
-            Bulma('#modalLerBarcode').modal().close();
-            alert(decodedText);
+            document.getElementById('txtURLTerritorio').value = decodedText;
+            Bulma('#modalLeituraQR').modal().close();
+
             html5QrCode.stop().then((ignore) => {
-                notifyError('Leitura do código QR Concluida');
+                notify('Leitura do código QR Concluida');
             }).catch((err) => {
                 notifyError('Ocorreu um erro ao parar a leitura do código QR: ' + err);
             });
@@ -515,6 +517,7 @@
                 } else if (devices.length > 2) {
                     cameraId = cameraId = devices[1].id;
                 }
+                cameraId = 'ae05bda7c1f421ea1c32cdeedf4598c2dc6dbca42e20e8a3be3f4dc704ee957b';
                 if (cameraId != '') {
                     html5QrCode.start(cameraId, config, qrCodeSuccessCallback);
                 } else {
