@@ -349,7 +349,8 @@
                         Password = result["Password"],
                         Nome = result["Nome"],
                         Email = result["Email"],
-                        Telemovel = result["Telemovel"]
+                        Telemovel = result["Telemovel"],
+                        TipoUtilizador = result["Tipo"]
                     });
                 }
             }
@@ -375,7 +376,8 @@
                         Password = result["Password"],
                         Nome = result["Nome"],
                         Email = result["Email"],
-                        Telemovel = result["Telemovel"]
+                        Telemovel = result["Telemovel"],
+                        TipoUtilizador = result["Tipo"]
                     };
                     if (LoadMovimentos) p.Movimentos = ObterMovimentos(true, true, int.Parse(result["IdUtilizador"]), DateOnly.MinValue);
                     if (LoadPedidos)

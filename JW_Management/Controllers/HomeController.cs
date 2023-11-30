@@ -27,6 +27,7 @@ namespace JW_Management.Controllers
         [HttpPost]
         public async Task<IActionResult> Login(Publicador p, string ReturnUrl)
         {
+            p.Username = p.Username.ToLower().Trim();
             DbContext context = HttpContext.RequestServices.GetService(typeof(DbContext)) as DbContext;
             List<Publicador> LstUtilizadores = context.ObterPublicadores().Where(u => u.Username == p.Username).ToList();
 
@@ -40,7 +41,7 @@ namespace JW_Management.Controllers
                     var claims = new List<Claim>
                         {
                             new Claim(ClaimTypes.Name, u.Id.ToString()),
-                            new Claim(ClaimTypes.Role, (u.Id == 49 ? "Master" : u.Id == 41 ? "Territorios" : "")),
+                            new Claim(ClaimTypes.Role, u.Role),
                             new Claim(ClaimTypes.GivenName, u.Nome!)
                 };
                     var claimsIdentity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
@@ -60,7 +61,7 @@ namespace JW_Management.Controllers
                     ModelState.AddModelError("", "Password errada!");
                 }
             }
-
+            ModelState.AddModelError("", "Utilizador não encontrado!");
             return View();
         }
 

@@ -6,7 +6,7 @@ using Microsoft.AspNetCore.Authorization;
 
 namespace JW_Management.Controllers
 {
-    [Authorize(Roles = "Master")]
+    [Authorize(Roles = "Admin, Assistente, Coordenador, Secretario, Servico, Literatura")]
     public class LiteraturaController : Controller
     {
         public IActionResult Index(string filtro, int tipo)

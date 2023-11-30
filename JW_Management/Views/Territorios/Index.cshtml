@@ -119,7 +119,7 @@
                                         @if (item.UltimoMovimento?.Publicador?.Id == 0 || item.UltimoMovimento?.Publicador == null)
                                         {
                                             <button class="button is-info is-fullwidth is-large mr-1"
-                                                    onclick="CriarMovimento('@item.Stamp', 1, document.getElementById('txtIdPublicador').value)">
+                                                    onclick="AbrirMovimentoModal('@item.Stamp', 1, document.getElementById('txtIdPublicador').value)">
                                                 <i class="fa-solid fa-file-circle-check"></i>
                                             </button>
                                         }
@@ -366,7 +366,7 @@
         Bulma('#ModalConfirmApagar').modal().open();
     }
 
-    function CriarMovimento(id, tipo, idpub) {
+    function AbrirMovimentoModal(id, tipo, idpub) {
         document.getElementById("txtHiddenStamp").value = id;
         PreencherEmail(idpub);
         if (tipo == 1) {
@@ -442,10 +442,10 @@
                 document.getElementById('txtEmailPublicadorDevolver').value = data.email;
             },
             error: function (response) {
-                notifyError('Ocorreu um erro ao criar o Movimento!');
+                notifyError('Ocorreu um erro ao obter o utilizador!');
             },
             failure: function (response) {
-                notifyError('Falha ao criar o Movimento!');
+                notifyError('Falha ao obter o utilizador!');
             }
         });
     }

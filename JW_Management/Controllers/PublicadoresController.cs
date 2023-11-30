@@ -6,9 +6,10 @@ using Microsoft.AspNetCore.Authorization;
 
 namespace JW_Management.Controllers
 {
-    [Authorize(Roles = "Master")]
+
     public class PublicadoresController : Controller
     {
+        [Authorize(Roles = "Admin, Assistente, Coordenador, Secretario, Servico")]
         [HttpGet]
         public IActionResult Index()
         {
@@ -17,6 +18,7 @@ namespace JW_Management.Controllers
             return View(context.ObterPublicadores().OrderBy(p => p.Nome));
         }
 
+        [Authorize(Roles = "Admin, Assistente, Coordenador, Secretario, Servico")]
         [HttpGet]
         public IActionResult Publicador(int id)
         {
@@ -29,7 +31,7 @@ namespace JW_Management.Controllers
             return View(context.ObterPublicador(id, true, true, true, true));
         }
 
-        [HttpGet]
+        [Authorize(Roles = "Admin, Assistente, Coordenador, Secretario, Servico, Literatura, Territorios")]
         public IActionResult ObterPublicador(int id)
         {
             DbContext context = HttpContext.RequestServices.GetService(typeof(DbContext)) as DbContext;
@@ -37,6 +39,8 @@ namespace JW_Management.Controllers
             return Json(context.ObterPublicador(id, false, false, false, false));
         }
 
+
+        [Authorize(Roles = "Admin, Assistente, Coordenador, Secretario, Servico, Literatura, Territorios")]
         [HttpGet]
         public IActionResult ObterPublicadores()
         {
@@ -45,6 +49,7 @@ namespace JW_Management.Controllers
             return Json(context.ObterPublicadores());
         }
 
+        [Authorize(Roles = "Admin, Assistente, Coordenador, Secretario, Servico")]
         [HttpPost]
         public IActionResult Publicador(Publicador p)
         {
@@ -67,6 +72,7 @@ namespace JW_Management.Controllers
             return context.AdicionarPublicador(p) ? RedirectToAction("Publicador", p.Id) : StatusCode(500);
         }
 
+        [Authorize(Roles = "Admin, Assistente, Coordenador, Secretario, Servico")]
         [HttpDelete]
         public IActionResult Publicador(int id, bool delete)
         {
