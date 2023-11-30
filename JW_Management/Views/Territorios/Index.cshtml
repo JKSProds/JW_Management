@@ -487,9 +487,10 @@
     }
 
     const html5QrCode = new Html5Qrcode("reader");
+    var cameraId = '';
 
     function IniciarLeituraQR() {
-        var cameraId = '';
+
 
         let html5QrcodeScanner = new Html5QrcodeScanner("reader",
             {

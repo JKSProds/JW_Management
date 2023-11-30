@@ -316,9 +316,10 @@
 
 
     const html5QrCode = new Html5Qrcode("reader");
+    var cameraId = '';
 
     function IniciarLeituraQR() {
-        var cameraId = '';
+
 
         let html5QrcodeScanner = new Html5QrcodeScanner("reader",
             {
@@ -346,7 +347,7 @@
                 } else if (devices.length > 2) {
                     cameraId = devices[1].id;
                 }
-                cameraId = 'ae05bda7c1f421ea1c32cdeedf4598c2dc6dbca42e20e8a3be3f4dc704ee957b';
+                //cameraId = 'ae05bda7c1f421ea1c32cdeedf4598c2dc6dbca42e20e8a3be3f4dc704ee957b';
                 if (cameraId != '') {
                     html5QrCode.start(cameraId, config, qrCodeSuccessCallback);
                 } else {
