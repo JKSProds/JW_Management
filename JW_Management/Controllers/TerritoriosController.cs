@@ -71,7 +71,7 @@ namespace JW_Management.Controllers
 
 
         [HttpPost]
-        public IActionResult Movimento(string id, int idpub, string email, int tipo)
+        public IActionResult Movimento(string id, int idpub, string email, string telemovel, int tipo)
         {
             DbContext context = HttpContext.RequestServices.GetService(typeof(DbContext)) as DbContext;
             if (string.IsNullOrEmpty(id) || tipo < 0) return StatusCode(500);
@@ -82,6 +82,11 @@ namespace JW_Management.Controllers
             if (p.Email != email && !string.IsNullOrEmpty(email))
             {
                 p.Email = email;
+                context.AdicionarPublicador(p);
+            }
+            if (p.Telemovel != telemovel && !string.IsNullOrEmpty(telemovel))
+            {
+                p.Telemovel = telemovel;
                 context.AdicionarPublicador(p);
             }
 

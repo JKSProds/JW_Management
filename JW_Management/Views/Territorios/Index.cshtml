@@ -259,7 +259,7 @@
                     <label class="label">Publicador</label>
                     <p class="control has-icons-left">
                         <span class="select is-fullwidth">
-                            <select class="select" id="txtIdPublicador" style="height: auto" onchange="PreencherEmail(document.getElementById('txtIdPublicador').value)"
+                            <select class="select" id="txtIdPublicador" style="height: auto" onchange="PreencherInfo(document.getElementById('txtIdPublicador').value)"
                                     asp-items="@(new SelectList(@ViewBag.Publicadores, "Value", "Text"))">
                             </select>
                         </span>
@@ -269,21 +269,37 @@
                     </p>
                 </div>
                 <div class="field">
-                    <label class="label">Email do Publicador</label>
-                    <p class="control">
-                        <input type="email" class="input" id="txtEmailPublicador">
-                    </p>
+                    <label class="label">Email</label>
+                    <div class="field has-addons">
+                        <p class="control" style="width:100%">
+                            <input type="email" class="input" id="txtEmailPublicador">
+                        </p>
+                        <a class="button is-success"
+                           onclick="GerarMovimento(document.getElementById('txtIdPublicador').value, document.getElementById('txtHiddenStamp').value, document.getElementById('txtEmailPublicador').value, '', 1)">
+                            <span class="icon">
+                                <i class="fa-regular fa-paper-plane"></i>
+                            </span>
+                        </a>
+                    </div>
+                </div>
+                <div class="field">
+                    <label class="label">Nº Telemóvel</label>
+                    <div class="field has-addons">
+                        <p class="control" style="width:100%">
+                            <input type="email" class="input" id="txtTelemovelPublicador">
+                        </p>
+                        <a class="button is-success"
+                           onclick="window.open('sms://'+document.getElementById('txtTelemovelPublicador').value+'?body=I%27m%20Some%20Test%20Text%20For%20Your%20A%20Tag')">
+                            <span class="icon">
+                                <i class="fa-solid fa-message"></i>
+                            </span>
+                        </a>
+                    </div>
                 </div>
             </div>
         </section>
         <footer class="modal-card-foot">
-            <a class="button is-success is-large is-fullwidth"
-               onclick="GerarMovimento(document.getElementById('txtIdPublicador').value, document.getElementById('txtHiddenStamp').value, document.getElementById('txtEmailPublicador').value, 1)">
-                <span class="icon">
-                    <i class="fa-regular fa-floppy-disk"></i>
-                </span>
-                <span>Atribuir</span>
-            </a>
+
             <button type="button" class="button is-large is-fullwidth is-danger"
                     onclick="Bulma('#modalAtribuirTerritorio').modal().close();" href="javascript:;">
                 <span class="icon">
@@ -320,7 +336,7 @@
         </section>
         <footer class="modal-card-foot">
             <button class="button is-success is-fullwidth is-large"
-                    onclick="GerarMovimento(0, document.getElementById('txtHiddenStamp').value, document.getElementById('txtEmailPublicadorDevolver').value, 2);">
+                    onclick="GerarMovimento(0, document.getElementById('txtHiddenStamp').value, document.getElementById('txtEmailPublicadorDevolver').value, document.getElementById('txtTelemovelPublicador').value, 2);">
                 <span class="icon">
                     <i class="fa-regular fa-floppy-disk"></i>
                 </span>
@@ -404,7 +420,7 @@
 
     function AbrirMovimentoModal(id, tipo, idpub) {
         document.getElementById("txtHiddenStamp").value = id;
-        PreencherEmail(idpub);
+        PreencherInfo(idpub);
         if (tipo == 1) {
 
             Bulma('#modalAtribuirTerritorio').modal().open();
@@ -431,10 +447,10 @@
         });
     }
 
-    function GerarMovimento(idpub, id, email, tipo) {
+    function GerarMovimento(idpub, id, email, telemovel, tipo) {
         $.ajax({
             url: '/Territorios/Movimento/',
-            data: { "id": id, "idpub": idpub, "email": email, "tipo": tipo },
+            data: { "id": id, "idpub": idpub, "email": email, "telemovel": telemovel, "tipo": tipo },
             type: "POST",
             success: function (data) {
                 notify('Movimento criado com sucesso!');
@@ -468,7 +484,7 @@
     }
 
 
-    function PreencherEmail(idpub) {
+    function PreencherInfo(idpub) {
         $.ajax({
             url: '/Publicadores/ObterPublicador/',
             data: { "id": idpub },
@@ -476,6 +492,8 @@
             success: function (data) {
                 document.getElementById('txtEmailPublicador').value = data.email;
                 document.getElementById('txtEmailPublicadorDevolver').value = data.email;
+
+                document.getElementById('txtTelemovelPublicador').value = data.telemovel;
             },
             error: function (response) {
                 notifyError('Ocorreu um erro ao obter o utilizador!');
