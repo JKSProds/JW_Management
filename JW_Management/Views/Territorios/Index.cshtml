@@ -119,14 +119,14 @@
                                         @if (item.UltimoMovimento?.Publicador?.Id == 0 || item.UltimoMovimento?.Publicador == null)
                                         {
                                             <button class="button is-info is-fullwidth is-large mr-1"
-                                                    onclick="AbrirMovimentoModal('@item.Stamp', 1, document.getElementById('txtIdPublicador').value)">
+                                                    onclick="AbrirMovimentoModal('@item.Stamp', '@item.Id - @item.Nome [@item.Dificuldade]', 1, document.getElementById('txtIdPublicador').value)">
                                                 <i class="fa-solid fa-file-circle-check"></i>
                                             </button>
                                         }
                                         else
                                         {
                                             <button class="button is-success is-fullwidth is-large mr-1"
-                                                    onclick="AbrirMovimentoModal('@item.Stamp', 2, @item.UltimoMovimento?.Publicador?.Id)">
+                                                    onclick="AbrirMovimentoModal('@item.Stamp', '@item.Id - @item.Nome [@item.Dificuldade]', 2, @item.UltimoMovimento?.Publicador?.Id)">
                                                 <i class="fa-solid fa-file-circle-xmark"></i>
                                             </button>
                                         }
@@ -289,7 +289,7 @@
                             <input type="email" class="input" id="txtTelemovelPublicador">
                         </p>
                         <a class="button is-success"
-                           onclick="window.open('sms://'+document.getElementById('txtTelemovelPublicador').value+'?body=I%27m%20Some%20Test%20Text%20For%20Your%20A%20Tag')">
+                           onclick="window.open('sms://'+document.getElementById('txtTelemovelPublicador').value+'?body=Foi lhe atribuido o seguinte território: ' + document.getElementById('txtHiddenText').value)">
                             <span class="icon">
                                 <i class="fa-solid fa-message"></i>
                             </span>
@@ -410,6 +410,7 @@
 
 
 <input id="txtHiddenStamp" hidden />
+<input id="txtHiddenText" hidden />
 
 <script>
 
@@ -418,8 +419,9 @@
         Bulma('#ModalConfirmApagar').modal().open();
     }
 
-    function AbrirMovimentoModal(id, tipo, idpub) {
+    function AbrirMovimentoModal(id, text, tipo, idpub) {
         document.getElementById("txtHiddenStamp").value = id;
+        document.getElementById("txtHiddenText").value = text;
         PreencherInfo(idpub);
         if (tipo == 1) {
 
