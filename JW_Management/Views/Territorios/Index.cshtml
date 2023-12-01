@@ -109,7 +109,7 @@
                                     <span>@item.Dificuldade</span>
                                 </td>
                                 <td data-label="@Html.DisplayNameFor(model => model.FirstOrDefault()!.UltimoMovimento!.Publicador!)">
-                                    <span>@item.UltimoMovimento?.Publicador?.Nome</span>
+                                    <span> @(item.UltimoMovimento?.Publicador?.Id == 0 || item.UltimoMovimento?.Publicador == null ? "" : item.UltimoMovimento?.Publicador?.Nome)</span>
                                 </td>
                                 <td data-label="@Html.DisplayNameFor(model => model.FirstOrDefault()!.UltimoMovimento!.DataMovimento!)">
                                     <span>@item.UltimoMovimento?.DataMovimento</span>
@@ -286,10 +286,10 @@
                     <label class="label">Nº Telemóvel</label>
                     <div class="field has-addons">
                         <p class="control" style="width:100%">
-                            <input type="email" class="input" id="txtTelemovelPublicador">
+                            <input type="tel" class="input" id="txtTelemovelPublicador">
                         </p>
                         <a class="button is-success"
-                           onclick="window.open('sms://'+document.getElementById('txtTelemovelPublicador').value+'?body=Foi lhe atribuido o seguinte território: ' + document.getElementById('txtHiddenText').value);GerarMovimento(document.getElementById('txtIdPublicador').value, '',document.getElementById('txtHiddenStamp').value, document.getElementById('txtTelemovelPublicador').value, 1);">
+                           onclick="window.open('sms://'+document.getElementById('txtTelemovelPublicador').value.replace(/\s/g, '')+'?body=Foi lhe atribuido o seguinte território: ' + document.getElementById('txtHiddenText').value);GerarMovimento(document.getElementById('txtIdPublicador').value,document.getElementById('txtHiddenStamp').value, '', document.getElementById('txtTelemovelPublicador').value, 1);">
                             <span class="icon">
                                 <i class="fa-solid fa-message"></i>
                             </span>

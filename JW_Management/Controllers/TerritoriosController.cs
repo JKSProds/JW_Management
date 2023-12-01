@@ -79,12 +79,12 @@ namespace JW_Management.Controllers
             Territorio t = context.ObterTerritorio(id, false, false, true);
             Publicador p = context.ObterPublicador(idpub, false, false, true, false);
 
-            if (p.Email != email && !string.IsNullOrEmpty(email))
+            if (p.Email != email && !string.IsNullOrEmpty(email) && p.Id > 0)
             {
                 p.Email = email;
                 context.AdicionarPublicador(p);
             }
-            if (p.Telemovel != telemovel && !string.IsNullOrEmpty(telemovel))
+            if (p.Telemovel != telemovel && !string.IsNullOrEmpty(telemovel) && p.Id > 0)
             {
                 p.Telemovel = telemovel;
                 context.AdicionarPublicador(p);
