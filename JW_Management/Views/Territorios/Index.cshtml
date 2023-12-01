@@ -289,7 +289,7 @@
                             <input type="email" class="input" id="txtTelemovelPublicador">
                         </p>
                         <a class="button is-success"
-                           onclick="window.open('sms://'+document.getElementById('txtTelemovelPublicador').value+'?body=Foi lhe atribuido o seguinte território: ' + document.getElementById('txtHiddenText').value)">
+                           onclick="window.open('sms://'+document.getElementById('txtTelemovelPublicador').value+'?body=Foi lhe atribuido o seguinte território: ' + document.getElementById('txtHiddenText').value);GerarMovimento(document.getElementById('txtIdPublicador').value, '',document.getElementById('txtHiddenStamp').value, document.getElementById('txtTelemovelPublicador').value, 1);">
                             <span class="icon">
                                 <i class="fa-solid fa-message"></i>
                             </span>
