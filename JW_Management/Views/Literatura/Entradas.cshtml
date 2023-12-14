@@ -429,16 +429,18 @@
     }
 
     function CriarPeriodico(referencia, descricao, mes, ano, qtd) {
-        if (referencia == "es") {
+        if (referencia == "es" || referencia == "eslp") {
             //referencia += ano.slice(-2);
             descricao += " - " + ano;
+            data = ano;
         } else {
             //referencia += mes.slice(-2) + ano.slice(-2);
             descricao += " - Nº" + parseInt(mes) + " (" + ano + ")";
+            data = ano + mes;
         }
         $.ajax({
             url: '/Literatura/Literatura/',
-            data: { "referencia": referencia, "descricao": descricao, "tipo": 7 },
+            data: { "referencia": referencia, "descricao": descricao, "data": data, "tipo": 7 },
             type: "POST",
             success: function (data) {
                 notify('Publicação criada com sucesso!');

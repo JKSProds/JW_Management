@@ -10,7 +10,7 @@
             "request": "launch",
             "preLaunchTask": "build",
             // If you have changed target frameworks, make sure to update the program path.
-            "program": "${workspaceFolder}/JW_Management/bin/Debug/net7.0/JW_Management.dll",
+            "program": "${workspaceFolder}/JW_Management/bin/Debug/net6.0/JW_Management.dll",
             "args": [],
             "cwd": "${workspaceFolder}/JW_Management",
             "stopAtEntry": false,

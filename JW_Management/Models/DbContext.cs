@@ -59,6 +59,7 @@
                         Stamp = result["STAMP"],
                         Id = result["Id"],
                         Referencia = result["Referencia"],
+                        Data = result["Data"],
                         Imagem = "data:image/jpeg;base64," + Convert.ToBase64String(f.ObterFicheiro(f.ObterCaminhoLiteratura() + result["Imagem"])),
                         Descricao = result["Descricao"],
                         Quantidade = result["Quantidade"],
@@ -92,6 +93,7 @@
                         Stamp = result["STAMP"],
                         Id = result["Id"],
                         Referencia = result["Referencia"],
+                        Data = result["Data"],
                         Descricao = result["Descricao"],
                         Quantidade = result["Quantidade"],
                         Entradas = result["Entradas"],
@@ -123,6 +125,7 @@
                         Stamp = result["STAMP"],
                         Id = result["Id"],
                         Referencia = result["Referencia"],
+                        Data = result["Data"],
                         Imagem = "data:image/jpeg;base64," + Convert.ToBase64String(f.ObterFicheiro(f.ObterCaminhoLiteratura() + result["Imagem"])),
                         Descricao = result["Descricao"],
                         Quantidade = result["Quantidade"],
@@ -232,8 +235,8 @@
         public bool AdicionarLiteratura(Literatura l)
         {
 
-            string sql = "INSERT INTO l_pubs(Id, Referencia, Descricao, IdTipo, STAMP) VALUES ";
-            sql += ("('" + l.Id + "', '" + l.Referencia + "', '" + l.Descricao + "', '" + l.Tipo.Id + "', '" + l.Stamp + "') ");
+            string sql = "INSERT INTO l_pubs(Id, Referencia, Descricao, Data, IdTipo, STAMP) VALUES ";
+            sql += ("('" + l.Id + "', '" + l.Referencia + "', '" + l.Descricao + "', '" + l.Data + "', '" + l.Tipo.Id + "', '" + l.Stamp + "') ");
             // sql += " ON DUPLICATE KEY UPDATE Id = VALUES(Id), Referencia = VALUES(Referencia), Descricao = VALUES(Descricao), IdTipo = VALUES(IdTipo);";
 
             return ExecutarQuery(sql);
@@ -291,6 +294,7 @@
                         Stamp = result["STAMP"],
                         Id = result["Id"],
                         Referencia = result["Referencia"],
+                        Data = result["Data"],
                         Descricao = result["Descricao"],
                         Imagem = "data:image/jpeg;base64," + Convert.ToBase64String(f.ObterFicheiro(f.ObterCaminhoLiteratura() + result["Imagem"])),
                         Quantidade = result["Quantidade"],
@@ -320,6 +324,7 @@
                         Stamp = result["STAMP"],
                         Id = result["Id"],
                         Referencia = result["Referencia"],
+                        Data = result["Data"],
                         Descricao = result["Descricao"],
                         Quantidade = result["Quantidade"],
                         Tipo = LstTiposLiteratura.Where(g => g.Id == result["IdTipo"]).FirstOrDefault(new TipoLiteratura()),

@@ -87,7 +87,7 @@ namespace JW_Management.Controllers
 
 
         [HttpPost]
-        public IActionResult Literatura(string referencia, string descricao, int tipo)
+        public IActionResult Literatura(string referencia, string descricao, string data, int tipo)
         {
             DbContext context = HttpContext.RequestServices.GetService(typeof(DbContext)) as DbContext;
             if (string.IsNullOrEmpty(referencia) || string.IsNullOrEmpty(descricao)) return StatusCode(500);
@@ -95,6 +95,7 @@ namespace JW_Management.Controllers
             {
                 Descricao = descricao,
                 Referencia = referencia,
+                Data = data,
                 Tipo = context.ObterTiposLiteratura().Where(t => t.Id == tipo).DefaultIfEmpty(context.ObterTiposLiteratura().Last()).First(),
                 Stamp = DateTime.Now.Ticks.ToString()
             };

@@ -71,7 +71,7 @@
                                                 <tr @(item.Quantidade == 0 ? "class=has-background-success" : "")>
                                                     <td class="is-image-cell">
                                                         <div class="image">
-                                                            <img src="@item.Imagem">
+                                                            <img src="@item.GetUrl()">
                                                         </div>
                                                     </td>
                                                     <td data-label="@Html.DisplayNameFor(model => model.FirstOrDefault()!.Referencia)">
