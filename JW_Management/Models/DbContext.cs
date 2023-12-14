@@ -325,7 +325,6 @@
                         Stamp = result["STAMP"],
                         Id = result["Id"],
                         Referencia = result["Referencia"],
-                        Data = result["Data"],
                         Descricao = result["Descricao"],
                         Quantidade = result["Quantidade"],
                         Tipo = LstTiposLiteratura.Where(g => g.Id == result["IdTipo"]).FirstOrDefault(new TipoLiteratura()),
