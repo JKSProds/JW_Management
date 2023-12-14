@@ -1,5 +1,6 @@
 ﻿namespace JW_Management.Models
 {
+    using JW_Management.Controllers;
     using Microsoft.AspNetCore.Identity;
     using MySql.Simple;
 
@@ -661,6 +662,25 @@
             sql += ("('" + l.Referencia + "', '" + FileName + "');");
 
             return ExecutarQuery(sql);
+        }
+
+        //Obter imagem
+        public async Task<IFormFile> ObterImagemLiteratura(Literatura l, string URL)
+        {
+            using (HttpClient client = new HttpClient())
+            {
+                // Download the image bytes from the URL
+                byte[] imageBytes = await client.GetByteArrayAsync(URL);
+
+                // Create a MemoryStream from the downloaded image bytes
+                using (MemoryStream memoryStream = new MemoryStream(imageBytes))
+                {
+                    // Create an IFormFile from the MemoryStream
+                    IFormFile formFile = new FormFile(memoryStream, 0, imageBytes.Length, "image", Path.GetFileName(URL));
+
+                    return formFile;
+                }
+            }
         }
         #endregion
 

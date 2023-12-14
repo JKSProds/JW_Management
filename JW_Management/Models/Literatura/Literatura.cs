@@ -20,8 +20,7 @@
         public string GetUrl() {
             string baseURL = "https://assetsnffrgf-a.akamaihd.net/assets/a/";
             string res = "";
-            string responseBody = "";
-
+            
             if (this.Tipo.Id == 7) {
                 if (this.Referencia == "w" || this.Referencia == "wlp") {
                     res = "w/TPO/" + this.Data + "/wpub/w_TPO_" + this.Data + "_lg.jpg";
@@ -34,17 +33,7 @@
                 res = this.Referencia + "/TPO/wpub/" + this.Referencia + "_TPO_lg.jpg";
             }
 
-            var httpClientHandler = new HttpClientHandler();
-            var httpClient = new HttpClient(httpClientHandler)
-            {
-            BaseAddress = new Uri(baseURL + res)
-            };
-            using (var response = httpClient.GetAsync(baseURL + res))
-            {
-            responseBody = response.Result.Content.ReadAsStringAsync().Result;
-            }
-
-            return responseBody.Length < 20 ? this.Imagem : baseURL + res;
+           return baseURL + res;
         }
     }
 }

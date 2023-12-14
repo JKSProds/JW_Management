@@ -5,7 +5,7 @@ namespace JW_Management.Models
 {
     public class FileContext
     {
-        private string Caminho = "C:\\Users\\Jorge Monteiro\\Desktop\\";
+        private string Caminho = "/Volumes/sharing/";
         private string CaminhoLinux = "/app/img/";
 
         public string ObterCaminho()
@@ -22,8 +22,8 @@ namespace JW_Management.Models
         public string ObterCaminhoTerritorios()
         {
 #if DEBUG
-            CriarPasta(Caminho + "Territorios\\");
-            return Caminho + "Territorios\\";
+            CriarPasta(Caminho + "territorio/");
+            return Caminho + "territorio/";
 #else
             CriarPasta(CaminhoLinux + "territorio/");
             return CaminhoLinux + "territorio/";
@@ -33,8 +33,8 @@ namespace JW_Management.Models
         public string ObterCaminhoLiteratura()
         {
 #if DEBUG
-            CriarPasta(Caminho + "Literatura\\");
-            return Caminho + "Literatura\\";
+            CriarPasta(Caminho + "literatura/");
+            return Caminho + "literatura/";
 #else
             CriarPasta(CaminhoLinux + "literatura/");
             return CaminhoLinux + "literatura/";
