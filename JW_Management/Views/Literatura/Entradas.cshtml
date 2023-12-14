@@ -432,7 +432,7 @@
         if (referencia == "es" || referencia == "eslp") {
             //referencia += ano.slice(-2);
             descricao += " - " + ano;
-            data = ano;
+            data = ano.slice(-2);
         } else {
             //referencia += mes.slice(-2) + ano.slice(-2);
             descricao += " - Nº" + parseInt(mes) + " (" + ano + ")";
