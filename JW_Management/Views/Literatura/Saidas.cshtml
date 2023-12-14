@@ -157,16 +157,26 @@
             <div class="modal-body">
                 <div class="field">
                     <label class="label">Publicador</label>
-                    <p class="control has-icons-left">
-                        <span class="select is-fullwidth">
-                            <select class="select" id="txtIdPublicador" style="height: auto"
-                                    asp-items="@(new SelectList(@ViewBag.Publicadores, "Value", "Text"))">
-                            </select>
-                        </span>
-                        <span class="icon is-small is-left">
-                            <i class="fa-solid fa-user-tie"></i>
-                        </span>
-                    </p>
+                    <div class="field has-addons">
+                        <div class="control has-icons-left" style="width:100%">
+                            <span class="select is-fullwidth">
+                                <select class="select" id="txtIdPublicador" style="height: auto"
+                                        asp-items="@(new SelectList(@ViewBag.Publicadores, "Value", "Text"))">
+                                </select>
+                            </span>
+                            <span class="icon is-small is-left">
+                                <i class="fa-solid fa-user-tie"></i>
+                            </span>
+                        </div>
+                        <div class="control">
+                            <button type="button" class="button is-info disable-dbl-tap-zoom"
+                                    onclick="document.getElementById('txtIdPublicador').value=0;">
+                                <span class="icon">
+                                    <i class="fas fa-shop"></i>
+                                </span>
+                            </button>
+                        </div>
+                    </div>
                 </div>
                 <div class="field ">
                     <label class="label">Publicação</label>
