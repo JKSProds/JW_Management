@@ -14,6 +14,7 @@ namespace JW_Management.Models
         public List<MovimentosTerritorio>? Movimentos { get; set; }
         public List<AnexosTerritorio>? Anexos { get; set; }
         public MovimentosTerritorio? UltimoMovimento { get; set; }
+        public string CorDificuldade { get{return Dificuldade==DificuldadeTerritorio.FACIL ? "#008000" : Dificuldade==DificuldadeTerritorio.MODERADO ? "#FFA500" : "#ff0000";} }
     }
 
     public enum DificuldadeTerritorio

@@ -106,7 +106,7 @@
                                     <span>@item.Nome</span>
                                 </td>
                                 <td data-label="@Html.DisplayNameFor(model => model.FirstOrDefault()!.Dificuldade)">
-                                    <span>@item.Dificuldade</span>
+                                    <i class="is-large fa-solid fa-battery-three-quarters" style="color: @item.CorDificuldade;"></i>
                                 </td>
                                 <td data-label="@Html.DisplayNameFor(model => model.FirstOrDefault()!.UltimoMovimento!.Publicador!)">
                                     <span> @(item.UltimoMovimento?.Publicador?.Id == 0 || item.UltimoMovimento?.Publicador == null ? "" : item.UltimoMovimento?.Publicador?.Nome)</span>
