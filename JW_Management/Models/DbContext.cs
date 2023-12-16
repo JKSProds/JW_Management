@@ -691,7 +691,7 @@
 
             using (Database db = ConnectionString)
             {
-                string sql = "SELECT *, (SELECT StampMovimento FROM t_movimentos where StampTerritorio=t_territorios.Stamp Order By DataMovimento DESC LIMIT 1) as StampMovimento FROM t_territorios WHERE Id like '%" + filtro + "%' OR Nome like '%" + filtro + "%';";
+                string sql = "SELECT *, (SELECT StampMovimento FROM t_movimentos where StampTerritorio=t_territorios.Stamp Order By StampMovimento DESC LIMIT 1) as StampMovimento FROM t_territorios WHERE Id like '%" + filtro + "%' OR Nome like '%" + filtro + "%';";
                 using var result = db.Query(sql);
                 while (result.Read())
                 {

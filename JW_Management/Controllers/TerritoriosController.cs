@@ -71,7 +71,7 @@ namespace JW_Management.Controllers
 
 
         [HttpPost]
-        public IActionResult Movimento(string id, int idpub, string email, string telemovel, int tipo)
+        public IActionResult Movimento(string id, int idpub, string email, string telemovel, int tipo, DateTime data)
         {
             DbContext context = HttpContext.RequestServices.GetService(typeof(DbContext)) as DbContext;
             if (string.IsNullOrEmpty(id) || tipo < 0) return StatusCode(500);
@@ -95,7 +95,7 @@ namespace JW_Management.Controllers
                 Stamp = DateTime.Now.Ticks.ToString(),
                 Territorio = t,
                 Publicador = p,
-                DataMovimento = DateTime.Now,
+                DataMovimento = data,
                 Tipo = tipo == 1 ? TipoMovimentoTerritorio.ENTRADA : TipoMovimentoTerritorio.SAIDA
             };
 
