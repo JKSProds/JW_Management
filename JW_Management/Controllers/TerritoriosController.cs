@@ -69,6 +69,13 @@ namespace JW_Management.Controllers
             return context.ApagarTerritorio(stamp) ? StatusCode(200) : StatusCode(500);
         }
 
+        [HttpGet]
+        public IActionResult Movimentos()
+        {
+            DbContext context = HttpContext.RequestServices.GetService(typeof(DbContext)) as DbContext;
+
+            return View(context.ObterMovimentosTerritorios().OrderByDescending(m => m.Entrada.Stamp));
+        }
 
         [HttpPost]
         public IActionResult Movimento(string id, int idpub, string email, string telemovel, int tipo, DateTime data)
@@ -103,6 +110,16 @@ namespace JW_Management.Controllers
             if (tipo == 2 && !string.IsNullOrEmpty(email)) MailContext.MailTerritorioDevolver(t, email);
 
             return context.AdicionarMovimentoTerritorio(m) ? StatusCode(200) : StatusCode(500);
+        }
+
+        [HttpDelete]
+        public IActionResult Movimentos(string stampentrada, string stampsaida)
+        {
+            DbContext context = HttpContext.RequestServices.GetService(typeof(DbContext)) as DbContext;
+            if (string.IsNullOrEmpty(stampentrada)) return StatusCode(500);
+            if (string.IsNullOrEmpty(stampsaida)) stampsaida = "";
+
+            return context.ApagarMovimentoTerritorio(stampentrada) ? context.ApagarMovimentoTerritorio(stampsaida) ? StatusCode(200) : StatusCode(500) : StatusCode(500);
         }
 
         [HttpGet]

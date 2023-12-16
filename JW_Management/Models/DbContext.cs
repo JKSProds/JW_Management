@@ -729,7 +729,7 @@
 
             using (Database db = ConnectionString)
             {
-                string sql = "SELECT *, (SELECT StampMovimento FROM t_movimentos where StampTerritorio=t_territorios.Stamp Order By DataMovimento DESC LIMIT 1) as StampMovimento FROM t_territorios where Stamp='" + stamp + "';";
+                string sql = "SELECT *, (SELECT StampMovimento FROM t_movimentos where StampTerritorio=t_territorios.Stamp Order By StampMovimento DESC LIMIT 1) as StampMovimento FROM t_territorios where Stamp='" + stamp + "';";
                 using var result = db.Query(sql);
                 while (result.Read())
                 {
@@ -782,6 +782,46 @@
             return ExecutarQuery(sql);
         }
 
+        //Obter todos os movimentos
+        public List<LinhaMovimentoTerritorio> ObterMovimentosTerritorios()
+        {
+            List<LinhaMovimentoTerritorio> LstLinhaMovimentosTerritorio = new();
+
+            using (Database db = ConnectionString)
+            {
+                string sql = "SELECT entrada.stampmovimento AS stampmovimento_entrada, entrada.stampterritorio AS stampterritorio, entrada.DataMovimento AS DataEntrada, entrada.tipoMovimento AS tipoMovimento_entrada, saida.stampmovimento AS stampmovimento_saida, saida.tipoMovimento AS tipoMovimento_saida,  COALESCE(saida.DataMovimento, '0001-01-01') AS DataSaida, entrada.IdPublicador FROM t_movimentos entrada LEFT JOIN t_movimentos saida ON entrada.stampterritorio = saida.stampterritorio  AND saida.tipoMovimento = 2  AND saida.stampmovimento > entrada.stampmovimento WHERE entrada.tipoMovimento = 1 ORDER BY entrada.stampterritorio, entrada.stampmovimento;";
+                using var result = db.Query(sql);
+                while (result.Read())
+                {
+                    Territorio t = ObterTerritorio(result["stampterritorio"], false, false, false);
+
+                    MovimentosTerritorio e = new MovimentosTerritorio()
+                    {
+                        Stamp = result["stampmovimento_entrada"],
+                        Territorio = t,
+                        Publicador = ObterPublicador(result["IdPublicador"], false, false, false, false),
+                        DataMovimento = result["DataEntrada"],
+                        Tipo = result["tipoMovimento_entrada"] == "1" ? TipoMovimentoTerritorio.ENTRADA : TipoMovimentoTerritorio.SAIDA
+                    };
+                    MovimentosTerritorio s = new MovimentosTerritorio()
+                    {
+                        Stamp = result["stampmovimento_saida"],
+                        Territorio = t,
+                        DataMovimento = result["DataSaida"],
+                        Tipo = result["tipoMovimento_saida"] == "1" ? TipoMovimentoTerritorio.ENTRADA : TipoMovimentoTerritorio.SAIDA
+                    };
+
+                    LstLinhaMovimentosTerritorio.Add(new LinhaMovimentoTerritorio()
+                    {
+                        Entrada = e,
+                        Saida = s
+                    });
+                }
+            }
+
+            return LstLinhaMovimentosTerritorio.ToList();
+        }
+
         //Obter todos os movimentos de um territorio
         public List<MovimentosTerritorio> ObterMovimentosTerritorio(string stamp)
         {
@@ -807,10 +847,10 @@
                 }
             }
 
-            return LstMovimentosTerritorio.OrderBy(l => l.DataMovimento).ToList();
+            return LstMovimentosTerritorio.OrderBy(l => l.Stamp).ToList();
         }
 
-        //Obter o ultimo movimento de um territorio
+        //Obter um movimento de um territorio
         public MovimentosTerritorio ObterMovimentoTerritorio(string stamp)
         {
             MovimentosTerritorio m = new();
@@ -844,6 +884,15 @@
             string sql = "INSERT INTO t_movimentos(StampMovimento, StampTerritorio, IdPublicador, DataMovimento,TipoMovimento) VALUES ";
             sql += ("('" + m.Stamp + "', '" + m.Territorio.Stamp + "', '" + m.Publicador.Id + "', '" + m.DataMovimento.ToString("yyyy-MM-dd HH:mm:ss") + "', '" + (m.Tipo == TipoMovimentoTerritorio.ENTRADA ? "1" : "2") + "');");
             ;
+            return ExecutarQuery(sql);
+        }
+
+        //Apagar um movimento de um territorio em especifico
+        public bool ApagarMovimentoTerritorio(string stamp)
+        {
+
+            string sql = "DELETE FROM t_movimentos where StampMovimento = '" + stamp + "';";
+
             return ExecutarQuery(sql);
         }
 
