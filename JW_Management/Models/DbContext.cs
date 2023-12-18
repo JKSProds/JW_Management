@@ -401,8 +401,8 @@
         //Adicionar publicador
         public bool AdicionarPublicador(Publicador p)
         {
-            string sql = "INSERT INTO sys_utilizadores(IdUtilizador, Username, Password, Nome, Telemovel, Email, IdGrupo) VALUES ";
-            sql += ("('" + p.Id + "', '" + p.Username + "', '" + p.Password + "', '" + p.Nome + "', '" + p.Telemovel + "', '" + p.Email + "', '" + p.Grupo.Id + "') as nPub ON DUPLICATE KEY UPDATE Username=nPub.Username, Password=nPub.Password, Telemovel=nPub.Telemovel, Email=nPub.Email, IdGrupo=nPub.IdGrupo, Nome=nPub.Nome;");
+            string sql = "INSERT INTO sys_utilizadores(IdUtilizador, Username, Password, Nome, Telemovel, Email, IdGrupo, Tipo) VALUES ";
+            sql += ("('" + p.Id + "', '" + p.Username + "', '" + p.Password + "', '" + p.Nome + "', '" + p.Telemovel + "', '" + p.Email + "', '" + p.Grupo.Id + "', '90') as nPub ON DUPLICATE KEY UPDATE Username=nPub.Username, Password=nPub.Password, Telemovel=nPub.Telemovel, Email=nPub.Email, IdGrupo=nPub.IdGrupo, Nome=nPub.Nome;");
 
             return ExecutarQuery(sql);
         }

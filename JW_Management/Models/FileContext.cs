@@ -1,4 +1,5 @@
-﻿using iTextSharp.text.pdf;
+﻿using iTextSharp.text;
+using iTextSharp.text.pdf;
 using System.Collections;
 
 namespace JW_Management.Models
@@ -245,7 +246,14 @@ namespace JW_Management.Models
 
         }
 
-
+        public MemoryStream PreencherFormularioS13(DbContext context)
+        {
+            string pdfTemplate = AppDomain.CurrentDomain.BaseDirectory + "S-13_TPO.pdf";
+            int pageCount = 2;
+            // Create a memory stream to store the PDF content
+            
+           
+        }
 
     }
 }

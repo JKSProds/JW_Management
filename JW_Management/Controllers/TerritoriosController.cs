@@ -171,5 +171,29 @@ namespace JW_Management.Controllers
             AnexosTerritorio a = context.ObterAnexo(id);
             return f.ApagarFicheiro(a.CaminhoFicheiro + a.NomeFicheiro) ? (context.ApagarAnexoTerritorio(a.Stamp!) ? StatusCode(200) : StatusCode(500)) : StatusCode(500);
         }
+
+        [HttpGet]
+        public IActionResult Formulario()
+        {
+            DbContext context = HttpContext.RequestServices.GetService(typeof(DbContext)) as DbContext;
+            FileContext fileContext = new FileContext();
+
+            var file = fileContext.PreencherFormularioS13(context!).ToArray();
+            var output = new MemoryStream();
+            output.Write(file, 0, file.Length);
+            output.Position = 0;
+
+            var cd = new System.Net.Mime.ContentDisposition
+            {
+                FileName = "S-13_TPO_Preenchido.pdf",
+                Inline = true,
+                Size = file.Length,
+                CreationDate = DateTime.Now,
+
+            };
+            Response.Headers.Add("Content-Disposition", cd.ToString());
+
+            return new FileContentResult(output.ToArray(), System.Net.Mime.MediaTypeNames.Application.Pdf);
+        }
     }
 }
