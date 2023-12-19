@@ -1,6 +1,7 @@
 ﻿using iTextSharp.text;
 using iTextSharp.text.pdf;
 using System.Collections;
+using System.Text;
 
 namespace JW_Management.Models
 {
@@ -249,11 +250,105 @@ namespace JW_Management.Models
         public MemoryStream PreencherFormularioS13(DbContext context)
         {
             string pdfTemplate = AppDomain.CurrentDomain.BaseDirectory + "S-13_TPO.pdf";
-            int pageCount = 2;
-            // Create a memory stream to store the PDF content
+            string a = DateTime.Now.Year.ToString();
+            List<Territorio> t = context.ObterTerritorios("", false, false, false, true);
+            List<MemoryStream> m = new List<MemoryStream>();
+
+            string z = "Zona A - Vila das Aves";
+            for (int i = 0; i < t.Where(t => t.Id.StartsWith("A")).Count(); i+=20) {
+                m.Add(PreencherPaginaIndividualS13(pdfTemplate, a, z, t.Where(t => t.Id.StartsWith("A")).Skip(i).Take(20).ToList()));
+            }
             
-           
+            z = "Zona C - Campo";
+            for (int i = 0; i < t.Where(t => t.Id.StartsWith("C")).Count(); i+=20) {
+                m.Add(PreencherPaginaIndividualS13(pdfTemplate, a, z, t.Where(t => t.Id.StartsWith("C")).Skip(i).Take(20).ToList()));
+            }
+            
+            z = "Zona L - Landim / Lama / Areias";
+            for (int i = 0; i < t.Where(t => t.Id.StartsWith("L")).Count(); i+=20) {
+                m.Add(PreencherPaginaIndividualS13(pdfTemplate, a, z, t.Where(t => t.Id.StartsWith("L")).Skip(i).Take(20).ToList()));
+            }
+            
+            z = "Zona S - Santo Tirso";
+            for (int i = 0; i < t.Where(t => t.Id.StartsWith("S")).Count(); i+=20) {
+                m.Add(PreencherPaginaIndividualS13(pdfTemplate, a, z, t.Where(t => t.Id.StartsWith("S")).Skip(i).Take(20).ToList()));
+            }
+            
+            return CombinePdfStreams(m.ToArray());
         }
 
+        private MemoryStream PreencherPaginaIndividualS13(string pdfTemplate, string AnoServico, string TipoTerritorio, List<Territorio> LstTerritorios) {
+            // Create a MemoryStream to store the modified PDF
+            MemoryStream memoryStream = new MemoryStream();
+            Font fontB = FontFactory.GetFont(FontFactory.HELVETICA, 8);
+
+            // Create a PdfReader to read the existing PDF
+            using (PdfReader reader = new PdfReader(pdfTemplate))
+            {
+                // Create a PdfStamper to modify the existing PDF
+                using (PdfStamper stamper = new PdfStamper(reader, memoryStream))
+                {       
+                        int y = 85;
+                        // Get the PdfContentByte for the page
+                        PdfContentByte contentByte = stamper.GetOverContent(1);
+
+                        // Add text overlay
+                        ColumnText.ShowTextAligned(contentByte, Element.ALIGN_LEFT, new Phrase(AnoServico),  140, reader.GetPageSize(1).Height - y, 0);
+                        ColumnText.ShowTextAligned(contentByte, Element.ALIGN_LEFT, new Phrase(TipoTerritorio), 310, reader.GetPageSize(1).Height - y, 0);
+                        
+                        y+=75;
+
+                        foreach(var t in LstTerritorios) {
+                            int x = 39;
+                            ColumnText.ShowTextAligned(contentByte, Element.ALIGN_LEFT, new Phrase(t.Id),  x, reader.GetPageSize(1).Height - y, 0);
+
+                            x+=35;
+                            if (t.Linhas.Count > 0) ColumnText.ShowTextAligned(contentByte, Element.ALIGN_LEFT, new Phrase(t.Linhas!.Last().UltimoMovimento.DataMovimento.ToString("dd/MM/yy")),  x, reader.GetPageSize(1).Height - y, 0);
+
+                            x+=60;
+                            foreach(var l in t.Linhas) {
+                                //Nome Publicador
+                                ColumnText.ShowTextAligned(contentByte, Element.ALIGN_LEFT, new Phrase(l.Entrada.Publicador.Nome, fontB),  x, reader.GetPageSize(1).Height - y + 10, 0);
+
+                                //Entrada
+                                ColumnText.ShowTextAligned(contentByte, Element.ALIGN_LEFT, new Phrase(l.Entrada.DataMovimento.ToShortDateString(), fontB),  x, reader.GetPageSize(1).Height - y - 7, 0);
+
+                                //Saida
+                                ColumnText.ShowTextAligned(contentByte, Element.ALIGN_LEFT, new Phrase((l.Saida.DataMovimento == DateTime.MinValue ? "" : l.Saida.DataMovimento.ToShortDateString()), fontB),  x + 52, reader.GetPageSize(1).Height - y - 7, 0);
+                                x+=108;
+                            }
+
+                            y+=31;
+                        }
+                }
+            }
+
+            // Reset the MemoryStream position to the beginning before returning
+            memoryStream.Position = 0;
+
+            return memoryStream;
+        }
+
+        private MemoryStream CombinePdfStreams(params MemoryStream[] pdfStreams)
+        {
+            MemoryStream combinedStream = new MemoryStream();
+            Document document = new Document();
+            PdfCopy copy = new PdfCopy(document, combinedStream);
+            document.Open();
+
+            foreach (MemoryStream pdfStream in pdfStreams)
+            {
+                PdfReader reader = new PdfReader(pdfStream.ToArray());
+                for (int i = 1; i <= reader.NumberOfPages; i++)
+                {
+                    PdfImportedPage page = copy.GetImportedPage(reader, i);
+                    copy.AddPage(page);
+                }
+                copy.FreeReader(reader);
+            }
+
+            document.Close();
+            return combinedStream;
+        }           
     }
 }

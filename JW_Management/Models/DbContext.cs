@@ -391,7 +391,7 @@
                         p.Pedidos.AddRange(ObterPedidosEspeciais(p.Id));
                     }
                     if (LoadGrupos) p.Grupo = ObterGrupo(int.Parse(result["IdGrupo"]));
-                    if (LoadTerritorios) p.Territorios = ObterTerritorios("", true, false, false).Where(t => t.UltimoMovimento.Publicador?.Id == p.Id).ToList();
+                    if (LoadTerritorios) p.Territorios = ObterTerritorios("", true, false, false, false).Where(t => t.UltimoMovimento.Publicador?.Id == p.Id).ToList();
                 }
             }
 
@@ -685,7 +685,7 @@
 
         #region Territorios
         //Obter todos os territorios
-        public List<Territorio> ObterTerritorios(string filtro, bool LoadUltimoMovimento, bool LoadMovimentos, bool LoadFicheiros)
+        public List<Territorio> ObterTerritorios(string filtro, bool LoadUltimoMovimento, bool LoadMovimentos, bool LoadFicheiros, bool LoadMovimentoInOut)
         {
             List<Territorio> LstTerritorios = new();
 
@@ -716,6 +716,10 @@
                     {
                         LstTerritorios.Last().Anexos = ObterAnexosTerritorio(result["Stamp"]);
                     }
+                    if (LoadMovimentoInOut)
+                    {
+                        LstTerritorios.Last().Linhas = ObterMovimentosTerritorios(LstTerritorios.Last());
+                    }
                 }
             }
 
@@ -723,7 +727,7 @@
         }
 
         //Obter um territorio em especifico
-        public Territorio ObterTerritorio(string stamp, bool LoadUltimoMovimento, bool LoadMovimentos, bool LoadFicheiros)
+        public Territorio ObterTerritorio(string stamp, bool LoadUltimoMovimento, bool LoadMovimentos, bool LoadFicheiros, bool LoadMovimentoInOut)
         {
             Territorio t = new();
 
@@ -754,6 +758,10 @@
                     if (LoadFicheiros)
                     {
                         t.Anexos = ObterAnexosTerritorio(result["Stamp"]);
+                    }
+                    if (LoadMovimentoInOut)
+                    {
+                        t.Linhas = ObterMovimentosTerritorios(t);
                     }
                 }
             }
@@ -793,8 +801,46 @@
                 using var result = db.Query(sql);
                 while (result.Read())
                 {
-                    Territorio t = ObterTerritorio(result["stampterritorio"], false, false, false);
+                    Territorio t = ObterTerritorio(result["stampterritorio"], false, false, false,false);
 
+                    MovimentosTerritorio e = new MovimentosTerritorio()
+                    {
+                        Stamp = result["stampmovimento_entrada"],
+                        Territorio = t,
+                        Publicador = ObterPublicador(result["IdPublicador"], false, false, false, false),
+                        DataMovimento = result["DataEntrada"],
+                        Tipo = result["tipoMovimento_entrada"] == "1" ? TipoMovimentoTerritorio.ENTRADA : TipoMovimentoTerritorio.SAIDA
+                    };
+                    MovimentosTerritorio s = new MovimentosTerritorio()
+                    {
+                        Stamp = result["stampmovimento_saida"],
+                        Territorio = t,
+                        DataMovimento = result["DataSaida"],
+                        Tipo = result["tipoMovimento_saida"] == "1" ? TipoMovimentoTerritorio.ENTRADA : TipoMovimentoTerritorio.SAIDA
+                    };
+
+                    LstLinhaMovimentosTerritorio.Add(new LinhaMovimentoTerritorio()
+                    {
+                        Entrada = e,
+                        Saida = s
+                    });
+                }
+            }
+
+            return LstLinhaMovimentosTerritorio.ToList();
+        }
+
+         //Obter todos os movimentos
+        public List<LinhaMovimentoTerritorio> ObterMovimentosTerritorios(Territorio t)
+        {
+            List<LinhaMovimentoTerritorio> LstLinhaMovimentosTerritorio = new();
+
+            using (Database db = ConnectionString)
+            {
+                string sql = "SELECT entrada.stampmovimento AS stampmovimento_entrada, entrada.stampterritorio AS stampterritorio, entrada.DataMovimento AS DataEntrada, entrada.tipoMovimento AS tipoMovimento_entrada, saida.stampmovimento AS stampmovimento_saida, saida.tipoMovimento AS tipoMovimento_saida,  COALESCE(saida.DataMovimento, '0001-01-01') AS DataSaida, entrada.IdPublicador FROM t_movimentos entrada LEFT JOIN t_movimentos saida ON entrada.stampterritorio = saida.stampterritorio  AND saida.tipoMovimento = 2  AND saida.stampmovimento > entrada.stampmovimento WHERE entrada.tipoMovimento = 1 and entrada.stampterritorio='"+t.Stamp+"' ORDER BY entrada.stampterritorio, entrada.stampmovimento;";
+                using var result = db.Query(sql);
+                while (result.Read())
+                {
                     MovimentosTerritorio e = new MovimentosTerritorio()
                     {
                         Stamp = result["stampmovimento_entrada"],
@@ -826,7 +872,7 @@
         public List<MovimentosTerritorio> ObterMovimentosTerritorio(string stamp)
         {
             List<MovimentosTerritorio> LstMovimentosTerritorio = new();
-            Territorio t = ObterTerritorio(stamp, false, false, false);
+            Territorio t = ObterTerritorio(stamp, false, false, false, false);
 
             using (Database db = ConnectionString)
             {
@@ -865,7 +911,7 @@
                     m = new MovimentosTerritorio()
                     {
                         Stamp = result["StampMovimento"],
-                        Territorio = ObterTerritorio(result["StampTerritorio"], false, false, false),
+                        Territorio = ObterTerritorio(result["StampTerritorio"], false, false, false, false),
                         Publicador = ObterPublicador(result["IdPublicador"], false, false, false, false),
                         DataMovimento = result["DataMovimento"],
                         Tipo = result["TipoMovimento"] == "1" ? TipoMovimentoTerritorio.ENTRADA : TipoMovimentoTerritorio.SAIDA
@@ -901,7 +947,7 @@
         public List<AnexosTerritorio> ObterAnexosTerritorio(string stamp)
         {
             List<AnexosTerritorio> LstAnexosTerritorio = new();
-            Territorio t = ObterTerritorio(stamp, false, false, false);
+            Territorio t = ObterTerritorio(stamp, false, false, false, false);
 
             using (Database db = ConnectionString)
             {
@@ -938,7 +984,7 @@
                     a = new AnexosTerritorio()
                     {
                         Stamp = result["StampAnexo"],
-                        Territorio = ObterTerritorio(result["StampTerritorio"], false, false, false),
+                        Territorio = ObterTerritorio(result["StampTerritorio"], false, false, false, false),
                         NomeFicheiro = result["Ficheiro"],
                         CaminhoFicheiro = result["Caminho"],
                         Extensao = result["Extensao"],

@@ -19,7 +19,7 @@ namespace JW_Management.Controllers
             ViewData["filtro"] = filtro;
             ViewBag.Publicadores = context.ObterPublicadores().OrderBy(p => p.Nome).Select(l => new SelectListItem() { Value = l.Id.ToString(), Text = l.Nome });
 
-            return View(context.ObterTerritorios(filtro, true, false, false).OrderBy(p => p.Id));
+            return View(context.ObterTerritorios(filtro, true, false, false, false).OrderBy(p => p.Id));
         }
 
         [HttpGet]
@@ -28,7 +28,7 @@ namespace JW_Management.Controllers
             DbContext context = HttpContext.RequestServices.GetService(typeof(DbContext)) as DbContext;
             if (string.IsNullOrEmpty(id)) return StatusCode(500);
 
-            return View(context.ObterTerritorio(id, true, true, true));
+            return View(context.ObterTerritorio(id, true, true, true,true));
         }
 
         [HttpPost]
@@ -38,7 +38,7 @@ namespace JW_Management.Controllers
 
             context.AdicionarTerritorio(t);
 
-            return View(context.ObterTerritorio(t!.Stamp, true, true, true));
+            return View(context.ObterTerritorio(t!.Stamp, true, true, true, true));
         }
 
         [HttpPut]
@@ -83,7 +83,7 @@ namespace JW_Management.Controllers
             DbContext context = HttpContext.RequestServices.GetService(typeof(DbContext)) as DbContext;
             if (string.IsNullOrEmpty(id) || tipo < 0) return StatusCode(500);
 
-            Territorio t = context.ObterTerritorio(id, false, false, true);
+            Territorio t = context.ObterTerritorio(id, false, false, true, false);
             Publicador p = context.ObterPublicador(idpub, false, false, true, false);
 
             if (p.Email != email && !string.IsNullOrEmpty(email) && p.Id > 0)
@@ -144,7 +144,7 @@ namespace JW_Management.Controllers
             FileContext f = new();
             if (string.IsNullOrEmpty(id) || file == null) return StatusCode(500);
 
-            Territorio t = context.ObterTerritorio(id, false, false, false);
+            Territorio t = context.ObterTerritorio(id, false, false, false, false);
 
             AnexosTerritorio a = new AnexosTerritorio()
             {
