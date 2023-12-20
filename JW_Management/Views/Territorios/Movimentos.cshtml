@@ -77,10 +77,10 @@
                                     <span>@item.Entrada.Territorio.Nome</span>
                                 </td>
                                 <td data-label="@Html.DisplayNameFor(model => model.FirstOrDefault()!.Entrada)">
-                                    <span>@item.Entrada.DataMovimento</span>
+                                    <span>@item.Entrada.DataMovimento.ToShortDateString()</span>
                                 </td>
                                 <td data-label="@Html.DisplayNameFor(model => model.FirstOrDefault()!.Saida)">
-                                    <span> @(item.Saida.DataMovimento != DateTime.MinValue ? item.Saida.DataMovimento : "")</span>
+                                    <span> @(item.Saida.DataMovimento != DateTime.MinValue ? item.Saida.DataMovimento.ToShortDateString() : "")</span>
                                 </td>
                                 <td data-label="@Html.DisplayNameFor(model => model.FirstOrDefault()!.Descricao)">
                                     <span> @item.Descricao</span>
