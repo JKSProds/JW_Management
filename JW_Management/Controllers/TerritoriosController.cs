@@ -178,7 +178,7 @@ namespace JW_Management.Controllers
             DbContext context = HttpContext.RequestServices.GetService(typeof(DbContext)) as DbContext;
             FileContext fileContext = new FileContext();
 
-            var file = fileContext.PreencherFormularioS13(context!).ToArray();
+            var file = fileContext.PreencherFormularioS13(context!, context.ObterTerritorios("", false, false, false, true), DateTime.Now.AddDays(-365), DateTime.Now.AddDays(360)).ToArray();
             var output = new MemoryStream();
             output.Write(file, 0, file.Length);
             output.Position = 0;

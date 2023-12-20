@@ -250,11 +250,10 @@ namespace JW_Management.Models
 
         }
 
-        public MemoryStream PreencherFormularioS13(DbContext context)
+        public MemoryStream PreencherFormularioS13(DbContext context, List<Territorio> t, DateTime dInicio, DateTime dFim)
         {
             string pdfTemplate = AppDomain.CurrentDomain.BaseDirectory + "S-13_TPO.pdf";
             string a = DateTime.Now.Year.ToString();
-            List<Territorio> t = context.ObterTerritorios("", false, false, false, true);
             List<TipoTerritorio> z = context.ObterTiposTerritorio();
             List<MemoryStream> m = new List<MemoryStream>();
 
