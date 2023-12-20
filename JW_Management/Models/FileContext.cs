@@ -263,7 +263,7 @@ namespace JW_Management.Models
                 int i = 0;
                 List<Territorio> l = new List<Territorio>();
                     foreach (var t2 in t.Where(t => t.Tipo.Id == d.Id)) {
-                        if (t2.Registros.Count / 4 + i > 20) {
+                        if (t2.Registros.Count / 4 + i >= 20) {
                             m.Add(PreencherPaginaIndividualS13(pdfTemplate, a, d.Descricao ?? "", l));
                             l.Clear();
                             i=0;
