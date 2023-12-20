@@ -1,6 +1,9 @@
-﻿using iTextSharp.text;
+﻿using Google.Protobuf.WellKnownTypes;
+using iTextSharp.text;
 using iTextSharp.text.pdf;
+using iTextSharp.text.rtf;
 using System.Collections;
+using System.Reflection.Metadata;
 using System.Text;
 
 namespace JW_Management.Models
@@ -252,26 +255,24 @@ namespace JW_Management.Models
             string pdfTemplate = AppDomain.CurrentDomain.BaseDirectory + "S-13_TPO.pdf";
             string a = DateTime.Now.Year.ToString();
             List<Territorio> t = context.ObterTerritorios("", false, false, false, true);
+            List<TipoTerritorio> z = context.ObterTiposTerritorio();
             List<MemoryStream> m = new List<MemoryStream>();
 
-            string z = "Zona A - Vila das Aves";
-            for (int i = 0; i < t.Where(t => t.Id.StartsWith("A")).Count(); i+=20) {
-                m.Add(PreencherPaginaIndividualS13(pdfTemplate, a, z, t.Where(t => t.Id.StartsWith("A")).Skip(i).Take(20).ToList()));
-            }
-            
-            z = "Zona C - Campo";
-            for (int i = 0; i < t.Where(t => t.Id.StartsWith("C")).Count(); i+=20) {
-                m.Add(PreencherPaginaIndividualS13(pdfTemplate, a, z, t.Where(t => t.Id.StartsWith("C")).Skip(i).Take(20).ToList()));
-            }
-            
-            z = "Zona L - Landim / Lama / Areias";
-            for (int i = 0; i < t.Where(t => t.Id.StartsWith("L")).Count(); i+=20) {
-                m.Add(PreencherPaginaIndividualS13(pdfTemplate, a, z, t.Where(t => t.Id.StartsWith("L")).Skip(i).Take(20).ToList()));
-            }
-            
-            z = "Zona S - Santo Tirso";
-            for (int i = 0; i < t.Where(t => t.Id.StartsWith("S")).Count(); i+=20) {
-                m.Add(PreencherPaginaIndividualS13(pdfTemplate, a, z, t.Where(t => t.Id.StartsWith("S")).Skip(i).Take(20).ToList()));
+
+            foreach(var d in z) {
+                int i = 0;
+                List<Territorio> l = new List<Territorio>();
+                    foreach (var t2 in t.Where(t => t.Tipo.Id == d.Id)) {
+                        if (t2.Registros.Count / 4 + i > 20) {
+                            m.Add(PreencherPaginaIndividualS13(pdfTemplate, a, d.Descricao ?? "", l));
+                            l.Clear();
+                            i=0;
+                        } 
+
+                        l.Add(t2);
+                        i+=t2.Registros.Count / 4 + 1;
+                    }
+                if (l.Count() > 0) m.Add(PreencherPaginaIndividualS13(pdfTemplate, a, d.Descricao ?? "", l));
             }
             
             return CombinePdfStreams(m.ToArray());
@@ -306,7 +307,10 @@ namespace JW_Management.Models
                             if (t.Registros.Count > 0) ColumnText.ShowTextAligned(contentByte, Element.ALIGN_LEFT, new Phrase(t.Registros!.Last().UltimoMovimento.DataMovimento.ToString("dd/MM/yy")),  x, reader.GetPageSize(1).Height - y, 0);
 
                             x+=60;
-                            foreach(var l in t.Registros) {
+                            for(int i = 0; i < t.Registros.Count(); i++) {
+                                RegistroTerritorio l = t.Registros[i];
+                                if (i==4) {y+=31;x=134;}
+
                                 //Nome Publicador
                                 ColumnText.ShowTextAligned(contentByte, Element.ALIGN_LEFT, new Phrase(l.Entrada.Publicador.Nome, fontB),  x, reader.GetPageSize(1).Height - y + 10, 0);
 
@@ -320,6 +324,7 @@ namespace JW_Management.Models
 
                             y+=31;
                         }
+                
                 }
             }
 
@@ -332,7 +337,7 @@ namespace JW_Management.Models
         private MemoryStream CombinePdfStreams(params MemoryStream[] pdfStreams)
         {
             MemoryStream combinedStream = new MemoryStream();
-            Document document = new Document();
+            iTextSharp.text.Document document = new iTextSharp.text.Document();
             PdfCopy copy = new PdfCopy(document, combinedStream);
             document.Open();
 

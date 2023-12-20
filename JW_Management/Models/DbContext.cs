@@ -688,6 +688,7 @@
         public List<Territorio> ObterTerritorios(string filtro, bool LoadUltimoMovimento, bool LoadMovimentos, bool LoadFicheiros, bool LoadMovimentoInOut)
         {
             List<Territorio> LstTerritorios = new();
+            List<TipoTerritorio> LstTipos = ObterTiposTerritorio();
 
             using (Database db = ConnectionString)
             {
@@ -702,6 +703,7 @@
                         Nome = result["Nome"],
                         Descricao = result["Descricao"],
                         Dificuldade = result["Dificuldade"] == "0" ? DificuldadeTerritorio.FACIL : result["Dificuldade"] == "1" ? DificuldadeTerritorio.MODERADO : DificuldadeTerritorio.DIFICIL,
+                        Tipo = LstTipos.Where(t => t.Id == result["IdTipo"]).FirstOrDefault(new TipoTerritorio()),
                         Url = result["Url"]
                     });
                     if (LoadUltimoMovimento)
@@ -730,6 +732,7 @@
         public Territorio ObterTerritorio(string stamp, bool LoadUltimoMovimento, bool LoadMovimentos, bool LoadFicheiros, bool LoadMovimentoInOut)
         {
             Territorio t = new();
+            List<TipoTerritorio> LstTipos = ObterTiposTerritorio();
 
             using (Database db = ConnectionString)
             {
@@ -744,6 +747,7 @@
                         Nome = result["Nome"],
                         Descricao = result["Descricao"],
                         Dificuldade = result["Dificuldade"] == "0" ? DificuldadeTerritorio.FACIL : result["Dificuldade"] == "1" ? DificuldadeTerritorio.MODERADO : DificuldadeTerritorio.DIFICIL,
+                        Tipo = LstTipos.Where(t => t.Id == result["IdTipo"]).FirstOrDefault(new TipoTerritorio()),
                         Url = result["Url"]
                     };
 
@@ -797,7 +801,7 @@
 
             using (Database db = ConnectionString)
             {
-                string sql = "SELECT entrada.stampmovimento AS stampmovimento_entrada, entrada.stampterritorio AS stampterritorio, entrada.DataMovimento AS DataEntrada, entrada.tipoMovimento AS tipoMovimento_entrada, saida.stampmovimento AS stampmovimento_saida, saida.tipoMovimento AS tipoMovimento_saida,  COALESCE(saida.DataMovimento, '0001-01-01') AS DataSaida, entrada.IdPublicador FROM t_movimentos entrada LEFT JOIN t_movimentos saida ON entrada.stampterritorio = saida.stampterritorio  AND saida.tipoMovimento = 2  AND saida.stampmovimento > entrada.stampmovimento WHERE entrada.tipoMovimento = 1 ORDER BY entrada.stampterritorio, entrada.stampmovimento;";
+                string sql = "SELECT     entrada.stampmovimento AS stampmovimento_entrada,     entrada.stampterritorio AS stampterritorio,     entrada.DataMovimento AS DataEntrada,     entrada.tipoMovimento AS tipoMovimento_entrada,     MIN(saida.stampmovimento) AS stampmovimento_saida,     MIN(saida.tipoMovimento) AS tipoMovimento_saida,     COALESCE(MIN(saida.DataMovimento), '0001-01-01') AS DataSaida,     entrada.IdPublicador FROM t_movimentos entrada LEFT JOIN t_movimentos saida ON entrada.stampterritorio = saida.stampterritorio     AND saida.tipoMovimento = 2	     AND saida.stampmovimento > entrada.stampmovimento WHERE entrada.tipoMovimento = 1 GROUP BY entrada.stampterritorio, entrada.stampmovimento, entrada.DataMovimento, entrada.tipoMovimento, entrada.IdPublicador ORDER BY entrada.stampterritorio, entrada.stampmovimento; ";
                 using var result = db.Query(sql);
                 while (result.Read())
                 {
@@ -1013,6 +1017,28 @@
             string sql = "DELETE FROM t_anexos where StampAnexo = '" + stamp + "';";
 
             return ExecutarQuery(sql);
+        }
+
+        //Obter todos os tipos de territorio
+        public List<TipoTerritorio> ObterTiposTerritorio()
+        {
+            List<TipoTerritorio> t = new();
+
+            using (Database db = ConnectionString)
+            {
+                string sql = "SELECT * FROM t_tipos;";
+                using var result = db.Query(sql);
+                while (result.Read())
+                {
+                    t.Add(new TipoTerritorio()
+                    {
+                        Id = result["Id"],
+                        Descricao = result["Descricao"]
+                    });
+                }
+            }
+
+            return t;
         }
 
         #endregion
