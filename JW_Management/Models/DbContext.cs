@@ -718,7 +718,7 @@
                     }
                     if (LoadMovimentoInOut)
                     {
-                        LstTerritorios.Last().Linhas = ObterMovimentosTerritorios(LstTerritorios.Last());
+                        LstTerritorios.Last().Registros = ObterMovimentosTerritorios(LstTerritorios.Last());
                     }
                 }
             }
@@ -761,7 +761,7 @@
                     }
                     if (LoadMovimentoInOut)
                     {
-                        t.Linhas = ObterMovimentosTerritorios(t);
+                        t.Registros = ObterMovimentosTerritorios(t);
                     }
                 }
             }
@@ -791,9 +791,9 @@
         }
 
         //Obter todos os movimentos
-        public List<LinhaMovimentoTerritorio> ObterMovimentosTerritorios()
+        public List<RegistroTerritorio> ObterMovimentosTerritorios()
         {
-            List<LinhaMovimentoTerritorio> LstLinhaMovimentosTerritorio = new();
+            List<RegistroTerritorio> LstLinhaMovimentosTerritorio = new();
 
             using (Database db = ConnectionString)
             {
@@ -819,7 +819,7 @@
                         Tipo = result["tipoMovimento_saida"] == "1" ? TipoMovimentoTerritorio.ENTRADA : TipoMovimentoTerritorio.SAIDA
                     };
 
-                    LstLinhaMovimentosTerritorio.Add(new LinhaMovimentoTerritorio()
+                    LstLinhaMovimentosTerritorio.Add(new RegistroTerritorio()
                     {
                         Entrada = e,
                         Saida = s
@@ -831,9 +831,9 @@
         }
 
          //Obter todos os movimentos
-        public List<LinhaMovimentoTerritorio> ObterMovimentosTerritorios(Territorio t)
+        public List<RegistroTerritorio> ObterMovimentosTerritorios(Territorio t)
         {
-            List<LinhaMovimentoTerritorio> LstLinhaMovimentosTerritorio = new();
+            List<RegistroTerritorio> LstLinhaMovimentosTerritorio = new();
 
             using (Database db = ConnectionString)
             {
@@ -857,7 +857,7 @@
                         Tipo = result["tipoMovimento_saida"] == "1" ? TipoMovimentoTerritorio.ENTRADA : TipoMovimentoTerritorio.SAIDA
                     };
 
-                    LstLinhaMovimentosTerritorio.Add(new LinhaMovimentoTerritorio()
+                    LstLinhaMovimentosTerritorio.Add(new RegistroTerritorio()
                     {
                         Entrada = e,
                         Saida = s

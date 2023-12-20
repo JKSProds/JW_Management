@@ -303,10 +303,10 @@ namespace JW_Management.Models
                             ColumnText.ShowTextAligned(contentByte, Element.ALIGN_LEFT, new Phrase(t.Id),  x, reader.GetPageSize(1).Height - y, 0);
 
                             x+=35;
-                            if (t.Linhas.Count > 0) ColumnText.ShowTextAligned(contentByte, Element.ALIGN_LEFT, new Phrase(t.Linhas!.Last().UltimoMovimento.DataMovimento.ToString("dd/MM/yy")),  x, reader.GetPageSize(1).Height - y, 0);
+                            if (t.Registros.Count > 0) ColumnText.ShowTextAligned(contentByte, Element.ALIGN_LEFT, new Phrase(t.Registros!.Last().UltimoMovimento.DataMovimento.ToString("dd/MM/yy")),  x, reader.GetPageSize(1).Height - y, 0);
 
                             x+=60;
-                            foreach(var l in t.Linhas) {
+                            foreach(var l in t.Registros) {
                                 //Nome Publicador
                                 ColumnText.ShowTextAligned(contentByte, Element.ALIGN_LEFT, new Phrase(l.Entrada.Publicador.Nome, fontB),  x, reader.GetPageSize(1).Height - y + 10, 0);
 
