@@ -70,7 +70,7 @@ namespace JW_Management.Controllers
         }
 
         [HttpGet]
-        public IActionResult Movimentos()
+        public IActionResult Registros()
         {
             DbContext context = HttpContext.RequestServices.GetService(typeof(DbContext)) as DbContext;
 
@@ -113,7 +113,7 @@ namespace JW_Management.Controllers
         }
 
         [HttpDelete]
-        public IActionResult Movimentos(string stampentrada, string stampsaida)
+        public IActionResult Registros(string stampentrada, string stampsaida)
         {
             DbContext context = HttpContext.RequestServices.GetService(typeof(DbContext)) as DbContext;
             if (string.IsNullOrEmpty(stampentrada)) return StatusCode(500);
