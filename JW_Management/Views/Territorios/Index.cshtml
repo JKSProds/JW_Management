@@ -114,7 +114,7 @@
                                     <span>@item.Nome</span>
                                 </td>
                                 <td data-label="@Html.DisplayNameFor(model => model.FirstOrDefault()!.Dificuldade)">
-                                    <i class="button is-large fa-solid fa-signal" style="color: @item.CorDificuldade; border: 0; padding: 0; background:0"></i>
+                                    <button class="button mx-1 is-rounded my-auto" style="background-color:@item.CorDificuldade;"><p class="" style="line-height:1;"></p></button>
                                 </td>
                                 <td data-label="@Html.DisplayNameFor(model => model.FirstOrDefault()!.UltimoMovimento!.Publicador!)">
                                     <span> @(item.UltimoMovimento?.Publicador?.Id == 0 || item.UltimoMovimento?.Publicador == null ? "" : item.UltimoMovimento?.Publicador?.Nome)</span>
