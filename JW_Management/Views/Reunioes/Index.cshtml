@@ -1,0 +1,119 @@
+﻿@model IEnumerable<JW_Management.Models.Reuniao>
+@{
+    ViewData["Title"] = "Reuniões";
+}
+
+<form asp-action="Index" method="get" id="">
+    <div class="container">
+        <div class="columns">
+            <div class="column">
+                <div class="tile">
+                    <div class="tile is-parent is-vertical">
+                        <article class="tile is-child notification is-info">
+                            <p class="title">
+                                <span class="icon mr-3">
+                                    <i class="fa-solid fa-user-tie"></i>
+                                </span>
+                                <span>Reuniões</span>
+                            </p>
+                        </article>
+                    </div>
+                </div>
+            </div>
+            <div class="column">
+                <div class="field has-addons has-addons-right mx-1 is-flex-wrap-wrap" style="width:100%">
+                    <div class="buttons is-right">
+                        <p class="control">
+                            <button type="button" class="button is-info is-outlined is-fullwidth " onclick="Bulma('#modalAdicionarAnexo').modal().open();">
+                                <span class="icon">
+                                    <i class="fa-solid fa-file-import"></i>
+                                </span>
+                                <span>Importar Ficheiro</span>
+                            </button>
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</form>
+<hr />
+<div class="container">
+    @if (Model.Count() == 0)
+    {
+        <br />
+        <button class="button is-danger is-large is-rounded is-fullwidth is-disabled">
+            Não foram encontradas
+            reuniões!
+        </button>
+    }
+    else
+    {
+        <div class="b-table">
+            <div class="table-wrapper has-mobile-cards">
+                <table class="table is-hoverable is-fullwidth">
+                    <thead>
+                        <tr>
+                            <th>
+                                @Html.DisplayNameFor(model => model.FirstOrDefault()!.SemanaReuniao)
+                            </th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var item in Model)
+                        {
+                            <tr>
+                                <td data-label="@Html.DisplayNameFor(model => model.FirstOrDefault()!.SemanaReuniao)">
+                                    <span>@item.SemanaReuniao</span>
+                                </td>
+                                <td class="is-actions-cell">
+                                    <div class="buttons is-pulled-right is-flex-wrap-nowrap" style="width:100%">
+                                        <a class="button is-info is-fullwidth is-large mr-1"
+                                                href="~/Reunioes/Reuniao/@item.SemanaReuniao">
+                                            <i class="fas fa-eye"></i>
+                                        </a>
+                                        <button class="button is-danger is-fullwidth is-large"
+                                                onclick="ConfirmApagar('@item.SemanaReuniao')">
+                                            <i class="fas fa-trash-can"></i>
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    }
+</div>
+<div id="modalAdicionarAnexo" class="modal">
+    <div class="modal-background"></div>
+    <div class="modal-card">
+        <header class="modal-card-head">
+            <p class="modal-card-title">Anexos</p>
+        </header>
+        <section class="modal-card-body">
+            <div class="form-group">
+                <form action="/Reunioes/Reunioes" method="POST" class="dropzone">
+                    <div class="dz-message needsclick">
+                        Largue o anexo aqui para fazer o upload
+                    </div>
+                </form>
+            </div>
+        </section>
+        <footer class="modal-card-foot">
+            <button type="button" class="button is-info is-large is-fullwidth"
+                    onclick="Bulma('#modalAdicionarAnexo').modal().close();" id="btnConfirmAddAnexo"
+                    href="javascript:;">
+                Fechar
+            </button>
+        </footer>
+    </div>
+</div>
+
+
+<script>
+
+
+</script>

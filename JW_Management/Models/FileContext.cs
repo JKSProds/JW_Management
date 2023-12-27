@@ -5,6 +5,7 @@ using iTextSharp.text.rtf;
 using System.Collections;
 using System.Reflection.Metadata;
 using System.Text;
+using OfficeOpenXml;
 
 namespace JW_Management.Models
 {
@@ -353,6 +354,48 @@ namespace JW_Management.Models
 
             document.Close();
             return combinedStream;
-        }           
+        }  
+
+        public List<Designacao> ImportarDesignacoes(IFormFile file) {
+            var filePath = Path.GetTempFileName();
+            List<Designacao> LstDesignacao = new List<Designacao>();
+
+            using (var stream = new FileStream(filePath, FileMode.Create))
+            {
+                file.CopyTo(stream);
+            }
+            ExcelPackage.LicenseContext = LicenseContext.NonCommercial;
+            using (var package = new ExcelPackage(new System.IO.FileInfo(filePath)))
+            {
+                var worksheet = package.Workbook.Worksheets[0];
+
+                int rowCount = worksheet.Dimension.Rows;
+                int colCount = worksheet.Dimension.Columns;
+
+                // Check if the specified column is within the bounds of the worksheet
+                for (int colIndex = 2; colIndex <= colCount; colIndex++)
+                {
+                    bool a = colIndex % 2 == 1;
+                    string s = a ? worksheet.Cells[2, colIndex-1].Text : worksheet.Cells[2, colIndex].Text ;
+                    
+                    // Iterate through each row in the specified column
+                    for (int rowIndex = 3; rowIndex <= rowCount; rowIndex++)
+                    {
+                        string p = worksheet.Cells[rowIndex, colIndex].Text.Contains("Sala") ? worksheet.Cells[rowIndex+1, colIndex].Text : worksheet.Cells[rowIndex, colIndex].Text;
+                        string d = worksheet.Cells[rowIndex, 1].Text;
+                        if (!string.IsNullOrEmpty(p) && !string.IsNullOrEmpty(d)) {
+                            LstDesignacao.Add(new Designacao() {
+                                Stamp = DateTime.Now.Ticks.ToString(),
+                                SemanaReuniao = s.Trim(),
+                                NomeDesignacao = d.Trim(),
+                                NomePublicador = p.Trim(),
+                                Local = a ? Local.Sala : Local.Auditorio
+                            });
+                        }
+                    }
+                }
+            }
+            return LstDesignacao;
+        }         
     }
 }

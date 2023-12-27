@@ -1,0 +1,113 @@
+﻿@model JW_Management.Models.Reuniao
+@{
+    ViewData["Title"] = "Reuniões";
+}
+
+<form asp-action="Index" method="get" id="">
+    <div class="container">
+        <div class="columns">
+            <div class="column">
+                <div class="tile">
+                    <div class="tile is-parent is-vertical">
+                        <article class="tile is-child notification is-info">
+                            <p class="title">
+                                <span class="icon mr-3">
+                                    <i class="fa-solid fa-user-tie"></i>
+                                </span>
+                                <span>Reunião - @Model.SemanaReuniao</span>
+                            </p>
+                        </article>
+                    </div>
+                </div>
+            </div>
+            <div class="column">
+                
+            </div>
+        </div>
+    </div>
+</form>
+<hr />
+<div class="container">
+    @if (Model.Designacoes.Count() == 0)
+    {
+        <br />
+        <button class="button is-danger is-large is-rounded is-fullwidth is-disabled">
+            Não foram encontradas
+            designações!
+        </button>
+    }
+    else
+    {
+        <div class="b-table">
+            <div class="table-wrapper has-mobile-cards">
+                <table class="table is-hoverable is-fullwidth">
+                    <thead>
+                        <tr>
+                            <th>
+                                @Html.DisplayNameFor(model => model.Designacoes.FirstOrDefault()!.NomeDesignacao)
+                            </th>
+                            <th>
+                                @Html.DisplayNameFor(model => model.Designacoes.FirstOrDefault()!.NomePublicador)
+                            </th>
+                            <th>
+                                @Html.DisplayNameFor(model => model.Designacoes.FirstOrDefault()!.Local)
+                            </th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var item in Model.Designacoes)
+                        {
+                            <tr>
+                                <td data-label="@Html.DisplayNameFor(model => model.Designacoes.FirstOrDefault()!.NomeDesignacao)">
+                                    <span>@item.NomeDesignacao</span>
+                                </td>
+                                <td data-label="@Html.DisplayNameFor(model => model.Designacoes.FirstOrDefault()!.NomePublicador)">
+                                    <span>@item.NomePublicador</span>
+                                </td>
+                                <td data-label="@Html.DisplayNameFor(model => model.Designacoes.FirstOrDefault()!.Local)">
+                                    <span>@item.Local</span>
+                                </td>
+                                <td class="is-actions-cell">
+                                    <div class="buttons is-pulled-right is-flex-wrap-nowrap" style="width:100%">
+                                        
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    }
+</div>
+<div id="modalAdicionarAnexo" class="modal">
+    <div class="modal-background"></div>
+    <div class="modal-card">
+        <header class="modal-card-head">
+            <p class="modal-card-title">Anexos</p>
+        </header>
+        <section class="modal-card-body">
+            <div class="form-group">
+                <form action="/Reunioes/Reunioes" method="POST" class="dropzone">
+                    <div class="dz-message needsclick">
+                        Largue o anexo aqui para fazer o upload
+                    </div>
+                </form>
+            </div>
+        </section>
+        <footer class="modal-card-foot">
+            <button type="button" class="button is-info is-large is-fullwidth"
+                    onclick="Bulma('#modalAdicionarAnexo').modal().close();" id="btnConfirmAddAnexo"
+                    href="javascript:;">
+                Fechar
+            </button>
+        </footer>
+    </div>
+</div>
+
+
+<script>
+
+
+</script>

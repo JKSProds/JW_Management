@@ -1042,5 +1042,114 @@
         }
 
         #endregion
+
+        //REUNIOES
+        #region Reunioes
+
+        public List<Designacao> ObterDesignacoes(string Semana)
+        {
+            List<Designacao> d = new();
+
+            using (Database db = ConnectionString)
+            {
+                string sql = "SELECT * FROM r_designacoes WHERE Semana='"+Semana+"';";
+                using var result = db.Query(sql);
+                while (result.Read())
+                {
+                    d.Add(new Designacao()
+                    {
+                        Stamp = result["Stamp"],
+                        SemanaReuniao = result["Semana"],
+                        NomePublicador = result["Publicador"],
+                        NomeDesignacao = result["Designacao"],
+                        Local = result["Local"] == "Auditorio" ? Local.Auditorio : Local.Sala,
+                        Publicador = new Publicador() {Id = result["StampPublicador"]},
+                        TipoDesignacao = new TipoDesignacao() {Id = result["IdTipo"]}
+                        
+                    });
+                }
+            }
+
+            return d;
+        }
+
+        public bool AdicionarDesignacao(Designacao d)
+        {
+
+            string sql = "INSERT INTO r_designacoes(Stamp, StampPublicador, IdTipo, Semana, Publicador,  Designacao,  Local) VALUES ";
+            sql += ("('" + d.Stamp + "', '" + d.Publicador.Id + "', '" + d.TipoDesignacao.Id + "', '" + d.SemanaReuniao + "', '" + d.NomePublicador + "', '" + d.NomeDesignacao + "', '" + d.Local + "') ");
+
+            return ExecutarQuery(sql);
+        }
+
+        public bool AdicionarDesignacoes(List<Designacao> LstDesignacoes)
+        {
+            string sql = "INSERT INTO r_designacoes(Stamp, StampPublicador, IdTipo, Semana, Publicador,  Designacao,  Local) VALUES ";
+            
+            foreach(var d in LstDesignacoes) {
+                sql += ("('" + d.Stamp + "', '" + d.Publicador.Id + "', '" + d.TipoDesignacao.Id + "', '" + d.SemanaReuniao + "', '" + d.NomePublicador + "', '" + d.NomeDesignacao + "', '" + d.Local + "'),\r\n ");
+            }
+            sql = sql.Remove(sql.Length -4, 4) + ";";
+            return ExecutarQuery(sql);
+        }
+
+        public bool ApagarDesignacoes(List<string> Semanas)
+        {
+            string sql = "";
+            
+            foreach(var s in Semanas) {
+                sql += ("DELETE FROM r_designacoes where Semana='"+s+"';\r\n ");
+            }
+
+            return ExecutarQuery(sql);
+        }
+
+        public List<Reuniao> ObterReunioes(bool LoadDesignacoes)
+        {
+            List<Reuniao> r = new();
+
+            using (Database db = ConnectionString)
+            {
+                string sql = "SELECT DISTINCT Semana FROM r_designacoes;";
+                using var result = db.Query(sql);
+                while (result.Read())
+                {
+                    r.Add(new Reuniao()
+                    {
+                        Stamp = DateTime.Now.Ticks.ToString(),
+                        SemanaReuniao = result[0]
+                    });
+
+                    if (LoadDesignacoes) r.Last().Designacoes = ObterDesignacoes(result[0]).OrderBy(d => d.Stamp).ToList();
+
+                }
+            }
+
+            return r;
+        }
+        public Reuniao ObterReuniao(string Semana, bool LoadDesignacoes)
+        {
+            List<Reuniao> r = new();
+
+            using (Database db = ConnectionString)
+            {
+                string sql = "SELECT DISTINCT Semana FROM r_designacoes Where Semana='"+Semana+"';";
+                using var result = db.Query(sql);
+                while (result.Read())
+                {
+                    r.Add(new Reuniao()
+                    {
+                        Stamp = DateTime.Now.Ticks.ToString(),
+                        SemanaReuniao = result[0]
+                    });
+
+                    if (LoadDesignacoes) r.Last().Designacoes = ObterDesignacoes(result[0]).OrderBy(d => d.Stamp).ToList();
+
+                }
+            }
+
+            return r.First();
+        }
+        #endregion
     }
 }
