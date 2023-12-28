@@ -368,7 +368,7 @@ namespace JW_Management.Models
             using (var package = new ExcelPackage(new System.IO.FileInfo(filePath)))
             {
                 var worksheet = package.Workbook.Worksheets[0];
-
+ 
                 int rowCount = worksheet.Dimension.Rows;
                 int colCount = worksheet.Dimension.Columns;
 
@@ -381,8 +381,8 @@ namespace JW_Management.Models
                     // Iterate through each row in the specified column
                     for (int rowIndex = 3; rowIndex <= rowCount; rowIndex++)
                     {
-                        string p = worksheet.Cells[rowIndex, colIndex].Text.Contains("Sala") ? worksheet.Cells[rowIndex+1, colIndex].Text : worksheet.Cells[rowIndex, colIndex].Text;
-                        string d = worksheet.Cells[rowIndex, 1].Text;
+                        string p = worksheet.Cells[rowIndex, colIndex].Text.Contains("Sala") || worksheet.Cells[rowIndex, colIndex].Text.Contains("Salão")  ? "" : worksheet.Cells[rowIndex, colIndex].Text;
+                        string d = string.IsNullOrEmpty(worksheet.Cells[rowIndex, 1].Text) ? worksheet.Cells[rowIndex-1, 1].Text : worksheet.Cells[rowIndex, 1].Text;
                         if (!string.IsNullOrEmpty(p) && !string.IsNullOrEmpty(d)) {
                             LstDesignacao.Add(new Designacao() {
                                 Stamp = DateTime.Now.Ticks.ToString(),
