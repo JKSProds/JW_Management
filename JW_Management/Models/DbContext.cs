@@ -1049,6 +1049,8 @@
         public List<Designacao> ObterDesignacoes(string Semana)
         {
             List<Designacao> d = new();
+            List<TipoDesignacao> t = ObterTiposDesignacao();
+            List<Publicador> p = ObterPublicadores();
 
             using (Database db = ConnectionString)
             {
@@ -1063,9 +1065,8 @@
                         NomePublicador = result["Publicador"],
                         NomeDesignacao = result["Designacao"],
                         Local = result["Local"] == "Auditorio" ? Local.Auditorio : Local.Sala,
-                        Publicador = new Publicador() {Id = result["StampPublicador"]},
-                        TipoDesignacao = new TipoDesignacao() {Id = result["IdTipo"]}
-                        
+                        Publicador = p.Where(u => u.Id == result["StampPublicador"] && u.Id>0).DefaultIfEmpty(new Publicador() {Nome = result["Publicador"]}).First(),
+                        TipoDesignacao = t.Where(u => u.Id == result["IdTipo"] && u.Id>0).DefaultIfEmpty(new TipoDesignacao() {Descricao = result["Designacao"]}).First(),
                     });
                 }
             }
@@ -1149,6 +1150,28 @@
             }
 
             return r.First();
+        }
+
+        public List<TipoDesignacao> ObterTiposDesignacao()
+        {
+            List<TipoDesignacao> t = new();
+
+            using (Database db = ConnectionString)
+            {
+                string sql = "SELECT * FROM r_tipos order by Id;";
+                using var result = db.Query(sql);
+                while (result.Read())
+                {
+                    t.Add(new TipoDesignacao()
+                    {
+                        Id = result["Id"],
+                        Descricao = result["Descricao"],
+                        DescricaoAdicional = result["DescricaoAdicional"]
+                    });
+                }
+            }
+
+            return t;
         }
         #endregion
     }

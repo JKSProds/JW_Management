@@ -356,9 +356,11 @@ namespace JW_Management.Models
             return combinedStream;
         }  
 
-        public List<Designacao> ImportarDesignacoes(IFormFile file) {
+        public List<Designacao> ImportarDesignacoes(IFormFile file, DbContext context) {
             var filePath = Path.GetTempFileName();
             List<Designacao> LstDesignacao = new List<Designacao>();
+            List<TipoDesignacao> LstTipos =  context.ObterTiposDesignacao();
+            List<Publicador> LstPublicadores =  context.ObterPublicadores();
 
             using (var stream = new FileStream(filePath, FileMode.Create))
             {
@@ -384,13 +386,18 @@ namespace JW_Management.Models
                         string p = worksheet.Cells[rowIndex, colIndex].Text.Contains("Sala") || worksheet.Cells[rowIndex, colIndex].Text.Contains("Salão")  ? "" : worksheet.Cells[rowIndex, colIndex].Text;
                         string d = string.IsNullOrEmpty(worksheet.Cells[rowIndex, 1].Text) ? worksheet.Cells[rowIndex-1, 1].Text : worksheet.Cells[rowIndex, 1].Text;
                         if (!string.IsNullOrEmpty(p) && !string.IsNullOrEmpty(d)) {
-                            LstDesignacao.Add(new Designacao() {
+                            foreach (var pub in p.Split("|")) {
+                                LstDesignacao.Add(new Designacao() {
                                 Stamp = DateTime.Now.Ticks.ToString(),
                                 SemanaReuniao = s.Trim(),
                                 NomeDesignacao = d.Trim(),
-                                NomePublicador = p.Trim(),
+                                NomePublicador = pub.Trim(),
+                                Publicador = LstPublicadores.Where(u => u.Nome.StartsWith(pub.Trim())).DefaultIfEmpty(new Publicador()).First(),
+                                TipoDesignacao = LstTipos.Where(t => t.DescricaoAdicional == d.Trim()).DefaultIfEmpty(new TipoDesignacao()).First(),
                                 Local = a ? Local.Sala : Local.Auditorio
-                            });
+                             });
+                             //if (LstTipos.Where(u => u.DescricaoAdicional == LstDesignacao.Last().TipoDesignacao.DescricaoAdicional).Count() > 1) LstTipos.Remove(LstTipos.Where(u => u.Id == LstDesignacao.Last().TipoDesignacao.Id).First());
+                            }
                         }
                     }
                 }

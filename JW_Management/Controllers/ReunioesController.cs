@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using JW_Management.Models;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc.Rendering;
 
 namespace JW_Management.Controllers
 {
@@ -20,7 +21,7 @@ namespace JW_Management.Controllers
             DbContext context = HttpContext.RequestServices.GetService(typeof(DbContext)) as DbContext;
             FileContext f = new FileContext();
 
-            List<Designacao> LstD = f.ImportarDesignacoes(file);
+            List<Designacao> LstD = f.ImportarDesignacoes(file, context!);
 
             return context.ApagarDesignacoes(LstD.Select(d => d.SemanaReuniao.ToString()).Distinct().ToList()) ? context.AdicionarDesignacoes(LstD) ? StatusCode(200): StatusCode(500) : StatusCode(500);
         }
@@ -29,7 +30,8 @@ namespace JW_Management.Controllers
         public IActionResult Reuniao(string id)
         {
             DbContext context = HttpContext.RequestServices.GetService(typeof(DbContext)) as DbContext;
-            
+            ViewBag.Publicadores = context.ObterPublicadores().OrderBy(p => p.Nome).Select(l => new SelectListItem() { Value = l.Id.ToString(), Text = l.Nome });
+
             return View(context.ObterReuniao(id, true));
         }
     }
