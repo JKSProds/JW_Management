@@ -1,5 +1,6 @@
 ﻿namespace JW_Management.Models
 {
+    using System.Diagnostics;
     using JW_Management.Controllers;
     using Microsoft.AspNetCore.Identity;
     using MySql.Simple;
@@ -1064,8 +1065,8 @@
                         SemanaReuniao = result["Semana"],
                         NomePublicador = result["Publicador"],
                         NomeDesignacao = result["Designacao"],
-                        Local = result["Local"] == "Auditorio" ? Local.Auditorio : Local.Sala,
-                        Publicador = p.Where(u => u.Id == result["StampPublicador"] && u.Id>0).DefaultIfEmpty(new Publicador() {Nome = result["Publicador"]}).First(),
+                        Local = result["Local"],
+                        Publicador = p.Where(u => u.Id == result["IdPublicador"] && u.Id>0).DefaultIfEmpty(new Publicador() {Nome = result["Publicador"]}).First(),
                         TipoDesignacao = t.Where(u => u.Id == result["IdTipo"] && u.Id>0).DefaultIfEmpty(new TipoDesignacao() {Descricao = result["Designacao"]}).First(),
                     });
                 }
@@ -1077,7 +1078,7 @@
         public bool AdicionarDesignacao(Designacao d)
         {
 
-            string sql = "INSERT INTO r_designacoes(Stamp, StampPublicador, IdTipo, Semana, Publicador,  Designacao,  Local) VALUES ";
+            string sql = "INSERT INTO r_designacoes(Stamp, IdPublicador, IdTipo, Semana, Publicador,  Designacao,  Local) VALUES ";
             sql += ("('" + d.Stamp + "', '" + d.Publicador.Id + "', '" + d.TipoDesignacao.Id + "', '" + d.SemanaReuniao + "', '" + d.NomePublicador + "', '" + d.NomeDesignacao + "', '" + d.Local + "') ");
 
             return ExecutarQuery(sql);
@@ -1085,12 +1086,19 @@
 
         public bool AdicionarDesignacoes(List<Designacao> LstDesignacoes)
         {
-            string sql = "INSERT INTO r_designacoes(Stamp, StampPublicador, IdTipo, Semana, Publicador,  Designacao,  Local) VALUES ";
+            string sql = "INSERT INTO r_designacoes(Stamp, IdPublicador, IdTipo, Semana, Publicador,  Designacao,  Local) VALUES ";
             
             foreach(var d in LstDesignacoes) {
                 sql += ("('" + d.Stamp + "', '" + d.Publicador.Id + "', '" + d.TipoDesignacao.Id + "', '" + d.SemanaReuniao + "', '" + d.NomePublicador + "', '" + d.NomeDesignacao + "', '" + d.Local + "'),\r\n ");
             }
             sql = sql.Remove(sql.Length -4, 4) + ";";
+            return ExecutarQuery(sql);
+        }
+
+        public bool AtualizarDesignacao(string Stamp, Publicador p)
+        {
+            string sql = "UPDATE r_designacoes SET IdPublicador = "+p.Id+", Publicador = '"+p.Nome+"' WHERE Stamp='"+Stamp+"';";
+            
             return ExecutarQuery(sql);
         }
 
@@ -1152,6 +1160,32 @@
             return r.First();
         }
 
+        public bool AdicionarReuniao(string semana)
+        {
+            List<TipoDesignacao> LstTipos = ObterTiposDesignacao();
+            List<Designacao> LstDesignacoes = new();
+            Stopwatch stopwatch = Stopwatch.StartNew();
+        
+        // Some code or operation you want to measure
+
+            foreach (var t in LstTipos) {
+                for(int i = 1; i<=t.Salas;i++) {
+                    LstDesignacoes.Add(new Designacao() {
+                        Stamp = DateTime.Now.Ticks + stopwatch.ElapsedTicks.ToString(),
+                        SemanaReuniao = semana,
+                        NomeDesignacao = t.DescricaoAdicional,
+                        NomePublicador = "",
+                        Publicador = new Publicador(),
+                        TipoDesignacao = t,
+                        Local = i==1 ? "Auditório" : "Sala " + i
+                    });
+                }
+            }
+            
+        stopwatch.Stop();
+            return AdicionarDesignacoes(LstDesignacoes);
+        }
+
         public List<TipoDesignacao> ObterTiposDesignacao()
         {
             List<TipoDesignacao> t = new();
@@ -1166,7 +1200,8 @@
                     {
                         Id = result["Id"],
                         Descricao = result["Descricao"],
-                        DescricaoAdicional = result["DescricaoAdicional"]
+                        DescricaoAdicional = result["DescricaoAdicional"],
+                        Salas = result["SalasExtra"] == "1" ? 2 : 1
                     });
                 }
             }

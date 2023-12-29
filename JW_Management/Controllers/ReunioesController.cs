@@ -2,6 +2,7 @@
 using JW_Management.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc.Rendering;
+using Org.BouncyCastle.Pqc.Crypto.Falcon;
 
 namespace JW_Management.Controllers
 {
@@ -30,9 +31,28 @@ namespace JW_Management.Controllers
         public IActionResult Reuniao(string id)
         {
             DbContext context = HttpContext.RequestServices.GetService(typeof(DbContext)) as DbContext;
-            ViewBag.Publicadores = context.ObterPublicadores().OrderBy(p => p.Nome).Select(l => new SelectListItem() { Value = l.Id.ToString(), Text = l.Nome });
+            ViewBag.Publicadores = context.ObterPublicadores().OrderBy(p => p.Nome).Select(l => new SelectListItem() { Value = l.Id.ToString(), Text = l.Id == 0 ? "Não Definido" : l.Nome });
 
             return View(context.ObterReuniao(id, true));
+        }
+        [HttpPost]
+        public IActionResult Reuniao(DateTime data)
+        {
+            DbContext context = HttpContext.RequestServices.GetService(typeof(DbContext)) as DbContext;
+            string semana = "Semana " + (data.DayOfYear - 1) / 7 + 1 + " de " + data.Year.ToString();
+
+            context.AdicionarReuniao(semana);
+            
+            ViewBag.Publicadores = context.ObterPublicadores().OrderBy(p => p.Nome).Select(l => new SelectListItem() { Value = l.Id.ToString(), Text = l.Id == 0 ? "Não Definido" : l.Nome });
+            return View(context.ObterReuniao(semana, true));
+        }
+
+        [HttpPost]
+        public IActionResult Designacao(string id, int pub)
+        {
+            DbContext context = HttpContext.RequestServices.GetService(typeof(DbContext)) as DbContext;
+
+            return context.AtualizarDesignacao(id, context.ObterPublicador(pub, false, false, false, false)) ? StatusCode(200) : StatusCode(500);
         }
     }
 }

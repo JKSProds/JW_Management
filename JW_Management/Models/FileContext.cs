@@ -394,7 +394,7 @@ namespace JW_Management.Models
                                 NomePublicador = pub.Trim(),
                                 Publicador = LstPublicadores.Where(u => u.Nome.StartsWith(pub.Trim())).DefaultIfEmpty(new Publicador()).First(),
                                 TipoDesignacao = LstTipos.Where(t => t.DescricaoAdicional == d.Trim()).DefaultIfEmpty(new TipoDesignacao()).First(),
-                                Local = a ? Local.Sala : Local.Auditorio
+                                Local = a ? "Sala" : "Auditorio"
                              });
                              //if (LstTipos.Where(u => u.DescricaoAdicional == LstDesignacao.Last().TipoDesignacao.DescricaoAdicional).Count() > 1) LstTipos.Remove(LstTipos.Where(u => u.Id == LstDesignacao.Last().TipoDesignacao.Id).First());
                             }

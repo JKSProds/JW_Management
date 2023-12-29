@@ -24,6 +24,14 @@
                 <div class="field has-addons has-addons-right mx-1 is-flex-wrap-wrap" style="width:100%">
                     <div class="buttons is-right">
                         <p class="control">
+                            <button type="button" class="button is-success is-fullwidth " onclick="Bulma('#modalAdicionarReuniao').modal().open();">
+                                <span class="icon">
+                                    <i class="fa-solid fa-plus"></i>
+                                </span>
+                                <span>Criar Reunião</span>
+                            </button>
+                        </p>
+                        <p class="control">
                             <button type="button" class="button is-info is-outlined is-fullwidth " onclick="Bulma('#modalAdicionarAnexo').modal().open();">
                                 <span class="icon">
                                     <i class="fa-solid fa-file-import"></i>
@@ -112,7 +120,48 @@
     </div>
 </div>
 
-
+<div id="modalAdicionarReuniao" class="modal">
+    <div class="modal-background"></div>
+    <div class="modal-card">
+        <header class="modal-card-head">
+            <p class="modal-card-title">Adicionar Reuniao</p>
+        </header>
+        <section class="modal-card-body">
+            <form style="width:100%" id="frmAddReuniao" asp-action="Reuniao" method="POST">
+                <p class="control has-icons-left">
+                    <input class="input" type="date"
+                            value="@(DateTime.Now.ToString("yyyy-MM-dd"))" id="txtData"
+                            name="data" />
+                    <script>
+                        bulmaCalendar.attach('#txtData', {
+                            color: 'info',
+                            lang: 'pt',
+                            dateFormat: 'dd/MM/yyyy',
+                            todayLabel: 'Hoje',
+                            showClearButton: false,
+                            cancelLabel: 'Cancelar',
+                            displayMode: 'inline'
+                        });
+                        document.getElementById('txtData').bulmaCalendar.on('select', function (datepicker) {
+                            document.getElementById('txtData').value = datepicker.data.value();
+                        });</script>
+                </p>
+            </form>
+        </section>
+        <footer class="modal-card-foot">
+            <button type="button" class="button is-success is-large is-fullwidth"
+                    onclick="document.getElementById('frmAddReuniao').submit();" 
+                    href="javascript:;">
+                Criar
+            </button>
+            <button type="button" class="button is-info is-large is-fullwidth"
+                    onclick="Bulma('#modalAdicionarReuniao').modal().close();"
+                    href="javascript:;">
+                Fechar
+            </button>
+        </footer>
+    </div>
+</div>
 <script>
 
 

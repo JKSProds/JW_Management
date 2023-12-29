@@ -8,7 +8,7 @@ namespace JW_Management.Models
         public string? NomePublicador { get; set; }
         public TipoDesignacao? TipoDesignacao { get; set; }
         public Publicador? Publicador { get; set; }
-        public Local? Local { get; set; }
+        public string? Local { get; set; }
         public string Distinct { get {return Local + "_" + TipoDesignacao.Id.ToString();} }
 
         public Designacao() {
@@ -16,8 +16,4 @@ namespace JW_Management.Models
             TipoDesignacao = new TipoDesignacao() {Id=0};
         }
     }
-
-    public enum Local {
-        Auditorio, Sala
-     }
 }

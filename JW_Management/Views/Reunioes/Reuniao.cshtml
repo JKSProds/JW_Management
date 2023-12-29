@@ -100,7 +100,7 @@
                             @foreach(var item in Model.Designacoes.Where(t => t.TipoDesignacao!.Id > i).Where(t => t.TipoDesignacao!.Id < i+100).DistinctBy(t => t.Distinct).OrderBy(t => t.TipoDesignacao!.Id)) {
                                 <div class="column is-6">
                                     <div class="card">
-                                        <header class="card-header card-toggle">
+                                        <header class="card-header card-toggle @(Model.Designacoes.Where(d => d.TipoDesignacao == item.TipoDesignacao && d.Local == item.Local).Where(u => u.Publicador.Id == 0).Count() > 0 ? "has-background-danger" : "")" >
                                             <p class="is-size-6 my-1 has-text-centered column">
                                                 <b>@item.TipoDesignacao!.Descricao</b>
                                             </p>
@@ -111,14 +111,9 @@
                                                     <div class="column m-1">
                                                         @foreach (var u in @Model.Designacoes.Where(d => d.TipoDesignacao == item.TipoDesignacao && d.Local == item.Local)) {
                                                         <div class="field">
-                                                            @if(u.Publicador!.Id == 0) { 
-                                                                <div class="field" style="border-style:solid;border-radius:16px">
-                                                                    <b>@u.Publicador.Nome</b>
-                                                                </div>
-                                                            }else{
                                                             <p class="control has-icons-left">
                                                                 <span class="select is-fullwidth">
-                                                                    <select class="select" style="height: auto" asp-for="@u.Publicador.Id"
+                                                                    <select class="select" style="height: auto" asp-for="@u.Publicador.Id" id="@u.Stamp" onchange="this.parentElement.parentElement.parentElement.parentElement.parentElement.parentElement.parentElement.parentElement.childNodes[1].classList.add('has-background-warning')"
                                                                             asp-items="@(new SelectList(@ViewBag.Publicadores, "Value", "Text"))">
                                                                     </select>
                                                                 </span>
@@ -126,13 +121,12 @@
                                                                     <i class="fa-solid fa-user-tie"></i>
                                                                 </span>
                                                             </p>
-                                                            }
                                                         </div>
                                                         }
                                                     </div>
                                                     @if (Model.Designacoes.Where(d => d.TipoDesignacao == item.TipoDesignacao).Count() > 1) {
-                                                        <div class="column">
-                                                            <div class="field"  style="border-style:solid;border-radius:16px">
+                                                        <div class="column"  style="border-style:solid;border-radius:16px">
+                                                            <div class="field">
                                                                 Sala: <b>@item.Local</b>
                                                             </div>
                                                         </div>
@@ -144,7 +138,7 @@
                                             <div class="container is-12">
                                                 <div class="buttons has-addons">
                                                     <button class="button is-info is-fullwidth is-large card-footer-item"
-                                                                onclick="">
+                                                                onclick="AtualizarDesignacao(Array.from(this.parentElement.parentElement.parentElement.parentElement.querySelectorAll('select')).map(function(selectElement) {return selectElement.id + '|' + selectElement.value;}));">
                                                             <i class="fa-solid fa-floppy-disk"></i>
                                                     </button>
                                                     
@@ -192,5 +186,25 @@
 
 <script>
 
+function AtualizarDesignacao(stampList) {
+    
+      stampList.forEach(function(stamp) {
+        $.ajax({
+            url: '/Reunioes/Designacao/',
+            data: { "id": stamp.split('|')[0], "pub": stamp.split('|')[1] },
+            type: "POST",
+            success: function (data) {
+                document.getElementById(stamp.split('|')[0]).parentElement.parentElement.parentElement.parentElement.parentElement.parentElement.parentElement.parentElement.childNodes[1].classList.remove('has-background-warning')
+                notify("Designacao atualizada com sucesso!");
+            },
+            error: function (response) {
+                notifyError('Ocorreu um erro ao atualizar a designacao!');
+            },
+            failure: function (response) {
+                notifyError('Falha ao atualizar a designacao!');
+            }
+        });
+      });
+}
 
 </script>
