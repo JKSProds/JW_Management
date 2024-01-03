@@ -162,7 +162,59 @@
         </footer>
     </div>
 </div>
+
+<div class="modal" id="ModalConfirmApagar">
+    <div class="modal-background"></div>
+    <div class="modal-card">
+        <header class="modal-card-head">
+            <p class="modal-card-title">Apagar Reunião</p>
+        </header>
+        <section class="modal-card-body">
+            <div class="modal-body">
+                <p>Tem a certeza que deseja apagar esta reunião e todas as designações associadas a ela?</p>
+            </div>
+        </section>
+        <footer class="modal-card-foot">
+            <button class="button is-danger is-fullwidth is-large"
+                    onclick="Apagar(document.getElementById('txtHiddenStamp').value);">
+                <span class="icon">
+                    <i class="fas fa-trash-can"></i>
+                </span>
+                <span>Confirmar</span>
+            </button>
+            <button class="button is-fullwidth is-large" onclick="Bulma('#ModalConfirmApagar').modal().close();">
+                <span class="icon">
+                    <i class="fa-solid fa-circle-xmark"></i>
+                </span>
+                <span>Não</span>
+            </button>
+        </footer>
+    </div>
+</div>
+
+<input id="txtHiddenStamp" hidden />
+
 <script>
+    function ConfirmApagar(id) {
+        document.getElementById('txtHiddenStamp').value = id;
+        Bulma('#ModalConfirmApagar').modal().open();
+    }
 
 
+    function Apagar(id) {
+        $.ajax({
+            url: '/Reunioes/Reuniao/',
+            data: { "id": id },
+            type: "DELETE",
+            success: function (data) {
+                window.location.reload();
+            },
+            error: function (data) {
+                notifyError('Ocorreu um erro ao apagar essa reuniao!');
+            },
+            failure: function (data) {
+                notifyError('Falha ao apagar essa reuniao!');
+            }
+        });
+    }
 </script>

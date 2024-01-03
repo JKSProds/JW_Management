@@ -1102,16 +1102,6 @@
             return ExecutarQuery(sql);
         }
 
-        public bool ApagarDesignacoes(List<string> Semanas)
-        {
-            string sql = "";
-            
-            foreach(var s in Semanas) {
-                sql += ("DELETE FROM r_designacoes where Semana='"+s+"';\r\n ");
-            }
-
-            return ExecutarQuery(sql);
-        }
 
         public List<Reuniao> ObterReunioes(bool LoadDesignacoes)
         {
@@ -1185,6 +1175,17 @@
         stopwatch.Stop();
             return AdicionarDesignacoes(LstDesignacoes);
         }
+        public bool ApagarReunioes(List<string> Semanas)
+        {
+            string sql = "";
+            
+            foreach(var s in Semanas) {
+                sql += ("DELETE FROM r_designacoes where Semana='"+s+"';\r\n ");
+            }
+
+            return ExecutarQuery(sql);
+        }
+
 
         public List<TipoDesignacao> ObterTiposDesignacao()
         {

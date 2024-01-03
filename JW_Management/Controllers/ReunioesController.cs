@@ -24,7 +24,7 @@ namespace JW_Management.Controllers
 
             List<Designacao> LstD = f.ImportarDesignacoes(file, context!);
 
-            return context.ApagarDesignacoes(LstD.Select(d => d.SemanaReuniao.ToString()).Distinct().ToList()) ? context.AdicionarDesignacoes(LstD) ? StatusCode(200): StatusCode(500) : StatusCode(500);
+            return context.ApagarReunioes(LstD.Select(d => d.SemanaReuniao.ToString()).Distinct().ToList()) ? context.AdicionarDesignacoes(LstD) ? StatusCode(200): StatusCode(500) : StatusCode(500);
         }
 
         [HttpGet]
@@ -39,12 +39,18 @@ namespace JW_Management.Controllers
         public IActionResult Reuniao(DateTime data)
         {
             DbContext context = HttpContext.RequestServices.GetService(typeof(DbContext)) as DbContext;
-            string semana = "Semana " + (data.DayOfYear - 1) / 7 + 1 + " de " + data.Year.ToString();
+            string semana = "Semana " + ((data.DayOfYear - 1) / 7 + 1) + " de " + data.Year.ToString();
 
             context.AdicionarReuniao(semana);
             
             ViewBag.Publicadores = context.ObterPublicadores().OrderBy(p => p.Nome).Select(l => new SelectListItem() { Value = l.Id.ToString(), Text = l.Id == 0 ? "Não Definido" : l.Nome });
             return View(context.ObterReuniao(semana, true));
+        }
+        [HttpDelete]
+        public IActionResult Reuniao(string id, bool apagar)
+        {
+            DbContext context = HttpContext.RequestServices.GetService(typeof(DbContext)) as DbContext;
+            return context.ApagarReunioes(new List<string>() {id}) ? StatusCode(200) : StatusCode(500);
         }
 
         [HttpPost]
