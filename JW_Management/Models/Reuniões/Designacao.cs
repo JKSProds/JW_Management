@@ -10,6 +10,7 @@ namespace JW_Management.Models
         public Publicador? Publicador { get; set; }
         public string? Local { get; set; }
         public string Distinct { get {return Local + "_" + TipoDesignacao.Id.ToString();} }
+        public bool Atribuida { get {return this.Publicador.Id != 0;} }
 
         public Designacao() {
             Publicador = new Publicador() {Id=0};

@@ -32,7 +32,18 @@
                 </div>
             </div>
             <div class="column">
-                
+                    <div class="field has-addons has-addons-right mx-1 is-flex-wrap-wrap" style="width:100%">
+                    <div class="buttons is-right">
+                        <p class="control">
+                            <button type="button" class="button is-success is-fullwidth " onclick="Bulma('#modalAdicionarDesignacao').modal().open();">
+                                <span class="icon">
+                                    <i class="fa-solid fa-plus"></i>
+                                </span>
+                                <span>Adicionar Designação</span>
+                            </button>
+                        </p>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
@@ -97,10 +108,10 @@
                 <ul>
                     <li class="@(i == 0 ? "is-active" : "")">
                         <div class="task-container columns is-multiline mx-1">
-                            @foreach(var item in Model.Designacoes.Where(t => t.TipoDesignacao!.Id > i).Where(t => t.TipoDesignacao!.Id < i+100).DistinctBy(t => t.Distinct).OrderBy(t => t.TipoDesignacao!.Id)) {
+                            @foreach(var item in Model.ObterDesignacoesTipo(i)) {
                                 <div class="column is-6">
                                     <div class="card">
-                                        <header class="card-header card-toggle @(Model.Designacoes.Where(d => d.TipoDesignacao == item.TipoDesignacao && d.Local == item.Local).Where(u => u.Publicador.Id == 0).Count() > 0 ? "has-background-danger" : "")" >
+                                        <header class="card-header card-toggle @(Model.Designacoes.Where(d => d.TipoDesignacao == item.TipoDesignacao && d.Local == item.Local).Where(u => !u.Atribuida).Count() > 0 ? "has-background-danger" : "")" >
                                             <p class="is-size-6 my-1 has-text-centered column">
                                                 <b>@item.TipoDesignacao!.Descricao</b>
                                             </p>
@@ -111,24 +122,43 @@
                                                     <div class="column m-1">
                                                         @foreach (var u in @Model.Designacoes.Where(d => d.TipoDesignacao == item.TipoDesignacao && d.Local == item.Local)) {
                                                         <div class="field">
-                                                            <p class="control has-icons-left">
-                                                                <span class="select is-fullwidth">
-                                                                    <select class="select" style="height: auto" asp-for="@u.Publicador.Id" id="@u.Stamp" onchange="this.parentElement.parentElement.parentElement.parentElement.parentElement.parentElement.parentElement.parentElement.childNodes[1].classList.add('has-background-warning')"
-                                                                            asp-items="@(new SelectList(@ViewBag.Publicadores, "Value", "Text"))">
-                                                                    </select>
-                                                                </span>
-                                                                <span class="icon is-small is-left">
-                                                                    <i class="fa-solid fa-user-tie"></i>
-                                                                </span>
-                                                            </p>
+                                                            <div class="field has-addons">
+                                                                <div class="control has-icons-left" style="width:100%">
+                                                                        <span class="select is-fullwidth">
+                                                                            <select class="select" style="height: auto" asp-for="@u.Publicador.Id" id="@u.Stamp" onchange="this.parentElement.parentElement.parentElement.parentElement.parentElement.parentElement.parentElement.parentElement.parentElement.childNodes[1].classList.remove('has-background-danger');this.parentElement.parentElement.parentElement.parentElement.parentElement.parentElement.parentElement.parentElement.parentElement.childNodes[1].classList.add('has-background-warning')"
+                                                                                    asp-items="@(new SelectList(@ViewBag.Publicadores, "Value", "Text"))">
+                                                                            </select>
+                                                                        </span>
+                                                                        <span class="icon is-small is-left">
+                                                                            <i class="fa-solid fa-user-tie"></i>
+                                                                        </span>
+                                                                </div>
+                                                                <div class="control">
+                                                                    <button type="button" class="button is-danger disable-dbl-tap-zoom"
+                                                                            onclick="ConfirmApagar(this.parentElement.parentElement.querySelector('select').id);">
+                                                                        <span class="icon">
+                                                                            <i class="fas fa-trash-can"></i>
+                                                                        </span>
+                                                                    </button>
+                                                                </div>
+                                                            </div>
                                                         </div>
                                                         }
                                                     </div>
-                                                    @if (Model.Designacoes.Where(d => d.TipoDesignacao == item.TipoDesignacao).Count() > 1) {
-                                                        <div class="column"  style="border-style:solid;border-radius:16px">
+                                                    @if (Model.Designacoes.Where(d => d.TipoDesignacao == item.TipoDesignacao && item.TipoDesignacao.Salas>1).Count() > 1) {
+                                                        <div class="column">
                                                             <div class="field">
-                                                                Sala: <b>@item.Local</b>
+                                                            <div class="field has-addons">
+                                                                <div class="control" style="width:100%">
+                                                                    <button type="button" class="button is-primary disable-dbl-tap-zoom is-fullwidth">
+                                                                        <span class="icon">
+                                                                            <i class="fas fa-warehouse"></i>
+                                                                        </span>
+                                                                        <span>@item.Local</span>
+                                                                    </button>
+                                                                </div>
                                                             </div>
+                                                        </div>
                                                         </div>
                                                     }
                                                 </div>
@@ -138,10 +168,17 @@
                                             <div class="container is-12">
                                                 <div class="buttons has-addons">
                                                     <button class="button is-info is-fullwidth is-large card-footer-item"
+                                                                onclick="AdicionarPublicadorDesignacaoConfirmar(this.parentElement.parentElement.parentElement.parentElement.querySelector('select').id);">
+                                                            <i class="fa-solid fa-circle-plus"></i>
+                                                    </button>
+                                                    <button class="button is-success is-fullwidth is-large card-footer-item"
                                                                 onclick="AtualizarDesignacao(Array.from(this.parentElement.parentElement.parentElement.parentElement.querySelectorAll('select')).map(function(selectElement) {return selectElement.id + '|' + selectElement.value;}));">
                                                             <i class="fa-solid fa-floppy-disk"></i>
                                                     </button>
-                                                    
+                                                    <button class="button is-danger is-fullwidth is-large card-footer-item"
+                                                                onclick="ConfirmApagar(Array.from(this.parentElement.parentElement.parentElement.parentElement.querySelectorAll('select')).map(function(selectElement) {return selectElement.id;}));">
+                                                            <i class="fa-solid fa-trash-can"></i>
+                                                    </button>
                                                 </div>
                                             </div>
                                         </footer>
@@ -158,43 +195,176 @@
 
 </div>
 
-<div id="modalAdicionarAnexo" class="modal">
+<div id="modalAdicionarDesignacao" class="modal">
     <div class="modal-background"></div>
     <div class="modal-card">
         <header class="modal-card-head">
-            <p class="modal-card-title">Anexos</p>
+            <p class="modal-card-title">
+                <span class="icon">
+                    <i class="fas fa-circle-plus"></i>
+                </span>
+                <span>Adicionar - Designação</span>
+            </p>
+            <button type="button" class="delete" aria-label="close"></button>
         </header>
         <section class="modal-card-body">
-            <div class="form-group">
-                <form action="/Reunioes/Reunioes" method="POST" class="dropzone">
-                    <div class="dz-message needsclick">
-                        Largue o anexo aqui para fazer o upload
+            <div class="modal-body">
+                <div class="field">
+                    <label class="label">Designação</label>
+                    <div class="field has-addons">
+                        <div class="control " style="width:100%">
+                            <span class="select is-fullwidth">
+                                <select class="select" id="txtIdTipo" style="height: auto"
+                                        asp-items="@(new SelectList(@ViewBag.Tipos, "Value", "Text"))">
+                                </select>
+                            </span>
+                        </div>
                     </div>
-                </form>
+                </div>
+                <div class="field has-addons">
+                    <div class="control has-icons-left" style="width:100%">
+                        <span class="select is-fullwidth">
+                            <select class="select" id="txtLocal" style="height: auto">
+                                <option value="Auditório">Auditório</option>
+                                <option value="Sala 2">Sala 2</option>
+                            </select>
+                        </span>
+                        <span class="icon is-small is-left">
+                            <i class="fa-solid fa-warehouse"></i>
+                        </span>
+                    </div>
+                </div>
             </div>
         </section>
         <footer class="modal-card-foot">
-            <button type="button" class="button is-info is-large is-fullwidth"
-                    onclick="Bulma('#modalAdicionarAnexo').modal().close();" id="btnConfirmAddAnexo"
-                    href="javascript:;">
-                Fechar
+            <a class="button is-info is-large is-fullwidth"
+               onclick="AdicionarDesignacao('@Model.SemanaReuniao', document.getElementById('txtIdTipo').value,document.getElementById('txtLocal').value)">
+                <span class="icon">
+                    <i class="fa-regular fa-circle-plus"></i>
+                </span>
+                <span>Adicionar</span>
+            </a>
+            <button type="button" class="button is-large is-fullwidth is-danger"
+                    onclick="Bulma('#modalAdicionarDesignacao').modal().close();" href="javascript:;">
+                <span class="icon">
+                    <i class="fa-regular fa-circle-xmark"></i>
+                </span>
+                <span>Fechar</span>
             </button>
         </footer>
     </div>
 </div>
 
+<div id="modalAdicionarPublicadorDesignacao" class="modal">
+    <div class="modal-background"></div>
+    <div class="modal-card">
+        <header class="modal-card-head">
+            <p class="modal-card-title">
+                <span class="icon">
+                    <i class="fas fa-circle-plus"></i>
+                </span>
+                <span>Adicionar - Publicador</span>
+            </p>
+            <button type="button" class="delete" aria-label="close"></button>
+        </header>
+        <section class="modal-card-body">
+            <div class="modal-body">
+                <div class="field">
+                    <label class="label">Publicador</label>
+                    <div class="field has-addons">
+                        <div class="control has-icons-left" style="width:100%">
+                            <span class="select is-fullwidth">
+                                <select class="select" id="txtIdPubAddDesignacao" style="height: auto"
+                                        asp-items="@(new SelectList(@ViewBag.Publicadores, "Value", "Text"))">
+                                </select>
+                            </span>
+                            <span class="icon is-small is-left">
+                                <i class="fa-solid fa-user-tie"></i>
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+        <footer class="modal-card-foot">
+            <a class="button is-info is-large is-fullwidth"
+               onclick="AdicionarPublicadorDesignacao(document.getElementById('txtHiddenStamp').value,document.getElementById('txtIdPubAddDesignacao').value)">
+                <span class="icon">
+                    <i class="fa-regular fa-circle-plus"></i>
+                </span>
+                <span>Adicionar</span>
+            </a>
+            <button type="button" class="button is-large is-fullwidth is-danger"
+                    onclick="Bulma('#modalAdicionarDesignacao').modal().close();" href="javascript:;">
+                <span class="icon">
+                    <i class="fa-regular fa-circle-xmark"></i>
+                </span>
+                <span>Fechar</span>
+            </button>
+        </footer>
+    </div>
+</div>
+
+<div class="modal" id="ModalConfirmApagar">
+    <div class="modal-background"></div>
+    <div class="modal-card">
+        <header class="modal-card-head">
+            <p class="modal-card-title">Apagar Designação</p>
+        </header>
+        <section class="modal-card-body">
+            <div class="modal-body">
+                <p>Tem a certeza que deseja apagar esta designação?</p>
+            </div>
+        </section>
+        <footer class="modal-card-foot">
+            <button class="button is-danger is-fullwidth is-large"
+                    onclick="ApagarDesignacao(document.getElementById('txtHiddenStamp').value);">
+                <span class="icon">
+                    <i class="fas fa-trash-can"></i>
+                </span>
+                <span>Confirmar</span>
+            </button>
+            <button class="button is-fullwidth is-large" onclick="Bulma('#ModalConfirmApagar').modal().close();">
+                <span class="icon">
+                    <i class="fa-solid fa-circle-xmark"></i>
+                </span>
+                <span>Não</span>
+            </button>
+        </footer>
+    </div>
+</div>
+
+<input id="txtHiddenStamp" hidden />
 
 <script>
 
+function AdicionarDesignacao(id, tipo, local) {
+        $.ajax({
+            url: '/Reunioes/Designacao/',
+            data: { "id": id, "tipo": tipo, "local": local },
+            type: "POST",
+            success: function (data) {
+                notify("Designacao criada com sucesso!");
+                window.location.reload();
+            },
+            error: function (response) {
+                notifyError('Ocorreu um erro ao criar a designacao!');
+            },
+            failure: function (response) {
+                notifyError('Falha ao criar a designacao!');
+            }
+        });
+}
+
 function AtualizarDesignacao(stampList) {
-    
       stampList.forEach(function(stamp) {
         $.ajax({
             url: '/Reunioes/Designacao/',
             data: { "id": stamp.split('|')[0], "pub": stamp.split('|')[1] },
-            type: "POST",
+            type: "PUT",
             success: function (data) {
-                document.getElementById(stamp.split('|')[0]).parentElement.parentElement.parentElement.parentElement.parentElement.parentElement.parentElement.parentElement.childNodes[1].classList.remove('has-background-warning')
+                document.getElementById(stamp.split('|')[0]).parentElement.parentElement.parentElement.parentElement.parentElement.parentElement.parentElement.parentElement.parentElement.childNodes[1].classList.remove('has-background-warning');
+                document.getElementById(stamp.split('|')[0]).parentElement.parentElement.parentElement.parentElement.parentElement.parentElement.parentElement.parentElement.parentElement.childNodes[1].classList.remove('has-background-danger');
                 notify("Designacao atualizada com sucesso!");
             },
             error: function (response) {
@@ -205,6 +375,50 @@ function AtualizarDesignacao(stampList) {
             }
         });
       });
+}
+
+    function ConfirmApagar(id) {
+        document.getElementById('txtHiddenStamp').value = id;
+        Bulma('#ModalConfirmApagar').modal().open();
+    }
+    function ApagarDesignacao(id) {
+        $.ajax({
+            url: '/Reunioes/Designacao/',
+            data: { "id": id },
+            type: "DELETE",
+            success: function (data) {
+                window.location.reload();
+            },
+            error: function (data) {
+                notifyError('Ocorreu um erro ao apagar essa designação!');
+            },
+            failure: function (data) {
+                notifyError('Falha ao apagar essa designação!');
+            }
+        });
+    }
+
+    function AdicionarPublicadorDesignacaoConfirmar(id) {
+        document.getElementById('txtHiddenStamp').value = id;
+        Bulma('#modalAdicionarPublicadorDesignacao').modal().open();
+    }
+
+    function AdicionarPublicadorDesignacao(id, pub) {
+        $.ajax({
+            url: '/Reunioes/Publicador/',
+            data: { "id": id, "pub": pub },
+            type: "POST",
+            success: function (data) {
+                notify("Publicador adicionado com sucesso!");
+                window.location.reload();
+            },
+            error: function (response) {
+                notifyError('Ocorreu um erro ao adicionar o publicador!');
+            },
+            failure: function (response) {
+                notifyError('Falha ao adicionar o publicador!');
+            }
+        });
 }
 
 </script>

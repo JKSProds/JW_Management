@@ -1075,6 +1075,34 @@
             return d;
         }
 
+        public Designacao ObterDesignacao(string stamp)
+        {
+            List<Designacao> d = new();
+            List<TipoDesignacao> t = ObterTiposDesignacao();
+            List<Publicador> p = ObterPublicadores();
+
+            using (Database db = ConnectionString)
+            {
+                string sql = "SELECT * FROM r_designacoes WHERE Stamp='"+stamp+"';";
+                using var result = db.Query(sql);
+                while (result.Read())
+                {
+                    d.Add(new Designacao()
+                    {
+                        Stamp = result["Stamp"],
+                        SemanaReuniao = result["Semana"],
+                        NomePublicador = result["Publicador"],
+                        NomeDesignacao = result["Designacao"],
+                        Local = result["Local"],
+                        Publicador = p.Where(u => u.Id == result["IdPublicador"] && u.Id>0).DefaultIfEmpty(new Publicador() {Nome = result["Publicador"]}).First(),
+                        TipoDesignacao = t.Where(u => u.Id == result["IdTipo"] && u.Id>0).DefaultIfEmpty(new TipoDesignacao() {Descricao = result["Designacao"]}).First(),
+                    });
+                }
+            }
+
+            return d.DefaultIfEmpty(new Designacao()).First();
+        }
+
         public bool AdicionarDesignacao(Designacao d)
         {
 
@@ -1101,7 +1129,16 @@
             
             return ExecutarQuery(sql);
         }
+        public bool ApagarDesignacoes(List<string> Stamps)
+        {
+            string sql = "";
+            
+            foreach(var s in Stamps) {
+                sql += ("DELETE FROM r_designacoes where Stamp='"+s+"';\r\n ");
+            }
 
+            return ExecutarQuery(sql);
+        }
 
         public List<Reuniao> ObterReunioes(bool LoadDesignacoes)
         {

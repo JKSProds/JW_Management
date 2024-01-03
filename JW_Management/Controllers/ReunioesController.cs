@@ -32,6 +32,7 @@ namespace JW_Management.Controllers
         {
             DbContext context = HttpContext.RequestServices.GetService(typeof(DbContext)) as DbContext;
             ViewBag.Publicadores = context.ObterPublicadores().OrderBy(p => p.Nome).Select(l => new SelectListItem() { Value = l.Id.ToString(), Text = l.Id == 0 ? "Não Definido" : l.Nome });
+            ViewBag.Tipos = context.ObterTiposDesignacao().OrderBy(p => p.Id).Select(l => new SelectListItem() { Value = l.Id.ToString(), Text = l.Id == 0 ? "Não Definido" : l.Descricao });
 
             return View(context.ObterReuniao(id, true));
         }
@@ -50,15 +51,54 @@ namespace JW_Management.Controllers
         public IActionResult Reuniao(string id, bool apagar)
         {
             DbContext context = HttpContext.RequestServices.GetService(typeof(DbContext)) as DbContext;
+
             return context.ApagarReunioes(new List<string>() {id}) ? StatusCode(200) : StatusCode(500);
         }
-
         [HttpPost]
+        public IActionResult Designacao(string id, int tipo, string local)
+        {
+            DbContext context = HttpContext.RequestServices.GetService(typeof(DbContext)) as DbContext;
+            TipoDesignacao t = context.ObterTiposDesignacao().Where(t => t.Id == tipo).DefaultIfEmpty(new TipoDesignacao()).First();
+
+            Designacao d = new Designacao() {
+                Stamp = DateTime.Now.Ticks.ToString(),
+                SemanaReuniao = id, 
+                NomePublicador = "",
+                NomeDesignacao = t.Descricao,
+                Local = local,
+                Publicador = context.ObterPublicador(0, false, false, false, false),
+                TipoDesignacao = t,
+            };
+
+            return context.AdicionarDesignacao(d) ? StatusCode(200) : StatusCode(500);
+        }
+
+        [HttpPut]
         public IActionResult Designacao(string id, int pub)
         {
             DbContext context = HttpContext.RequestServices.GetService(typeof(DbContext)) as DbContext;
 
             return context.AtualizarDesignacao(id, context.ObterPublicador(pub, false, false, false, false)) ? StatusCode(200) : StatusCode(500);
+        }
+
+        [HttpDelete]
+        public IActionResult Designacao(string id, bool apagar)
+        {
+            DbContext context = HttpContext.RequestServices.GetService(typeof(DbContext)) as DbContext;
+            return context.ApagarDesignacoes(id.Split(",").ToList()) ? StatusCode(200) : StatusCode(500);
+        }
+
+        [HttpPost]
+        public IActionResult Publicador(string id, int pub)
+        {
+            DbContext context = HttpContext.RequestServices.GetService(typeof(DbContext)) as DbContext;
+            Designacao d = context.ObterDesignacao(id);
+            Publicador p = context.ObterPublicador(pub, false, false, false, false);
+
+            d.Stamp = DateTime.Now.Ticks.ToString();
+            d.Publicador = p;
+            d.NomePublicador = p.Nome;
+            return context.AdicionarDesignacao(d) ? StatusCode(200) : StatusCode(500);
         }
     }
 }
