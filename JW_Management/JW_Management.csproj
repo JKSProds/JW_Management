@@ -24,6 +24,9 @@
 		</None>		
 		<None Update="S-13_TPO.pdf">
 			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
+		</None>	
+		<None Update="S-140_TPO.pdf">
+			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
 		</None>
 	</ItemGroup>
 </Project>

@@ -9,6 +9,7 @@ namespace JW_Management.Models
         public TipoDesignacao? TipoDesignacao { get; set; }
         public Publicador? Publicador { get; set; }
         public string? Local { get; set; }
+        public bool SalaAdicional { get {return Local.StartsWith("Sala");} }
         public string Distinct { get {return Local + "_" + TipoDesignacao.Id.ToString();} }
         public bool Atribuida { get {return this.Publicador.Id != 0;} }
 

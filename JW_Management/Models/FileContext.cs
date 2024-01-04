@@ -403,6 +403,33 @@ namespace JW_Management.Models
                 }
             }
             return LstDesignacao;
-        }         
+        } 
+
+        public MemoryStream PreencherFormularioS140(Reuniao r)
+        {
+            string pdfTemplate = AppDomain.CurrentDomain.BaseDirectory + "S-140_TPO.pdf";
+            var outputPdfStream = new MemoryStream();
+            PdfReader pdfReader = new PdfReader(pdfTemplate);
+            PdfStamper pdfStamper = new PdfStamper(pdfReader, outputPdfStream);
+            AcroFields pdfFormFields = pdfStamper.AcroFields;
+            BaseFont baseFont = BaseFont.CreateFont(BaseFont.HELVETICA, BaseFont.CP1252, BaseFont.NOT_EMBEDDED);
+            BaseFont baseFontBold = BaseFont.CreateFont(BaseFont.HELVETICA_BOLD, BaseFont.CP1252, BaseFont.NOT_EMBEDDED);
+
+            pdfFormFields.SetFieldProperty("SemanaReuniao", "textfont", baseFontBold, null);
+            pdfFormFields.SetField("SemanaReuniao", r.SemanaReuniao);
+            
+            foreach (var d in r.Designacoes) {
+                pdfFormFields.SetFieldProperty(d.TipoDesignacao.Id + "_Designacao", "textfont", baseFontBold, null);
+                pdfFormFields.SetField(d.TipoDesignacao.Id + "_Designacao", d.NomeDesignacao);
+                pdfFormFields.SetFieldProperty(d.TipoDesignacao.Id + "_Pub"+ (d.SalaAdicional ? "_1" : ""), "textfont", baseFontBold, null);
+                pdfFormFields.SetField(d.TipoDesignacao.Id + "_Pub" + (d.SalaAdicional ? "_1" : ""), d.Publicador.Nome);
+            }
+
+            pdfStamper.FormFlattening = true;
+            pdfStamper.Close();
+
+            return outputPdfStream;
+
+        }        
     }
 }
