@@ -1047,7 +1047,7 @@
         //REUNIOES
         #region Reunioes
 
-        public List<Designacao> ObterDesignacoes(string Semana)
+        public List<Designacao> ObterDesignacoes(string Stamp)
         {
             List<Designacao> d = new();
             List<TipoDesignacao> t = ObterTiposDesignacao();
@@ -1055,13 +1055,14 @@
 
             using (Database db = ConnectionString)
             {
-                string sql = "SELECT * FROM r_designacoes WHERE Semana='"+Semana+"';";
+                string sql = "SELECT * FROM r_designacoes WHERE StampReuniao='"+Stamp+"';";
                 using var result = db.Query(sql);
                 while (result.Read())
                 {
                     d.Add(new Designacao()
                     {
                         Stamp = result["Stamp"],
+                        StampReuniao = result["StampReuniao"],
                         SemanaReuniao = result["Semana"],
                         NomePublicador = result["Publicador"],
                         NomeDesignacao = result["Designacao"],
@@ -1091,6 +1092,7 @@
                     d.Add(new Designacao()
                     {
                         Stamp = result["Stamp"],
+                        StampReuniao = result["StampReuniao"],
                         SemanaReuniao = result["Semana"],
                         NomePublicador = result["Publicador"],
                         NomeDesignacao = result["Designacao"],
@@ -1108,18 +1110,18 @@
         public bool AdicionarDesignacao(Designacao d)
         {
 
-            string sql = "INSERT INTO r_designacoes(Stamp, IdPublicador, IdTipo, Semana, Publicador,  Designacao,  Local) VALUES ";
-            sql += ("('" + d.Stamp + "', '" + d.Publicador.Id + "', '" + d.TipoDesignacao.Id + "', '" + d.SemanaReuniao + "', '" + d.NomePublicador + "', '" + d.NomeDesignacao + "', '" + d.Local + "') ");
+            string sql = "INSERT INTO r_designacoes(Stamp, StampReuniao, IdPublicador, IdTipo, Semana, Publicador,  Designacao,  Local) VALUES ";
+            sql += ("('" + d.Stamp + "', '" + d.StampReuniao + "', '" + d.Publicador.Id + "', '" + d.TipoDesignacao.Id + "', '" + d.SemanaReuniao + "', '" + d.NomePublicador + "', '" + d.NomeDesignacao + "', '" + d.Local + "') ");
 
             return ExecutarQuery(sql);
         }
 
         public bool AdicionarDesignacoes(List<Designacao> LstDesignacoes)
         {
-            string sql = "INSERT INTO r_designacoes(Stamp, IdPublicador, IdTipo, Semana, Publicador,  Designacao,  Local) VALUES ";
+            string sql = "INSERT INTO r_designacoes(Stamp, StampReuniao, IdPublicador, IdTipo, Semana, Publicador,  Designacao,  Local) VALUES ";
             
             foreach(var d in LstDesignacoes) {
-                sql += ("('" + d.Stamp + "', '" + d.Publicador.Id + "', '" + d.TipoDesignacao.Id + "', '" + d.SemanaReuniao + "', '" + d.NomePublicador + "', '" + d.NomeDesignacao + "', '" + d.Local + "'),\r\n ");
+                sql += ("('" + d.Stamp + "', '" + d.StampReuniao + "', '" + d.Publicador.Id + "', '" + d.TipoDesignacao.Id + "', '" + d.SemanaReuniao + "', '" + d.NomePublicador + "', '" + d.NomeDesignacao + "', '" + d.Local + "'),\r\n ");
             }
             sql = sql.Remove(sql.Length -4, 4) + ";";
             return ExecutarQuery(sql);
@@ -1148,40 +1150,40 @@
 
             using (Database db = ConnectionString)
             {
-                string sql = "SELECT DISTINCT Semana FROM r_designacoes;";
+                string sql = "SELECT DISTINCT Semana, StampReuniao FROM r_designacoes;";
                 using var result = db.Query(sql);
                 while (result.Read())
                 {
                     r.Add(new Reuniao()
                     {
-                        Stamp = DateTime.Now.Ticks.ToString(),
+                        Stamp = result[1],
                         SemanaReuniao = result[0]
                     });
 
-                    if (LoadDesignacoes) r.Last().Designacoes = ObterDesignacoes(result[0]).OrderBy(d => d.Stamp).ToList();
+                    if (LoadDesignacoes) r.Last().Designacoes = ObterDesignacoes(r.Last().Stamp).OrderBy(d => d.Stamp).ToList();
 
                 }
             }
 
             return r;
         }
-        public Reuniao ObterReuniao(string Semana, bool LoadDesignacoes)
+        public Reuniao ObterReuniao(string Stamp, bool LoadDesignacoes)
         {
             List<Reuniao> r = new();
 
             using (Database db = ConnectionString)
             {
-                string sql = "SELECT DISTINCT Semana FROM r_designacoes Where Semana='"+Semana+"';";
+                string sql = "SELECT DISTINCT Semana, StampReuniao FROM r_designacoes Where StampReuniao='"+Stamp+"';";
                 using var result = db.Query(sql);
                 while (result.Read())
                 {
                     r.Add(new Reuniao()
                     {
-                        Stamp = DateTime.Now.Ticks.ToString(),
+                        Stamp = result[1],
                         SemanaReuniao = result[0]
                     });
 
-                    if (LoadDesignacoes) r.Last().Designacoes = ObterDesignacoes(result[0]).OrderBy(d => d.Stamp).ToList();
+                    if (LoadDesignacoes) r.Last().Designacoes = ObterDesignacoes(r.Last().Stamp).OrderBy(d => d.Stamp).ToList();
 
                 }
             }
@@ -1189,7 +1191,7 @@
             return r.First();
         }
 
-        public bool AdicionarReuniao(string semana)
+        public bool AdicionarReuniao(string semana, string stamp)
         {
             List<TipoDesignacao> LstTipos = ObterTiposDesignacao();
             List<Designacao> LstDesignacoes = new();
@@ -1201,6 +1203,7 @@
                 for(int i = 1; i<=t.Salas;i++) {
                     LstDesignacoes.Add(new Designacao() {
                         Stamp = DateTime.Now.Ticks + stopwatch.ElapsedTicks.ToString(),
+                        StampReuniao = stamp,
                         SemanaReuniao = semana,
                         NomeDesignacao = t.DescricaoAdicional,
                         NomePublicador = "",
@@ -1214,12 +1217,12 @@
         stopwatch.Stop();
             return AdicionarDesignacoes(LstDesignacoes);
         }
-        public bool ApagarReunioes(List<string> Semanas)
+        public bool ApagarReunioes(List<string> Stamps)
         {
             string sql = "";
             
-            foreach(var s in Semanas) {
-                sql += ("DELETE FROM r_designacoes where Semana='"+s+"';\r\n ");
+            foreach(var s in Stamps) {
+                sql += ("DELETE FROM r_designacoes where StampReuniao='"+s+"';\r\n ");
             }
 
             return ExecutarQuery(sql);

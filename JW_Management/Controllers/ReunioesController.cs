@@ -24,7 +24,7 @@ namespace JW_Management.Controllers
 
             List<Designacao> LstD = f.ImportarDesignacoes(file, context!);
 
-            return context.ApagarReunioes(LstD.Select(d => d.SemanaReuniao.ToString()).Distinct().ToList()) ? context.AdicionarDesignacoes(LstD) ? StatusCode(200): StatusCode(500) : StatusCode(500);
+            return context.ApagarReunioes(LstD.Select(d => d.StampReuniao.ToString()).Distinct().ToList()) ? context.AdicionarDesignacoes(LstD) ? StatusCode(200): StatusCode(500) : StatusCode(500);
         }
 
         [HttpGet]
@@ -41,11 +41,14 @@ namespace JW_Management.Controllers
         {
             DbContext context = HttpContext.RequestServices.GetService(typeof(DbContext)) as DbContext;
             string semana = "Semana " + ((data.DayOfYear - 1) / 7 + 1) + " de " + data.Year.ToString();
+            string stamp = DateTime.Now.Ticks.ToString();
 
-            context.AdicionarReuniao(semana);
+            context.AdicionarReuniao(semana, stamp);
             
             ViewBag.Publicadores = context.ObterPublicadores().OrderBy(p => p.Nome).Select(l => new SelectListItem() { Value = l.Id.ToString(), Text = l.Id == 0 ? "Não Definido" : l.Nome });
-            return View(context.ObterReuniao(semana, true));
+            ViewBag.Tipos = context.ObterTiposDesignacao().OrderBy(p => p.Id).Select(l => new SelectListItem() { Value = l.Id.ToString(), Text = l.Id == 0 ? "Não Definido" : l.Descricao });
+
+            return View(context.ObterReuniao(stamp, true));
         }
         [HttpDelete]
         public IActionResult Reuniao(string id, bool apagar)
@@ -54,6 +57,7 @@ namespace JW_Management.Controllers
 
             return context.ApagarReunioes(new List<string>() {id}) ? StatusCode(200) : StatusCode(500);
         }
+
         [HttpPost]
         public IActionResult Designacao(string id, int tipo, string local)
         {
@@ -62,7 +66,7 @@ namespace JW_Management.Controllers
 
             Designacao d = new Designacao() {
                 Stamp = DateTime.Now.Ticks.ToString(),
-                SemanaReuniao = id, 
+                StampReuniao = id, 
                 NomePublicador = "",
                 NomeDesignacao = t.Descricao,
                 Local = local,

@@ -2,7 +2,8 @@ namespace JW_Management.Models
 {
     public class Designacao
     {
-        public string? Stamp { get; set; }
+        public string? Stamp { get; set; }       
+        public string? StampReuniao { get; set; }
         public string? SemanaReuniao { get; set; }
         public string? NomeDesignacao { get; set; }
         public string? NomePublicador { get; set; }

@@ -389,6 +389,7 @@ namespace JW_Management.Models
                             foreach (var pub in p.Split("|")) {
                                 LstDesignacao.Add(new Designacao() {
                                 Stamp = DateTime.Now.Ticks.ToString(),
+                                StampReuniao = s.Trim().Replace(" ", ""),
                                 SemanaReuniao = s.Trim(),
                                 NomeDesignacao = d.Trim(),
                                 NomePublicador = pub.Trim(),
