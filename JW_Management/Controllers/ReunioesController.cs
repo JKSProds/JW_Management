@@ -67,6 +67,7 @@ namespace JW_Management.Controllers
             Designacao d = new Designacao() {
                 Stamp = DateTime.Now.Ticks.ToString(),
                 StampReuniao = id, 
+                SemanaReuniao = context.ObterDesignacoes(id).DefaultIfEmpty(new Models.Designacao()).First().SemanaReuniao,
                 NomePublicador = "",
                 NomeDesignacao = t.Descricao,
                 Local = local,

@@ -419,7 +419,7 @@ namespace JW_Management.Models
             pdfFormFields.SetFieldProperty("SemanaReuniao", "textfont", baseFontBold, null);
             pdfFormFields.SetField("SemanaReuniao", r.SemanaReuniao);
             
-            foreach (var d in r.Designacoes.DistinctBy(d=>d.Distinct).ToList()) {
+            foreach (var d in r.Designacoes.Where(d => d.Atribuida).DistinctBy(d=>d.Distinct).ToList()) {
                 pdfFormFields.SetFieldProperty(d.TipoDesignacao.Id + "_Designacao", "textfont", baseFontBold, null);
                 pdfFormFields.SetField(d.TipoDesignacao.Id + "_Designacao", d.NomeDesignacao + (d.NMin > 0 ? " ("+ d.NMin+" min.)" : ""));
                 pdfFormFields.SetFieldProperty(d.TipoDesignacao.Id + "_Pub"+ (d.SalaAdicional ? "_1" : ""), "textfont", baseFont, null);

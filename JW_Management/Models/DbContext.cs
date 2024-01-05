@@ -1150,14 +1150,14 @@
 
             using (Database db = ConnectionString)
             {
-                string sql = "SELECT DISTINCT Semana, StampReuniao FROM r_designacoes;";
+                string sql = "SELECT DISTINCT StampReuniao, Semana FROM r_designacoes;";
                 using var result = db.Query(sql);
                 while (result.Read())
                 {
                     r.Add(new Reuniao()
                     {
-                        Stamp = result[1],
-                        SemanaReuniao = result[0]
+                        Stamp = result[0],
+                        SemanaReuniao = result[1]
                     });
 
                     if (LoadDesignacoes) r.Last().Designacoes = ObterDesignacoes(r.Last().Stamp).OrderBy(d => d.Stamp).ToList();
@@ -1173,14 +1173,14 @@
 
             using (Database db = ConnectionString)
             {
-                string sql = "SELECT DISTINCT Semana, StampReuniao FROM r_designacoes Where StampReuniao='"+Stamp+"';";
+                string sql = "SELECT DISTINCT StampReuniao, Semana FROM r_designacoes Where StampReuniao='"+Stamp+"';";
                 using var result = db.Query(sql);
                 while (result.Read())
                 {
                     r.Add(new Reuniao()
                     {
-                        Stamp = result[1],
-                        SemanaReuniao = result[0]
+                        Stamp = result[0],
+                        SemanaReuniao = result[1]
                     });
 
                     if (LoadDesignacoes) r.Last().Designacoes = ObterDesignacoes(r.Last().Stamp).OrderBy(d => d.Stamp).ToList();
