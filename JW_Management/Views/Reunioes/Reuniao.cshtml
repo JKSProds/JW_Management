@@ -115,7 +115,7 @@
                                             <p class="is-size-6 my-1 has-text-centered column">
                                                 <b>@item.TipoDesignacao!.Descricao</b>
                                             </p>
-                                             <input class="input is-rounded my-auto mr-1 minutos" style="max-width:75px" type="number" value="@item.NMin">
+                                             <input class="input is-rounded my-auto mr-1 minutos" style="max-width:75px" type="number" value="@item.NMin" oninput="this.parentElement.parentElement.childNodes[1].classList.remove('has-background-danger');this.parentElement.parentElement.childNodes[1].classList.add('has-background-warning')">
                                         </header>
                                         <div class="card-content has-text-centered">
                                             <div class="content">
@@ -126,7 +126,7 @@
                                                     <div class="field-body">
                                                         <div class="field">
                                                             <p class="control">
-                                                                <input class="input tema" type="text" value="@item.NomeDesignacao" placeholder="Tema da Designacao">
+                                                                <input class="input tema" type="text" oninput="this.parentElement.parentElement.parentElement.parentElement.parentElement.parentElement.parentElement.childNodes[1].classList.remove('has-background-danger');this.parentElement.parentElement.parentElement.parentElement.parentElement.parentElement.parentElement.childNodes[1].classList.add('has-background-warning')" value="@item.NomeDesignacao" placeholder="Tema da Designacao">
                                                             </p>
                                                         </div>
                                                     </div>
