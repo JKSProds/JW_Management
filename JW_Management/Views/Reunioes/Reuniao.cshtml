@@ -115,9 +115,23 @@
                                             <p class="is-size-6 my-1 has-text-centered column">
                                                 <b>@item.TipoDesignacao!.Descricao</b>
                                             </p>
+                                             <input class="input is-rounded my-auto mr-1 minutos" style="max-width:75px" type="number" value="@item.NMin">
                                         </header>
                                         <div class="card-content has-text-centered">
                                             <div class="content">
+                                                <div class="field is-horizontal">
+                                                    <div class="field-label is-normal">
+                                                        <label class="label">Tema</label>
+                                                    </div>
+                                                    <div class="field-body">
+                                                        <div class="field">
+                                                            <p class="control">
+                                                                <input class="input tema" type="text" value="@item.NomeDesignacao" placeholder="Tema da Designacao">
+                                                            </p>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <hr>
                                                 <div class="columns is-centered is-vcentered">
                                                     <div class="column m-1">
                                                         @foreach (var u in @Model.Designacoes.Where(d => d.TipoDesignacao == item.TipoDesignacao && d.Local == item.Local)) {
@@ -172,7 +186,7 @@
                                                             <i class="fa-solid fa-circle-plus"></i>
                                                     </button>
                                                     <button class="button is-success is-fullwidth is-large card-footer-item"
-                                                                onclick="AtualizarDesignacao(Array.from(this.parentElement.parentElement.parentElement.parentElement.querySelectorAll('select')).map(function(selectElement) {return selectElement.id + '|' + selectElement.value;}));">
+                                                                onclick="AtualizarDesignacao(Array.from(this.parentElement.parentElement.parentElement.parentElement.querySelectorAll('select')).map(function(selectElement) {return selectElement.id + '|' + selectElement.value;}), this.parentElement.parentElement.parentElement.parentElement.querySelector('.minutos').value, this.parentElement.parentElement.parentElement.parentElement.querySelector('.tema').value);">
                                                             <i class="fa-solid fa-floppy-disk"></i>
                                                     </button>
                                                     <button class="button is-danger is-fullwidth is-large card-footer-item"
@@ -356,11 +370,11 @@ function AdicionarDesignacao(id, tipo, local) {
         });
 }
 
-function AtualizarDesignacao(stampList) {
+function AtualizarDesignacao(stampList, minutos, tema) {
       stampList.forEach(function(stamp) {
         $.ajax({
             url: '/Reunioes/Designacao/',
-            data: { "id": stamp.split('|')[0], "pub": stamp.split('|')[1] },
+            data: { "id": stamp.split('|')[0], "pub": stamp.split('|')[1], "minutos": minutos, "tema": tema },
             type: "PUT",
             success: function (data) {
                 document.getElementById(stamp.split('|')[0]).parentElement.parentElement.parentElement.parentElement.parentElement.parentElement.parentElement.parentElement.parentElement.childNodes[1].classList.remove('has-background-warning');

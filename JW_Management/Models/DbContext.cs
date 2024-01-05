@@ -1065,6 +1065,7 @@
                         SemanaReuniao = result["Semana"],
                         NomePublicador = result["Publicador"],
                         NomeDesignacao = result["Designacao"],
+                        NMin = result["Minutos"],
                         Local = result["Local"],
                         Publicador = p.Where(u => u.Id == result["IdPublicador"] && u.Id>0).DefaultIfEmpty(new Publicador() {Nome = result["Publicador"]}).First(),
                         TipoDesignacao = t.Where(u => u.Id == result["IdTipo"] && u.Id>0).DefaultIfEmpty(new TipoDesignacao() {Descricao = result["Designacao"]}).First(),
@@ -1094,6 +1095,7 @@
                         NomePublicador = result["Publicador"],
                         NomeDesignacao = result["Designacao"],
                         Local = result["Local"],
+                        NMin = result["Minutos"],
                         Publicador = p.Where(u => u.Id == result["IdPublicador"] && u.Id>0).DefaultIfEmpty(new Publicador() {Nome = result["Publicador"]}).First(),
                         TipoDesignacao = t.Where(u => u.Id == result["IdTipo"] && u.Id>0).DefaultIfEmpty(new TipoDesignacao() {Descricao = result["Designacao"]}).First(),
                     });
@@ -1123,9 +1125,9 @@
             return ExecutarQuery(sql);
         }
 
-        public bool AtualizarDesignacao(string Stamp, Publicador p)
+        public bool AtualizarDesignacao(Designacao d)
         {
-            string sql = "UPDATE r_designacoes SET IdPublicador = "+p.Id+", Publicador = '"+p.Nome+"' WHERE Stamp='"+Stamp+"';";
+            string sql = "UPDATE r_designacoes SET IdPublicador = "+d.Publicador.Id+", Publicador = '"+d.Publicador.Nome+"', Minutos = '"+d.NMin+"', Designacao = '"+d.NomeDesignacao+"' WHERE Stamp='"+d.Stamp+"';";
             
             return ExecutarQuery(sql);
         }
@@ -1239,6 +1241,7 @@
                         Id = result["Id"],
                         Descricao = result["Descricao"],
                         DescricaoAdicional = result["DescricaoAdicional"],
+                        NMin = result["Minutos"],
                         Salas = result["SalasExtra"] == "1" ? 2 : 1
                     });
                 }

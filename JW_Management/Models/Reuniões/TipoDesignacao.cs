@@ -6,5 +6,6 @@ namespace JW_Management.Models
         public string? Descricao { get; set; }
         public string? DescricaoAdicional { get; set; }
         public int? Salas { get; set; }
+        public int NMin { get; set; }
     }
 }

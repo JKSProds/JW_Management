@@ -4,6 +4,7 @@
     {
         public int Id { get; set; }
         public string? Nome { get; set; }
+        public string? NomeCurto { get {return this.Nome.Split(" ").First() + (this.Nome.Split(" ").Count() > 1 ? " " + this.Nome.Split(" ").Last()[0] + "." : "");} }
         public string? Username { get; set; }
         public string? Password { get; set; }
         public string? Email { get; set; }

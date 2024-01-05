@@ -418,11 +418,11 @@ namespace JW_Management.Models
             pdfFormFields.SetFieldProperty("SemanaReuniao", "textfont", baseFontBold, null);
             pdfFormFields.SetField("SemanaReuniao", r.SemanaReuniao);
             
-            foreach (var d in r.Designacoes) {
+            foreach (var d in r.Designacoes.DistinctBy(d=>d.Distinct).ToList()) {
                 pdfFormFields.SetFieldProperty(d.TipoDesignacao.Id + "_Designacao", "textfont", baseFontBold, null);
-                pdfFormFields.SetField(d.TipoDesignacao.Id + "_Designacao", d.NomeDesignacao);
-                pdfFormFields.SetFieldProperty(d.TipoDesignacao.Id + "_Pub"+ (d.SalaAdicional ? "_1" : ""), "textfont", baseFontBold, null);
-                pdfFormFields.SetField(d.TipoDesignacao.Id + "_Pub" + (d.SalaAdicional ? "_1" : ""), d.Publicador.Nome);
+                pdfFormFields.SetField(d.TipoDesignacao.Id + "_Designacao", d.NomeDesignacao + (d.NMin > 0 ? " ("+ d.NMin+" min.)" : ""));
+                pdfFormFields.SetFieldProperty(d.TipoDesignacao.Id + "_Pub"+ (d.SalaAdicional ? "_1" : ""), "textfont", baseFont, null);
+                pdfFormFields.SetField(d.TipoDesignacao.Id + "_Pub" + (d.SalaAdicional ? "_1" : ""), string.Join(" | ",r.Designacoes.Where(i => i.Distinct == d.Distinct).Select(i => r.Designacoes.Where(i => i.Distinct == d.Distinct).Count() > 1 ? i.Publicador.NomeCurto : i.Publicador.Nome).ToArray()));
             }
 
             pdfStamper.FormFlattening = true;

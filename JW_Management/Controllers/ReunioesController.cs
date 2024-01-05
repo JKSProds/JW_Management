@@ -74,11 +74,16 @@ namespace JW_Management.Controllers
         }
 
         [HttpPut]
-        public IActionResult Designacao(string id, int pub)
+        public IActionResult Designacao(string id, int pub, int minutos, string tema)
         {
             DbContext context = HttpContext.RequestServices.GetService(typeof(DbContext)) as DbContext;
+            Designacao d = context.ObterDesignacao(id);
 
-            return context.AtualizarDesignacao(id, context.ObterPublicador(pub, false, false, false, false)) ? StatusCode(200) : StatusCode(500);
+            d.Publicador = context.ObterPublicador(pub, false, false, false, false);
+            d.NMin = minutos;
+            d.NomeDesignacao = tema;
+
+            return context.AtualizarDesignacao(d) ? StatusCode(200) : StatusCode(500);
         }
 
         [HttpDelete]
