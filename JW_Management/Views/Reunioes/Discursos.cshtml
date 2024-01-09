@@ -1,0 +1,246 @@
+﻿@model IEnumerable<JW_Management.Models.Discurso>
+@{
+    ViewData["Title"] = "Discursos";
+}
+
+<form asp-action="Index" method="get" id="">
+    <div class="container">
+        <div class="columns">
+            <div class="column">
+                <div class="tile">
+                    <div class="tile is-parent is-vertical">
+                        <article class="tile is-child notification is-info">
+                            <p class="title">
+                                <span class="icon mr-3">
+                                    <i class="fa-solid fa-user-tie"></i>
+                                </span>
+                                <span>Discursos</span>
+                            </p>
+                        </article>
+                    </div>
+                </div>
+            </div>
+            <div class="column">
+                <div class="field has-addons has-addons-right mx-1 is-flex-wrap-wrap" style="width:100%">
+                    <div class="buttons is-right">
+                        <p class="control">
+                            <button type="button" class="button is-success is-fullwidth " onclick="Bulma('#modalAdicionarDiscurso').modal().open();">
+                                <span class="icon">
+                                    <i class="fa-solid fa-plus"></i>
+                                </span>
+                                <span>Criar Discurso</span>
+                            </button>
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</form>
+<hr />
+<div class="container">
+    @if (Model.Count() == 0)
+    {
+        <br />
+        <button class="button is-danger is-large is-rounded is-fullwidth is-disabled">
+            Não foram encontrados discursos!
+        </button>
+    }
+    else
+    {
+        <div class="b-table">
+            <div class="table-wrapper has-mobile-cards">
+                <table class="table is-hoverable is-fullwidth">
+                    <thead>
+                        <tr>
+                            <th></th>
+                            <th>
+                                @Html.DisplayNameFor(model => model.FirstOrDefault()!.NomePublicador)
+                            </th>
+                            <th>
+                                @Html.DisplayNameFor(model => model.FirstOrDefault()!.Congregacao)
+                            </th>
+                            <th>
+                                @Html.DisplayNameFor(model => model.FirstOrDefault()!.TemaDiscurso)
+                            </th>
+                            <th>
+                                @Html.DisplayNameFor(model => model.FirstOrDefault()!.DataDiscurso)
+                            </th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var item in Model)
+                        {
+                            <tr>
+                                <td></td>
+                                <td data-label="@Html.DisplayNameFor(model => model.FirstOrDefault()!.NomePublicador)">
+                                    <span>@item.NomePublicador</span>
+                                </td>
+                                <td data-label="@Html.DisplayNameFor(model => model.FirstOrDefault()!.Congregacao)">
+                                    <span>@item.Congregacao</span>
+                                </td>
+                                <td data-label="@Html.DisplayNameFor(model => model.FirstOrDefault()!.TemaDiscurso)">
+                                    <span>@item.TemaDiscurso</span>
+                                </td>
+                                <td data-label="@Html.DisplayNameFor(model => model.FirstOrDefault()!.DataDiscurso)">
+                                    <span>@item.DataDiscurso.ToShortDateString()</span>
+                                </td>
+                                <td class="is-actions-cell">
+                                    <div class="buttons is-pulled-right is-flex-wrap-nowrap" style="width:100%">
+                                        <button class="button is-danger is-fullwidth is-large "
+                                                onclick="ConfirmApagar('@item.Stamp')">
+                                            <i class="fas fa-trash-can"></i>
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    }
+</div>
+
+<div id="modalAdicionarDiscurso" class="modal">
+    <div class="modal-background"></div>
+    <div class="modal-card">
+        <header class="modal-card-head">
+            <p class="modal-card-title">Adicionar Discurso</p>
+        </header>
+        <section class="modal-card-body">
+            <form style="width:100%" id="frmAddDiscurso" asp-action="Discurso" method="POST">
+                               
+                <div class="control" style="width:100%">
+                    <label class="label">Orador</label>
+                    <div class="field has-addons">
+                    <div class="control has-icons-left" style="width:100%">
+                        <span class="select is-fullwidth">
+                            <select class="select" style="height: auto" name="txtIdPub"
+                                    asp-items="@(new SelectList(@ViewBag.Publicadores, "Value", "Text"))">  
+                                    <option value="0" selected disabled>Escolha um publicador</option>
+                            </select>
+                        </span>
+                        <span class="icon is-small is-left">
+                            <i class="fa-solid fa-user-tie"></i>
+                        </span>
+                    </div>
+                    <div class="control has-icons-left "  style="width:100%">
+                        <input class="input is-success" type="text" name="txtNomePub" placeholder="Ou escreva o nome...">
+                        <span class="icon is-small is-left">
+                        <i class="fas fa-user"></i>
+                        </span>
+                    </div>
+                    <div class="control"  style="width:100%">
+                        <input class="input is-success" type="text" name="txtCongPub" placeholder="E a congregacao ...">
+                    </div>
+                </div>
+                </div>
+                <div class="control" style="width:100%">
+                    <label class="label">Discurso</label>
+                    <div class="control has-icons-left" style="width:100%">
+                        <span class="select is-fullwidth">
+                            <select class="select" style="height: auto" name="txtIdDiscurso"
+                                    asp-items="@(new SelectList(@ViewBag.Discursos, "Value", "Text"))">
+                                    <option value="0" selected disabled>Escolha um tema</option>
+                            </select>
+                        </span>
+                        <span class="icon is-small is-left">
+                            <i class="fa-solid fa-book"></i>
+                        </span>
+                    </div>
+                </div>
+                <div class="control" style="width:100%">
+                    <label class="label">Data</label>
+                <p class="control has-icons-left">
+                    <input class="input" type="date"
+                            value="@(DateTime.Now.ToString("yyyy-MM-dd"))" id="txtData"
+                            name="txtData" />
+                    <script>
+                        bulmaCalendar.attach('#txtData', {
+                            color: 'info',
+                            lang: 'pt',
+                            dateFormat: 'dd/MM/yyyy',
+                            todayLabel: 'Hoje',
+                            showClearButton: false,
+                            cancelLabel: 'Cancelar',
+                            displayMode: 'dialog'
+                        });
+                        document.getElementById('txtData').bulmaCalendar.on('select', function (datepicker) {
+                            document.getElementById('txtData').value = datepicker.data.value();
+                        });</script>
+                </p>
+                </div>
+            </form>
+        </section>
+        <footer class="modal-card-foot">
+            <button type="button" class="button is-success is-large is-fullwidth"
+                    onclick="document.getElementById('frmAddDiscurso').submit();" 
+                    href="javascript:;">
+                Criar
+            </button>
+            <button type="button" class="button is-info is-large is-fullwidth"
+                    onclick="Bulma('#modalAdicionarDiscurso').modal().close();"
+                    href="javascript:;">
+                Fechar
+            </button>
+        </footer>
+    </div>
+</div>
+
+<div class="modal" id="ModalConfirmApagar">
+    <div class="modal-background"></div>
+    <div class="modal-card">
+        <header class="modal-card-head">
+            <p class="modal-card-title">Apagar Discursos</p>
+        </header>
+        <section class="modal-card-body">
+            <div class="modal-body">
+                <p>Tem a certeza que deseja apagar este discurso definitivamente?</p>
+            </div>
+        </section>
+        <footer class="modal-card-foot">
+            <button class="button is-danger is-fullwidth is-large"
+                    onclick="Apagar(document.getElementById('txtHiddenStamp').value);">
+                <span class="icon">
+                    <i class="fas fa-trash-can"></i>
+                </span>
+                <span>Confirmar</span>
+            </button>
+            <button class="button is-fullwidth is-large" onclick="Bulma('#ModalConfirmApagar').modal().close();">
+                <span class="icon">
+                    <i class="fa-solid fa-circle-xmark"></i>
+                </span>
+                <span>Não</span>
+            </button>
+        </footer>
+    </div>
+</div>
+
+<input id="txtHiddenStamp" hidden />
+
+<script>
+    function ConfirmApagar(id) {
+        document.getElementById('txtHiddenStamp').value = id;
+        Bulma('#ModalConfirmApagar').modal().open();
+    }
+
+
+    function Apagar(id) {
+        $.ajax({
+            url: '/Reunioes/Discurso/',
+            data: { "id": id },
+            type: "DELETE",
+            success: function (data) {
+                window.location.reload();
+            },
+            error: function (data) {
+                notifyError('Ocorreu um erro ao apagar essa reuniao!');
+            },
+            failure: function (data) {
+                notifyError('Falha ao apagar essa reuniao!');
+            }
+        });
+    }
+</script>

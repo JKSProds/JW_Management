@@ -134,6 +134,49 @@ namespace JW_Management.Controllers
         }
 
         [HttpGet]
+        public IActionResult Discursos()
+        {
+            DbContext context = HttpContext.RequestServices.GetService(typeof(DbContext)) as DbContext;
+            ViewBag.Publicadores = context.ObterPublicadores().OrderBy(p => p.Nome).Select(l => new SelectListItem() { Value = l.Id.ToString(), Text = l.Id == 0 ? "Não Definido" : l.Nome });
+            ViewBag.Discursos = context.ObterDiscursoTemas().OrderBy(p => p.NumDiscurso).Select(l => new SelectListItem() { Value = l.NumDiscurso.ToString(), Text = l.NumDiscurso + " - " + l.TemaDiscurso });
+            
+            return View(context.ObterDiscursos());
+        }
+
+        [HttpPost]
+        public IActionResult Discurso(int txtIdPub, string txtNomePub, string txtCongPub, int txtIdDiscurso, DateTime txtData)
+        {
+            DbContext context = HttpContext.RequestServices.GetService(typeof(DbContext)) as DbContext;
+            Publicador p = context.ObterPublicador(txtIdPub, false, false, false, false);
+            Discurso t = context.ObterDiscursoTema(txtIdDiscurso);
+
+            if (txtIdPub > 0) txtCongPub="INTERNO";
+            if (txtIdPub > 0) txtNomePub= p.Nome;
+
+            Discurso d = new Discurso(){
+                Stamp = DateTime.Now.Ticks.ToString(),
+                Pub = p,
+                NomePublicador = txtNomePub,
+                Congregacao = txtCongPub,
+                NumDiscurso = t.NumDiscurso,
+                TemaDiscurso = t.TemaDiscurso,
+                DataDiscurso = txtData
+            };
+
+            context.CriarDiscurso(d);
+
+            return RedirectToAction("Discursos");
+        }
+
+        [HttpDelete]
+        public IActionResult Discurso(string id, bool apagar)
+        {
+            DbContext context = HttpContext.RequestServices.GetService(typeof(DbContext)) as DbContext;
+            
+            return context.ApagarDiscurso(context.ObterDiscurso(id)) ? StatusCode(200) : StatusCode(500);
+        }
+
+        [HttpGet]
         public IActionResult Formulario(string id)
         {
             DbContext context = HttpContext.RequestServices.GetService(typeof(DbContext)) as DbContext;

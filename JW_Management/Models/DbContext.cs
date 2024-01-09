@@ -1313,6 +1313,108 @@
         {
             return ExecutarQuery("DELETE FROM r_canticos WHERE Stamp='"+c.Stamp+"';");
         }
+
+        public List<Discurso> ObterDiscursoTemas()
+        {
+            List<Discurso> res = new();
+            
+            using (Database db = ConnectionString)
+            {
+                string sql = "SELECT * FROM sys_discursos;";
+                using var result = db.Query(sql);
+                while (result.Read())
+                {
+                    res.Add(new Discurso() {
+                        NumDiscurso = result["NumDiscurso"],
+                        TemaDiscurso = result["TemaDiscurso"]
+                    });
+                }
+            }
+
+            return res;
+        }
+
+        public Discurso ObterDiscursoTema(int id)
+        {
+            List<Discurso> res = new();
+            
+            using (Database db = ConnectionString)
+            {
+                string sql = "SELECT * FROM sys_discursos where NumDiscurso="+id+";";
+                using var result = db.Query(sql);
+                while (result.Read())
+                {
+                    res.Add(new Discurso() {
+                        NumDiscurso = result["NumDiscurso"],
+                        TemaDiscurso = result["TemaDiscurso"]
+                    });
+                }
+            }
+
+            return res.DefaultIfEmpty(new Discurso()).First();
+        }
+
+        public List<Discurso> ObterDiscursos()
+        {
+            List<Discurso> res = new();
+            List<Publicador> p = ObterPublicadores();
+            
+            using (Database db = ConnectionString)
+            {
+                string sql = "SELECT * FROM r_discursos;";
+                using var result = db.Query(sql);
+                while (result.Read())
+                {
+                    res.Add(new Discurso() {
+                        Stamp = result["Stamp"],
+                        Pub = p.Where(o => o.Id == result["IdPublicador"]).DefaultIfEmpty(new Publicador()).First(),
+                        NomePublicador = result["NomePublicador"],
+                        Congregacao = result["Congregacao"],
+                        DataDiscurso = result["Data"],
+                        NumDiscurso = result["NumDiscurso"],
+                        TemaDiscurso = result["TemaDiscurso"]
+                    });
+                }
+            }
+
+            return res;
+        }
+        public Discurso ObterDiscurso(string stamp)
+        {
+            List<Discurso> res = new();
+            List<Publicador> p = ObterPublicadores();
+            
+            using (Database db = ConnectionString)
+            {
+                string sql = "SELECT * FROM r_discursos WHERE Stamp='"+stamp+"';";
+                using var result = db.Query(sql);
+                while (result.Read())
+                {
+                    res.Add(new Discurso() {
+                        Stamp = result["Stamp"],
+                        Pub = p.Where(o => o.Id == result["IdPublicador"]).DefaultIfEmpty(new Publicador()).First(),
+                        NomePublicador = result["NomePublicador"],
+                        Congregacao = result["Congregacao"],
+                        DataDiscurso = result["Data"],
+                        NumDiscurso = result["NumDiscurso"],
+                        TemaDiscurso = result["TemaDiscurso"]
+                    });
+                }
+            }
+
+            return res.DefaultIfEmpty(new Discurso()).First();
+        }
+
+
+        public bool CriarDiscurso(Discurso d)
+        {
+            return ExecutarQuery("INSERT INTO r_discursos (Stamp, IdPublicador, NomePublicador, Congregacao, Data, NumDiscurso, TemaDiscurso) VALUES ('"+d.Stamp+"', "+d.Pub.Id+", '"+d.NomePublicador+"', '"+d.Congregacao+"', '"+d.DataDiscurso.ToString("yyyyMMdd")+"', '"+d.NumDiscurso+"', '"+d.TemaDiscurso+"');");
+        }
+
+        public bool ApagarDiscurso(Discurso d)
+        {
+            return ExecutarQuery("DELETE FROM r_discursos WHERE Stamp='"+d.Stamp+"'");
+        }
         #endregion
     }
 }
