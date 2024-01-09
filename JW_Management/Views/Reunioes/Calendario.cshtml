@@ -1,0 +1,43 @@
+﻿@model IEnumerable<JW_Management.Models.Reuniao>
+@{
+    ViewData["Title"] = "Calendário";
+}
+
+<form asp-action="Index" method="get" id="">
+    <div class="container">
+        <div class="columns">
+            <div class="column">
+                <div class="tile">
+                    <div class="tile is-parent is-vertical">
+                        <article class="tile is-child notification is-info">
+                            <p class="title">
+                                <span class="icon mr-3">
+                                    <i class="fa-solid fa-user-tie"></i>
+                                </span>
+                                <span>Calendário - Reuniões</span>
+                            </p>
+                        </article>
+                    </div>
+                </div>
+            </div>
+            <div class="column">
+               
+            </div>
+        </div>
+    </div>
+</form>
+<hr />
+<div id="gstc"></div>
+
+<script>
+    const config = {
+  /* ... */
+    };
+
+const state = GSTC.api.stateFromConfig(config);
+
+const app = GSTC({
+  element: document.getElementById("gstc"),
+  state,
+});
+</script>

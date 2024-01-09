@@ -60,10 +60,38 @@
     }
     else
     {
+         <div class="task-container columns is-multiline mx-1">
+            @foreach(var item in Model.Canticos) {
+                <div class="column is-3">
+                    <div class="field has-addons">
+                        <div class="control is-expanded">
+                            <div class="select is-fullwidth">
+                                <select class="select" style="height: auto" asp-for="@item.Id" asp-items="@(new SelectList(@ViewBag.Canticos, "Value", "Text"))"></select>
+                            </div>
+                        </div>
+                        <div class="control">
+                            <button class="button is-success is-fullwidth card-footer-item" onclick="AtualizarCantico('@item.Stamp', this.parentElement.parentElement.querySelector('select').value)"><i class="fa-solid fa-floppy-disk"></i></button>
+                        </div>
+                    </div>
+                </div>
+            }  
+            <div class="column is-3">
+                <div class="field has-addons">
+                    <div class="control is-expanded">
+                        <div class="select is-fullwidth">
+                            <select class="select" style="height: auto" asp-items="@(new SelectList(@ViewBag.Grupos, "Value", "Text"))"></select>
+                        </div>
+                    </div>
+                    <div class="control">
+                        <button class="button is-success is-fullwidth card-footer-item" onclick="alert()"><i class="fa-solid fa-floppy-disk"></i></button>
+                    </div>
+                </div>
+            </div>     
+        </div>
 
     <div class="tabs-wrapper">
         <div class="tabs is-centered is-boxed is-medium">
-            <ul>
+            <ul>               
                 <li class="is-active">
                 <a>
                     <span class="icon is-small"><i class="fa-solid fa-user-tie"></i></span>
@@ -104,8 +132,8 @@
         </div>
 
         <div class="tabs-content">
+            <ul>
             @for (int i=0; i<600; i+=100) {
-                <ul>
                     <li class="@(i == 0 ? "is-active" : "")">
                         <div class="task-container columns is-multiline mx-1">
                             @foreach(var item in Model.ObterDesignacoesTipo(i)) {
@@ -201,8 +229,8 @@
                             }
                         </div>
                     </li>
-                </ul>  
-            }
+                }
+             </ul> 
         </div>
     </div>
     }
@@ -389,6 +417,23 @@ function AtualizarDesignacao(stampList, minutos, tema) {
             }
         });
       });
+}
+
+function AtualizarCantico(stamp, id) {
+        $.ajax({
+            url: '/Reunioes/Cantico/',
+            data: { "id": id, "stamp": stamp },
+            type: "PUT",
+            success: function (data) {
+                notify("Cântico atualizado com sucesso!");
+            },
+            error: function (response) {
+                notifyError('Ocorreu um erro ao atualizar o cântico!');
+            },
+            failure: function (response) {
+                notifyError('Falha ao atualizar o cântico!');
+            }
+        });
 }
 
     function ConfirmApagar(id) {

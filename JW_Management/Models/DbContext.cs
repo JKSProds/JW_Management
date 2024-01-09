@@ -1118,10 +1118,10 @@
 
         public bool AdicionarDesignacoes(List<Designacao> LstDesignacoes)
         {
-            string sql = "INSERT INTO r_designacoes(Stamp, StampReuniao, IdPublicador, IdTipo, Semana, Publicador,  Designacao,  Local) VALUES ";
+            string sql = "INSERT INTO r_designacoes(Stamp, StampReuniao, IdPublicador, IdTipo, Semana, Publicador,  Designacao,  Local, Minutos) VALUES ";
             
             foreach(var d in LstDesignacoes) {
-                sql += ("('" + d.Stamp + "', '" + d.StampReuniao + "', '" + d.Publicador.Id + "', '" + d.TipoDesignacao.Id + "', '" + d.SemanaReuniao + "', '" + d.NomePublicador + "', '" + d.NomeDesignacao + "', '" + d.Local + "'),\r\n ");
+                sql += ("('" + d.Stamp + "', '" + d.StampReuniao + "', '" + d.Publicador.Id + "', '" + d.TipoDesignacao.Id + "', '" + d.SemanaReuniao + "', '" + d.NomePublicador + "', '" + d.NomeDesignacao + "', '" + d.Local + "', '" + d.NMin + "'),\r\n ");
             }
             sql = sql.Remove(sql.Length -4, 4) + ";";
             return ExecutarQuery(sql);
@@ -1167,7 +1167,7 @@
 
             return r;
         }
-        public Reuniao ObterReuniao(string Stamp, bool LoadDesignacoes)
+        public Reuniao ObterReuniao(string Stamp, bool LoadDesignacoes, bool LoadCanticos)
         {
             List<Reuniao> r = new();
 
@@ -1184,6 +1184,7 @@
                     });
 
                     if (LoadDesignacoes) r.Last().Designacoes = ObterDesignacoes(r.Last().Stamp).OrderBy(d => d.Stamp).ToList();
+                    if (LoadCanticos) r.Last().Canticos = ObterCanticos(r.Last().Stamp).OrderBy(d => d.Stamp).ToList();
 
                 }
             }
@@ -1209,25 +1210,31 @@
                         NomePublicador = "",
                         Publicador = new Publicador(),
                         TipoDesignacao = t,
-                        Local = i==1 ? "Auditório" : "Sala " + i
+                        NMin = t.NMin,
+                        Local = i==1 ? "Auditório" : "Sala " + i,
                     });
                 }
+            }
+
+            for (int i =0; i<3; i++) {
+                CriarCantico(stamp, new Cantico());
             }
             
         stopwatch.Stop();
             return AdicionarDesignacoes(LstDesignacoes);
         }
+
         public bool ApagarReunioes(List<string> Stamps)
         {
             string sql = "";
             
             foreach(var s in Stamps) {
                 sql += ("DELETE FROM r_designacoes where StampReuniao='"+s+"';\r\n ");
+                sql += ("DELETE FROM r_canticos where StampReuniao='"+s+"';\r\n ");
             }
 
             return ExecutarQuery(sql);
         }
-
 
         public List<TipoDesignacao> ObterTiposDesignacao()
         {
@@ -1251,6 +1258,60 @@
             }
 
             return t;
+        }
+
+        public List<Cantico> ObterCanticos()
+        {
+            List<Cantico> c = new();
+            
+            using (Database db = ConnectionString)
+            {
+                string sql = "SELECT * FROM sys_canticos;";
+                using var result = db.Query(sql);
+                while (result.Read())
+                {
+                    c.Add(new Cantico()
+                    {
+                        Id = result["id"],
+                        Nome = result["tema"],
+                        TextoBiblico = result["texto"]
+                    });
+                }
+            }
+
+            return c;
+        }
+        public List<Cantico> ObterCanticos(string Stamp)
+        {
+            List<Cantico> c = ObterCanticos();
+            List<Cantico> res = new();
+            
+            using (Database db = ConnectionString)
+            {
+                string sql = "SELECT * FROM r_canticos WHERE StampReuniao='"+Stamp+"';";
+                using var result = db.Query(sql);
+                while (result.Read())
+                {
+                    res.Add(c.Where(o => o.Id == result["id"]).DefaultIfEmpty(new Cantico()).First());
+                    res.Last().Stamp = result["Stamp"];
+                }
+            }
+
+            return res;
+        }
+
+        public bool CriarCantico(string StampReuniao, Cantico c)
+        {
+            return ExecutarQuery("INSERT INTO r_canticos (Stamp, Id, StampReuniao) VALUES ('"+c.Stamp+"', "+c.Id+", '"+StampReuniao+"');");
+        }
+
+        public bool AtualizarCantico(Cantico c)
+        {
+            return ExecutarQuery("UPDATE r_canticos SET Id='"+c.Id+"' WHERE Stamp='"+c.Stamp+"';");
+        }
+        public bool ApagarCantico(Cantico c)
+        {
+            return ExecutarQuery("DELETE FROM r_canticos WHERE Stamp='"+c.Stamp+"';");
         }
         #endregion
     }

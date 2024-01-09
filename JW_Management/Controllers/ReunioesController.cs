@@ -15,6 +15,14 @@ namespace JW_Management.Controllers
 
             return View(context.ObterReunioes(false));
         }
+        
+        [HttpGet]
+        public IActionResult Calendario()
+        {
+            DbContext context = HttpContext.RequestServices.GetService(typeof(DbContext)) as DbContext;
+        
+            return View();
+        }
 
         [HttpPost]
         public IActionResult Reunioes(IFormFile file)
@@ -33,8 +41,10 @@ namespace JW_Management.Controllers
             DbContext context = HttpContext.RequestServices.GetService(typeof(DbContext)) as DbContext;
             ViewBag.Publicadores = context.ObterPublicadores().OrderBy(p => p.Nome).Select(l => new SelectListItem() { Value = l.Id.ToString(), Text = l.Id == 0 ? "Não Definido" : l.Nome });
             ViewBag.Tipos = context.ObterTiposDesignacao().OrderBy(p => p.Id).Select(l => new SelectListItem() { Value = l.Id.ToString(), Text = l.Id == 0 ? "Não Definido" : l.Descricao });
+            ViewBag.Canticos = context.ObterCanticos().OrderBy(p => p.Id).Select(l => new SelectListItem() { Value = l.Id.ToString(), Text = l.Id == 0 ? "Não Definido" : l.Id + " - " +l.Nome });
+            ViewBag.Grupos = context.ObterGrupos().OrderBy(p => p.Id).Select(l => new SelectListItem() { Value = l.Id.ToString(), Text = l.Id == 0 ? "Não Definido" : l.Nome });
 
-            return View(context.ObterReuniao(id, true));
+            return View(context.ObterReuniao(id, true, true));
         }
         [HttpPost]
         public IActionResult Reuniao(DateTime data)
@@ -43,12 +53,14 @@ namespace JW_Management.Controllers
             string semana = "Semana " + ((data.DayOfYear - 1) / 7 + 1) + " de " + data.Year.ToString();
             string stamp = DateTime.Now.Ticks.ToString();
 
-            context.AdicionarReuniao(semana, stamp);
+            context.AdicionarReuniao(semana.ToUpper(), stamp);
             
             ViewBag.Publicadores = context.ObterPublicadores().OrderBy(p => p.Nome).Select(l => new SelectListItem() { Value = l.Id.ToString(), Text = l.Id == 0 ? "Não Definido" : l.Nome });
             ViewBag.Tipos = context.ObterTiposDesignacao().OrderBy(p => p.Id).Select(l => new SelectListItem() { Value = l.Id.ToString(), Text = l.Id == 0 ? "Não Definido" : l.Descricao });
+            ViewBag.Canticos = context.ObterCanticos().OrderBy(p => p.Id).Select(l => new SelectListItem() { Value = l.Id.ToString(), Text = l.Id == 0 ? "Não Definido" : l.Id + " - " +l.Nome });
+            ViewBag.Grupos = context.ObterGrupos().OrderBy(p => p.Id).Select(l => new SelectListItem() { Value = l.Id.ToString(), Text = l.Id == 0 ? "Não Definido" : l.Nome });
 
-            return View(context.ObterReuniao(stamp, true));
+            return View(context.ObterReuniao(stamp, true, true));
         }
         [HttpDelete]
         public IActionResult Reuniao(string id, bool apagar)
@@ -112,13 +124,22 @@ namespace JW_Management.Controllers
         }
 
 
+        [HttpPut]
+        public IActionResult Cantico(int id, string stamp)
+        {
+            DbContext context = HttpContext.RequestServices.GetService(typeof(DbContext)) as DbContext;
+            Cantico c = new Models.Cantico() {Id = id, Stamp = stamp};
+            
+            return context.AtualizarCantico(c) ? StatusCode(200) : StatusCode(500);
+        }
+
         [HttpGet]
         public IActionResult Formulario(string id)
         {
             DbContext context = HttpContext.RequestServices.GetService(typeof(DbContext)) as DbContext;
             FileContext fileContext = new FileContext();
 
-            var file = fileContext.PreencherFormularioS140(context.ObterReuniao(id, true)).ToArray();
+            var file = fileContext.PreencherFormularioS140(context.ObterReuniao(id, true, true)).ToArray();
             var output = new MemoryStream();
             output.Write(file, 0, file.Length);
             output.Position = 0;
