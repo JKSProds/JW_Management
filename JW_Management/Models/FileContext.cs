@@ -426,10 +426,12 @@ namespace JW_Management.Models
                 pdfFormFields.SetField(d.TipoDesignacao.Id + "_Pub" + (d.SalaAdicional ? "_1" : ""), string.Join(" | ",r.Designacoes.Where(i => i.Distinct == d.Distinct).Select(i => r.Designacoes.Where(i => i.Distinct == d.Distinct).Count() > 1 ? i.Publicador.NomeCurto : i.Publicador.Nome).ToArray()));
             }
             
-            pdfFormFields.SetField("1_Cant", r.Canticos[0].Id.ToString());
-            pdfFormFields.SetField("2_Cant", r.Canticos[1].Id.ToString());
-            pdfFormFields.SetField("3_Cant", r.Canticos[2].Id.ToString());
-          
+            if (r.Canticos.Count() >=3) {
+                pdfFormFields.SetField("1_Cant", r.Canticos[0].Id.ToString());
+                pdfFormFields.SetField("2_Cant", r.Canticos[1].Id.ToString());
+                pdfFormFields.SetField("3_Cant", r.Canticos[2].Id.ToString());
+            }
+
             pdfStamper.FormFlattening = true;
             pdfStamper.Close();
 
