@@ -35,12 +35,20 @@
                     <div class="field has-addons has-addons-right mx-1 is-flex-wrap-wrap" style="width:100%">
                     <div class="buttons is-right">
                         <p class="control">
-                            <button type="button" class="button is-success is-fullwidth " onclick="Bulma('#modalAdicionarDesignacao').modal().open();">
+                            <button type="button" class="button is-info is-fullwidth is-large" onclick="Bulma('#modalAdicionarDesignacao').modal().open();">
                                 <span class="icon">
                                     <i class="fa-solid fa-plus"></i>
                                 </span>
                                 <span>Adicionar Designação</span>
                             </button>
+                        </p>
+                        <p class="control">
+                            <a type="button" class="button is-success is-fullwidth is-large" href="~/Reunioes/Formulario/@Model.Stamp">
+                                <span class="icon">
+                                    <i class="fas fa-file-invoice fa-lg"></i>
+                                </span>
+                                <span>Exportar S-140</span>
+                            </a>
                         </p>
                     </div>
                 </div>
