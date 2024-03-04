@@ -29,7 +29,7 @@ namespace JW_Management.Controllers
         {
             p.Username = p.Username.ToLower().Trim();
             DbContext context = HttpContext.RequestServices.GetService(typeof(DbContext)) as DbContext;
-            List<Publicador> LstUtilizadores = context.ObterPublicadores().Where(u => u.Username == p.Username).ToList();
+            List<Publicador> LstUtilizadores = context.ObterPublicadores(false).Where(u => u.Username == p.Username).ToList();
 
             foreach (var u in LstUtilizadores)
             {

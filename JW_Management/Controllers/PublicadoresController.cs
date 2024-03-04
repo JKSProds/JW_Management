@@ -15,7 +15,7 @@ namespace JW_Management.Controllers
         {
             DbContext context = HttpContext.RequestServices.GetService(typeof(DbContext)) as DbContext;
 
-            return View(context.ObterPublicadores().OrderBy(p => p.Nome));
+            return View(context.ObterPublicadores(false).OrderBy(p => p.Nome));
         }
 
         [Authorize(Roles = "Admin, Assistente, Coordenador, Secretario, Servico")]
@@ -46,7 +46,7 @@ namespace JW_Management.Controllers
         {
             DbContext context = HttpContext.RequestServices.GetService(typeof(DbContext)) as DbContext;
 
-            return Json(context.ObterPublicadores());
+            return Json(context.ObterPublicadores(false));
         }
 
         [Authorize(Roles = "Admin, Assistente, Coordenador, Secretario, Servico")]

@@ -46,7 +46,7 @@
         {
             List<Literatura> LstLiteratura = new();
             List<TipoLiteratura> LstTiposLiteratura = ObterTiposLiteratura();
-            List<Publicador> LstPublicador = ObterPublicadores();
+            List<Publicador> LstPublicador = ObterPublicadores(false);
             FileContext f = new();
             f.ObterCaminhoLiteratura();
 
@@ -187,7 +187,7 @@
         public List<Grupo> ObterGrupos()
         {
             List<Grupo> LstGrupos = new();
-            List<Publicador> LstPublicadores = ObterPublicadores();
+            List<Publicador> LstPublicadores = ObterPublicadores(false);
 
             using (Database db = ConnectionString)
             {
@@ -212,7 +212,7 @@
         public Grupo ObterGrupo(int id)
         {
             Grupo g = new();
-            List<Publicador> LstPublicadores = ObterPublicadores();
+            List<Publicador> LstPublicadores = ObterPublicadores(false);
 
             using (Database db = ConnectionString)
             {
@@ -338,9 +338,12 @@
         }
 
         //Obter Publicadores
-        public List<Publicador> ObterPublicadores()
+        public List<Publicador> ObterPublicadores(bool LoadGrupo)
         {
             List<Publicador> LstPublicador = new();
+            List<Grupo> LstGrupos = new List<Grupo>();
+
+            if (LoadGrupo) LstGrupos = ObterGrupos();
 
             using (Database db = ConnectionString)
             {
@@ -358,6 +361,8 @@
                         Telemovel = result["Telemovel"],
                         TipoUtilizador = result["Tipo"]
                     });
+
+                    if (LoadGrupo) LstPublicador.Last().Grupo = LstGrupos.Where(g => g.Id == int.Parse(result["IdGrupo"])).DefaultIfEmpty(new Grupo()).First();
                 }
             }
 
@@ -466,7 +471,7 @@
         public List<Literatura> ObterPedidosPeriodico()
         {
             List<Literatura> LstLiteratura = new();
-            List<Publicador> LstPublicador = ObterPublicadores();
+            List<Publicador> LstPublicador = ObterPublicadores(true);
             List<TipoLiteratura> LstTiposLiteratura = ObterTiposLiteratura();
             FileContext f = new();
 
@@ -542,7 +547,7 @@
         public List<Literatura> ObterPedidosEspeciais()
         {
             List<Literatura> LstLiteratura = new();
-            List<Publicador> LstPublicador = ObterPublicadores();
+            List<Publicador> LstPublicador = ObterPublicadores(false);
             List<TipoLiteratura> LstTiposLiteratura = ObterTiposLiteratura();
             FileContext f = new();
 
@@ -806,7 +811,7 @@
                 using var result = db.Query(sql);
                 while (result.Read())
                 {
-                    Territorio t = ObterTerritorio(result["stampterritorio"], false, false, false,false);
+                    Territorio t = ObterTerritorio(result["stampterritorio"], false, false, false, false);
 
                     MovimentosTerritorio e = new MovimentosTerritorio()
                     {
@@ -835,14 +840,14 @@
             return LstLinhaMovimentosTerritorio.ToList();
         }
 
-         //Obter todos os movimentos
+        //Obter todos os movimentos
         public List<RegistroTerritorio> ObterMovimentosTerritorios(Territorio t)
         {
             List<RegistroTerritorio> LstLinhaMovimentosTerritorio = new();
 
             using (Database db = ConnectionString)
             {
-                string sql = "SELECT entrada.stampmovimento AS stampmovimento_entrada, entrada.stampterritorio AS stampterritorio, entrada.DataMovimento AS DataEntrada, entrada.tipoMovimento AS tipoMovimento_entrada, saida.stampmovimento AS stampmovimento_saida, saida.tipoMovimento AS tipoMovimento_saida,  COALESCE(saida.DataMovimento, '0001-01-01') AS DataSaida, entrada.IdPublicador FROM t_movimentos entrada LEFT JOIN t_movimentos saida ON entrada.stampterritorio = saida.stampterritorio  AND saida.tipoMovimento = 2  AND saida.stampmovimento > entrada.stampmovimento WHERE entrada.tipoMovimento = 1 and entrada.stampterritorio='"+t.Stamp+"' ORDER BY entrada.stampterritorio, entrada.stampmovimento;";
+                string sql = "SELECT entrada.stampmovimento AS stampmovimento_entrada, entrada.stampterritorio AS stampterritorio, entrada.DataMovimento AS DataEntrada, entrada.tipoMovimento AS tipoMovimento_entrada, saida.stampmovimento AS stampmovimento_saida, saida.tipoMovimento AS tipoMovimento_saida,  COALESCE(saida.DataMovimento, '0001-01-01') AS DataSaida, entrada.IdPublicador FROM t_movimentos entrada LEFT JOIN t_movimentos saida ON entrada.stampterritorio = saida.stampterritorio  AND saida.tipoMovimento = 2  AND saida.stampmovimento > entrada.stampmovimento WHERE entrada.tipoMovimento = 1 and entrada.stampterritorio='" + t.Stamp + "' ORDER BY entrada.stampterritorio, entrada.stampmovimento;";
                 using var result = db.Query(sql);
                 while (result.Read())
                 {
@@ -1051,11 +1056,11 @@
         {
             List<Designacao> d = new();
             List<TipoDesignacao> t = ObterTiposDesignacao();
-            List<Publicador> p = ObterPublicadores();
+            List<Publicador> p = ObterPublicadores(false);
 
             using (Database db = ConnectionString)
             {
-                string sql = "SELECT * FROM r_designacoes WHERE StampReuniao='"+Stamp+"';";
+                string sql = "SELECT * FROM r_designacoes WHERE StampReuniao='" + Stamp + "';";
                 using var result = db.Query(sql);
                 while (result.Read())
                 {
@@ -1068,8 +1073,8 @@
                         NomeDesignacao = result["Designacao"],
                         NMin = result["Minutos"],
                         Local = result["Local"],
-                        Publicador = p.Where(u => u.Id == result["IdPublicador"] && u.Id>0).DefaultIfEmpty(new Publicador() {Nome = result["Publicador"]}).First(),
-                        TipoDesignacao = t.Where(u => u.Id == result["IdTipo"] && u.Id>0).DefaultIfEmpty(new TipoDesignacao() {Descricao = result["Designacao"]}).First(),
+                        Publicador = p.Where(u => u.Id == result["IdPublicador"] && u.Id > 0).DefaultIfEmpty(new Publicador() { Nome = result["Publicador"] }).First(),
+                        TipoDesignacao = t.Where(u => u.Id == result["IdTipo"] && u.Id > 0).DefaultIfEmpty(new TipoDesignacao() { Descricao = result["Designacao"] }).First(),
                     });
                 }
             }
@@ -1081,11 +1086,11 @@
         {
             List<Designacao> d = new();
             List<TipoDesignacao> t = ObterTiposDesignacao();
-            List<Publicador> p = ObterPublicadores();
+            List<Publicador> p = ObterPublicadores(false);
 
             using (Database db = ConnectionString)
             {
-                string sql = "SELECT * FROM r_designacoes WHERE Stamp='"+stamp+"';";
+                string sql = "SELECT * FROM r_designacoes WHERE Stamp='" + stamp + "';";
                 using var result = db.Query(sql);
                 while (result.Read())
                 {
@@ -1098,8 +1103,8 @@
                         NomeDesignacao = result["Designacao"],
                         Local = result["Local"],
                         NMin = result["Minutos"],
-                        Publicador = p.Where(u => u.Id == result["IdPublicador"] && u.Id>0).DefaultIfEmpty(new Publicador() {Nome = result["Publicador"]}).First(),
-                        TipoDesignacao = t.Where(u => u.Id == result["IdTipo"] && u.Id>0).DefaultIfEmpty(new TipoDesignacao() {Descricao = result["Designacao"]}).First(),
+                        Publicador = p.Where(u => u.Id == result["IdPublicador"] && u.Id > 0).DefaultIfEmpty(new Publicador() { Nome = result["Publicador"] }).First(),
+                        TipoDesignacao = t.Where(u => u.Id == result["IdTipo"] && u.Id > 0).DefaultIfEmpty(new TipoDesignacao() { Descricao = result["Designacao"] }).First(),
                     });
                 }
             }
@@ -1119,26 +1124,28 @@
         public bool AdicionarDesignacoes(List<Designacao> LstDesignacoes)
         {
             string sql = "INSERT INTO r_designacoes(Stamp, StampReuniao, IdPublicador, IdTipo, Semana, Publicador,  Designacao,  Local, Minutos) VALUES ";
-            
-            foreach(var d in LstDesignacoes) {
+
+            foreach (var d in LstDesignacoes)
+            {
                 sql += ("('" + d.Stamp + "', '" + d.StampReuniao + "', '" + d.Publicador.Id + "', '" + d.TipoDesignacao.Id + "', '" + d.SemanaReuniao + "', '" + d.NomePublicador + "', '" + d.NomeDesignacao + "', '" + d.Local + "', '" + d.NMin + "'),\r\n ");
             }
-            sql = sql.Remove(sql.Length -4, 4) + ";";
+            sql = sql.Remove(sql.Length - 4, 4) + ";";
             return ExecutarQuery(sql);
         }
 
         public bool AtualizarDesignacao(Designacao d)
         {
-            string sql = "UPDATE r_designacoes SET IdPublicador = "+d.Publicador.Id+", Publicador = '"+d.Publicador.Nome+"', Minutos = '"+d.NMin+"', Designacao = '"+d.NomeDesignacao+"' WHERE Stamp='"+d.Stamp+"';";
-            
+            string sql = "UPDATE r_designacoes SET IdPublicador = " + d.Publicador.Id + ", Publicador = '" + d.Publicador.Nome + "', Minutos = '" + d.NMin + "', Designacao = '" + d.NomeDesignacao + "' WHERE Stamp='" + d.Stamp + "';";
+
             return ExecutarQuery(sql);
         }
         public bool ApagarDesignacoes(List<string> Stamps)
         {
             string sql = "";
-            
-            foreach(var s in Stamps) {
-                sql += ("DELETE FROM r_designacoes where Stamp='"+s+"';\r\n ");
+
+            foreach (var s in Stamps)
+            {
+                sql += ("DELETE FROM r_designacoes where Stamp='" + s + "';\r\n ");
             }
 
             return ExecutarQuery(sql);
@@ -1173,7 +1180,7 @@
 
             using (Database db = ConnectionString)
             {
-                string sql = "SELECT DISTINCT StampReuniao, Semana FROM r_designacoes Where StampReuniao='"+Stamp+"';";
+                string sql = "SELECT DISTINCT StampReuniao, Semana FROM r_designacoes Where StampReuniao='" + Stamp + "';";
                 using var result = db.Query(sql);
                 while (result.Read())
                 {
@@ -1197,12 +1204,15 @@
             List<TipoDesignacao> LstTipos = ObterTiposDesignacao();
             List<Designacao> LstDesignacoes = new();
             Stopwatch stopwatch = Stopwatch.StartNew();
-        
-        // Some code or operation you want to measure
 
-            foreach (var t in LstTipos) {
-                for(int i = 1; i<=t.Salas;i++) {
-                    LstDesignacoes.Add(new Designacao() {
+            // Some code or operation you want to measure
+
+            foreach (var t in LstTipos)
+            {
+                for (int i = 1; i <= t.Salas; i++)
+                {
+                    LstDesignacoes.Add(new Designacao()
+                    {
                         Stamp = DateTime.Now.Ticks + stopwatch.ElapsedTicks.ToString(),
                         StampReuniao = stamp,
                         SemanaReuniao = semana,
@@ -1211,26 +1221,28 @@
                         Publicador = new Publicador(),
                         TipoDesignacao = t,
                         NMin = t.NMin,
-                        Local = i==1 ? "Auditório" : "Sala " + i,
+                        Local = i == 1 ? "Auditório" : "Sala " + i,
                     });
                 }
             }
 
-            for (int i =0; i<3; i++) {
+            for (int i = 0; i < 3; i++)
+            {
                 CriarCantico(stamp, new Cantico());
             }
-            
-        stopwatch.Stop();
+
+            stopwatch.Stop();
             return AdicionarDesignacoes(LstDesignacoes);
         }
 
         public bool ApagarReunioes(List<string> Stamps)
         {
             string sql = "";
-            
-            foreach(var s in Stamps) {
-                sql += ("DELETE FROM r_designacoes where StampReuniao='"+s+"';\r\n ");
-                sql += ("DELETE FROM r_canticos where StampReuniao='"+s+"';\r\n ");
+
+            foreach (var s in Stamps)
+            {
+                sql += ("DELETE FROM r_designacoes where StampReuniao='" + s + "';\r\n ");
+                sql += ("DELETE FROM r_canticos where StampReuniao='" + s + "';\r\n ");
             }
 
             return ExecutarQuery(sql);
@@ -1263,7 +1275,7 @@
         public List<Cantico> ObterCanticos()
         {
             List<Cantico> c = new();
-            
+
             using (Database db = ConnectionString)
             {
                 string sql = "SELECT * FROM sys_canticos;";
@@ -1285,10 +1297,10 @@
         {
             List<Cantico> c = ObterCanticos();
             List<Cantico> res = new();
-            
+
             using (Database db = ConnectionString)
             {
-                string sql = "SELECT * FROM r_canticos WHERE StampReuniao='"+Stamp+"';";
+                string sql = "SELECT * FROM r_canticos WHERE StampReuniao='" + Stamp + "';";
                 using var result = db.Query(sql);
                 while (result.Read())
                 {
@@ -1302,29 +1314,30 @@
 
         public bool CriarCantico(string StampReuniao, Cantico c)
         {
-            return ExecutarQuery("INSERT INTO r_canticos (Stamp, Id, StampReuniao) VALUES ('"+c.Stamp+"', "+c.Id+", '"+StampReuniao+"');");
+            return ExecutarQuery("INSERT INTO r_canticos (Stamp, Id, StampReuniao) VALUES ('" + c.Stamp + "', " + c.Id + ", '" + StampReuniao + "');");
         }
 
         public bool AtualizarCantico(Cantico c)
         {
-            return ExecutarQuery("UPDATE r_canticos SET Id='"+c.Id+"' WHERE Stamp='"+c.Stamp+"';");
+            return ExecutarQuery("UPDATE r_canticos SET Id='" + c.Id + "' WHERE Stamp='" + c.Stamp + "';");
         }
         public bool ApagarCantico(Cantico c)
         {
-            return ExecutarQuery("DELETE FROM r_canticos WHERE Stamp='"+c.Stamp+"';");
+            return ExecutarQuery("DELETE FROM r_canticos WHERE Stamp='" + c.Stamp + "';");
         }
 
         public List<Discurso> ObterDiscursoTemas()
         {
             List<Discurso> res = new();
-            
+
             using (Database db = ConnectionString)
             {
                 string sql = "SELECT * FROM sys_discursos;";
                 using var result = db.Query(sql);
                 while (result.Read())
                 {
-                    res.Add(new Discurso() {
+                    res.Add(new Discurso()
+                    {
                         NumDiscurso = result["NumDiscurso"],
                         TemaDiscurso = result["TemaDiscurso"]
                     });
@@ -1337,14 +1350,15 @@
         public Discurso ObterDiscursoTema(int id)
         {
             List<Discurso> res = new();
-            
+
             using (Database db = ConnectionString)
             {
-                string sql = "SELECT * FROM sys_discursos where NumDiscurso="+id+";";
+                string sql = "SELECT * FROM sys_discursos where NumDiscurso=" + id + ";";
                 using var result = db.Query(sql);
                 while (result.Read())
                 {
-                    res.Add(new Discurso() {
+                    res.Add(new Discurso()
+                    {
                         NumDiscurso = result["NumDiscurso"],
                         TemaDiscurso = result["TemaDiscurso"]
                     });
@@ -1357,15 +1371,16 @@
         public List<Discurso> ObterDiscursos()
         {
             List<Discurso> res = new();
-            List<Publicador> p = ObterPublicadores();
-            
+            List<Publicador> p = ObterPublicadores(false);
+
             using (Database db = ConnectionString)
             {
                 string sql = "SELECT * FROM r_discursos;";
                 using var result = db.Query(sql);
                 while (result.Read())
                 {
-                    res.Add(new Discurso() {
+                    res.Add(new Discurso()
+                    {
                         Stamp = result["Stamp"],
                         Pub = p.Where(o => o.Id == result["IdPublicador"]).DefaultIfEmpty(new Publicador()).First(),
                         NomePublicador = result["NomePublicador"],
@@ -1382,15 +1397,16 @@
         public Discurso ObterDiscurso(string stamp)
         {
             List<Discurso> res = new();
-            List<Publicador> p = ObterPublicadores();
-            
+            List<Publicador> p = ObterPublicadores(false);
+
             using (Database db = ConnectionString)
             {
-                string sql = "SELECT * FROM r_discursos WHERE Stamp='"+stamp+"';";
+                string sql = "SELECT * FROM r_discursos WHERE Stamp='" + stamp + "';";
                 using var result = db.Query(sql);
                 while (result.Read())
                 {
-                    res.Add(new Discurso() {
+                    res.Add(new Discurso()
+                    {
                         Stamp = result["Stamp"],
                         Pub = p.Where(o => o.Id == result["IdPublicador"]).DefaultIfEmpty(new Publicador()).First(),
                         NomePublicador = result["NomePublicador"],
@@ -1408,12 +1424,12 @@
 
         public bool CriarDiscurso(Discurso d)
         {
-            return ExecutarQuery("INSERT INTO r_discursos (Stamp, IdPublicador, NomePublicador, Congregacao, Data, NumDiscurso, TemaDiscurso) VALUES ('"+d.Stamp+"', "+d.Pub.Id+", '"+d.NomePublicador+"', '"+d.Congregacao+"', '"+d.DataDiscurso.ToString("yyyyMMdd")+"', '"+d.NumDiscurso+"', '"+d.TemaDiscurso+"');");
+            return ExecutarQuery("INSERT INTO r_discursos (Stamp, IdPublicador, NomePublicador, Congregacao, Data, NumDiscurso, TemaDiscurso) VALUES ('" + d.Stamp + "', " + d.Pub.Id + ", '" + d.NomePublicador + "', '" + d.Congregacao + "', '" + d.DataDiscurso.ToString("yyyyMMdd") + "', '" + d.NumDiscurso + "', '" + d.TemaDiscurso + "');");
         }
 
         public bool ApagarDiscurso(Discurso d)
         {
-            return ExecutarQuery("DELETE FROM r_discursos WHERE Stamp='"+d.Stamp+"'");
+            return ExecutarQuery("DELETE FROM r_discursos WHERE Stamp='" + d.Stamp + "'");
         }
         #endregion
     }

@@ -15,12 +15,12 @@ namespace JW_Management.Controllers
 
             return View(context.ObterReunioes(false));
         }
-        
+
         [HttpGet]
         public IActionResult Calendario()
         {
             DbContext context = HttpContext.RequestServices.GetService(typeof(DbContext)) as DbContext;
-        
+
             return View();
         }
 
@@ -32,16 +32,16 @@ namespace JW_Management.Controllers
 
             List<Designacao> LstD = f.ImportarDesignacoes(file, context!);
 
-            return context.ApagarReunioes(LstD.Select(d => d.StampReuniao.ToString()).Distinct().ToList()) ? context.AdicionarDesignacoes(LstD) ? StatusCode(200): StatusCode(500) : StatusCode(500);
+            return context.ApagarReunioes(LstD.Select(d => d.StampReuniao.ToString()).Distinct().ToList()) ? context.AdicionarDesignacoes(LstD) ? StatusCode(200) : StatusCode(500) : StatusCode(500);
         }
 
         [HttpGet]
         public IActionResult Reuniao(string id)
         {
             DbContext context = HttpContext.RequestServices.GetService(typeof(DbContext)) as DbContext;
-            ViewBag.Publicadores = context.ObterPublicadores().OrderBy(p => p.Nome).Select(l => new SelectListItem() { Value = l.Id.ToString(), Text = l.Id == 0 ? "Não Definido" : l.Nome });
+            ViewBag.Publicadores = context.ObterPublicadores(false).OrderBy(p => p.Nome).Select(l => new SelectListItem() { Value = l.Id.ToString(), Text = l.Id == 0 ? "Não Definido" : l.Nome });
             ViewBag.Tipos = context.ObterTiposDesignacao().OrderBy(p => p.Id).Select(l => new SelectListItem() { Value = l.Id.ToString(), Text = l.Id == 0 ? "Não Definido" : l.Descricao });
-            ViewBag.Canticos = context.ObterCanticos().OrderBy(p => p.Id).Select(l => new SelectListItem() { Value = l.Id.ToString(), Text = l.Id == 0 ? "Não Definido" : l.Id + " - " +l.Nome });
+            ViewBag.Canticos = context.ObterCanticos().OrderBy(p => p.Id).Select(l => new SelectListItem() { Value = l.Id.ToString(), Text = l.Id == 0 ? "Não Definido" : l.Id + " - " + l.Nome });
             ViewBag.Grupos = context.ObterGrupos().OrderBy(p => p.Id).Select(l => new SelectListItem() { Value = l.Id.ToString(), Text = l.Id == 0 ? "Não Definido" : l.Nome });
 
             return View(context.ObterReuniao(id, true, true));
@@ -54,10 +54,10 @@ namespace JW_Management.Controllers
             string stamp = DateTime.Now.Ticks.ToString();
 
             context.AdicionarReuniao(semana.ToUpper(), stamp);
-            
-            ViewBag.Publicadores = context.ObterPublicadores().OrderBy(p => p.Nome).Select(l => new SelectListItem() { Value = l.Id.ToString(), Text = l.Id == 0 ? "Não Definido" : l.Nome });
+
+            ViewBag.Publicadores = context.ObterPublicadores(false).OrderBy(p => p.Nome).Select(l => new SelectListItem() { Value = l.Id.ToString(), Text = l.Id == 0 ? "Não Definido" : l.Nome });
             ViewBag.Tipos = context.ObterTiposDesignacao().OrderBy(p => p.Id).Select(l => new SelectListItem() { Value = l.Id.ToString(), Text = l.Id == 0 ? "Não Definido" : l.Descricao });
-            ViewBag.Canticos = context.ObterCanticos().OrderBy(p => p.Id).Select(l => new SelectListItem() { Value = l.Id.ToString(), Text = l.Id == 0 ? "Não Definido" : l.Id + " - " +l.Nome });
+            ViewBag.Canticos = context.ObterCanticos().OrderBy(p => p.Id).Select(l => new SelectListItem() { Value = l.Id.ToString(), Text = l.Id == 0 ? "Não Definido" : l.Id + " - " + l.Nome });
             ViewBag.Grupos = context.ObterGrupos().OrderBy(p => p.Id).Select(l => new SelectListItem() { Value = l.Id.ToString(), Text = l.Id == 0 ? "Não Definido" : l.Nome });
 
             return View(context.ObterReuniao(stamp, true, true));
@@ -67,7 +67,7 @@ namespace JW_Management.Controllers
         {
             DbContext context = HttpContext.RequestServices.GetService(typeof(DbContext)) as DbContext;
 
-            return context.ApagarReunioes(new List<string>() {id}) ? StatusCode(200) : StatusCode(500);
+            return context.ApagarReunioes(new List<string>() { id }) ? StatusCode(200) : StatusCode(500);
         }
 
         [HttpPost]
@@ -76,9 +76,10 @@ namespace JW_Management.Controllers
             DbContext context = HttpContext.RequestServices.GetService(typeof(DbContext)) as DbContext;
             TipoDesignacao t = context.ObterTiposDesignacao().Where(t => t.Id == tipo).DefaultIfEmpty(new TipoDesignacao()).First();
 
-            Designacao d = new Designacao() {
+            Designacao d = new Designacao()
+            {
                 Stamp = DateTime.Now.Ticks.ToString(),
-                StampReuniao = id, 
+                StampReuniao = id,
                 SemanaReuniao = context.ObterDesignacoes(id).DefaultIfEmpty(new Models.Designacao()).First().SemanaReuniao,
                 NomePublicador = "",
                 NomeDesignacao = t.Descricao,
@@ -128,8 +129,8 @@ namespace JW_Management.Controllers
         public IActionResult Cantico(int id, string stamp)
         {
             DbContext context = HttpContext.RequestServices.GetService(typeof(DbContext)) as DbContext;
-            Cantico c = new Models.Cantico() {Id = id, Stamp = stamp};
-            
+            Cantico c = new Models.Cantico() { Id = id, Stamp = stamp };
+
             return context.AtualizarCantico(c) ? StatusCode(200) : StatusCode(500);
         }
 
@@ -137,9 +138,9 @@ namespace JW_Management.Controllers
         public IActionResult Discursos()
         {
             DbContext context = HttpContext.RequestServices.GetService(typeof(DbContext)) as DbContext;
-            ViewBag.Publicadores = context.ObterPublicadores().OrderBy(p => p.Nome).Select(l => new SelectListItem() { Value = l.Id.ToString(), Text = l.Id == 0 ? "Não Definido" : l.Nome });
+            ViewBag.Publicadores = context.ObterPublicadores(false).OrderBy(p => p.Nome).Select(l => new SelectListItem() { Value = l.Id.ToString(), Text = l.Id == 0 ? "Não Definido" : l.Nome });
             ViewBag.Discursos = context.ObterDiscursoTemas().OrderBy(p => p.NumDiscurso).Select(l => new SelectListItem() { Value = l.NumDiscurso.ToString(), Text = l.NumDiscurso + " - " + l.TemaDiscurso });
-            
+
             return View(context.ObterDiscursos());
         }
 
@@ -150,10 +151,11 @@ namespace JW_Management.Controllers
             Publicador p = context.ObterPublicador(txtIdPub, false, false, false, false);
             Discurso t = context.ObterDiscursoTema(txtIdDiscurso);
 
-            if (txtIdPub > 0) txtCongPub="INTERNO";
-            if (txtIdPub > 0) txtNomePub= p.Nome;
+            if (txtIdPub > 0) txtCongPub = "INTERNO";
+            if (txtIdPub > 0) txtNomePub = p.Nome;
 
-            Discurso d = new Discurso(){
+            Discurso d = new Discurso()
+            {
                 Stamp = DateTime.Now.Ticks.ToString(),
                 Pub = p,
                 NomePublicador = txtNomePub,
@@ -172,7 +174,7 @@ namespace JW_Management.Controllers
         public IActionResult Discurso(string id, bool apagar)
         {
             DbContext context = HttpContext.RequestServices.GetService(typeof(DbContext)) as DbContext;
-            
+
             return context.ApagarDiscurso(context.ObterDiscurso(id)) ? StatusCode(200) : StatusCode(500);
         }
 

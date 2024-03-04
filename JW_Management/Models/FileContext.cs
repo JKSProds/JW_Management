@@ -259,26 +259,30 @@ namespace JW_Management.Models
             List<MemoryStream> m = new List<MemoryStream>();
 
 
-            foreach(var d in z) {
+            foreach (var d in z)
+            {
                 int i = 0;
                 List<Territorio> l = new List<Territorio>();
-                    foreach (var t2 in t.Where(t => t.Tipo.Id == d.Id)) {
-                        if (t2.Registros.Count / 4 + i >= 20) {
-                            m.Add(PreencherPaginaIndividualS13(pdfTemplate, a, d.Descricao ?? "", l));
-                            l.Clear();
-                            i=0;
-                        } 
-
-                        l.Add(t2);
-                        i+=t2.Registros.Count / 4 + 1;
+                foreach (var t2 in t.Where(t => t.Tipo.Id == d.Id))
+                {
+                    if (t2.Registros.Count / 4 + i >= 20)
+                    {
+                        m.Add(PreencherPaginaIndividualS13(pdfTemplate, a, d.Descricao ?? "", l));
+                        l.Clear();
+                        i = 0;
                     }
+
+                    l.Add(t2);
+                    i += t2.Registros.Count / 4 + 1;
+                }
                 if (l.Count() > 0) m.Add(PreencherPaginaIndividualS13(pdfTemplate, a, d.Descricao ?? "", l));
             }
-            
+
             return CombinePdfStreams(m.ToArray());
         }
 
-        private MemoryStream PreencherPaginaIndividualS13(string pdfTemplate, string AnoServico, string TipoTerritorio, List<Territorio> LstTerritorios) {
+        private MemoryStream PreencherPaginaIndividualS13(string pdfTemplate, string AnoServico, string TipoTerritorio, List<Territorio> LstTerritorios)
+        {
             // Create a MemoryStream to store the modified PDF
             MemoryStream memoryStream = new MemoryStream();
             Font fontB = FontFactory.GetFont(FontFactory.HELVETICA, 8);
@@ -288,43 +292,45 @@ namespace JW_Management.Models
             {
                 // Create a PdfStamper to modify the existing PDF
                 using (PdfStamper stamper = new PdfStamper(reader, memoryStream))
-                {       
-                        int y = 85;
-                        // Get the PdfContentByte for the page
-                        PdfContentByte contentByte = stamper.GetOverContent(1);
+                {
+                    int y = 85;
+                    // Get the PdfContentByte for the page
+                    PdfContentByte contentByte = stamper.GetOverContent(1);
 
-                        // Add text overlay
-                        ColumnText.ShowTextAligned(contentByte, Element.ALIGN_LEFT, new Phrase(AnoServico),  140, reader.GetPageSize(1).Height - y, 0);
-                        ColumnText.ShowTextAligned(contentByte, Element.ALIGN_LEFT, new Phrase(TipoTerritorio), 310, reader.GetPageSize(1).Height - y, 0);
-                        
-                        y+=75;
+                    // Add text overlay
+                    ColumnText.ShowTextAligned(contentByte, Element.ALIGN_LEFT, new Phrase(AnoServico), 140, reader.GetPageSize(1).Height - y, 0);
+                    ColumnText.ShowTextAligned(contentByte, Element.ALIGN_LEFT, new Phrase(TipoTerritorio), 310, reader.GetPageSize(1).Height - y, 0);
 
-                        foreach(var t in LstTerritorios) {
-                            int x = 39;
-                            ColumnText.ShowTextAligned(contentByte, Element.ALIGN_LEFT, new Phrase(t.Id),  x, reader.GetPageSize(1).Height - y, 0);
+                    y += 75;
 
-                            x+=35;
-                            if (t.Registros.Count > 0) ColumnText.ShowTextAligned(contentByte, Element.ALIGN_LEFT, new Phrase(t.Registros!.Last().UltimoMovimento.DataMovimento.ToString("dd/MM/yy")),  x, reader.GetPageSize(1).Height - y, 0);
+                    foreach (var t in LstTerritorios)
+                    {
+                        int x = 39;
+                        ColumnText.ShowTextAligned(contentByte, Element.ALIGN_LEFT, new Phrase(t.Id), x, reader.GetPageSize(1).Height - y, 0);
 
-                            x+=60;
-                            for(int i = 0; i < t.Registros.Count(); i++) {
-                                RegistroTerritorio l = t.Registros[i];
-                                if (i==4) {y+=31;x=134;}
+                        x += 35;
+                        if (t.Registros.Count > 0) ColumnText.ShowTextAligned(contentByte, Element.ALIGN_LEFT, new Phrase(t.Registros!.Last().UltimoMovimento.DataMovimento.ToString("dd/MM/yy")), x, reader.GetPageSize(1).Height - y, 0);
 
-                                //Nome Publicador
-                                ColumnText.ShowTextAligned(contentByte, Element.ALIGN_LEFT, new Phrase(l.Entrada.Publicador.Nome, fontB),  x, reader.GetPageSize(1).Height - y + 10, 0);
+                        x += 60;
+                        for (int i = 0; i < t.Registros.Count(); i++)
+                        {
+                            RegistroTerritorio l = t.Registros[i];
+                            if (i == 4) { y += 31; x = 134; }
 
-                                //Entrada
-                                ColumnText.ShowTextAligned(contentByte, Element.ALIGN_LEFT, new Phrase(l.Entrada.DataMovimento.ToShortDateString(), fontB),  x, reader.GetPageSize(1).Height - y - 7, 0);
+                            //Nome Publicador
+                            ColumnText.ShowTextAligned(contentByte, Element.ALIGN_LEFT, new Phrase(l.Entrada.Publicador.Nome, fontB), x, reader.GetPageSize(1).Height - y + 10, 0);
 
-                                //Saida
-                                ColumnText.ShowTextAligned(contentByte, Element.ALIGN_LEFT, new Phrase((l.Saida.DataMovimento == DateTime.MinValue ? "" : l.Saida.DataMovimento.ToShortDateString()), fontB),  x + 52, reader.GetPageSize(1).Height - y - 7, 0);
-                                x+=108;
-                            }
+                            //Entrada
+                            ColumnText.ShowTextAligned(contentByte, Element.ALIGN_LEFT, new Phrase(l.Entrada.DataMovimento.ToShortDateString(), fontB), x, reader.GetPageSize(1).Height - y - 7, 0);
 
-                            y+=31;
+                            //Saida
+                            ColumnText.ShowTextAligned(contentByte, Element.ALIGN_LEFT, new Phrase((l.Saida.DataMovimento == DateTime.MinValue ? "" : l.Saida.DataMovimento.ToShortDateString()), fontB), x + 52, reader.GetPageSize(1).Height - y - 7, 0);
+                            x += 108;
                         }
-                
+
+                        y += 31;
+                    }
+
                 }
             }
 
@@ -354,13 +360,14 @@ namespace JW_Management.Models
 
             document.Close();
             return combinedStream;
-        }  
+        }
 
-        public List<Designacao> ImportarDesignacoes(IFormFile file, DbContext context) {
+        public List<Designacao> ImportarDesignacoes(IFormFile file, DbContext context)
+        {
             var filePath = Path.GetTempFileName();
             List<Designacao> LstDesignacao = new List<Designacao>();
-            List<TipoDesignacao> LstTipos =  context.ObterTiposDesignacao();
-            List<Publicador> LstPublicadores =  context.ObterPublicadores();
+            List<TipoDesignacao> LstTipos = context.ObterTiposDesignacao();
+            List<Publicador> LstPublicadores = context.ObterPublicadores(false);
 
             using (var stream = new FileStream(filePath, FileMode.Create))
             {
@@ -370,7 +377,7 @@ namespace JW_Management.Models
             using (var package = new ExcelPackage(new System.IO.FileInfo(filePath)))
             {
                 var worksheet = package.Workbook.Worksheets[0];
- 
+
                 int rowCount = worksheet.Dimension.Rows;
                 int colCount = worksheet.Dimension.Columns;
 
@@ -378,33 +385,36 @@ namespace JW_Management.Models
                 for (int colIndex = 2; colIndex <= colCount; colIndex++)
                 {
                     bool a = colIndex % 2 == 1;
-                    string s = a ? worksheet.Cells[2, colIndex-1].Text : worksheet.Cells[2, colIndex].Text ;
-                    
+                    string s = a ? worksheet.Cells[2, colIndex - 1].Text : worksheet.Cells[2, colIndex].Text;
+
                     // Iterate through each row in the specified column
                     for (int rowIndex = 3; rowIndex <= rowCount; rowIndex++)
                     {
-                        string p = worksheet.Cells[rowIndex, colIndex].Text.Contains("Sala") || worksheet.Cells[rowIndex, colIndex].Text.Contains("Salão")  ? "" : worksheet.Cells[rowIndex, colIndex].Text;
-                        string d = string.IsNullOrEmpty(worksheet.Cells[rowIndex, 1].Text) ? worksheet.Cells[rowIndex-1, 1].Text : worksheet.Cells[rowIndex, 1].Text;
-                        if (!string.IsNullOrEmpty(p) && !string.IsNullOrEmpty(d)) {
-                            foreach (var pub in p.Split("|")) {
-                                LstDesignacao.Add(new Designacao() {
-                                Stamp = DateTime.Now.Ticks.ToString(),
-                                StampReuniao = s.Trim().Replace(" ", ""),
-                                SemanaReuniao = s.Trim(),
-                                NomeDesignacao = d.Trim(),
-                                NomePublicador = pub.Trim(),
-                                Publicador = LstPublicadores.Where(u => u.Nome.StartsWith(pub.Trim())).DefaultIfEmpty(new Publicador()).First(),
-                                TipoDesignacao = LstTipos.Where(t => t.DescricaoAdicional == d.Trim()).DefaultIfEmpty(new TipoDesignacao()).First(),
-                                Local = a ? "Sala" : "Auditorio"
-                             });
-                             //if (LstTipos.Where(u => u.DescricaoAdicional == LstDesignacao.Last().TipoDesignacao.DescricaoAdicional).Count() > 1) LstTipos.Remove(LstTipos.Where(u => u.Id == LstDesignacao.Last().TipoDesignacao.Id).First());
+                        string p = worksheet.Cells[rowIndex, colIndex].Text.Contains("Sala") || worksheet.Cells[rowIndex, colIndex].Text.Contains("Salão") ? "" : worksheet.Cells[rowIndex, colIndex].Text;
+                        string d = string.IsNullOrEmpty(worksheet.Cells[rowIndex, 1].Text) ? worksheet.Cells[rowIndex - 1, 1].Text : worksheet.Cells[rowIndex, 1].Text;
+                        if (!string.IsNullOrEmpty(p) && !string.IsNullOrEmpty(d))
+                        {
+                            foreach (var pub in p.Split("|"))
+                            {
+                                LstDesignacao.Add(new Designacao()
+                                {
+                                    Stamp = DateTime.Now.Ticks.ToString(),
+                                    StampReuniao = s.Trim().Replace(" ", ""),
+                                    SemanaReuniao = s.Trim(),
+                                    NomeDesignacao = d.Trim(),
+                                    NomePublicador = pub.Trim(),
+                                    Publicador = LstPublicadores.Where(u => u.Nome.StartsWith(pub.Trim())).DefaultIfEmpty(new Publicador()).First(),
+                                    TipoDesignacao = LstTipos.Where(t => t.DescricaoAdicional == d.Trim()).DefaultIfEmpty(new TipoDesignacao()).First(),
+                                    Local = a ? "Sala" : "Auditorio"
+                                });
+                                //if (LstTipos.Where(u => u.DescricaoAdicional == LstDesignacao.Last().TipoDesignacao.DescricaoAdicional).Count() > 1) LstTipos.Remove(LstTipos.Where(u => u.Id == LstDesignacao.Last().TipoDesignacao.Id).First());
                             }
                         }
                     }
                 }
             }
             return LstDesignacao;
-        } 
+        }
 
         public MemoryStream PreencherFormularioS140(Reuniao r)
         {
@@ -418,15 +428,17 @@ namespace JW_Management.Models
 
             pdfFormFields.SetFieldProperty("SemanaReuniao", "textfont", baseFontBold, null);
             pdfFormFields.SetField("SemanaReuniao", r.SemanaReuniao);
-            
-            foreach (var d in r.Designacoes.Where(d => d.Atribuida).DistinctBy(d=>d.Distinct).ToList()) {
+
+            foreach (var d in r.Designacoes.Where(d => d.Atribuida).DistinctBy(d => d.Distinct).ToList())
+            {
                 pdfFormFields.SetFieldProperty(d.TipoDesignacao.Id + "_Designacao", "textfont", baseFontBold, null);
-                pdfFormFields.SetField(d.TipoDesignacao.Id + "_Designacao", d.NomeDesignacao + (d.NMin > 0 ? " ("+ d.NMin+" min.)" : ""));
-                pdfFormFields.SetFieldProperty(d.TipoDesignacao.Id + "_Pub"+ (d.SalaAdicional ? "_1" : ""), "textfont", baseFont, null);
-                pdfFormFields.SetField(d.TipoDesignacao.Id + "_Pub" + (d.SalaAdicional ? "_1" : ""), string.Join(" | ",r.Designacoes.Where(i => i.Distinct == d.Distinct).Select(i => r.Designacoes.Where(i => i.Distinct == d.Distinct).Count() > 1 ? i.Publicador.NomeCurto : i.Publicador.Nome).ToArray()));
+                pdfFormFields.SetField(d.TipoDesignacao.Id + "_Designacao", d.NomeDesignacao + (d.NMin > 0 ? " (" + d.NMin + " min.)" : ""));
+                pdfFormFields.SetFieldProperty(d.TipoDesignacao.Id + "_Pub" + (d.SalaAdicional ? "_1" : ""), "textfont", baseFont, null);
+                pdfFormFields.SetField(d.TipoDesignacao.Id + "_Pub" + (d.SalaAdicional ? "_1" : ""), string.Join(" | ", r.Designacoes.Where(i => i.Distinct == d.Distinct).Select(i => r.Designacoes.Where(i => i.Distinct == d.Distinct).Count() > 1 ? i.Publicador.NomeCurto : i.Publicador.Nome).ToArray()));
             }
-            
-            if (r.Canticos.Count() >=3) {
+
+            if (r.Canticos.Count() >= 3)
+            {
                 pdfFormFields.SetField("1_Cant", r.Canticos[0].Id.ToString());
                 pdfFormFields.SetField("2_Cant", r.Canticos[1].Id.ToString());
                 pdfFormFields.SetField("3_Cant", r.Canticos[2].Id.ToString());
@@ -437,6 +449,6 @@ namespace JW_Management.Models
 
             return outputPdfStream;
 
-        }        
+        }
     }
 }

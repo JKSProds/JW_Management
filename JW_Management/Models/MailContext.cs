@@ -106,6 +106,35 @@ namespace JW_Management.Models
             return EnviarMail(EmailDestino, "Pedidos Periodicos - " + DateTime.Now.ToShortDateString(), Mensagem, null);
         }
 
+        public static bool MailPedidosPeriodicosGrupo(List<Literatura> LstLiteratura, string EmailDestino)
+        {
+            if (LstLiteratura.Count() == 0 || string.IsNullOrEmpty(EmailDestino)) return false;
+
+            string Mensagem = "Abaixo segue uma listagem com todos os pedidos periodicos requisitados pelos irmãos da seguinte publicação: <br><br>";
+            Mensagem += "Referência: <b>" + LstLiteratura.First().Referencia + "</b><br>Designação: <b>" + LstLiteratura.First().Descricao + "</b><br>Quantidade: <b>" + LstLiteratura.Sum(p => p.Quantidade) + " UN</b><br><br>";
+
+            foreach (Grupo g in LstLiteratura.Select(v => v.Publicador.Grupo).Distinct().OrderBy(v => v.Id))
+            {
+                if (LstLiteratura.Where(v => v.Publicador.Grupo.Id == g.Id).OrderBy(v => v.Publicador.Nome).Count() > 0)
+                {
+                    Mensagem += "<b>Grupo " + g.Id + " [" + g.Responsavel.Nome + "]</b> <br><br>";
+
+                    Mensagem += "<table class='table' style='width:100%;border-width:1px;' border='1'><tr><th>Publicador</th><th>Quantidade</th></tr>";
+
+                    foreach (Literatura l in LstLiteratura.Where(v => v.Publicador.Grupo.Id == g.Id).OrderBy(v => v.Publicador.Nome))
+                    {
+                        Mensagem += "<tr><td style='padding: 5px;'>" + l.Publicador.Nome + "</td><td style='padding: 5px;'>" + l.Quantidade + "</td></tr>";
+                    }
+                }
+                Mensagem += "</table>";
+                Mensagem += "<br><br>";
+            }
+
+
+
+            return EnviarMail(EmailDestino, "Pedidos Periodicos - " + DateTime.Now.ToShortDateString(), Mensagem, null);
+        }
+
         public static bool MailTerritorioAtribuido(Territorio t, string EmailDestino)
         {
             if (string.IsNullOrEmpty(t.Stamp) || string.IsNullOrEmpty(EmailDestino)) return false;

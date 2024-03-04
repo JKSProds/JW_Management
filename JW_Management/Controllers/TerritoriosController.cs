@@ -17,7 +17,7 @@ namespace JW_Management.Controllers
 
             filtro = string.IsNullOrEmpty(filtro) ? "" : filtro;
             ViewData["filtro"] = filtro;
-            ViewBag.Publicadores = context.ObterPublicadores().OrderBy(p => p.Nome).Select(l => new SelectListItem() { Value = l.Id.ToString(), Text = l.Nome });
+            ViewBag.Publicadores = context.ObterPublicadores(false).OrderBy(p => p.Nome).Select(l => new SelectListItem() { Value = l.Id.ToString(), Text = l.Nome });
 
             return View(context.ObterTerritorios(filtro, true, false, false, false).OrderBy(p => p.Id));
         }
@@ -28,7 +28,7 @@ namespace JW_Management.Controllers
             DbContext context = HttpContext.RequestServices.GetService(typeof(DbContext)) as DbContext;
             if (string.IsNullOrEmpty(id)) return StatusCode(500);
 
-            return View(context.ObterTerritorio(id, true, true, true,true));
+            return View(context.ObterTerritorio(id, true, true, true, true));
         }
 
         [HttpPost]
