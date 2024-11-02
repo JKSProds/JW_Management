@@ -16,35 +16,20 @@ namespace JW_Management.Models
 
         public string ObterCaminho()
         {
-#if DEBUG
-            CriarPasta(Caminho);
-            return Caminho;
-#else
             CriarPasta(CaminhoLinux);
             return CaminhoLinux;
-#endif
         }
 
         public string ObterCaminhoTerritorios()
         {
-#if DEBUG
-            CriarPasta(Caminho + "territorio\\");
-            return Caminho + "territorio/";
-#else
             CriarPasta(CaminhoLinux + "territorio/");
             return CaminhoLinux + "territorio/";
-#endif
         }
 
         public string ObterCaminhoLiteratura()
         {
-#if DEBUG
-            CriarPasta(Caminho + "literatura\\");
-            return Caminho + "literatura/";
-#else
             CriarPasta(CaminhoLinux + "literatura/");
             return CaminhoLinux + "literatura/";
-#endif
         }
 
         private bool CriarPasta(string Caminho)
