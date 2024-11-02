@@ -19,6 +19,8 @@
 
         public string GetUrl() {
             string baseURL = "https://assetsnffrgf-a.akamaihd.net/assets/a/";
+            string baseURL2 = "https://cms-imgp.jw-cdn.org/img/p/";
+            
             string res = "";
             
             if (this.Tipo.Id == 7) {
@@ -27,7 +29,8 @@
                 }else if (this.Referencia == "es" || this.Referencia == "eslp") {
                      res = "es"+this.Data+"/TPO/wpub/es"+Data+"_TPO_lg.jpg";
                 }else {
-                    res = this.Referencia + "/TPO/" + this.Data + "/wpub/" + this.Referencia + "_TPO_" + this.Data + "_lg.jpg";
+                    res = this.Referencia + "/" + this.Data +  "/TPO/pt/"  + this.Referencia + "_TPO_" + this.Data + "_lg.jpg";
+                    return baseURL2 + res;
                 }
             }else {
                 res = this.Referencia + "/TPO/wpub/" + this.Referencia + "_TPO_lg.jpg";
