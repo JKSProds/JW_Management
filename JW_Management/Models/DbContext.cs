@@ -68,6 +68,11 @@
                         Tipo = LstTiposLiteratura.Where(g => g.Id == result["IdTipo"]).FirstOrDefault(new TipoLiteratura()),
                         Publicador = LstPublicador.Where(g => g.Id == idpub).FirstOrDefault(new Publicador())
                     });
+
+                    if (LstLiteratura.Last().Tipo.Id == 7)
+                    {
+                        LstLiteratura.Last().Imagem = LstLiteratura.Last().GetUrl();
+                    }
                 }
             }
 
