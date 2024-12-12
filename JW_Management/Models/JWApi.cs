@@ -10,7 +10,7 @@ public class JWApi
 
     private string CongId => "07ec6967-d680-4f17-ba8c-1ffc08949dcb";
     private string Token =>
-        $"XSRF-TOKEN={XSRFToken}; cdh.session.expiry=1734014321; .AspNetCore.Cookies=CfDJ8BE7W9YBmqBFsmsJNwHOyGUxSNK-6J5KeXDKW7Cxv0zLDFYKg88sPabADrV5Yg1pn9P44NFTviw9Cjwir6FOSPzUn-z9LuiYvdYPsnUFykozzySa2jEaSYbbOz6p8ceBYIm1_B3IKdyXxWbHDQOCG-X2Jtxi_9R1l77zK1LH3QIPjYHrvqgLZL9LJlUBcYicduXDGokDS51TOXM61g9D962mpwGZ3N19fK5yD73THadiZYsqiJFK_ol_azyjvqvBB7usm59cfWKSTmW8brblAJoFni4Pq6LXTSKeN0LhlRYO; tenant=jworg; .AspNetCore.Antiforgery.9L1Lz1Gp5HM=CfDJ8BE7W9YBmqBFsmsJNwHOyGX6mCXOl-D2bhhuuj1UcyT0rHq1dG1A3YuBjy4gp4qoNgJ4aZAjl8BaHWPC9ryxyl_8qWiWyLqdAeuXI1qgxVDQC8zCozgDKJc5EirKjVe4s14s7kivQTuvmEayIgoi_og; ptrn.lang=pt-pt; cookieConsent-DIAGNOSTIC=true; cookieConsent-FUNCTIONAL=true; cookieConsent-STRICTLY_NECESSARY=true; cookieConsent-USAGE=true";
+        $".AspNetCore.Cookies={XSRFToken};";
     public string XSRFToken { get; set; } 
     private string BaseURL => $"https://hub.jw.org/congregation-literature/api";
 
@@ -126,47 +126,61 @@ public class JWApi
     public Inventario ObterInventario()
     {
         Inventario i = new Inventario();
-        
-        // Parse o JSON em um JObject
-        JObject jsonObject = JObject.Parse(GET($"{BaseURL}/inventory-reports/{CongId}/summaries"));
-        
-        // Obtenha o primeiro elemento da lista "reportSummaries"
-        var reportSummary = jsonObject["reportSummaries"]?[0];
 
-        if (reportSummary != null)
+        try
         {
-            i.StampInventario = reportSummary.Value<string>("languageGuid") ?? "";
-            i.DataLimite = reportSummary.Value<DateTime>("dueDate");
-            i.DataInventario= reportSummary.Value<DateTime>("reportDate");
-            i.Literatura = ObterLiteraturas(i.StampInventario);
-        }
+            // Parse o JSON em um JObject
+            JObject jsonObject = JObject.Parse(GET($"{BaseURL}/inventory-reports/{CongId}/summaries"));
         
+            // Obtenha o primeiro elemento da lista "reportSummaries"
+            var reportSummary = jsonObject["reportSummaries"]?[0];
+
+            if (reportSummary != null)
+            {
+                i.StampInventario = reportSummary.Value<string>("languageGuid") ?? "";
+                i.DataLimite = reportSummary.Value<DateTime>("dueDate");
+                i.DataInventario= reportSummary.Value<DateTime>("reportDate");
+                i.Literatura = ObterLiteraturas(i.StampInventario);
+            }
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine(e);
+        }
         return i;
     }
 
     public List<Literatura> ObterLiteraturas(string StampInventario)
     {
         List<Literatura> l = new List<Literatura>();
-        
-        // Parse o JSON em um JObject
-        JObject jsonObject = JObject.Parse(GET($"{BaseURL}/inventory-reports/{CongId}/{StampInventario}/catalog"));
-        
-        // Obtenha o primeiro elemento da lista "reportSummaries"
-        var categories = jsonObject["categories"];
 
-        foreach (var category in categories)
+        try
         {
-            var items = category["items"];
-            
-            foreach (var item in items)
+            // Parse o JSON em um JObject
+            JObject jsonObject = JObject.Parse(GET($"{BaseURL}/inventory-reports/{CongId}/{StampInventario}/catalog"));
+        
+            // Obtenha o primeiro elemento da lista "reportSummaries"
+            var categories = jsonObject["categories"];
+
+            foreach (var category in categories)
             {
-                l.Add(new Literatura()
+                var items = category["items"];
+            
+                foreach (var item in items)
                 {
-                    Stamp = item.Value<string>("catalogItemGuid"),
-                    Descricao = item.Value<string>("description"),
-                    Referencia = item.Value<string>("symbol") ?? item.Value<string>("mnemonicCode"),
-                });
+                    l.Add(new Literatura()
+                    {
+                        Stamp = item.Value<string>("catalogItemGuid"),
+                        Descricao = item.Value<string>("description"),
+                        Referencia = item.Value<string>("symbol") ?? item.Value<string>("mnemonicCode"),
+                    });
+                }
             }
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine(e);
+            throw;
         }
         
         return l;
@@ -174,13 +188,33 @@ public class JWApi
     
     public string AtualizarLiteratura(Inventario i, Literatura l)
     {
-        var jsonData = $"[{{\"catalogItemGuid\":\"{l.Stamp}\",\"currentQuantity\":{l.Quantidade},\"isDone\":true}}]";
+        try
+        {
+            var jsonData = $"[{{\"catalogItemGuid\":\"{l.Stamp}\",\"currentQuantity\":{l.Quantidade},\"isDone\":true}}]";
         
-        return PUT($"{BaseURL}/inventory-reports/{CongId}/{i.StampInventario}/save-items", jsonData);
+            return PUT($"{BaseURL}/inventory-reports/{CongId}/{i.StampInventario}/save-items", jsonData);
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine(e);
+            throw;
+        }
+
+        return string.Empty;
+
     }
     
     public string FecharInventario(Inventario i)
     {
-        return POST($"{BaseURL}/inventory-reports/{CongId}/{i.StampInventario}/submit-report", "{}");
+        try
+        {
+            return POST($"{BaseURL}/inventory-reports/{CongId}/{i.StampInventario}/submit-report", "{}");
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine(e);
+            throw;
+        }
+        return string.Empty;
     }
 }

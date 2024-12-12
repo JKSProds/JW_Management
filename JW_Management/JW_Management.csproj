@@ -4,7 +4,7 @@
 		<Nullable>enable</Nullable>
 		<ImplicitUsings>enable</ImplicitUsings>
 		<DockerDefaultTargetOS>Linux</DockerDefaultTargetOS>
-		<AssemblyVersion>1.01.12.29</AssemblyVersion>
+		<AssemblyVersion>2.2024.12.12</AssemblyVersion>
 	</PropertyGroup>
 	<ItemGroup>
 		<None Include="..\.editorconfig" Link=".editorconfig" />

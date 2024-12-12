@@ -267,7 +267,7 @@ namespace JW_Management.Controllers
             api.XSRFToken = id;
             var i = api.ObterInventario();
             
-            if (i.DataInventario.Month == DateTime.Now.Month && i.DataInventario.Year == DateTime.Now.Year) return BadRequest();
+            if ((i.DataInventario.Month == DateTime.Now.Month && i.DataInventario.Year == DateTime.Now.Year) || string.IsNullOrEmpty(i.StampInventario)) return BadRequest();
             List<Literatura> lstLiteraturas = context.ObterLiteraturas(i.DataInventario.Month, i.DataInventario.Year).Where(o => o.Tipo.Id != 7).ToList();
 
             foreach (var l in i.Literatura)

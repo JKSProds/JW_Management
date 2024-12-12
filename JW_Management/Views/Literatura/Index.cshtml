@@ -505,7 +505,7 @@
                 document.getElementById('btnEnviarInventario').classList.remove('is-loading');
             },
             error: function (response) {
-                notifyError('Ocorreu um erro ao enviar o inventario! Provavelmente o inventário deste mês já foi enviado!');
+                notifyError('Ocorreu um erro ao enviar o inventario! Provavelmente o inventário deste mês já foi enviado ou o TOKEN está errado!');
                 document.getElementById('btnEnviarInventario').classList.remove('is-loading');
             },
             failure: function (response) {
