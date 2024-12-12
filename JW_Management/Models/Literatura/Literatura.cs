@@ -25,7 +25,8 @@
             
             if (this.Tipo.Id == 7) {
                 if (this.Referencia == "w" || this.Referencia == "wlp") {
-                    res = "w/TPO/" + this.Data + "/wpub/w_TPO_" + this.Data + "_lg.jpg";
+                    res =  "w/" + this.Data +  "/TPO/pt/w_TPO_" + this.Data + "_lg.jpg";
+                    return baseURL2 + res;
                 }else if (this.Referencia == "es" || this.Referencia == "eslp") {
                      res = "es"+this.Data+"/TPO/wpub/es"+Data+"_TPO_lg.jpg";
                 }else {
