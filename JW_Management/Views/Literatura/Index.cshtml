@@ -66,11 +66,11 @@
                             </a>
                         </p>
                         <p class="control">
-                            <a type="button" class="button is-success is-fullwidth " href="~/Literatura/Formulario">
+                            <a type="button" class="button is-success is-fullwidth " onclick="Bulma('#modalToken').modal().open();">
                                 <span class="icon">
-                                    <i class="fas fa-file-invoice fa-lg"></i>
+                                    <i class="fas fa-arrow-alt-circle-up fa-lg"></i>
                                 </span>
-                                <span>S-28</span>
+                                <span>Enviar API</span>
                             </a>
                         </p>
                     </div>
@@ -364,6 +364,51 @@
     </div>
 </div>
 
+<div id="modalToken" class="modal">
+    <div class="modal-background"></div>
+    <div class="modal-card">
+        <header class="modal-card-head">
+            <p class="modal-card-title">
+                <span class="icon">
+                    <i class="fas fa-arrow-alt-circle-up"></i>
+                </span>
+                <span>Enviar Inventário - Token</span>
+            </p>
+            <button type="button" class="delete" aria-label="close"></button>
+        </header>
+        <section class="modal-card-body">
+            <div class="modal-body">
+                <div class="field">
+                    <label class="label">X-XSRF-TOKEN</label>
+                    <div class="field has-addons">
+                        <div class="control" style="width:100%">
+                            <input type="text" class="input has-text-centered" min="1" id="txtToken" value="" placeholder="Insira o token...">
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+        <footer class="modal-card-foot">
+            <a class="button is-info is-large is-fullwidth" id="btnEnviarInventario"
+               onclick="GerarInventario(document.getElementById('txtToken').value)">
+                <span class="icon">
+                    <i class="fa-regular fa-paper-plane"></i>
+                </span>
+                <span>
+                    Enviar
+                </span>
+            </a>
+            <button type="button" class="button is-large is-fullwidth is-danger"
+                    onclick="Bulma('#modalToken').modal().close();" href="javascript:;">
+                <span class="icon">
+                    <i class="fa-regular fa-circle-xmark"></i>
+                </span>
+                <span>Fechar</span>
+            </button>
+        </footer>
+    </div>
+</div>
+
 <input id="txtHiddenStamp" hidden />
 
 <script>
@@ -448,4 +493,25 @@
                 notifyError('Falha ao apagar essa publicação!');
             }
         });
-    }</script>
+    }
+    
+    function GerarInventario(token) {
+        document.getElementById('btnEnviarInventario').classList.add('is-loading');
+        $.ajax({
+            url: '/Literatura/API/' + token,
+            type: "GET",
+            success: function (res) {
+                notify('Inventário enviado com sucesso!');
+                document.getElementById('btnEnviarInventario').classList.remove('is-loading');
+            },
+            error: function (response) {
+                notifyError('Ocorreu um erro ao enviar o inventario! Provavelmente o inventário deste mês já foi enviado!');
+                document.getElementById('btnEnviarInventario').classList.remove('is-loading');
+            },
+            failure: function (response) {
+                notifyError('Falha ao enviar o inventario!');
+                document.getElementById('btnEnviarInventario').classList.remove('is-loading');
+            }
+        });
+    }
+    </script>

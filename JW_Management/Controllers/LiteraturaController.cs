@@ -2,6 +2,7 @@
 using JW_Management.Models;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using System.Security.Cryptography.Xml;
+using iTextSharp.text;
 using Microsoft.AspNetCore.Authorization;
 
 namespace JW_Management.Controllers
@@ -255,6 +256,27 @@ namespace JW_Management.Controllers
             Response.Headers.Add("Content-Disposition", cd.ToString());
 
             return new FileContentResult(output.ToArray(), System.Net.Mime.MediaTypeNames.Application.Pdf);
+        }
+        
+        [HttpGet]
+        public IActionResult API(string id)
+        {
+            JWApi api = HttpContext.RequestServices.GetService(typeof(JWApi)) as JWApi;
+            DbContext context = HttpContext.RequestServices.GetService(typeof(DbContext)) as DbContext;
+
+            api.XSRFToken = id;
+            var i = api.ObterInventario();
+            
+            if (i.DataInventario.Month == DateTime.Now.Month && i.DataInventario.Year == DateTime.Now.Year) return BadRequest();
+            List<Literatura> lstLiteraturas = context.ObterLiteraturas(i.DataInventario.Month, i.DataInventario.Year).Where(o => o.Tipo.Id != 7).ToList();
+
+            foreach (var l in i.Literatura)
+            {
+                l.Quantidade = lstLiteraturas.Where(o => o.Referencia == l.Referencia).DefaultIfEmpty(new Literatura()).First().Quantidade;
+                api.AtualizarLiteratura(i, l);
+            }
+           
+            return Ok(api.FecharInventario(i));
         }
 
         [HttpPost]
