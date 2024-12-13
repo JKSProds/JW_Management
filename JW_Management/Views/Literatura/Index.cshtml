@@ -372,17 +372,17 @@
                 <span class="icon">
                     <i class="fas fa-arrow-alt-circle-up"></i>
                 </span>
-                <span>Enviar Inventário - Token</span>
+                <span>Enviar Inventário - Cookie</span>
             </p>
             <button type="button" class="delete" aria-label="close"></button>
         </header>
         <section class="modal-card-body">
             <div class="modal-body">
                 <div class="field">
-                    <label class="label">X-XSRF-TOKEN</label>
+                    <label class="label">Cookie - Login</label>
                     <div class="field has-addons">
                         <div class="control" style="width:100%">
-                            <input type="text" class="input has-text-centered" min="1" id="txtToken" value="" placeholder="Insira o token...">
+                            <input type="text" class="input has-text-centered" min="1" id="txtCookie" value="" placeholder="Insira a cookie...">
                         </div>
                     </div>
                 </div>
@@ -390,7 +390,7 @@
         </section>
         <footer class="modal-card-foot">
             <a class="button is-info is-large is-fullwidth" id="btnEnviarInventario"
-               onclick="GerarInventario(document.getElementById('txtToken').value)">
+               onclick="GerarInventario(document.getElementById('txtCookie').value)">
                 <span class="icon">
                     <i class="fa-regular fa-paper-plane"></i>
                 </span>
@@ -498,7 +498,8 @@
     function GerarInventario(token) {
         document.getElementById('btnEnviarInventario').classList.add('is-loading');
         $.ajax({
-            url: '/Literatura/API/' + token,
+            url: '/Literatura/API/',
+            data: { "id": token },
             type: "GET",
             success: function (res) {
                 notify('Inventário enviado com sucesso!');

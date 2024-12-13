@@ -264,7 +264,7 @@ namespace JW_Management.Controllers
             JWApi api = HttpContext.RequestServices.GetService(typeof(JWApi)) as JWApi;
             DbContext context = HttpContext.RequestServices.GetService(typeof(DbContext)) as DbContext;
 
-            api.XSRFToken = id;
+            api.Cookies = id;
             var i = api.ObterInventario();
             
             if ((i.DataInventario.Month == DateTime.Now.Month && i.DataInventario.Year == DateTime.Now.Year) || string.IsNullOrEmpty(i.StampInventario)) return BadRequest();

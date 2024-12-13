@@ -1,4 +1,5 @@
 using System.Text;
+using System.Text.RegularExpressions;
 using Google.Protobuf.WellKnownTypes;
 using Newtonsoft.Json.Linq;
 
@@ -9,9 +10,8 @@ public class JWApi
     //API CALLS
 
     private string CongId => "07ec6967-d680-4f17-ba8c-1ffc08949dcb";
-    private string Token =>
-        $".AspNetCore.Cookies={XSRFToken};";
-    public string XSRFToken { get; set; } 
+    public string Cookies {get;set;} 
+    private string XSRF_Token => Regex.Match(Cookies, @"XSRF-TOKEN=([^;]+)").Groups[1].Value;
     private string BaseURL => $"https://hub.jw.org/congregation-literature/api";
 
     private string GET(string url)
@@ -19,7 +19,7 @@ public class JWApi
         using (HttpClient client = new HttpClient())
         {
             // Adicione o cabeçalho do cookie
-            client.DefaultRequestHeaders.Add("Cookie", Token);
+            client.DefaultRequestHeaders.Add("Cookie", Cookies);
 
             try
             {
@@ -54,8 +54,8 @@ public class JWApi
         {
 
             // Adicione o cabeçalho do cookie
-            client.DefaultRequestHeaders.Add("Cookie", Token);
-            client.DefaultRequestHeaders.Add("X-XSRF-TOKEN", XSRFToken);
+            client.DefaultRequestHeaders.Add("Cookie", Cookies);
+            client.DefaultRequestHeaders.Add("X-XSRF-TOKEN", XSRF_Token);
             
             // Criar o conteúdo da requisição
             var content = new StringContent(body, Encoding.UTF8, "application/json");
@@ -92,8 +92,8 @@ public class JWApi
         {
 
             // Adicione o cabeçalho do cookie
-            client.DefaultRequestHeaders.Add("Cookie", Token);
-            client.DefaultRequestHeaders.Add("X-XSRF-TOKEN", XSRFToken);
+            client.DefaultRequestHeaders.Add("Cookie", Cookies);
+            client.DefaultRequestHeaders.Add("X-XSRF-TOKEN", XSRF_Token);
             
             // Criar o conteúdo da requisição
             var content = new StringContent(body, Encoding.UTF8, "application/json");
