@@ -22,8 +22,8 @@ namespace JW_Management.Controllers
             LstTiposLiteratura.Insert(0, new TipoLiteratura() { Id = 0, Descricao = "Todos" });
             ViewBag.Tipos = LstTiposLiteratura.Select(l => new SelectListItem() { Value = l.Id.ToString(), Text = l.Descricao });
 
-            if (tipo == 0) { return View("Index", context.ObterLiteraturas(filtro, 0)); }
-            return View("Index", context.ObterLiteraturas(filtro, 0).Where(l => l.Tipo.Id == tipo));
+            if (tipo == 0) { return View("Index", context.ObterLiteraturas(filtro, 0).OrderBy(l => l.Referencia)); }
+            return View("Index", context.ObterLiteraturas(filtro, 0).Where(l => l.Tipo.Id == tipo).OrderBy(l => l.Referencia));
         }
 
         [HttpGet]
