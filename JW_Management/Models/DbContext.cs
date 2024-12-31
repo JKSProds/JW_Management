@@ -413,7 +413,7 @@
         public bool AdicionarPublicador(Publicador p)
         {
             string sql = "INSERT INTO sys_utilizadores(IdUtilizador, Username, Password, Nome, Telemovel, Email, IdGrupo, Tipo) VALUES ";
-            sql += ("('" + p.Id + "', '" + p.Username + "', '" + p.Password + "', '" + p.Nome + "', '" + p.Telemovel + "', '" + p.Email + "', '" + p.Grupo.Id + "', '90') as nPub ON DUPLICATE KEY UPDATE Username=nPub.Username, Password=nPub.Password, Telemovel=nPub.Telemovel, Email=nPub.Email, IdGrupo=nPub.IdGrupo, Nome=nPub.Nome;");
+            sql += ("('" + p.Id + "', '" + p.Username + "', '" + p.Password + "', '" + p.Nome + "', '" + p.Telemovel + "', '" + p.Email + "', '" + p.Grupo.Id + "', '90') ON DUPLICATE KEY UPDATE Username=VALUES(Username), Password=VALUES(Password), Telemovel=VALUES(Telemovel), Email=VALUES(Email), IdGrupo=VALUES(IdGrupo), Nome=VALUES(Nome);");
 
             return ExecutarQuery(sql);
         }
@@ -789,8 +789,8 @@
         {
 
             string sql = "INSERT INTO t_territorios(Stamp, Id, Nome, Descricao, Dificuldade, Url) VALUES ";
-            sql += ("('" + t.Stamp + "', '" + t.Id + "', '" + t.Nome + "', '" + t.Descricao + "', '" + (t.Dificuldade == DificuldadeTerritorio.FACIL ? "0" : t.Dificuldade == DificuldadeTerritorio.MODERADO ? "1" : "2") + "', '" + t.Url + "') as nT ");
-            sql += " ON DUPLICATE KEY UPDATE Id = nT.Id, Nome = nT.Nome, Dificuldade = nT.Dificuldade, Descricao = nT.Descricao, Url = nT.Url;";
+            sql += ("('" + t.Stamp + "', '" + t.Id + "', '" + t.Nome + "', '" + t.Descricao + "', '" + (t.Dificuldade == DificuldadeTerritorio.FACIL ? "0" : t.Dificuldade == DificuldadeTerritorio.MODERADO ? "1" : "2") + "', '" + t.Url + "') ");
+            sql += " ON DUPLICATE KEY UPDATE Id = VALUES(Id), Nome = VALUES(Nome), Dificuldade = VALUES(Dificuldade), Descricao = VALUES(Descricao), Url = VALUES(Url);";
 
             return ExecutarQuery(sql);
         }
