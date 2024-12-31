@@ -44,6 +44,8 @@
             if (string.IsNullOrEmpty(Email)) Email = string.Empty;
             if (string.IsNullOrEmpty(Telemovel)) Telemovel = string.Empty;
             if (Grupo == null) Grupo = new Grupo() { Id = 0 };
+            Territorios = new List<Territorio>();
+            
         }
 
     }

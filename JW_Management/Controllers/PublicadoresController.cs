@@ -28,7 +28,7 @@ namespace JW_Management.Controllers
             LstGrupos.Insert(0, new Grupo() { Id = 0, Nome = "N/D", Responsavel = new Publicador() { Nome = "N/D" } });
             ViewBag.Grupos = LstGrupos.Select(l => new SelectListItem() { Value = l.Id.ToString(), Text = l.Nome + " (" + l.Responsavel.Nome + ")" });
 
-            return View(context.ObterPublicador(id, true, true, true, true));
+            return View(context.ObterPublicador(id, true, true, true, false));
         }
 
         [Authorize(Roles = "Admin, Assistente, Coordenador, Secretario, Servico, Literatura, Territorios")]
