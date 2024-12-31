@@ -22,6 +22,45 @@ public class MySqlBackupService()
             else
                 Console.WriteLine("Erro ao realizar backup.");
         });
+        
+        Task.Run(async () =>
+        {
+            bool success = await DeleteFilesOlder();
+            if (success)
+                Console.WriteLine("Apagados ficheiros com sucesso!");
+            else
+                Console.WriteLine("Erro ao apagar ficheiros.");
+        });
+    }
+
+    public async Task<bool> DeleteFilesOlder()
+    {
+        try
+        {
+            // Get all files in the directory
+            string[] files = Directory.GetFiles(_backupPath);
+
+            // Iterate through the files
+            foreach (string file in files)
+            {
+                FileInfo fileInfo = new FileInfo(file);
+
+                // Check if the file is older than 1 month
+                if (fileInfo.LastWriteTime < DateTime.Now.AddMonths(-1))
+                {
+                    Console.WriteLine($"Deleting file: {file}");
+                    fileInfo.Delete(); // Delete the file
+                }
+            }
+
+            Console.WriteLine("Cleanup completed.");
+            return true;
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"An error occurred: {ex.Message}");
+            return false;
+        }
     }
     
     public async Task<bool> BackupMySQL()
