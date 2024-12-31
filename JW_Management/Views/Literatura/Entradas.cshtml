@@ -41,7 +41,7 @@
                             });</script>
                     </p>
                 </form>
-                <div class="buttons is-right mt-2">
+                <div class="buttons has-addons is-right mt-2">
                     <p class="control">
                         <button type="button" class="button is-info is-large is-fullwidth "
                                 onclick="Bulma('#modalEntradaPublicacoes').modal().open();">
@@ -190,6 +190,7 @@
             </div>
         </section>
         <footer class="modal-card-foot">
+            <div class="buttons is-centered" style="width:100%">
             <a class="button is-info is-large is-fullwidth"
                onclick="GerarMovimento(document.getElementById('txtPubStamp').value, document.getElementById('txtQtd').value)">
                 <span class="icon">
@@ -206,6 +207,7 @@
                 </span>
                 <span>Fechar</span>
             </button>
+            </div>
         </footer>
     </div>
 </div>
@@ -303,6 +305,7 @@
             </div>
         </section>
         <footer class="modal-card-foot">
+            <div class="buttons is-centered" style="width:100%">
             <a class="button is-info is-large is-fullwidth"
                onclick="CriarPeriodico(document.getElementById('periodico').value, document.getElementById('periodico')[document.getElementById('periodico').selectedIndex].text, document.getElementById('mes').value, document.getElementById('ano').value, document.getElementById('txtQtdPeriodico').value)">
                 <span class="icon">
@@ -317,6 +320,7 @@
                 </span>
                 <span>Fechar</span>
             </button>
+            </div>
         </footer>
     </div>
 </div>
@@ -338,6 +342,7 @@
             </div>
         </section>
         <footer class="modal-card-foot">
+            <div class="buttons is-centered" style="width:100%">
             <button class="button is-danger is-fullwidth is-large"
                     onclick="Apagar(document.getElementById('txtHiddenStamp').value);">
                 <span class="icon">
@@ -351,6 +356,7 @@
                 </span>
                 <span>Não</span>
             </button>
+            </div>
         </footer>
     </div>
 </div>

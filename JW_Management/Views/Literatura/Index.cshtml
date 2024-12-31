@@ -40,7 +40,7 @@
                             <i class="fa-solid fa-book"></i>
                         </span>
                     </p>
-                    <div class="buttons is-right mt-2">
+                    <div class="buttons has-addons is-right mt-2">
                         <p class="control">
                             <button type="submit" class="button is-info is-outlined is-fullwidth ">
                                 <span class="icon">
@@ -134,7 +134,7 @@
                                     <span>@item.Tipo!.Descricao</span>
                                 </td>
                                 <td class="is-actions-cell">
-                                    <div class="buttons is-pulled-right is-flex-wrap-nowrap" style="width:100%">
+                                    <div class="field has-addons is-pulled-right is-flex-wrap-nowrap" style="width:100%">
                                         <button class="button is-primary is-fullwidth is-large mr-1"
                                                 onclick="AtualizarImagem('@item.Stamp')">
                                             <i class="fas fa-image"></i>
@@ -224,6 +224,7 @@
             </div>
         </section>
         <footer class="modal-card-foot">
+            <div class="buttons is-centered" style="width:100%">
             <a class="button is-info is-large is-fullwidth"
                onclick="CriarPublicacao(document.getElementById('txtRefPub').value, document.getElementById('txtNomePub').value, document.getElementById('txtTipoPub').value, document.getElementById('txtQtdPub').value, )">
                 <span class="icon">
@@ -240,6 +241,7 @@
                 </span>
                 <span>Fechar</span>
             </button>
+            </div>
         </footer>
     </div>
 </div>
@@ -285,6 +287,7 @@
             </div>
         </section>
         <footer class="modal-card-foot">
+            <div class="buttons is-centered" style="width:100%">
             <a class="button is-info is-large is-fullwidth"
                onclick="GerarMovimento(document.getElementById('txtHiddenStamp').value, document.getElementById('txtQtd').value)">
                 <span class="icon">
@@ -301,6 +304,7 @@
                 </span>
                 <span>Fechar</span>
             </button>
+            </div>
         </footer>
     </div>
 </div>
@@ -318,6 +322,7 @@
             </div>
         </section>
         <footer class="modal-card-foot">
+            <div class="buttons is-centered" style="width:100%">
             <button class="button is-danger is-fullwidth is-large"
                     onclick="Apagar(document.getElementById('txtHiddenStamp').value);">
                 <span class="icon">
@@ -331,6 +336,7 @@
                 </span>
                 <span>Não</span>
             </button>
+            </div>
         </footer>
     </div>
 </div>
@@ -352,6 +358,7 @@
             </div>
         </section>
         <footer class="modal-card-foot">
+            <div class="buttons is-centered" style="width:100%">
             <button type="button" class="button is-info is-large is-fullwidth"
                     onclick="Bulma('#modalAtualizarImagem').modal().close();" id="btnConfirmAddAnexo"
                     href="javascript:;">
@@ -360,6 +367,7 @@
                 </span>
                 <span>Fechar</span>
             </button>
+            </div>
         </footer>
     </div>
 </div>
@@ -389,6 +397,7 @@
             </div>
         </section>
         <footer class="modal-card-foot">
+            <div class="buttons is-centered" style="width:100%">
             <a class="button is-info is-large is-fullwidth" id="btnEnviarInventario"
                onclick="GerarInventario(document.getElementById('txtCookie').value)">
                 <span class="icon">
@@ -405,6 +414,7 @@
                 </span>
                 <span>Fechar</span>
             </button>
+            </div>
         </footer>
     </div>
 </div>

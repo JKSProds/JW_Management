@@ -68,9 +68,9 @@
                             <span>@Math.Abs(item.Quantidade)</span>
                         </td>
                         <td class="is-actions-cell">
-                            <div class="buttons is-pulled-right is-flex-wrap-nowrap">
+                            <div class="field has-addons is-pulled-right is-flex-wrap-nowrap" style="width:100%">
                                 <button class="button is-success is-fullwidth is-large"
-                                        onclick="GerarMovimento('@item.Stamp', @item.Quantidade, @item.Publicador.Id)">
+                                        onclick="this.classList.add('is-loading');GerarMovimento('@item.Stamp', @item.Quantidade, @item.Publicador.Id)">
                                     <i class="fas fa-circle-check"></i>
                                 </button>
                             </div>

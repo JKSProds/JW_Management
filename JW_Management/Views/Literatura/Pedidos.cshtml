@@ -22,7 +22,7 @@
         <div class="column">
             <div class="field has-addons has-addons-right mx-1 is-flex-wrap-wrap" style="width:100%">
 
-                <div class="buttons is-right">
+                <div class="buttons has-addons is-right mt-2">
                     <p class="control">
                         <button type="button" class="button is-info is-large is-fullwidth "
                                 onclick="Bulma('#modalPedidoPublicacoes').modal().open();">
@@ -128,7 +128,7 @@
                                                     <span>@item.EstadoPedido!.Descricao</span>
                                                 </td>
                                                 <td class="is-actions-cell">
-                                                    <div class="buttons is-pulled-right is-flex-wrap-nowrap" style="width:100%">
+                                                    <div class="field has-addons is-pulled-right is-flex-wrap-nowrap" style="width:100%">
                                                         <button class="button is-success is-fullwidth is-large mr-1" onclick="Bulma('#modalAtualizarEstado').modal().open();document.getElementById('txtEstado').value = '@item.EstadoPedido.Descricao'; document.getElementById('txtQtdPedido').value = @item.Quantidade;document.getElementById('txtHiddenStamp').value = '@item.Stamp'">
                                                             <i class="fa-solid fa-arrows-rotate"></i>
                                                         </button>
@@ -225,7 +225,7 @@
                                                     <span>@item.Publicador!.Nome</span>
                                                 </td>
                                                 <td class="is-actions-cell">
-                                                    <div class="buttons is-pulled-right is-flex-wrap-nowrap" style="width:100%">
+                                                    <div class="field has-addons is-pulled-right is-flex-wrap-nowrap" style="width:100%">
                                                         <button class="button is-danger is-fullwidth is-large"
                                                                 onclick="ConfirmApagarPeriodico('@item.Stamp')">
                                                             <i class="fas fa-trash-can"></i>
@@ -317,6 +317,7 @@
             </div>
         </section>
         <footer class="modal-card-foot">
+            <div class="buttons is-centered" style="width:100%">
             <a class="button is-info is-large is-fullwidth"
                onclick="CriarPedidoEspecial(document.getElementById('txtPubStamp').value, document.getElementById('txtQtd').value, document.getElementById('txtIdPublicador').value)">
                 <span class="icon">
@@ -333,6 +334,7 @@
                 </span>
                 <span>Fechar</span>
             </button>
+            </div>
         </footer>
     </div>
 </div>
@@ -406,6 +408,7 @@
             </div>
         </section>
         <footer class="modal-card-foot">
+            <div class="buttons is-centered" style="width:100%">
             <a class="button is-info is-large is-fullwidth"
                onclick="CriarPedidoPeriodico(document.getElementById('periodico').value, document.getElementById('txtQtdPeriodico').value, document.getElementById('txtIdPublicador2').value)">
                 <span class="icon">
@@ -420,6 +423,7 @@
                 </span>
                 <span>Fechar</span>
             </button>
+            </div>
         </footer>
     </div>
 </div>
@@ -441,6 +445,7 @@
             </div>
         </section>
         <footer class="modal-card-foot">
+            <div class="buttons is-centered" style="width:100%">
             <button class="button is-danger is-fullwidth is-large"
                     onclick="ApagarPeriodico(document.getElementById('txtHiddenStamp').value);">
                 <span class="icon">
@@ -454,6 +459,7 @@
                 </span>
                 <span>Não</span>
             </button>
+            </div>
         </footer>
     </div>
 </div>
@@ -475,6 +481,7 @@
             </div>
         </section>
         <footer class="modal-card-foot">
+            <div class="buttons is-centered" style="width:100%">
             <button class="button is-danger is-fullwidth is-large"
                     onclick="ApagarEspecial(document.getElementById('txtHiddenStamp').value);">
                 <span class="icon">
@@ -488,6 +495,7 @@
                 </span>
                 <span>Não</span>
             </button>
+            </div>
         </footer>
     </div>
 </div>
@@ -584,6 +592,7 @@
             </div>
         </section>
         <footer class="modal-card-foot">
+            <div class="buttons is-centered" style="width:100%">
             <a class="button is-info is-large is-fullwidth"
                onclick="AtualizarPedidoEspecial(document.getElementById('txtHiddenStamp').value, document.getElementById('txtQtdPedido').value, document.getElementById('txtEstado')[document.getElementById('txtEstado').selectedIndex].text)">
                 <span class="icon">
@@ -600,6 +609,7 @@
                 </span>
                 <span>Fechar</span>
             </button>
+            </div>
         </footer>
     </div>
 </div>
@@ -624,6 +634,7 @@
             </div>
         </section>
         <footer class="modal-card-foot">
+            <div class="buttons is-centered" style="width:100%">
             <button class="button is-info is-fullwidth is-large"
                     onclick="EnviarEmailPedidosPendentes(document.getElementById('txtEmailPedidos').value);">
                 <span class="icon">
@@ -637,6 +648,7 @@
                 </span>
                 <span>Não</span>
             </button>
+            </div>
         </footer>
     </div>
 </div>
@@ -677,6 +689,7 @@
             </div>
         </section>
         <footer class="modal-card-foot">
+            <div class="buttons is-centered" style="width:100%">
             <button class="button is-info is-fullwidth is-large"
                     onclick="EnviarEmailPedidosPeriodicos(document.getElementById('txtEmailPeriodicos').value, document.getElementById('mailperiodico').value);">
                 <span class="icon">
@@ -690,6 +703,7 @@
                 </span>
                 <span>Não</span>
             </button>
+            </div>
         </footer>
     </div>
 </div>
