@@ -10,12 +10,14 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddRazorPages();
 builder.Services.Add(new ServiceDescriptor(typeof(JW_Management.Models.DbContext), new JW_Management.Models.DbContext(builder.Configuration.GetConnectionString("DefaultConnection")!)));
 builder.Services.Add(new ServiceDescriptor(typeof(JW_Management.Models.JWApi), new JW_Management.Models.JWApi()));
+builder.Services.Add(new ServiceDescriptor(typeof(JW_Management.Models.MySqlBackupService), new JW_Management.Models.MySqlBackupService(builder.Configuration.GetConnectionString("DefaultConnection")!, $"/backup/" )));
 
 builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme).AddCookie(cookieOptions =>
 {
     cookieOptions.LoginPath = "/Home/Login";
     cookieOptions.AccessDeniedPath = "/Home/Error";
 });
+
 #if !DEBUG
 builder.Services.AddDataProtection().SetApplicationName("JW_Management").PersistKeysToFileSystem(new DirectoryInfo("/https/"));
 builder.Services.AddLettuceEncrypt().PersistDataToDirectory(new DirectoryInfo("/https/"), "Mon2020@");
