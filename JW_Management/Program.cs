@@ -10,7 +10,7 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddRazorPages();
 builder.Services.Add(new ServiceDescriptor(typeof(JW_Management.Models.DbContext), new JW_Management.Models.DbContext(builder.Configuration.GetConnectionString("DefaultConnection")!)));
 builder.Services.Add(new ServiceDescriptor(typeof(JW_Management.Models.JWApi), new JW_Management.Models.JWApi()));
-builder.Services.Add(new ServiceDescriptor(typeof(JW_Management.Models.MySqlBackupService), new JW_Management.Models.MySqlBackupService(builder.Configuration.GetConnectionString("DefaultConnection")!, $"/backup/" )));
+builder.Services.Add(new ServiceDescriptor(typeof(JW_Management.Models.MySqlBackupService), new JW_Management.Models.MySqlBackupService(builder.Configuration.GetConnectionString("DefaultConnection")!, $"/app/img/backup/" )));
 
 builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme).AddCookie(cookieOptions =>
 {
