@@ -6,10 +6,11 @@ using Microsoft.AspNetCore.Identity;
 using System;
 using System.Collections.Generic;
 using System.Security.Claims;
+using AppContext = System.AppContext;
 
 namespace JW_Management.Controllers
 {
-    public class HomeController : Controller
+    public class HomeController(JW_Management.Models.AppContext _appContext) : Controller
     {
         public IActionResult Index()
         {
@@ -25,11 +26,11 @@ namespace JW_Management.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> Login(Publicador p, string ReturnUrl)
+        public async Task<IActionResult> Login(Publicador p, int t, string ReturnUrl)
         {
             p.Username = p.Username.ToLower().Trim();
             DbContext context = HttpContext.RequestServices.GetService(typeof(DbContext)) as DbContext;
-            List<Publicador> LstUtilizadores = context.ObterPublicadores(false).Where(u => u.Username == p.Username).ToList();
+            List<Publicador> LstUtilizadores = context.ObterPublicadores(t, false).Where(u => u.Username == p.Username).ToList();
 
             foreach (var u in LstUtilizadores)
             {
@@ -42,7 +43,8 @@ namespace JW_Management.Controllers
                         {
                             new Claim(ClaimTypes.Name, u.Id.ToString()),
                             new Claim(ClaimTypes.Role, u.Role),
-                            new Claim(ClaimTypes.GivenName, u.Nome!)
+                            new Claim(ClaimTypes.GivenName, u.Nome!),
+                            new Claim(ClaimTypes.Sid, t.ToString())
                 };
                     var claimsIdentity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
                     await HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, new ClaimsPrincipal(claimsIdentity));
@@ -68,6 +70,12 @@ namespace JW_Management.Controllers
         public IActionResult Error()
         {
             return View();
+        }
+        
+        [HttpGet]
+        public JsonResult Tenants()
+        {
+            return Json(_appContext._tenantContext._tenants.Select(t => new Tenant() {Id = t.Id, Nome = t.Nome}));
         }
 
         public async Task<IActionResult> Logout()

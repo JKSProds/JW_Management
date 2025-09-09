@@ -5,15 +5,20 @@ using Newtonsoft.Json.Linq;
 
 namespace JW_Management.Models;
 
-public class JWApi
+public class JWApiContext
 {
     //API CALLS
-
-    private string CongId => "07ec6967-d680-4f17-ba8c-1ffc08949dcb";
+    public AppContext _appContext { get; set; }
+    private string CongId => _appContext._currentTenant.JWApiIdCongregacao;
     public string Cookies {get;set;} 
     private string XSRF_Token => Regex.Match(Cookies, @"XSRF-TOKEN=([^;]+)").Groups[1].Value;
     private string BaseURL => $"https://hub.jw.org/congregation-literature/api";
 
+    public JWApiContext(AppContext appContext)
+    {
+        _appContext = appContext;
+    }
+    
     private string GET(string url)
     {
         using (HttpClient client = new HttpClient())

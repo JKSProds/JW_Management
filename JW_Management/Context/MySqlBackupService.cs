@@ -4,36 +4,43 @@ using MySql.Data.MySqlClient;
 
 public class MySqlBackupService()
 {
-    private readonly string _connectionString;
-    private readonly string _backupPath;
+    private string _connectionString => _appContext._currentTenant.ConnectionString;
+    private string _backupPath => "/app/img/backup/" + _appContext._currentTenant.Id + "/";
+    public AppContext _appContext { get; set; }
     
     // Construtor com parâmetros
-    public MySqlBackupService(string connectionString, string backupPath) : this()
+    public MySqlBackupService(AppContext appContext) : this()
     {
-        _connectionString = connectionString;
-        _backupPath = backupPath;
+        _appContext = appContext;
 
-        // Executar o backup automaticamente ao instanciar a classe
-        Task.Run(async () =>
+        foreach (var t in _appContext._tenantContext._tenants)
         {
-            bool success = await BackupMySQL();
-            if (success)
-                Console.WriteLine("Backup realizado com sucesso!");
-            else
-                Console.WriteLine("Erro ao realizar backup.");
-        });
+            _appContext._manualTenant = t.Id;
+            
+            // Executar o backup automaticamente ao instanciar a classe
+            Task.Run(async () =>
+            {
+                bool success = await BackupMySQL();
+                if (success)
+                    Console.WriteLine($"[{t.NomeCongregacao}] Backup realizado com sucesso!");
+                else
+                    Console.WriteLine($"[{t.NomeCongregacao}] Erro ao realizar backup.");
+            });
         
-        Task.Run(async () =>
-        {
-            bool success = await DeleteFilesOlder();
-            if (success)
-                Console.WriteLine("Apagados ficheiros com sucesso!");
-            else
-                Console.WriteLine("Erro ao apagar ficheiros.");
-        });
+            Task.Run(async () =>
+            {
+                bool success = await DeleteFilesOlder();
+                if (success)
+                    Console.WriteLine($"[{t.NomeCongregacao}] Apagados ficheiros com sucesso!");
+                else
+                    Console.WriteLine($"[{t.NomeCongregacao}] Erro ao apagar ficheiros.");
+            });
+        }
+
+        _appContext._manualTenant = 0;
     }
 
-    public async Task<bool> DeleteFilesOlder()
+    private async Task<bool> DeleteFilesOlder()
     {
         try
         {
@@ -63,7 +70,7 @@ public class MySqlBackupService()
         }
     }
     
-    public async Task<bool> BackupMySQL()
+    private async Task<bool> BackupMySQL()
     {
         try
         {

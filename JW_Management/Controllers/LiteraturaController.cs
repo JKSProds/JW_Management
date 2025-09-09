@@ -261,11 +261,11 @@ namespace JW_Management.Controllers
         [HttpGet]
         public IActionResult API(string id)
         {
-            JWApi api = HttpContext.RequestServices.GetService(typeof(JWApi)) as JWApi;
+            JWApiContext apiContext = HttpContext.RequestServices.GetService(typeof(JWApiContext)) as JWApiContext;
             DbContext context = HttpContext.RequestServices.GetService(typeof(DbContext)) as DbContext;
-
-            api.Cookies = id;
-            var i = api.ObterInventario();
+            
+            apiContext.Cookies = id;
+            var i = apiContext.ObterInventario();
             
             if ((i.DataInventario.Month == DateTime.Now.Month && i.DataInventario.Year == DateTime.Now.Year) || string.IsNullOrEmpty(i.StampInventario)) return BadRequest();
             List<Literatura> lstLiteraturas = context.ObterLiteraturas(i.DataInventario.Month, i.DataInventario.Year).Where(o => o.Tipo.Id != 7).ToList();
@@ -273,10 +273,10 @@ namespace JW_Management.Controllers
             foreach (var l in i.Literatura)
             {
                 l.Quantidade = lstLiteraturas.Where(o => o.Referencia == l.Referencia).DefaultIfEmpty(new Literatura()).First().Quantidade;
-                api.AtualizarLiteratura(i, l);
+                apiContext.AtualizarLiteratura(i, l);
             }
            
-            return Ok(api.FecharInventario(i));
+            return Ok(apiContext.FecharInventario(i));
         }
 
         [HttpPost]

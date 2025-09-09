@@ -7,14 +7,17 @@
 
     public class DbContext
     {
-        public string ConnectionString { get; set; }
-        public DbContext(string ConnString)
+        public AppContext _appContext { get; set; }
+        public Tenant _currentTenant => _appContext._currentTenant;
+        private string _masterConnectionString => _appContext._tenantContext._masterConnectionString;
+        private string _connectionString => _currentTenant.ConnectionString;
+        
+        public DbContext(AppContext appContext)
         {
-            this.ConnectionString = ConnString;
-
             try
             {
-                Database db = ConnectionString;
+                _appContext = appContext;
+                using Database db = _masterConnectionString;
             }
             catch (Exception)
             {
@@ -26,7 +29,7 @@
         {
             try
             {
-                Database db = ConnectionString;
+                Database db = _connectionString;
 
                 db.Execute(SQL_Query);
                 db.Connection.Close();
@@ -50,7 +53,7 @@
             FileContext f = new();
             f.ObterCaminhoLiteratura();
 
-            using (Database db = ConnectionString)
+            using (Database db = _connectionString)
             {
                 string sql = "SELECT *, IFNULL((SELECT SUM(Quantidade) from l_movimentos where l_pubs.STAMP=l_movimentos.StampLiteratura and l_movimentos.IdPublicador=" + idpub + "), 0) as Quantidade, IFNULL((SELECT Caminho from l_img where l_pubs.Referencia=l_img.Referencia), '') as Imagem FROM l_pubs where Descricao like '%" + filtro + "%' or Referencia like '%" + filtro + "%';";
                 using var result = db.Query(sql);
@@ -88,9 +91,9 @@
             DateTime dInicial = DateTime.Parse("01/" + Mes + "/" + Ano + " 00:00:00");
             DateTime dFinal = DateTime.Parse(DateTime.DaysInMonth(Ano, Mes) + "/" + Mes + "/" + Ano + " 23:59:59");
 
-            using (Database db = ConnectionString)
+            using (Database db = _connectionString)
             {
-                string sql = "SELECT IFNULL(l_form_order.Linha,0) as Linha, l_pubs.*, IFNULL((SELECT SUM(Quantidade) from l_movimentos where l_pubs.STAMP=l_movimentos.StampLiteratura and Data < '" + dFinal.ToString("yyyy-MM-dd HH:mm:ss") + "' and IdPublicador = 0), 0) as Quantidade , IFNULL((SELECT SUM(CASE WHEN Quantidade > 0 THEN Quantidade ELSE 0 END) from l_movimentos where l_pubs.STAMP=l_movimentos.StampLiteratura and Data between '" + dInicial.ToString("yyyy-MM-dd HH:mm:ss") + "' and '" + dFinal.ToString("yyyy-MM-dd HH:mm:ss") + "' and IdPublicador = 0), 0) as Entradas , IFNULL((SELECT SUM(CASE WHEN Quantidade < 0 THEN Quantidade ELSE 0 END) from l_movimentos where l_pubs.STAMP=l_movimentos.StampLiteratura and Data between '" + dInicial.ToString("yyyy-MM-dd HH:mm:ss") + "' and '" + dFinal.ToString("yyyy-MM-dd HH:mm:ss") + "' and IdPublicador = 0), 0) as Saidas FROM l_pubs left join l_form_order on l_pubs.Referencia=l_form_order.Referencia;";
+                string sql = "SELECT l_pubs.*, IFNULL((SELECT SUM(Quantidade) from l_movimentos where l_pubs.STAMP=l_movimentos.StampLiteratura and Data < '" + dFinal.ToString("yyyy-MM-dd HH:mm:ss") + "' and IdPublicador = 0), 0) as Quantidade , IFNULL((SELECT SUM(CASE WHEN Quantidade > 0 THEN Quantidade ELSE 0 END) from l_movimentos where l_pubs.STAMP=l_movimentos.StampLiteratura and Data between '" + dInicial.ToString("yyyy-MM-dd HH:mm:ss") + "' and '" + dFinal.ToString("yyyy-MM-dd HH:mm:ss") + "' and IdPublicador = 0), 0) as Entradas , IFNULL((SELECT SUM(CASE WHEN Quantidade < 0 THEN Quantidade ELSE 0 END) from l_movimentos where l_pubs.STAMP=l_movimentos.StampLiteratura and Data between '" + dInicial.ToString("yyyy-MM-dd HH:mm:ss") + "' and '" + dFinal.ToString("yyyy-MM-dd HH:mm:ss") + "' and IdPublicador = 0), 0) as Saidas FROM l_pubs;";
 
                 using var result = db.Query(sql);
                 while (result.Read())
@@ -105,7 +108,7 @@
                         Quantidade = result["Quantidade"],
                         Entradas = result["Entradas"],
                         Saidas = result["Saidas"],
-                        Linha = result["Linha"],
+                        Linha = 0,
                         Tipo = LstTiposLiteratura.Where(g => g.Id == result["IdTipo"]).FirstOrDefault(new TipoLiteratura())
                     });
                 }
@@ -121,7 +124,7 @@
             List<TipoLiteratura> LstTiposLiteratura = ObterTiposLiteratura();
             FileContext f = new();
 
-            using (Database db = ConnectionString)
+            using (Database db = _connectionString)
             {
                 string sql = "SELECT *, IFNULL((SELECT SUM(Quantidade) from l_movimentos where l_pubs.STAMP=l_movimentos.StampLiteratura and l_movimentos.IdPublicador=0), 0) as Quantidade, IFNULL((SELECT Caminho from l_img where l_pubs.Referencia=l_img.Referencia), '') as Imagem FROM l_pubs where STAMP='" + STAMP + "';";
                 using var result = db.Query(sql);
@@ -149,7 +152,7 @@
         {
             List<TipoLiteratura> LstTiposLiteratura = new();
 
-            using (Database db = ConnectionString)
+            using (Database db = _connectionString)
             {
                 string sql = "SELECT * FROM l_tipos;";
                 using var result = db.Query(sql);
@@ -171,7 +174,7 @@
         {
             List<EstadoPedido> LstEstadoPedido = new();
 
-            using (Database db = ConnectionString)
+            using (Database db = _connectionString)
             {
                 string sql = "SELECT * FROM l_estado_pedido;";
                 using var result = db.Query(sql);
@@ -194,7 +197,7 @@
             List<Grupo> LstGrupos = new();
             List<Publicador> LstPublicadores = ObterPublicadores(false);
 
-            using (Database db = ConnectionString)
+            using (Database db = _connectionString)
             {
                 string sql = "SELECT * FROM l_grupos;";
                 using var result = db.Query(sql);
@@ -219,7 +222,7 @@
             Grupo g = new();
             List<Publicador> LstPublicadores = ObterPublicadores(false);
 
-            using (Database db = ConnectionString)
+            using (Database db = _connectionString)
             {
                 string sql = "SELECT * FROM l_grupos where Id=" + id + ";";
                 using var result = db.Query(sql);
@@ -265,7 +268,7 @@
         {
             List<Literatura> LstLiteratura = new();
 
-            using (Database db = ConnectionString)
+            using (Database db = _connectionString)
             {
                 string sql = "SELECT * from l_periodicos order by Id";
                 using var result = db.Query(sql);
@@ -290,7 +293,7 @@
             List<TipoLiteratura> LstTiposLiteratura = ObterTiposLiteratura();
             FileContext f = new();
 
-            using (Database db = ConnectionString)
+            using (Database db = _connectionString)
             {
                 string sql = "SELECT *, (SELECT Descricao FROM l_periodicos WHERE l_pubs.Referencia=l_periodicos.Referencia) as DescAdicional, IFNULL((SELECT SUM(Quantidade) from l_movimentos where l_pubs.STAMP=l_movimentos.StampLiteratura and l_movimentos.IdPublicador=0), 0) as Quantidade, IFNULL((SELECT Caminho from l_img where l_pubs.Referencia=l_img.Referencia), '') as Imagem FROM l_pubs where IdTipo=7 and IFNULL((SELECT SUM(Quantidade) from l_movimentos where l_pubs.STAMP=l_movimentos.StampLiteratura), 0) > 0 and (SELECT SUM(Quantidade) from l_pedidos_periodicos where l_pubs.Referencia = l_pedidos_periodicos.Referencia) > 0;";
                 using var result = db.Query(sql);
@@ -320,7 +323,7 @@
             List<Literatura> LstLiteratura = new();
             List<TipoLiteratura> LstTiposLiteratura = ObterTiposLiteratura();
 
-            using (Database db = ConnectionString)
+            using (Database db = _connectionString)
             {
                 string sql = "select l_pubs.STAMP, l_pubs.Id, l_pubs.Referencia, l_pubs.Descricao, l_pedidos_periodicos.Quantidade, l_pubs.IdTipo, sys_utilizadores.* from l_pedidos_periodicos inner join l_pubs on l_pubs.Referencia=l_pedidos_periodicos.Referencia left join sys_utilizadores on sys_utilizadores.IdUtilizador=l_pedidos_periodicos.IdPublicador\r\nwhere Quantidade>IFNULL((SELECT SUM(Quantidade) from l_movimentos where l_pubs.STAMP=l_movimentos.StampLiteratura  and l_movimentos.IdPublicador=l_pedidos_periodicos.IdPublicador), 0) and l_pubs.STAMP='" + stamp + "';";
                 using var result = db.Query(sql);
@@ -343,6 +346,37 @@
         }
 
         //Obter Publicadores
+        
+        public List<Publicador> ObterPublicadores(int tenant, bool LoadGrupo)
+        {
+            List<Publicador> LstPublicador = new();
+            List<Grupo> LstGrupos = new List<Grupo>();
+
+            if (LoadGrupo) LstGrupos = ObterGrupos();
+
+            using (Database db = _appContext._tenantContext._tenants.First(t => t.Id == tenant).ConnectionString)
+            {
+                string sql = "SELECT * FROM sys_utilizadores";
+                using var result = db.Query(sql);
+                while (result.Read())
+                {
+                    LstPublicador.Add(new Publicador()
+                    {
+                        Id = result["IdUtilizador"],
+                        Username = result["Username"],
+                        Password = result["Password"],
+                        Nome = result["Nome"],
+                        Email = result["Email"],
+                        Telemovel = result["Telemovel"],
+                        TipoUtilizador = result["Tipo"]
+                    });
+
+                    if (LoadGrupo) LstPublicador.Last().Grupo = LstGrupos.Where(g => g.Id == int.Parse(result["IdGrupo"])).DefaultIfEmpty(new Grupo()).First();
+                }
+            }
+
+            return LstPublicador;
+        }
         public List<Publicador> ObterPublicadores(bool LoadGrupo)
         {
             List<Publicador> LstPublicador = new();
@@ -350,7 +384,7 @@
 
             if (LoadGrupo) LstGrupos = ObterGrupos();
 
-            using (Database db = ConnectionString)
+            using (Database db = _connectionString)
             {
                 string sql = "SELECT * FROM sys_utilizadores";
                 using var result = db.Query(sql);
@@ -379,7 +413,7 @@
         {
             Publicador p = new();
 
-            using (Database db = ConnectionString)
+            using (Database db = _connectionString)
             {
                 string sql = "SELECT * FROM sys_utilizadores where IdUtilizador=" + id + ";";
                 using var result = db.Query(sql);
@@ -434,7 +468,7 @@
             List<Movimentos> LstMovimentos = new();
             DateOnly dF = data == DateOnly.MinValue ? DateOnly.MaxValue : data.AddDays(1);
 
-            using (Database db = ConnectionString)
+            using (Database db = _connectionString)
             {
                 string sql = "SELECT * FROM l_movimentos where " + (Out ? "IdPublicador=" + IdPub + " AND " : "") + "Data between '" + data.ToString("yyyy-MM-dd") + "' and '" + dF.ToString("yyyy-MM-dd") + "' AND(" + (In ? "Quantidade > 0" : "") + (In && Out ? " OR " : "") + (Out ? "Quantidade < 0" : "") + "); ";
                 using var result = db.Query(sql);
@@ -480,7 +514,7 @@
             List<TipoLiteratura> LstTiposLiteratura = ObterTiposLiteratura();
             FileContext f = new();
 
-            using (Database db = ConnectionString)
+            using (Database db = _connectionString)
             {
                 string sql = "SELECT l_pedidos_periodicos.*, l_periodicos.Descricao, IFNULL((SELECT Caminho from l_img where l_periodicos.Referencia=l_img.Referencia), '') as Imagem from l_pedidos_periodicos inner join l_periodicos on l_pedidos_periodicos.Referencia = l_periodicos.Referencia;";
                 using var result = db.Query(sql);
@@ -509,7 +543,7 @@
             Publicador p = ObterPublicador(IdPub, false, false, false, false);
             List<TipoLiteratura> LstTiposLiteratura = ObterTiposLiteratura();
 
-            using (Database db = ConnectionString)
+            using (Database db = _connectionString)
             {
                 string sql = "SELECT l_pedidos_periodicos.*, l_periodicos.Descricao from l_pedidos_periodicos inner join l_periodicos on l_pedidos_periodicos.Referencia = l_periodicos.Referencia Where l_pedidos_periodicos.IdPublicador=" + IdPub + ";";
                 using var result = db.Query(sql);
@@ -556,7 +590,7 @@
             List<TipoLiteratura> LstTiposLiteratura = ObterTiposLiteratura();
             FileContext f = new();
 
-            using (Database db = ConnectionString)
+            using (Database db = _connectionString)
             {
                 string sql = "SELECT l_pedidos_especiais.*, l_pubs.Referencia, l_pubs.Descricao, l_pubs.IdTipo, IFNULL((SELECT Caminho from l_img where l_pubs.Referencia=l_img.Referencia), '') as Imagem from l_pedidos_especiais inner join l_pubs on l_pedidos_especiais.StampLiteratura = l_pubs.STAMP;";
                 using var result = db.Query(sql);
@@ -587,7 +621,7 @@
             Publicador p = ObterPublicador(IdPub, false, false, false, false);
             List<TipoLiteratura> LstTiposLiteratura = ObterTiposLiteratura();
 
-            using (Database db = ConnectionString)
+            using (Database db = _connectionString)
             {
                 string sql = "SELECT l_pedidos_especiais.*, l_pubs.Referencia, l_pubs.Descricao, l_pubs.IdTipo from l_pedidos_especiais inner join l_pubs on l_pedidos_especiais.StampLiteratura = l_pubs.STAMP Where IdPublicador = " + IdPub + ";";
                 using var result = db.Query(sql);
@@ -616,7 +650,7 @@
             Literatura l = new();
             List<TipoLiteratura> LstTiposLiteratura = ObterTiposLiteratura();
 
-            using (Database db = ConnectionString)
+            using (Database db = _connectionString)
             {
                 string sql = "SELECT l_pedidos_especiais.*, l_pubs.Referencia, l_pubs.Descricao, l_pubs.IdTipo from l_pedidos_especiais inner join l_pubs on l_pedidos_especiais.StampLiteratura = l_pubs.STAMP Where l_pedidos_especiais.Id = '" + Stamp + "';";
                 using var result = db.Query(sql);
@@ -701,7 +735,7 @@
             List<Territorio> LstTerritorios = new();
             List<TipoTerritorio> LstTipos = ObterTiposTerritorio();
 
-            using (Database db = ConnectionString)
+            using (Database db = _connectionString)
             {
                 string sql = "SELECT *, (SELECT StampMovimento FROM t_movimentos where StampTerritorio=t_territorios.Stamp Order By StampMovimento DESC LIMIT 1) as StampMovimento FROM t_territorios WHERE Id like '%" + filtro + "%' OR Nome like '%" + filtro + "%';";
                 using var result = db.Query(sql);
@@ -745,7 +779,7 @@
             Territorio t = new();
             List<TipoTerritorio> LstTipos = ObterTiposTerritorio();
 
-            using (Database db = ConnectionString)
+            using (Database db = _connectionString)
             {
                 string sql = "SELECT *, (SELECT StampMovimento FROM t_movimentos where StampTerritorio=t_territorios.Stamp Order By StampMovimento DESC LIMIT 1) as StampMovimento FROM t_territorios where Stamp='" + stamp + "';";
                 using var result = db.Query(sql);
@@ -810,7 +844,7 @@
         {
             List<RegistroTerritorio> LstLinhaMovimentosTerritorio = new();
 
-            using (Database db = ConnectionString)
+            using (Database db = _connectionString)
             {
                 string sql = "SELECT     entrada.stampmovimento AS stampmovimento_entrada,     entrada.stampterritorio AS stampterritorio,     entrada.DataMovimento AS DataEntrada,     entrada.tipoMovimento AS tipoMovimento_entrada,     MIN(saida.stampmovimento) AS stampmovimento_saida,     MIN(saida.tipoMovimento) AS tipoMovimento_saida,     COALESCE(MIN(saida.DataMovimento), '0001-01-01') AS DataSaida,     entrada.IdPublicador FROM t_movimentos entrada LEFT JOIN t_movimentos saida ON entrada.stampterritorio = saida.stampterritorio     AND saida.tipoMovimento = 2	     AND saida.stampmovimento > entrada.stampmovimento WHERE entrada.tipoMovimento = 1 GROUP BY entrada.stampterritorio, entrada.stampmovimento, entrada.DataMovimento, entrada.tipoMovimento, entrada.IdPublicador ORDER BY entrada.stampterritorio, entrada.stampmovimento; ";
                 using var result = db.Query(sql);
@@ -850,7 +884,7 @@
         {
             List<RegistroTerritorio> LstLinhaMovimentosTerritorio = new();
 
-            using (Database db = ConnectionString)
+            using (Database db = _connectionString)
             {
                 string sql = "SELECT entrada.stampmovimento AS stampmovimento_entrada, entrada.stampterritorio AS stampterritorio, entrada.DataMovimento AS DataEntrada, entrada.tipoMovimento AS tipoMovimento_entrada, saida.stampmovimento AS stampmovimento_saida, saida.tipoMovimento AS tipoMovimento_saida,  COALESCE(saida.DataMovimento, '0001-01-01') AS DataSaida, entrada.IdPublicador FROM t_movimentos entrada LEFT JOIN t_movimentos saida ON entrada.stampterritorio = saida.stampterritorio  AND saida.tipoMovimento = 2  AND saida.stampmovimento > entrada.stampmovimento WHERE entrada.tipoMovimento = 1 and entrada.stampterritorio='" + t.Stamp + "' ORDER BY entrada.stampterritorio, entrada.stampmovimento;";
                 using var result = db.Query(sql);
@@ -889,7 +923,7 @@
             List<MovimentosTerritorio> LstMovimentosTerritorio = new();
             Territorio t = ObterTerritorio(stamp, false, false, false, false);
 
-            using (Database db = ConnectionString)
+            using (Database db = _connectionString)
             {
                 string sql = "SELECT * FROM t_movimentos where StampTerritorio='" + stamp + "';";
                 using var result = db.Query(sql);
@@ -916,7 +950,7 @@
         {
             MovimentosTerritorio m = new();
 
-            using (Database db = ConnectionString)
+            using (Database db = _connectionString)
             {
                 string sql = "SELECT * FROM t_movimentos where StampMovimento='" + stamp + "';";
                 using var result = db.Query(sql);
@@ -964,7 +998,7 @@
             List<AnexosTerritorio> LstAnexosTerritorio = new();
             Territorio t = ObterTerritorio(stamp, false, false, false, false);
 
-            using (Database db = ConnectionString)
+            using (Database db = _connectionString)
             {
                 string sql = "SELECT * FROM t_anexos where StampTerritorio='" + stamp + "';";
                 using var result = db.Query(sql);
@@ -990,7 +1024,7 @@
         {
             AnexosTerritorio a = new();
 
-            using (Database db = ConnectionString)
+            using (Database db = _connectionString)
             {
                 string sql = "SELECT * FROM t_anexos where StampAnexo='" + stamp + "';";
                 using var result = db.Query(sql);
@@ -1035,7 +1069,7 @@
         {
             List<TipoTerritorio> t = new();
 
-            using (Database db = ConnectionString)
+            using (Database db = _connectionString)
             {
                 string sql = "SELECT * FROM t_tipos;";
                 using var result = db.Query(sql);
@@ -1063,7 +1097,7 @@
             List<TipoDesignacao> t = ObterTiposDesignacao();
             List<Publicador> p = ObterPublicadores(false);
 
-            using (Database db = ConnectionString)
+            using (Database db = _connectionString)
             {
                 string sql = "SELECT * FROM r_designacoes WHERE StampReuniao='" + Stamp + "';";
                 using var result = db.Query(sql);
@@ -1093,7 +1127,7 @@
             List<TipoDesignacao> t = ObterTiposDesignacao();
             List<Publicador> p = ObterPublicadores(false);
 
-            using (Database db = ConnectionString)
+            using (Database db = _connectionString)
             {
                 string sql = "SELECT * FROM r_designacoes WHERE Stamp='" + stamp + "';";
                 using var result = db.Query(sql);
@@ -1160,7 +1194,7 @@
         {
             List<Reuniao> r = new();
 
-            using (Database db = ConnectionString)
+            using (Database db = _connectionString)
             {
                 string sql = "SELECT DISTINCT StampReuniao, Semana FROM r_designacoes;";
                 using var result = db.Query(sql);
@@ -1183,7 +1217,7 @@
         {
             List<Reuniao> r = new();
 
-            using (Database db = ConnectionString)
+            using (Database db = _connectionString)
             {
                 string sql = "SELECT DISTINCT StampReuniao, Semana FROM r_designacoes Where StampReuniao='" + Stamp + "';";
                 using var result = db.Query(sql);
@@ -1257,7 +1291,7 @@
         {
             List<TipoDesignacao> t = new();
 
-            using (Database db = ConnectionString)
+            using (Database db = _connectionString)
             {
                 string sql = "SELECT * FROM r_tipos order by Id;";
                 using var result = db.Query(sql);
@@ -1281,7 +1315,7 @@
         {
             List<Cantico> c = new();
 
-            using (Database db = ConnectionString)
+            using (Database db = _connectionString)
             {
                 string sql = "SELECT * FROM sys_canticos;";
                 using var result = db.Query(sql);
@@ -1303,7 +1337,7 @@
             List<Cantico> c = ObterCanticos();
             List<Cantico> res = new();
 
-            using (Database db = ConnectionString)
+            using (Database db = _connectionString)
             {
                 string sql = "SELECT * FROM r_canticos WHERE StampReuniao='" + Stamp + "';";
                 using var result = db.Query(sql);
@@ -1335,7 +1369,7 @@
         {
             List<Discurso> res = new();
 
-            using (Database db = ConnectionString)
+            using (Database db = _connectionString)
             {
                 string sql = "SELECT * FROM sys_discursos;";
                 using var result = db.Query(sql);
@@ -1356,7 +1390,7 @@
         {
             List<Discurso> res = new();
 
-            using (Database db = ConnectionString)
+            using (Database db = _connectionString)
             {
                 string sql = "SELECT * FROM sys_discursos where NumDiscurso=" + id + ";";
                 using var result = db.Query(sql);
@@ -1378,7 +1412,7 @@
             List<Discurso> res = new();
             List<Publicador> p = ObterPublicadores(false);
 
-            using (Database db = ConnectionString)
+            using (Database db = _connectionString)
             {
                 string sql = "SELECT * FROM r_discursos;";
                 using var result = db.Query(sql);
@@ -1404,7 +1438,7 @@
             List<Discurso> res = new();
             List<Publicador> p = ObterPublicadores(false);
 
-            using (Database db = ConnectionString)
+            using (Database db = _connectionString)
             {
                 string sql = "SELECT * FROM r_discursos WHERE Stamp='" + stamp + "';";
                 using var result = db.Query(sql);

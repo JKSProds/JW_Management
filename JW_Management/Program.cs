@@ -1,16 +1,29 @@
 using System.Globalization;
+using System.Text;
+using JW_Management.Models;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.Extensions.Configuration;
 using LettuceEncrypt;
 using Microsoft.AspNetCore.DataProtection;
+using AppContext = System.AppContext;
 
+var accessor = new HttpContextAccessor();
 var builder = WebApplication.CreateBuilder(args);
+
+var tenantContext =
+    new TenantContext(accessor, builder.Configuration.GetConnectionString("DefaultConnection")!);
 
 // Add services to the container.
 builder.Services.AddRazorPages();
-builder.Services.Add(new ServiceDescriptor(typeof(JW_Management.Models.DbContext), new JW_Management.Models.DbContext(builder.Configuration.GetConnectionString("DefaultConnection")!)));
-builder.Services.Add(new ServiceDescriptor(typeof(JW_Management.Models.JWApi), new JW_Management.Models.JWApi()));
-builder.Services.Add(new ServiceDescriptor(typeof(JW_Management.Models.MySqlBackupService), new JW_Management.Models.MySqlBackupService(builder.Configuration.GetConnectionString("DefaultConnection")!, $"/app/img/backup/" )));
+builder.Services.AddHttpContextAccessor();
+
+builder.Services.AddSingleton(tenantContext);
+builder.Services.AddScoped<JW_Management.Models.AppContext>();
+builder.Services.AddScoped<DbContext>();
+builder.Services.AddScoped<JWApiContext>();
+builder.Services.AddScoped<FileContext>();
+
+var _dbBackupService = new MySqlBackupService(new JW_Management.Models.AppContext(tenantContext));
 
 builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme).AddCookie(cookieOptions =>
 {

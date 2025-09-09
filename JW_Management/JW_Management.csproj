@@ -1,10 +1,10 @@
 <Project Sdk="Microsoft.NET.Sdk.Web">
 	<PropertyGroup>
-		<TargetFramework>net8.0</TargetFramework>
+		<TargetFramework>net9.0</TargetFramework>
 		<Nullable>enable</Nullable>
 		<ImplicitUsings>enable</ImplicitUsings>
 		<DockerDefaultTargetOS>Linux</DockerDefaultTargetOS>
-		<AssemblyVersion>2.2024.12.12</AssemblyVersion>
+		<AssemblyVersion>3.2025.09.09</AssemblyVersion>
 	</PropertyGroup>
 	<ItemGroup>
 		<None Include="..\.editorconfig" Link=".editorconfig" />
@@ -29,15 +29,5 @@
 		<None Update="S-140_TPO.pdf">
 			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
 		</None>
-	</ItemGroup>
-	<ItemGroup>
-	  <_ContentIncludedByDefault Remove="**\*.config" />
-	  <_ContentIncludedByDefault Remove="**\*.json" />
-	  <_ContentIncludedByDefault Remove="**\*.cshtml" />
-	  <_ContentIncludedByDefault Remove="**\*.razor" />
-	</ItemGroup>
-	<ItemGroup>
-	  <UpToDateCheckInput Remove="**\*.razor" />
-	  <UpToDateCheckInput Remove="**\*.cshtml" />
 	</ItemGroup>
 </Project>
