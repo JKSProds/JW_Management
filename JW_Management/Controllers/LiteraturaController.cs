@@ -80,16 +80,27 @@ namespace JW_Management.Controllers
         public IActionResult Literatura(string referencia, string descricao, string data, int tipo)
         {
             if (string.IsNullOrEmpty(referencia) || string.IsNullOrEmpty(descricao)) return StatusCode(500);
-            Literatura l = new Literatura()
+            
+            var lP = _dbContext.ObterPeriodicosData(data);
+            if (lP.Any())
             {
-                Descricao = descricao,
-                Referencia = referencia,
-                Data = data,
-                Tipo = _dbContext.ObterTiposLiteratura().Where(t => t.Id == tipo).DefaultIfEmpty(_dbContext.ObterTiposLiteratura().Last()).First(),
-                Stamp = DateTime.Now.Ticks.ToString()
-            };
+                return Json(lP.First().Stamp);   
+            }
+            else
+            {
+                Literatura l = new Literatura()
+                {
+                    Descricao = descricao,
+                    Referencia = referencia,
+                    Data = data,
+                    Tipo = _dbContext.ObterTiposLiteratura().Where(t => t.Id == tipo).DefaultIfEmpty(_dbContext.ObterTiposLiteratura().Last()).First(),
+                    Stamp = DateTime.Now.Ticks.ToString()
+                };
 
-            return Json(_dbContext.AdicionarLiteratura(l) ? l.Stamp : StatusCode(500));
+                return Json(_dbContext.AdicionarLiteratura(l) ? l.Stamp : StatusCode(500));
+            }
+
+           
         }
 
         [HttpDelete]

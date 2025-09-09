@@ -317,6 +317,35 @@
             return LstLiteratura.ToList();
         }
 
+        public List<Literatura> ObterPeriodicosData(string data)
+        {
+            List<Literatura> LstLiteratura = new();
+            List<TipoLiteratura> LstTiposLiteratura = ObterTiposLiteratura();
+            FileContext f = new();
+
+            using (Database db = _connectionString)
+            {
+                string sql = "SELECT *, (SELECT Descricao FROM l_periodicos WHERE l_pubs.Referencia=l_periodicos.Referencia) as DescAdicional, IFNULL((SELECT SUM(Quantidade) from l_movimentos where l_pubs.STAMP=l_movimentos.StampLiteratura and l_movimentos.IdPublicador=0), 0) as Quantidade, IFNULL((SELECT Caminho from l_img where l_pubs.Referencia=l_img.Referencia), '') as Imagem FROM l_pubs where IdTipo=7 and l_pubs.Data='" + data + "';";
+                using var result = db.Query(sql);
+                while (result.Read())
+                {
+                    LstLiteratura.Add(new Literatura()
+                    {
+                        Stamp = result["STAMP"],
+                        Id = result["Id"],
+                        Referencia = result["Referencia"],
+                        Data = result["Data"],
+                        Descricao = result["Descricao"],
+                        Imagem = "data:image/jpeg;base64," + Convert.ToBase64String(f.ObterFicheiro(f.ObterCaminhoLiteratura() + result["Imagem"])),
+                        Quantidade = result["Quantidade"],
+                        DescricaoGeral = result["DescAdicional"],
+                        Tipo = LstTiposLiteratura.Where(g => g.Id == result["IdTipo"]).FirstOrDefault(new TipoLiteratura())
+                    });
+                }
+            }
+
+            return LstLiteratura.ToList();
+        }
         //Obter todos os periodicos especificos de uma literatura para entregar aos publicador
         public List<Literatura> ObterPeriodicos(string stamp)
         {
