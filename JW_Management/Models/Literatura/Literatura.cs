@@ -27,13 +27,7 @@
             if (Tipo != null && Tipo.Id == 7) {
                 if (this.Referencia == "w" || this.Referencia == "wlp") {
                     res =  "w/" + this.Data +  "/TPO/pt/w_TPO_" + Data + "_lg.jpg";
-                    return baseURL2 + res;                
-                }if (this.Referencia == "mvpwp" ) {
-                    res = "wp/"+this.Data+"/TPO/pt/wp_TPO_"+Data+"_lg.jpg";
-                    return baseURL2 + res;
-                }if (this.Referencia == "mvpg" ) {
-                    res = "g/"+this.Data+"/TPO/pt/g_TPO_"+Data+"_lg.jpg";
-                    return baseURL2 + res;
+                    return baseURL2 + res;  
                 }if (this.Referencia == "es" || this.Referencia == "eslp") {
                      res = "es"+this.Data+"/TPO/wpub/es"+Data+"_TPO_lg.jpg";
                 }else {

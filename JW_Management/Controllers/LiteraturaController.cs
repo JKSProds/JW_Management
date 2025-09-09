@@ -243,14 +243,20 @@ namespace JW_Management.Controllers
             var i = _jwApiContext.ObterInventario();
             
             if ((i.DataInventario.Month == DateTime.Now.Month && i.DataInventario.Year == DateTime.Now.Year) || string.IsNullOrEmpty(i.StampInventario)) return BadRequest();
-            List<Literatura> lstLiteraturas = _dbContext.ObterLiteraturas(i.DataInventario.Month, i.DataInventario.Year).Where(o => o.Tipo.Id != 7).ToList();
+            List<Literatura> lstLiteraturas = _dbContext.ObterLiteraturas(i.DataInventario.Month, i.DataInventario.Year);
 
-            foreach (var l in i.Literatura)
+            foreach (var l in i.Literatura.Where(o => string.IsNullOrEmpty(o.Data)))
             {
                 l.Quantidade = lstLiteraturas.Where(o => o.Referencia == l.Referencia).DefaultIfEmpty(new Literatura()).First().Quantidade;
                 _jwApiContext.AtualizarLiteratura(i, l);
             }
            
+            foreach (var l in i.Literatura.Where(o => !string.IsNullOrEmpty(o.Data)))
+            {
+                l.Quantidade = lstLiteraturas.Where(o => o.Referencia == l.Referencia && l.Data == o.Data).DefaultIfEmpty(new Literatura()).First().Quantidade;
+                _jwApiContext.AtualizarLiteratura(i, l);
+            }
+           return Json(lstLiteraturas);
             return Ok(_jwApiContext.FecharInventario(i));
         }
 

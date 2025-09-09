@@ -178,6 +178,7 @@ public class JWApiContext
                         Stamp = item.Value<string>("catalogItemGuid"),
                         Descricao = item.Value<string>("description"),
                         Referencia = item.Value<string>("symbol") ?? item.Value<string>("mnemonicCode"),
+                        Data = DateTime.TryParse(item.Value<string>("issueDate"), out DateTime dt) ? (dt.Year * 100 + dt.Day).ToString() : ""
                     });
                 }
             }

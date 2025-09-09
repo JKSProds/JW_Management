@@ -193,7 +193,7 @@ CREATE TABLE `l_periodicos` (
 
 LOCK TABLES `l_periodicos` WRITE;
 /*!40000 ALTER TABLE `l_periodicos` DISABLE KEYS */;
-INSERT INTO `l_periodicos` VALUES (1,'w','Sentinela de Estudo','1970-01-01 00:00:01'),(2,'wlp','Sentinela de Estudo - Letra Grande','1970-01-01 00:00:01'),(3,'mwb','Nossa Vida e Ministério Cristão - Apostila da Reunião','1970-01-01 00:00:01'),(4,'es','Examine as Escrituras Diariamente','1970-01-01 00:00:01'),(5,'eslp','Examine as Escrituras Diariamente - Letra Grande','1970-01-01 00:00:01'),(6,'mvpwp','A Sentinela - Público','1970-01-01 00:00:01'),(7,'mvpg','Despertai','1970-01-01 00:00:01'),(8,'dx','Indice','1970-01-01 00:00:01'),(9,'vol','Volume Encadernado','1970-01-01 00:00:01');
+INSERT INTO `l_periodicos` VALUES (1,'w','Sentinela de Estudo','1970-01-01 00:00:01'),(2,'wlp','Sentinela de Estudo - Letra Grande','1970-01-01 00:00:01'),(3,'mwb','Nossa Vida e Ministério Cristão - Apostila da Reunião','1970-01-01 00:00:01'),(4,'es','Examine as Escrituras Diariamente','1970-01-01 00:00:01'),(5,'eslp','Examine as Escrituras Diariamente - Letra Grande','1970-01-01 00:00:01'),(6,'wp','A Sentinela - Público','1970-01-01 00:00:01'),(7,'g','Despertai','1970-01-01 00:00:01'),(8,'dx','Indice','1970-01-01 00:00:01'),(9,'vol','Volume Encadernado','1970-01-01 00:00:01');
 /*!40000 ALTER TABLE `l_periodicos` ENABLE KEYS */;
 UNLOCK TABLES;
 
