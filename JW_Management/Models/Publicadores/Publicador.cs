@@ -50,6 +50,7 @@ namespace JW_Management.Models
         public string? NomeCurto { get {return this.Nome.Split(" ").First() + (this.Nome.Split(" ").Count() > 1 ? " " + this.Nome.Split(" ").Last()[0] + "." : "");} }
         public string? Username { get; set; }
         public string? Password { get; set; }
+        public string? PasswordVisivel => !string.IsNullOrEmpty(Password) ? "***************" : "";
         public string? Email { get; set; }
         public string? Telemovel { get; set; }
         public Grupo? Grupo { get; set; }

@@ -8,44 +8,39 @@ using Microsoft.AspNetCore.Authorization;
 namespace JW_Management.Controllers
 {
     [Authorize(Roles = "Admin, Assistente, Coordenador, Secretario, Servico, Literatura")]
-    public class LiteraturaController : Controller
+    public class LiteraturaController(DbContext _dbContext, FileContext _fileContext, JWApiContext _jwApiContext) : Controller
     {
         public IActionResult Index(string filtro, int tipo)
         {
-            DbContext context = HttpContext.RequestServices.GetService(typeof(DbContext)) as DbContext;
-
             if (string.IsNullOrEmpty(filtro)) filtro = "";
             ViewData["filtro"] = filtro;
             ViewData["tipo"] = tipo;
 
-            List<TipoLiteratura> LstTiposLiteratura = context.ObterTiposLiteratura();
+            List<TipoLiteratura> LstTiposLiteratura = _dbContext.ObterTiposLiteratura();
             LstTiposLiteratura.Insert(0, new TipoLiteratura() { Id = 0, Descricao = "Todos" });
             ViewBag.Tipos = LstTiposLiteratura.Select(l => new SelectListItem() { Value = l.Id.ToString(), Text = l.Descricao });
 
-            if (tipo == 0) { return View("Index", context.ObterLiteraturas(filtro, 0).OrderBy(l => l.Referencia)); }
-            return View("Index", context.ObterLiteraturas(filtro, 0).Where(l => l.Tipo.Id == tipo).OrderBy(l => l.Referencia));
+            if (tipo == 0) { return View("Index", _dbContext.ObterLiteraturas(filtro, 0).OrderBy(l => l.Referencia)); }
+            return View("Index", _dbContext.ObterLiteraturas(filtro, 0).Where(l => l.Tipo.Id == tipo).OrderBy(l => l.Referencia));
         }
 
         [HttpGet]
         public IActionResult Movimentos(int id, string data)
         {
-            DbContext context = HttpContext.RequestServices.GetService(typeof(DbContext)) as DbContext;
-
             DateOnly.TryParse(data, out DateOnly d);
             if (d == DateOnly.MinValue) d = DateOnly.FromDateTime(DateTime.Now);
-            ViewBag.Publicadores = context.ObterPublicadores(false).OrderBy(p => p.Nome).Select(l => new SelectListItem() { Value = l.Id.ToString(), Text = l.Nome });
-            ViewBag.Periodicos = context.ObterTipoPeriodicos().Select(l => new SelectListItem() { Value = l.Referencia, Text = l.Descricao });
+            ViewBag.Publicadores = _dbContext.ObterPublicadores(false).OrderBy(p => p.Nome).Select(l => new SelectListItem() { Value = l.Id.ToString(), Text = l.Nome });
+            ViewBag.Periodicos = _dbContext.ObterTipoPeriodicos().Select(l => new SelectListItem() { Value = l.Referencia, Text = l.Descricao });
             ViewData["Data"] = d;
 
-            if (id == 1) return View("Entradas", context.ObterMovimentos(true, false, 0, d));
-            return View("Saidas", context.ObterMovimentos(false, true, 0, d));
+            if (id == 1) return View("Entradas", _dbContext.ObterMovimentos(true, false, 0, d));
+            return View("Saidas", _dbContext.ObterMovimentos(false, true, 0, d));
         }
 
         [HttpPost]
         public IActionResult Movimentos(string stamp, int qtd, int idpub)
         {
-            DbContext context = HttpContext.RequestServices.GetService(typeof(DbContext)) as DbContext;
-            Literatura l = context.ObterLiteratura(stamp);
+            Literatura l = _dbContext.ObterLiteratura(stamp);
             if (string.IsNullOrEmpty(stamp) || qtd == 0) return StatusCode(500);
 
             Movimentos m = new Movimentos()
@@ -57,126 +52,109 @@ namespace JW_Management.Controllers
                 Publicador = new Publicador() { Id = idpub }
             };
 
-            return context.AdicionarMovimento(m) ? StatusCode(200) : StatusCode(500);
+            return _dbContext.AdicionarMovimento(m) ? StatusCode(200) : StatusCode(500);
         }
 
         [HttpDelete]
         public IActionResult Movimentos(string stamp)
         {
-            DbContext context = HttpContext.RequestServices.GetService(typeof(DbContext)) as DbContext;
             if (string.IsNullOrEmpty(stamp)) return StatusCode(500);
-            return Json(context.ApagarMovimento(stamp) ? StatusCode(200) : StatusCode(500));
+            return Json(_dbContext.ApagarMovimento(stamp) ? StatusCode(200) : StatusCode(500));
         }
 
         [HttpGet]
         public IActionResult Literaturas(string filtro, bool periodico)
         {
-            DbContext context = HttpContext.RequestServices.GetService(typeof(DbContext)) as DbContext;
-
-            if (periodico) return Json(context.ObterLiteraturas(filtro, 0).Where(l => l.Tipo.Id == 7));
-            return Json(context.ObterLiteraturas(filtro, 0).Where(l => l.Tipo.Id != 7));
+            if (periodico) return Json(_dbContext.ObterLiteraturas(filtro, 0).Where(l => l.Tipo.Id == 7));
+            return Json(_dbContext.ObterLiteraturas(filtro, 0).Where(l => l.Tipo.Id != 7));
         }
 
         [HttpGet]
         public IActionResult Literatura(string id)
         {
-            DbContext context = HttpContext.RequestServices.GetService(typeof(DbContext)) as DbContext;
-
-
-            return Json(context.ObterLiteratura(id));
+            return Json(_dbContext.ObterLiteratura(id));
         }
 
 
         [HttpPost]
         public IActionResult Literatura(string referencia, string descricao, string data, int tipo)
         {
-            DbContext context = HttpContext.RequestServices.GetService(typeof(DbContext)) as DbContext;
             if (string.IsNullOrEmpty(referencia) || string.IsNullOrEmpty(descricao)) return StatusCode(500);
             Literatura l = new Literatura()
             {
                 Descricao = descricao,
                 Referencia = referencia,
                 Data = data,
-                Tipo = context.ObterTiposLiteratura().Where(t => t.Id == tipo).DefaultIfEmpty(context.ObterTiposLiteratura().Last()).First(),
+                Tipo = _dbContext.ObterTiposLiteratura().Where(t => t.Id == tipo).DefaultIfEmpty(_dbContext.ObterTiposLiteratura().Last()).First(),
                 Stamp = DateTime.Now.Ticks.ToString()
             };
 
-            return Json(context.AdicionarLiteratura(l) ? l.Stamp : StatusCode(500));
+            return Json(_dbContext.AdicionarLiteratura(l) ? l.Stamp : StatusCode(500));
         }
 
         [HttpDelete]
         public IActionResult Literatura(string stamp, bool apagar)
         {
-            DbContext context = HttpContext.RequestServices.GetService(typeof(DbContext)) as DbContext;
             if (string.IsNullOrEmpty(stamp)) return StatusCode(500);
 
-            return Json(context.ApagarLiteratura(stamp) ? StatusCode(200) : StatusCode(500));
+            return Json(_dbContext.ApagarLiteratura(stamp) ? StatusCode(200) : StatusCode(500));
         }
 
         [HttpGet]
         public IActionResult Periodicos()
         {
-            DbContext context = HttpContext.RequestServices.GetService(typeof(DbContext)) as DbContext;
-
-            return View(context.ObterPeriodicos().Where(l => l.Quantidade > 0).OrderBy(l => l.DescricaoGeral));
+            return View(_dbContext.ObterPeriodicos().Where(l => l.Quantidade > 0).OrderBy(l => l.DescricaoGeral));
         }
 
         [HttpPost]
         public IActionResult Periodicos(string Email, string id)
         {
-            DbContext context = HttpContext.RequestServices.GetService(typeof(DbContext)) as DbContext;
-            List<Literatura> LstLiteratura = context.ObterPedidosPeriodico().Where(l => l.Referencia == id).OrderBy(l => l.Publicador.Nome).ToList();
-
-
+            List<Literatura> LstLiteratura = _dbContext.ObterPedidosPeriodico().Where(l => l.Referencia == id).OrderBy(l => l.Publicador.Nome).ToList();
+            
             return Json(MailContext.MailPedidosPeriodicosGrupo(LstLiteratura, Email) ? StatusCode(200) : StatusCode(500));
         }
 
         [HttpGet]
         public IActionResult Periodico(string id)
         {
-            DbContext context = HttpContext.RequestServices.GetService(typeof(DbContext)) as DbContext;
             if (string.IsNullOrEmpty(id)) return StatusCode(500);
 
-            return View(context.ObterPeriodicos(id).OrderBy(p => p.Publicador.Nome));
+            return View(_dbContext.ObterPeriodicos(id).OrderBy(p => p.Publicador.Nome));
         }
 
         [HttpPost]
         public IActionResult Periodico(string referencia, int idpub, int qtd)
         {
-            DbContext context = HttpContext.RequestServices.GetService(typeof(DbContext)) as DbContext;
             if (string.IsNullOrEmpty(referencia) || idpub == 0 || qtd == 0) return StatusCode(500);
 
             Literatura l = new Literatura()
             {
                 Referencia = referencia,
-                Publicador = context.ObterPublicador(idpub, false, false, false, false),
+                Publicador = _dbContext.ObterPublicador(idpub, false, false, false, false),
                 Quantidade = qtd,
                 Stamp = DateTime.Now.Ticks.ToString()
             };
 
-            return Json(context.AdicionarPedidoPeriodico(l) ? l.Stamp : StatusCode(500));
+            return Json(_dbContext.AdicionarPedidoPeriodico(l) ? l.Stamp : StatusCode(500));
         }
 
         [HttpDelete]
         public IActionResult Periodico(string id, bool apagar)
         {
-            DbContext context = HttpContext.RequestServices.GetService(typeof(DbContext)) as DbContext;
             if (string.IsNullOrEmpty(id)) return StatusCode(500);
 
-            return Json(context.ApagarPedidoPeriodico(id) ? StatusCode(200) : StatusCode(500));
+            return Json(_dbContext.ApagarPedidoPeriodico(id) ? StatusCode(200) : StatusCode(500));
         }
 
         [HttpGet]
         public IActionResult Pedidos()
         {
-            DbContext context = HttpContext.RequestServices.GetService(typeof(DbContext)) as DbContext;
+            ViewBag.Publicadores = _dbContext.ObterPublicadores(false).OrderBy(p => p.Nome).Select(l => new SelectListItem() { Value = l.Id.ToString(), Text = l.Nome });
+            ViewBag.Estados = _dbContext.ObterEstadosPedido().Select(l => new SelectListItem() { Value = l.Descricao, Text = l.Descricao });
+            ViewBag.Periodicos = _dbContext.ObterTipoPeriodicos().Select(l => new SelectListItem() { Value = l.Referencia, Text = l.Descricao });
 
-            ViewBag.Publicadores = context.ObterPublicadores(false).OrderBy(p => p.Nome).Select(l => new SelectListItem() { Value = l.Id.ToString(), Text = l.Nome });
-            ViewBag.Estados = context.ObterEstadosPedido().Select(l => new SelectListItem() { Value = l.Descricao, Text = l.Descricao });
-            ViewBag.Periodicos = context.ObterTipoPeriodicos().Select(l => new SelectListItem() { Value = l.Referencia, Text = l.Descricao });
-
-            List<Literatura> LstPedidos = context.ObterPedidosPeriodico().Where(l => l.Quantidade > 0).OrderBy(l => l.Publicador.Nome).OrderBy(l => l.Referencia).ToList();
-            LstPedidos.AddRange(context.ObterPedidosEspeciais().Where(l => l.Quantidade > 0).OrderBy(l => l.Publicador.Nome));
+            List<Literatura> LstPedidos = _dbContext.ObterPedidosPeriodico().Where(l => l.Quantidade > 0).OrderBy(l => l.Publicador.Nome).OrderBy(l => l.Referencia).ToList();
+            LstPedidos.AddRange(_dbContext.ObterPedidosEspeciais().Where(l => l.Quantidade > 0).OrderBy(l => l.Publicador.Nome));
 
             return View(LstPedidos);
         }
@@ -184,12 +162,11 @@ namespace JW_Management.Controllers
         [HttpPost]
         public IActionResult Pedidos(string Email)
         {
-            DbContext context = HttpContext.RequestServices.GetService(typeof(DbContext)) as DbContext;
-            List<Literatura> LstLiteratura = context.ObterPedidosEspeciais().Where(l => l.EstadoPedido.Descricao == "Pendente").ToList();
+            List<Literatura> LstLiteratura = _dbContext.ObterPedidosEspeciais().Where(l => l.EstadoPedido.Descricao == "Pendente").ToList();
 
             foreach (var l in LstLiteratura)
             {
-                context.AtualizarEstadoPedidoEspecial(l, new EstadoPedido("Enviado Email"));
+                _dbContext.AtualizarEstadoPedidoEspecial(l, new EstadoPedido("Enviado Email"));
             }
 
             return Json(MailContext.MailPedidosEspeciaisPendentes(LstLiteratura, Email) ? StatusCode(200) : StatusCode(500));
@@ -198,49 +175,43 @@ namespace JW_Management.Controllers
         [HttpPost]
         public IActionResult Pedido(string stamp, int idpub, int qtd)
         {
-            DbContext context = HttpContext.RequestServices.GetService(typeof(DbContext)) as DbContext;
             if (string.IsNullOrEmpty(stamp) || qtd == 0) return StatusCode(500);
 
             Literatura l = new Literatura()
             {
-                Publicador = context.ObterPublicador(idpub, false, false, false, false),
+                Publicador = _dbContext.ObterPublicador(idpub, false, false, false, false),
                 Quantidade = qtd,
                 Stamp = stamp
             };
 
-            return Json(context.AdicionarPedidoEspecial(l, new EstadoPedido()) ? l.Stamp : StatusCode(500));
+            return Json(_dbContext.AdicionarPedidoEspecial(l, new EstadoPedido()) ? l.Stamp : StatusCode(500));
         }
 
         [HttpPut]
         public IActionResult Pedido(string stamp, int qtd, string estado)
         {
-            DbContext context = HttpContext.RequestServices.GetService(typeof(DbContext)) as DbContext;
             if (string.IsNullOrEmpty(stamp) || qtd == 0) return StatusCode(500);
 
-            Literatura l = context.ObterPedidoEspecial(stamp);
+            Literatura l = _dbContext.ObterPedidoEspecial(stamp);
             l.Quantidade = qtd;
             EstadoPedido e = new EstadoPedido(estado);
 
-            return Json(context.AtualizarEstadoPedidoEspecial(l, e) ? l.Stamp : StatusCode(500));
+            return Json(_dbContext.AtualizarEstadoPedidoEspecial(l, e) ? l.Stamp : StatusCode(500));
         }
 
         [HttpDelete]
         public IActionResult Pedido(string id, bool apagar)
         {
-            DbContext context = HttpContext.RequestServices.GetService(typeof(DbContext)) as DbContext;
             if (string.IsNullOrEmpty(id)) return StatusCode(500);
 
-            return Json(context.ApagarPedidoEspecial(id) ? StatusCode(200) : StatusCode(500));
+            return Json(_dbContext.ApagarPedidoEspecial(id) ? StatusCode(200) : StatusCode(500));
         }
 
 
         [HttpGet]
         public IActionResult Formulario()
         {
-            DbContext context = HttpContext.RequestServices.GetService(typeof(DbContext)) as DbContext;
-            FileContext fileContext = new FileContext();
-
-            var file = fileContext.PreencherFormularioS28(context!).ToArray();
+            var file = _fileContext.PreencherFormularioS28(_dbContext!).ToArray();
             var output = new MemoryStream();
             output.Write(file, 0, file.Length);
             output.Position = 0;
@@ -261,35 +232,30 @@ namespace JW_Management.Controllers
         [HttpGet]
         public IActionResult API(string id)
         {
-            JWApiContext apiContext = HttpContext.RequestServices.GetService(typeof(JWApiContext)) as JWApiContext;
-            DbContext context = HttpContext.RequestServices.GetService(typeof(DbContext)) as DbContext;
-            
-            apiContext.Cookies = id;
-            var i = apiContext.ObterInventario();
+            _jwApiContext.Cookies = id;
+            var i = _jwApiContext.ObterInventario();
             
             if ((i.DataInventario.Month == DateTime.Now.Month && i.DataInventario.Year == DateTime.Now.Year) || string.IsNullOrEmpty(i.StampInventario)) return BadRequest();
-            List<Literatura> lstLiteraturas = context.ObterLiteraturas(i.DataInventario.Month, i.DataInventario.Year).Where(o => o.Tipo.Id != 7).ToList();
+            List<Literatura> lstLiteraturas = _dbContext.ObterLiteraturas(i.DataInventario.Month, i.DataInventario.Year).Where(o => o.Tipo.Id != 7).ToList();
 
             foreach (var l in i.Literatura)
             {
                 l.Quantidade = lstLiteraturas.Where(o => o.Referencia == l.Referencia).DefaultIfEmpty(new Literatura()).First().Quantidade;
-                apiContext.AtualizarLiteratura(i, l);
+                _jwApiContext.AtualizarLiteratura(i, l);
             }
            
-            return Ok(apiContext.FecharInventario(i));
+            return Ok(_jwApiContext.FecharInventario(i));
         }
 
         [HttpPost]
         public IActionResult Imagem(string id, IFormFile file)
         {
-            DbContext context = HttpContext.RequestServices.GetService(typeof(DbContext)) as DbContext;
-            FileContext f = new();
             if (string.IsNullOrEmpty(id) || file == null) return StatusCode(500);
 
-            Literatura l = context.ObterLiteratura(id);
+            Literatura l = _dbContext.ObterLiteratura(id);
             string FileName = l.Referencia + "_" + DateTime.Now.Ticks.ToString() + "." + file.FileName.Split(".").Last();
 
-            if (f.GuardarImagemLiteratura(file, FileName)) return context.AdicionarImagemLiteratura(l, FileName) ? StatusCode(200) : StatusCode(500);
+            if (_fileContext.GuardarImagemLiteratura(file, FileName)) return _dbContext.AdicionarImagemLiteratura(l, FileName) ? StatusCode(200) : StatusCode(500);
 
             return StatusCode(500);
         }

@@ -10,7 +10,7 @@ using AppContext = System.AppContext;
 
 namespace JW_Management.Controllers
 {
-    public class HomeController(JW_Management.Models.AppContext _appContext) : Controller
+    public class HomeController(JW_Management.Models.AppContext _appContext, DbContext _dbContext) : Controller
     {
         public IActionResult Index()
         {
@@ -30,8 +30,8 @@ namespace JW_Management.Controllers
         {
             _appContext._manualTenant = t;
             p.Username = p.Username.ToLower().Trim();
-            DbContext context = HttpContext.RequestServices.GetService(typeof(DbContext)) as DbContext;
-            List<Publicador> LstUtilizadores = context.ObterPublicadores(t, false).Where(u => u.Username == p.Username).ToList();
+            
+            List<Publicador> LstUtilizadores = _dbContext.ObterPublicadores(t, false).Where(u => u.Username == p.Username).ToList();
             
             foreach (var u in LstUtilizadores)
             {
