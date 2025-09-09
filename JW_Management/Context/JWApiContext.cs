@@ -222,4 +222,31 @@ public class JWApiContext
         }
         return string.Empty;
     }
+    
+    public List<Literatura> ObterPeriodicos(string ano, Literatura tLiteratura)
+    {
+        List<Literatura> LstLiteratura = new List<Literatura>();
+        try
+        {
+            for (int i = 1; i <= 12; i++)
+            {
+                Literatura l = new Literatura() {Data=$"{ano}{i:D2}", Referencia = tLiteratura.Referencia, Descricao = $"{tLiteratura.Descricao} - Nº{i} ({ano})", Tipo = new TipoLiteratura() {Id = 7}};
+                using HttpClient client = new HttpClient();
+                
+                var response = client.GetAsync(l.GetUrl()).Result;
+
+                if (response.IsSuccessStatusCode)
+                {
+                    LstLiteratura.Add(l);
+                }
+                
+            }
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine(e);
+        }
+        
+        return LstLiteratura;
+    }
 }

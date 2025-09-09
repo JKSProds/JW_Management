@@ -231,39 +231,12 @@
                         <label class="label" l>Escolha a publicação:</label>
                         <p class="control has-icons-left">
                             <span class="select is-fullwidth" style="width:100%">
-                                <select class="select" id="periodico" style="height: auto"
+                                <select class="select" id="periodico" style="height: auto" onchange="ObterPeriodicos(this.value, document.getElementById('ano').value);"
                                         asp-items="@(new SelectList(@ViewBag.Periodicos, "Value", "Text"))">
                                 </select>
                             </span>
-                            <span class="icon is-small is-left">
+                            <span class="icon is-small is-left" id="iconSelect">
                                 <i class="fas fa-newspaper"></i>
-                            </span>
-                        </p>
-
-                    </div>
-                </div>
-                <div class="field">
-                    <div class="control" style="width:100%">
-                        <label class="label">Escolha o mês:</label>
-                        <p class="control has-icons-left">
-                            <span class="select" style="width:100%">
-                                <select id="mes" class="select" style="width:100%">
-                                    <option value="01">Janeiro</option>
-                                    <option value="02">Fevereiro</option>
-                                    <option value="03">Março</option>
-                                    <option value="04">Abril</option>
-                                    <option value="05">Maio</option>
-                                    <option value="06">Junho</option>
-                                    <option value="07">Julho</option>
-                                    <option value="08">Agosto</option>
-                                    <option value="09">Setembro</option>
-                                    <option value="10">Outubro</option>
-                                    <option value="11">Novembro</option>
-                                    <option value="12">Dezembro</option>
-                                </select>
-                            </span>
-                            <span class="icon is-small is-left">
-                                <i class="fa-solid fa-calendar-days"></i>
                             </span>
                         </p>
 
@@ -302,12 +275,13 @@
                         </div>
                     </div>
                 </div>
+                <div id="divListaPeriodicos"></div>
             </div>
         </section>
         <footer class="modal-card-foot">
             <div class="buttons is-centered" style="width:100%">
             <a class="button is-info is-large is-fullwidth"
-               onclick="CriarPeriodico(document.getElementById('periodico').value, document.getElementById('periodico')[document.getElementById('periodico').selectedIndex].text, document.getElementById('mes').value, document.getElementById('ano').value, document.getElementById('txtQtdPeriodico').value)">
+               onclick="CriarPeriodico(document.getElementById('periodico').value, document.getElementById('periodico')[document.getElementById('periodico').selectedIndex].text + ' - ' + document.getElementById('ano').value, document.getElementById('ano').value.slice(-2), document.getElementById('txtQtdPeriodico').value)">
                 <span class="icon">
                     <i class="fa-regular fa-floppy-disk"></i>
                 </span>
@@ -363,6 +337,8 @@
 <input id="txtHiddenStamp" hidden />
 
 <script>
+    ObterPeriodicos(document.getElementById('periodico').value, document.getElementById('ano').value);
+    
     function ConfirmApagar(id) {
         document.getElementById('txtHiddenStamp').value = id;
         Bulma('#ModalConfirmApagar').modal().open();
@@ -434,8 +410,8 @@
         });
     }
 
-    function CriarPeriodico(referencia, descricao, mes, ano, qtd) {
-        if (referencia == "es" || referencia == "eslp") {
+    function CriarPeriodico(referencia, descricao, data, qtd) {
+        @*if (referencia == "es" || referencia == "eslp") {
             //referencia += ano.slice(-2);
             descricao += " - " + ano;
             data = ano.slice(-2);
@@ -443,7 +419,7 @@
             //referencia += mes.slice(-2) + ano.slice(-2);
             descricao += " - Nº" + parseInt(mes) + " (" + ano + ")";
             data = ano + mes;
-        }
+        }*@
         $.ajax({
             url: '/Literatura/Literatura/',
             data: { "referencia": referencia, "descricao": descricao, "data": data, "tipo": 7 },
@@ -458,6 +434,56 @@
             },
             failure: function (response) {
                 notifyError('Falha ao criar uma publicação!');
+            }
+        });
+    }
+
+    function ObterPeriodicos(tipo, ano) {
+        const containerPai = document.getElementById('divListaPeriodicos');  // substitua pelo id real
+        document.getElementById('iconSelect').innerHTML = '<i class="fa-solid fa-circle-notch fa-spin"></i>';
+        containerPai.innerHTML = '';
+        
+        $.ajax({
+            url: '/Literatura/PesquisarPeriodicos/',
+            data: { "ano": ano, "tipo": tipo },
+            type: "GET",
+            success: function (data) {
+                console.log(data);
+                data.forEach(obj => {
+                    const container = document.createElement('div');
+                    container.className = "box has-text-centered";
+
+                    const img = document.createElement('img');
+                    img.src = obj.url;
+                    img.alt = obj.descricao;
+                    img.className = 'image is-inline-block';
+
+                    const descricao = document.createElement('p');
+                    descricao.className = 'mt-3';
+                    descricao.textContent = obj.descricao;
+
+                    const botao = document.createElement('button');
+                    botao.className = 'button is-primary mt-3';
+                    botao.innerHTML = '<span class="icon">\n' +
+                        '<i class="fa-solid fa-plus"></i>\n' +
+                        '</span><span>Adicionar</span>';
+                    botao.onclick = () => {
+                        CriarPeriodico(obj.referencia, obj.descricao, obj.data, document.getElementById('txtQtdPeriodico').value)
+                    };
+
+                    container.appendChild(img);
+                    container.appendChild(descricao);
+                    container.appendChild(botao);
+                    
+                    containerPai.appendChild(container);
+                });
+                document.getElementById('iconSelect').innerHTML = '<i class="fas fa-newspaper"></i>';
+            },
+            error: function (response) {
+                notifyError('Ocorreu um erro ao obter os periodicos!');
+            },
+            failure: function (response) {
+                notifyError('Falha ao obter os periodicos!');
             }
         });
     }

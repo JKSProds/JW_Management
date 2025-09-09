@@ -99,6 +99,13 @@ namespace JW_Management.Controllers
 
             return Json(_dbContext.ApagarLiteratura(stamp) ? StatusCode(200) : StatusCode(500));
         }
+        
+        [HttpGet]
+        public IActionResult PesquisarPeriodicos(string ano, string tipo)
+        {
+            var t = _dbContext.ObterTipoPeriodicos().First(tp => tp.Referencia == tipo); 
+            return Json(_jwApiContext.ObterPeriodicos(ano, t));
+        }
 
         [HttpGet]
         public IActionResult Periodicos()

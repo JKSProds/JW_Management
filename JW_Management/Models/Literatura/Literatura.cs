@@ -16,6 +16,7 @@
         public TipoLiteratura? Tipo { get; set; }
         public Publicador? Publicador { get; set; }
         public EstadoPedido? EstadoPedido { get; set; }
+        public string URL => GetUrl();
 
         public string GetUrl() {
             string baseURL = "https://assetsnffrgf-a.akamaihd.net/assets/a/";
@@ -23,11 +24,17 @@
             
             string res = "";
             
-            if (this.Tipo.Id == 7) {
+            if (Tipo != null && Tipo.Id == 7) {
                 if (this.Referencia == "w" || this.Referencia == "wlp") {
-                    res =  "w/" + this.Data +  "/TPO/pt/w_TPO_" + this.Data + "_lg.jpg";
+                    res =  "w/" + this.Data +  "/TPO/pt/w_TPO_" + Data + "_lg.jpg";
+                    return baseURL2 + res;                
+                }if (this.Referencia == "mvpwp" ) {
+                    res = "wp/"+this.Data+"/TPO/pt/wp_TPO_"+Data+"_lg.jpg";
                     return baseURL2 + res;
-                }else if (this.Referencia == "es" || this.Referencia == "eslp") {
+                }if (this.Referencia == "mvpg" ) {
+                    res = "g/"+this.Data+"/TPO/pt/g_TPO_"+Data+"_lg.jpg";
+                    return baseURL2 + res;
+                }if (this.Referencia == "es" || this.Referencia == "eslp") {
                      res = "es"+this.Data+"/TPO/wpub/es"+Data+"_TPO_lg.jpg";
                 }else {
                     res = this.Referencia + "/" + this.Data +  "/TPO/pt/"  + this.Referencia + "_TPO_" + this.Data + "_lg.jpg";
