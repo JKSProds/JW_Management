@@ -52,101 +52,13 @@
     <div class="tabs-wrapper">
         <div class="tabs is-toggle is-toggle-rounded is-fullwidth">
             <ul>
-                <li class="is-active"><a>Especiais</a></li>
-                <li><a>Periódicos</a></li>
+                <li class="is-active"><a>Periódicos</a></li>
+                <li><a>Especiais</a></li>
             </ul>
         </div>
         <div class="tabs-content mx-2">
             <ul>
                 <li class="is-active">
-                    @if (Model.Where(l => l.Tipo!.Id != 7).Count() == 0)
-                    {
-                        <br />
-                        <button class="button is-danger is-large is-rounded is-fullwidth is-disabled">
-                            Não foram encontrados
-                            pedidos especiais!
-                        </button>
-                    }
-                    else
-                    {
-                        <p class="control">
-                            <button type="button" class="button is-success is-large is-fullwidth "
-                                    onclick="Bulma('#modalMailPedidos').modal().open();">
-                                <span class="icon">
-                                    <i class="fa-solid fa-paper-plane"></i>
-                                </span>
-                                <span>Enviar Pedidos Novos</span>
-                            </button>
-                        </p>
-                        <br />
-                        <div class="b-table">
-                            <div class="table-wrapper has-mobile-cards">
-                                <table class="table is-hoverable is-fullwidth">
-                                    <thead>
-                                        <tr>
-                                            <th></th>
-                                            <th>
-                                                @Html.DisplayNameFor(model => model.FirstOrDefault()!.Referencia)
-                                            </th>
-                                            <th>
-                                                @Html.DisplayNameFor(model => model.FirstOrDefault()!.Descricao)
-                                            </th>
-                                            <th>
-                                                @Html.DisplayNameFor(model => model.FirstOrDefault()!.Quantidade)
-                                            </th>
-                                            <th>
-                                                @Html.DisplayNameFor(model => model.FirstOrDefault()!.Publicador!.Nome)
-                                            </th>
-                                            <th>
-                                                @Html.DisplayNameFor(model => model.FirstOrDefault()!.EstadoPedido!)
-                                            </th>
-                                            <th></th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        @foreach (var item in Model.Where(l => l.Tipo!.Id != 7))
-                                        {
-                                            <tr>
-                                                <td class="is-image-cell">
-                                                    <div class="image">
-                                                        <img src="@item.Imagem">
-                                                    </div>
-                                                </td>
-                                                <td data-label="@Html.DisplayNameFor(model => model.FirstOrDefault()!.Referencia)">
-                                                    <span>@item.Referencia</span>
-                                                </td>
-                                                <td data-label="@Html.DisplayNameFor(model => model.FirstOrDefault()!.Descricao)">
-                                                    <span>@item.Descricao</span>
-                                                </td>
-                                                <td data-label="@Html.DisplayNameFor(model => model.FirstOrDefault()!.Quantidade)">
-                                                    <span>@item.Quantidade</span>
-                                                </td>
-                                                <td data-label="@Html.DisplayNameFor(model => model.FirstOrDefault()!.Publicador!.Nome)">
-                                                    <span>@item.Publicador!.Nome</span>
-                                                </td>
-                                                <td data-label="@Html.DisplayNameFor(model => model.FirstOrDefault()!.EstadoPedido!)">
-                                                    <span>@item.EstadoPedido!.Descricao</span>
-                                                </td>
-                                                <td class="is-actions-cell">
-                                                    <div class="field has-addons is-pulled-right is-flex-wrap-nowrap" style="width:100%">
-                                                        <button class="button is-success is-fullwidth is-large mr-1" onclick="Bulma('#modalAtualizarEstado').modal().open();document.getElementById('txtEstado').value = '@item.EstadoPedido.Descricao'; document.getElementById('txtQtdPedido').value = @item.Quantidade;document.getElementById('txtHiddenStamp').value = '@item.Stamp'">
-                                                            <i class="fa-solid fa-arrows-rotate"></i>
-                                                        </button>
-                                                        <button class="button is-danger is-fullwidth is-large"
-                                                                onclick="ConfirmApagarEspecial('@item.Stamp')">
-                                                            <i class="fas fa-trash-can"></i>
-                                                        </button>
-                                                    </div>
-                                                </td>
-                                            </tr>
-                                        }
-                                    </tbody>
-                                </table>
-                            </div>
-                        </div>
-                    }
-                </li>
-                <li>
                     @if (Model.Where(l => l.Tipo!.Id == 7).Count() == 0)
                     {
                         <br />
@@ -228,6 +140,95 @@
                                                     <div class="field has-addons is-pulled-right is-flex-wrap-nowrap" style="width:100%">
                                                         <button class="button is-danger is-fullwidth is-large"
                                                                 onclick="ConfirmApagarPeriodico('@item.Stamp')">
+                                                            <i class="fas fa-trash-can"></i>
+                                                        </button>
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                        }
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    }
+                </li>
+                <li>
+                    
+                    @if (Model.Where(l => l.Tipo!.Id != 7).Count() == 0)
+                    {
+                        <br />
+                        <button class="button is-danger is-large is-rounded is-fullwidth is-disabled">
+                            Não foram encontrados
+                            pedidos especiais!
+                        </button>
+                    }
+                    else
+                    {
+                        <p class="control">
+                            <button type="button" class="button is-success is-large is-fullwidth "
+                                    onclick="Bulma('#modalMailPedidos').modal().open();">
+                                <span class="icon">
+                                    <i class="fa-solid fa-paper-plane"></i>
+                                </span>
+                                <span>Enviar Pedidos Novos</span>
+                            </button>
+                        </p>
+                        <br />
+                        <div class="b-table">
+                            <div class="table-wrapper has-mobile-cards">
+                                <table class="table is-hoverable is-fullwidth">
+                                    <thead>
+                                        <tr>
+                                            <th></th>
+                                            <th>
+                                                @Html.DisplayNameFor(model => model.FirstOrDefault()!.Referencia)
+                                            </th>
+                                            <th>
+                                                @Html.DisplayNameFor(model => model.FirstOrDefault()!.Descricao)
+                                            </th>
+                                            <th>
+                                                @Html.DisplayNameFor(model => model.FirstOrDefault()!.Quantidade)
+                                            </th>
+                                            <th>
+                                                @Html.DisplayNameFor(model => model.FirstOrDefault()!.Publicador!.Nome)
+                                            </th>
+                                            <th>
+                                                @Html.DisplayNameFor(model => model.FirstOrDefault()!.EstadoPedido!)
+                                            </th>
+                                            <th></th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @foreach (var item in Model.Where(l => l.Tipo!.Id != 7))
+                                        {
+                                            <tr>
+                                                <td class="is-image-cell">
+                                                    <div class="image">
+                                                        <img src="@item.Imagem">
+                                                    </div>
+                                                </td>
+                                                <td data-label="@Html.DisplayNameFor(model => model.FirstOrDefault()!.Referencia)">
+                                                    <span>@item.Referencia</span>
+                                                </td>
+                                                <td data-label="@Html.DisplayNameFor(model => model.FirstOrDefault()!.Descricao)">
+                                                    <span>@item.Descricao</span>
+                                                </td>
+                                                <td data-label="@Html.DisplayNameFor(model => model.FirstOrDefault()!.Quantidade)">
+                                                    <span>@item.Quantidade</span>
+                                                </td>
+                                                <td data-label="@Html.DisplayNameFor(model => model.FirstOrDefault()!.Publicador!.Nome)">
+                                                    <span>@item.Publicador!.Nome</span>
+                                                </td>
+                                                <td data-label="@Html.DisplayNameFor(model => model.FirstOrDefault()!.EstadoPedido!)">
+                                                    <span>@item.EstadoPedido!.Descricao</span>
+                                                </td>
+                                                <td class="is-actions-cell">
+                                                    <div class="field has-addons is-pulled-right is-flex-wrap-nowrap" style="width:100%">
+                                                        <button class="button is-success is-fullwidth is-large mr-1" onclick="Bulma('#modalAtualizarEstado').modal().open();document.getElementById('txtEstado').value = '@item.EstadoPedido.Descricao'; document.getElementById('txtQtdPedido').value = @item.Quantidade;document.getElementById('txtHiddenStamp').value = '@item.Stamp'">
+                                                            <i class="fa-solid fa-arrows-rotate"></i>
+                                                        </button>
+                                                        <button class="button is-danger is-fullwidth is-large"
+                                                                onclick="ConfirmApagarEspecial('@item.Stamp')">
                                                             <i class="fas fa-trash-can"></i>
                                                         </button>
                                                     </div>
