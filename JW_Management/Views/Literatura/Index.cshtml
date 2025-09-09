@@ -115,41 +115,43 @@
                     <tbody>
                         @foreach (var item in Model)
                         {
-                            <tr>
-                                <td class="is-image-cell">
-                                    <div class="image">
-                                        <img src="@item.Imagem">
-                                    </div>
-                                </td>
-                                <td data-label="@Html.DisplayNameFor(model => model.FirstOrDefault()!.Referencia)">
-                                    <span>@item.Referencia</span>
-                                </td>
-                                <td data-label="@Html.DisplayNameFor(model => model.FirstOrDefault()!.Descricao)">
-                                    <span>@item.Descricao</span>
-                                </td>
-                                <td data-label="@Html.DisplayNameFor(model => model.FirstOrDefault()!.Quantidade)">
-                                    <span>@item.Quantidade</span>
-                                </td>
-                                <td data-label="@Html.DisplayNameFor(model => model.FirstOrDefault()!.Tipo)">
-                                    <span>@item.Tipo!.Descricao</span>
-                                </td>
-                                <td class="is-actions-cell">
-                                    <div class="field has-addons is-pulled-right is-flex-wrap-nowrap" style="width:100%">
-                                        <button class="button is-primary is-fullwidth is-large mr-1"
-                                                onclick="AtualizarImagem('@item.Stamp')">
-                                            <i class="fas fa-image"></i>
-                                        </button>
-                                        <button class="button is-info is-fullwidth is-large mr-1"
-                                                onclick="AtualizarQuantidade('@item.Stamp')">
-                                            <i class="fas fa-refresh"></i>
-                                        </button>
-                                        <button class="button is-danger is-fullwidth is-large"
-                                                onclick="ConfirmApagar('@item.Stamp')">
-                                            <i class="fas fa-trash-can"></i>
-                                        </button>
-                                    </div>
-                                </td>
-                            </tr>
+                            if(!(item.Tipo!.Id == 7 && item.Quantidade <= 0)) {
+                                <tr>
+                                    <td class="is-image-cell">
+                                        <div class="image">
+                                            <img src="@item.Imagem">
+                                        </div>
+                                    </td>
+                                    <td data-label="@Html.DisplayNameFor(model => model.FirstOrDefault()!.Referencia)">
+                                        <span>@item.Referencia</span>
+                                    </td>
+                                    <td data-label="@Html.DisplayNameFor(model => model.FirstOrDefault()!.Descricao)">
+                                        <span>@item.Descricao</span>
+                                    </td>
+                                    <td data-label="@Html.DisplayNameFor(model => model.FirstOrDefault()!.Quantidade)">
+                                        <span>@item.Quantidade</span>
+                                    </td>
+                                    <td data-label="@Html.DisplayNameFor(model => model.FirstOrDefault()!.Tipo)">
+                                        <span>@item.Tipo!.Descricao</span>
+                                    </td>
+                                    <td class="is-actions-cell">
+                                        <div class="field has-addons is-pulled-right is-flex-wrap-nowrap" style="width:100%">
+                                            <button class="button is-primary is-fullwidth is-large mr-1"
+                                                    onclick="AtualizarImagem('@item.Stamp')">
+                                                <i class="fas fa-image"></i>
+                                            </button>
+                                            <button class="button is-info is-fullwidth is-large mr-1"
+                                                    onclick="AtualizarQuantidade('@item.Stamp')">
+                                                <i class="fas fa-refresh"></i>
+                                            </button>
+                                            <button class="button is-danger is-fullwidth is-large"
+                                                    onclick="ConfirmApagar('@item.Stamp')">
+                                                <i class="fas fa-trash-can"></i>
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                            }
                         }
                     </tbody>
                 </table>
