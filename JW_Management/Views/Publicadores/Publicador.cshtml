@@ -105,15 +105,20 @@
                                 </div>
                             </div>
                             <div class="column is-4">
-                                <div class="field">
-                                    <label class="label" asp-for="Password"></label>
-                                    <p class="control ">
+                                <label class="label" asp-for="Password"></label>
+                                <div class="field has-addons">
+                                    <div class="control" style="width:100%">
                                         <input type="password" class="input" asp-for="Password">
-                                    </p>
+                                    </div>
                                     <span asp-validation-for="Password" class="has-text-danger"></span>
+                                    <div class="control">
+                                        <a type="button" data-tooltip="EnviarSenha" class="button is-fullwidth is-primary" style="height: 100%"
+                                                href="@(Url.Action("Senha", "Publicadores", new { Id = Model.Id }))">>
+                                            <i class="fas fa-mail-forward"></i>
+                                        </a>
+                                    </div>
                                 </div>
                             </div>
-
                             <div class="column is-12">
                                 <button class="button is-large is-success is-fullwidth" type="submit">
                                     <span class="icon"><i class="fa-regular fa-floppy-disk"></i></span>

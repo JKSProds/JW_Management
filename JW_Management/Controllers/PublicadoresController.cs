@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using System.Security.Cryptography;
+using Microsoft.AspNetCore.Mvc;
 using JW_Management.Models;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.AspNetCore.Identity;
@@ -7,7 +8,7 @@ using Microsoft.AspNetCore.Authorization;
 namespace JW_Management.Controllers
 {
 
-    public class PublicadoresController : Controller
+    public class PublicadoresController(DbContext _dbContext) : Controller
     {
         [Authorize(Roles = "Admin, Assistente, Coordenador, Secretario, Servico")]
         [HttpGet]
@@ -80,6 +81,32 @@ namespace JW_Management.Controllers
             if (!delete) return StatusCode(403);
 
             return context.ApagarPublicador(id) ? StatusCode(200) : StatusCode(500);
+        }
+
+        public IActionResult Senha(int id)
+        {
+            string s = "";
+            const string valid = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890!#$%&/()=?-_,.;:|^~";
+
+            using var rng = RandomNumberGenerator.Create();
+            while (s.Length != 12)
+            {
+                byte[] oneByte = new byte[1];
+                rng.GetBytes(oneByte);
+                char character = (char)oneByte[0];
+                if (valid.Contains(character))
+                {
+                    s += character;
+                }
+            }
+            
+            var p = _dbContext.ObterPublicador(id, false, false, false, false);
+            p.Password = s;
+            _dbContext.AdicionarPublicador(p);
+
+            MailContext.MailSenhaPublicador(p);
+            
+            return RedirectToAction("Publicador", new { id = p.Id });
         }
     }
 }

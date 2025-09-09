@@ -1,5 +1,48 @@
-﻿namespace JW_Management.Models
+﻿using System.Security.Claims;
+
+namespace JW_Management.Models
 {
+    public static class ClaimsPrincipalExtension
+    {
+        public static string ObterNomeCompleto(this ClaimsPrincipal principal)
+        {
+            var firstName = principal.Claims.Where(c => c.Type == ClaimTypes.GivenName).First();
+            return $"{firstName.Value}";
+        }
+
+        public static string ObterCong(this ClaimsPrincipal principal)
+        {
+            var cong = principal.Claims.Where(c => c.Type == ClaimTypes.PrimaryGroupSid).First();
+            return $"{cong.Value}";
+        }
+        public static string ObterImgUtilizador(this ClaimsPrincipal principal)
+        {
+            if (principal.Claims.Where(c => c.Type == ClaimTypes.Thumbprint).Count() == 0) return "";
+            var img = principal.Claims.Where(c => c.Type == ClaimTypes.Thumbprint).First();
+            return img.Value;
+        }
+
+        public static int ObterTenant(this ClaimsPrincipal principal)
+        {
+            if (principal.Claims.Where(c => c.Type == ClaimTypes.Sid).Count() == 0) return 0;
+            var tenant = principal.Claims.Where(c => c.Type == ClaimTypes.Sid).First();
+            return int.Parse(tenant.Value);
+        }
+        
+        public static int ObterTenantOriginal(this ClaimsPrincipal principal)
+        {
+            if (principal.Claims.Where(c => c.Type == ClaimTypes.PrimaryGroupSid).Count() == 0) return 0;
+            var tenant = principal.Claims.Where(c => c.Type == ClaimTypes.PrimaryGroupSid).First();
+            return int.Parse(tenant.Value);
+        }   
+        public static int ObterId(this ClaimsPrincipal principal)
+        {
+            if (principal.Claims.Where(c => c.Type == ClaimTypes.Name).Count() == 0) return 0;
+            var id = principal.Claims.Where(c => c.Type == ClaimTypes.Name).First();
+            return int.Parse(id.Value);
+        }
+    }
+    
     public class Publicador
     {
         public int Id { get; set; }

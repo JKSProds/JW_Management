@@ -134,6 +134,17 @@ namespace JW_Management.Models
 
             return EnviarMail(EmailDestino, "Pedidos Periodicos - " + DateTime.Now.ToShortDateString(), Mensagem, null);
         }
+        
+        public static bool MailSenhaPublicador(Publicador p)
+        {
+            string Assunto = "🔐 Acesso Plataforma - Publicador - " + p.Nome;
+            string Mensagem =
+                $"{p.Nome}, requisitaste acesso á plataforme congregacional. Abaixo seguem os dados de acesso à sua conta: <br><br>Nome de Utilizador: <b>" +
+                p.Username + "</b><br>Palavra-Passe: <b>" + p.Password + "</b><br><br>";
+            
+            return p.Email != null && EnviarMail(p.Email, Assunto, Mensagem, null);
+        }
+
 
         public static bool MailTerritorioAtribuido(Territorio t, string EmailDestino)
         {
