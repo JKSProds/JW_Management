@@ -29,5 +29,8 @@
 		<None Update="S-140_TPO.pdf">
 			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
 		</None>
+	    <None Include="Migrations\**\*">
+            <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+        </None>
 	</ItemGroup>
 </Project>
