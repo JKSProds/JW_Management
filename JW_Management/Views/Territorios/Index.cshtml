@@ -29,7 +29,7 @@
                             <i class="fa-solid fa-arrow-down-a-z"></i>
                         </span>
                     </p>
-                    <div class="buttons is-right">
+                    <div class="buttons has-addons is-right mt-2">
                         <p class="control">
                             <button type="submit" class="button is-info is-outlined is-fullwidth ">
                                 <span class="icon">
@@ -221,7 +221,7 @@
                     </div>
                     <div class="control">
                         <a class="button is-info"
-                           onclick="IniciarLeituraQR();Bulma('#modalLeituraQR').modal().open();">
+                           onclick="IniciarLeituraQR();Bulma('#modalLeituraQR').modal().open();" style="height:100%">
                             <i class="fa-solid fa-qrcode"></i>
                         </a>
                     </div>
@@ -229,6 +229,7 @@
             </div>
         </section>
         <footer class="modal-card-foot">
+            <div class="buttons is-centered" style="width:100%">
             <a class="button is-info is-large is-fullwidth"
                onclick="CriarTerritorio(document.getElementById('txtIdTerritorio').value, document.getElementById('txtNomeTerritorio').value, document.getElementById('txtDificuldadeTerritorio').value, document.getElementById('txtDescricaoTerritorio').value, document.getElementById('txtURLTerritorio').value)">
                 <span class="icon">
@@ -245,6 +246,7 @@
                 </span>
                 <span>Fechar</span>
             </button>
+            </div>
         </footer>
     </div>
 </div>

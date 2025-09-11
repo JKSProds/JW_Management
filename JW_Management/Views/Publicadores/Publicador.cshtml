@@ -108,7 +108,7 @@
                                 <label class="label" asp-for="Password"></label>
                                 <div class="field has-addons">
                                     <div class="control" style="width:100%">
-                                        <input type="password" class="input" asp-for="Password" value="@Model.PasswordVisivel">
+                                        <input type="password" class="input" asp-for="Password" value="@Model.Password">
                                     </div>
                                     <span asp-validation-for="Password" class="has-text-danger"></span>
                                     @if (!string.IsNullOrEmpty(Model.Email))

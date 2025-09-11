@@ -1,5 +1,6 @@
 using System.Globalization;
 using System.Text;
+using JW_Management.Component.DB;
 using JW_Management.Models;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.Extensions.Configuration;
@@ -24,6 +25,8 @@ builder.Services.AddScoped<JWApiContext>();
 builder.Services.AddScoped<FileContext>();
 
 var _dbBackupService = new MySqlBackupService(new JW_Management.Models.AppContext(tenantContext));
+var dbService = new DbService(new JW_Management.Models.AppContext(tenantContext));
+builder.Configuration["DBVersion"] = dbService._version;
 
 builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme).AddCookie(cookieOptions =>
 {

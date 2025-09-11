@@ -45,12 +45,13 @@ namespace JW_Management.Models
     
     public class Publicador
     {
+        private readonly HttpContextAccessor httpContextAccessor = new HttpContextAccessor();
+        
         public int Id { get; set; }
         public string? Nome { get; set; }
         public string? NomeCurto { get {return this.Nome.Split(" ").First() + (this.Nome.Split(" ").Count() > 1 ? " " + this.Nome.Split(" ").Last()[0] + "." : "");} }
         public string? Username { get; set; }
         public string? Password { get; set; }
-        public string? PasswordVisivel => !string.IsNullOrEmpty(Password) ? "***************" : "";
         public string? Email { get; set; }
         public string? Telemovel { get; set; }
         public Grupo? Grupo { get; set; }
@@ -59,6 +60,9 @@ namespace JW_Management.Models
         public List<Literatura>? Pedidos { get; set; }
         public List<Territorio>? Territorios { get; set; }
         public int TipoUtilizador { get; set; } //0 - Admin | 10 - Assistente | 20 - Coordenador | 30 - Secretario | 40 - Sup. Serviço | 50 - Servo Contas | 60 - Servo Literatura | 70 - Servo Territórios | 80 - Servo Ministerial | 90 - Publicador
+        
+        public string GetUrl => "https://" + httpContextAccessor.HttpContext?.Request.Host.Value;
+        
         public string Role
         {
             get
@@ -87,7 +91,7 @@ namespace JW_Management.Models
             if (string.IsNullOrEmpty(Password)) Password = string.Empty;
             if (string.IsNullOrEmpty(Email)) Email = string.Empty;
             if (string.IsNullOrEmpty(Telemovel)) Telemovel = string.Empty;
-            if (Grupo == null) Grupo = new Grupo() { Id = 0 };
+            if (Grupo == null) Grupo = new Grupo() { Id = 0, Nome = "N/D"};
             Territorios = new List<Territorio>();
             
         }

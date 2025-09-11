@@ -127,7 +127,11 @@ namespace JW_Management.Controllers
         [HttpPost]
         public IActionResult Periodicos(string Email, string id)
         {
-            List<Literatura> LstLiteratura = _dbContext.ObterPedidosPeriodico().Where(l => l.Referencia == id).OrderBy(l => l.Publicador.Nome).ToList();
+            List<Literatura> LstLiteratura = _dbContext.ObterPedidosPeriodico().OrderBy(l => l.Publicador.Nome).ToList();
+            if (id != "0")
+            {
+                LstLiteratura = LstLiteratura.Where(l => l.Referencia == id).OrderBy(l => l.Publicador.Nome).ToList();
+            }
             
             return Json(MailContext.MailPedidosPeriodicosGrupo(LstLiteratura, Email) ? StatusCode(200) : StatusCode(500));
         }

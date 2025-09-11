@@ -159,8 +159,10 @@ namespace JW_Management.Controllers
         [HttpGet]
         public IActionResult Formulario()
         {
-
-            var file = _fileContext.PreencherFormularioS13(_dbContext!, _dbContext.ObterTerritorios("", false, false, false, true), DateTime.Now.AddDays(-365), DateTime.Now.AddDays(360)).ToArray();
+            var t = _dbContext.ObterTerritorios("", false, false, false, true);
+            if (!t.Any()) return RedirectToAction("Index");
+            
+            var file = _fileContext.PreencherFormularioS13(_dbContext!, t, DateTime.Now.AddDays(-365), DateTime.Now.AddDays(360)).ToArray();
             var output = new MemoryStream();
             output.Write(file, 0, file.Length);
             output.Position = 0;

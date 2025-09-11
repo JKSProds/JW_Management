@@ -676,6 +676,7 @@
                             <span class="select is-fullwidth" style="width:100%">
                                 <select class="select" id="mailperiodico" style="height: auto"
                                         asp-items="@(new SelectList(@ViewBag.Periodicos, "Value", "Text"))">
+                                    <option value="0">Todos</option>
                                 </select>
                             </span>
                             <span class="icon is-small is-left">
