@@ -389,6 +389,13 @@
         <section class="modal-card-body">
             <div class="modal-body">
                 <div class="field">
+                    <div class="control">
+                        <label>Para puder enviar os dados para o JW, pressione o botão abaixo e depois aceda ao site HUB.JW.ORG com os seus dados de acesso. Na pagina principal pressione a tecla F12 e faça colar. Depois pode colar a informação na caixa abaixo.</label>
+                        <div class="field">
+                            <button class="button is-fullwidth is-success" onclick="navigator.clipboard.writeText('copy(document.cookie)')"><span>Clique Aqui</span></button>
+                        </div>
+                    </div>
+                    <hr/>
                     <label class="label">Cookie - Login</label>
                     <div class="field has-addons">
                         <div class="control" style="width:100%">
@@ -518,7 +525,7 @@
                 document.getElementById('btnEnviarInventario').classList.remove('is-loading');
             },
             error: function (response) {
-                notifyError('Ocorreu um erro ao enviar o inventario! Provavelmente o inventário deste mês já foi enviado ou o TOKEN está errado!');
+                notifyError('Ocorreu um erro ao enviar o inventario! Provavelmente o inventário deste mês já foi enviado ou o TOKEN está errado ou não tens acesso á literatura da tua congregação!');
                 document.getElementById('btnEnviarInventario').classList.remove('is-loading');
             },
             failure: function (response) {
