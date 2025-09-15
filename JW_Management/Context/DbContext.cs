@@ -317,7 +317,7 @@
             return LstLiteratura.ToList();
         }
 
-        public List<Literatura> ObterPeriodicosData(string data)
+        public List<Literatura> ObterPeriodicosData(string data, string referencia)
         {
             List<Literatura> LstLiteratura = new();
             List<TipoLiteratura> LstTiposLiteratura = ObterTiposLiteratura();
@@ -325,7 +325,7 @@
 
             using (Database db = _connectionString)
             {
-                string sql = "SELECT *, (SELECT Descricao FROM l_periodicos WHERE l_pubs.Referencia=l_periodicos.Referencia) as DescAdicional, IFNULL((SELECT SUM(Quantidade) from l_movimentos where l_pubs.STAMP=l_movimentos.StampLiteratura and l_movimentos.IdPublicador=0), 0) as Quantidade, IFNULL((SELECT Caminho from l_img where l_pubs.Referencia=l_img.Referencia), '') as Imagem FROM l_pubs where IdTipo=7 and l_pubs.Data='" + data + "';";
+                string sql = "SELECT *, (SELECT Descricao FROM l_periodicos WHERE l_pubs.Referencia=l_periodicos.Referencia) as DescAdicional, IFNULL((SELECT SUM(Quantidade) from l_movimentos where l_pubs.STAMP=l_movimentos.StampLiteratura and l_movimentos.IdPublicador=0), 0) as Quantidade, IFNULL((SELECT Caminho from l_img where l_pubs.Referencia=l_img.Referencia), '') as Imagem FROM l_pubs where IdTipo=7 and l_pubs.Data='" + data + "' and l_pubs.Referencia='" + referencia + "';";
                 using var result = db.Query(sql);
                 while (result.Read())
                 {
@@ -1191,6 +1191,8 @@
 
         public bool AdicionarDesignacoes(List<Designacao> LstDesignacoes)
         {
+            if (LstDesignacoes.Count == 0) return false;
+            
             string sql = "INSERT INTO r_designacoes(Stamp, StampReuniao, IdPublicador, IdTipo, Semana, Publicador,  Designacao,  Local, Minutos) VALUES ";
 
             foreach (var d in LstDesignacoes)
@@ -1264,7 +1266,7 @@
                 }
             }
 
-            return r.First();
+            return r.Any() ? r.First() : new Reuniao();
         }
 
         public bool AdicionarReuniao(string semana, string stamp)

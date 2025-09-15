@@ -81,7 +81,7 @@ namespace JW_Management.Controllers
         {
             if (string.IsNullOrEmpty(referencia) || string.IsNullOrEmpty(descricao)) return StatusCode(500);
             
-            var lP = _dbContext.ObterPeriodicosData(data);
+            var lP = _dbContext.ObterPeriodicosData(data, referencia);
             if (lP.Any())
             {
                 return Json(lP.First().Stamp);   
