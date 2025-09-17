@@ -6,8 +6,7 @@ using Org.BouncyCastle.Pqc.Crypto.Falcon;
 
 namespace JW_Management.Controllers
 {
-    //[Authorize(Roles = "Admin, Assistente, Coordenador, Secretario, Servico")]
-    [Authorize(Roles = "Admin")]
+    [Authorize(Roles = "Admin, Assistente, Coordenador, Secretario, Servico")]
     public class ReunioesController(DbContext _dbContext, FileContext _fileContext) : Controller
     {
         public IActionResult Index(string filtro, int tipo)

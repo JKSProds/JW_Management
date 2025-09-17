@@ -7,8 +7,7 @@ using Microsoft.AspNetCore.StaticFiles;
 
 namespace JW_Management.Controllers
 {
-    //[Authorize(Roles = "Admin, Assistente, Coordenador, Secretario, Servico, Territorios")]
-    [Authorize(Roles = "Admin")]
+    [Authorize(Roles = "Admin, Assistente, Coordenador, Secretario, Servico, Territorios")]
     public class TerritoriosController(DbContext _dbContext, FileContext _fileContext, MailContext _mailContext) : Controller
     {
         [HttpGet]
