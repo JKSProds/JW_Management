@@ -69,15 +69,15 @@ namespace JW_Management.Models
             {
                 switch (this.TipoUtilizador)
                 {
-                    case 0: return "Admin";
-                    case 10: return "Assistente";
-                    case 20: return "Coordenador";
-                    case 30: return "Secretario";
-                    case 40: return "Servico";
-                    case 50: return "Contas";
-                    case 60: return "Literatura";
-                    case 70: return "Territorios";
-                    case 80: return "Servo";
+                    case 0: return "Administrador";
+                    case 10: return "Assistente Administrador";
+                    case 20: return "Coordenador do Corpo de Anciãos";
+                    case 30: return "Secretário da Congregação";
+                    case 40: return "Superintendente de Serviço";
+                    case 50: return "Servo de Contas";
+                    case 60: return "Servo da Literatura";
+                    case 70: return "Servo dos Territorios";
+                    case 80: return "Servo Ministerial";
                     default: return "Publicador";
 
                 }
@@ -93,6 +93,8 @@ namespace JW_Management.Models
             if (string.IsNullOrEmpty(Telemovel)) Telemovel = string.Empty;
             if (Grupo == null) Grupo = new Grupo() { Id = 0, Nome = "N/D"};
             Territorios = new List<Territorio>();
+            Movimentos = new List<Movimentos>();
+            Pedidos = new List<Literatura>();
             
         }
 

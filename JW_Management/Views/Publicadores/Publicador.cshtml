@@ -52,13 +52,22 @@
                                     <span asp-validation-for="Id" class="has-text-danger"></span>
                                 </div>
                             </div>
-                            <div class="column is-6">
+                            <div class="column is-3">
                                 <div class="field">
                                     <label class="label" asp-for="Nome"></label>
                                     <p class="control ">
                                         <input type="text" class="input" readonly asp-for="Nome">
                                     </p>
                                     <span asp-validation-for="Nome" class="has-text-danger"></span>
+                                </div>
+                            </div>
+                            <div class="column is-3">
+                                <div class="field">
+                                    <label class="label" asp-for="Role"></label>
+                                    <p class="control ">
+                                        <input type="text" class="input" readonly asp-for="Role" disabled>
+                                    </p>
+                                    <span asp-validation-for="Role" class="has-text-danger"></span>
                                 </div>
                             </div>
                             <div class="column is-4">

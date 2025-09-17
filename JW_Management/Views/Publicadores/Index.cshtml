@@ -58,6 +58,9 @@
                             <th>
                                 @Html.DisplayNameFor(model => model.FirstOrDefault()!.Nome)
                             </th>
+                            <th>
+                                @Html.DisplayNameFor(model => model.FirstOrDefault()!.Role)
+                            </th>
                             <th class=""></th>
                         </tr>
                     </thead>
@@ -70,6 +73,9 @@
                                 </td>
                                 <td data-label="@Html.DisplayNameFor(model => model.FirstOrDefault()!.Nome)">
                                     <span>@item.Nome</span>
+                                </td>
+                                <td data-label="@Html.DisplayNameFor(model => model.FirstOrDefault()!.Role)">
+                                    <span>@item.Role</span>
                                 </td>
                                 <td class="is-actions-cell">
                                     <div class="field has-addons is-pulled-right is-flex-wrap-nowrap" style="width:100%">
@@ -100,7 +106,7 @@
         </header>
         <section class="modal-card-body">
             <div class="modal-body">
-                <p>Tem a certeza que deseja apagar este publicador e todos os movimentos e pedidos associados a ele?</p>
+                <p>Tem a certeza que deseja apagar este publicador e todos os movimentos e pedidos associados a ele? <b>Esta ação é irreversivel!</b></p>
             </div>
         </section>
         <footer class="modal-card-foot">
