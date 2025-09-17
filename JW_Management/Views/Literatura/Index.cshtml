@@ -70,7 +70,7 @@
                                 <span class="icon">
                                     <i class="fas fa-arrow-alt-circle-up fa-lg"></i>
                                 </span>
-                                <span>Enviar API</span>
+                                <span>Enviar JW HUB</span>
                             </a>
                         </p>
                     </div>
@@ -382,7 +382,7 @@
                 <span class="icon">
                     <i class="fas fa-arrow-alt-circle-up"></i>
                 </span>
-                <span>Enviar Inventário - Cookie</span>
+                <span>Enviar Inventário - JW HUB</span>
             </p>
             <button type="button" class="delete" aria-label="close"></button>
         </header>
@@ -392,14 +392,14 @@
                     <div class="control">
                         <label>Para puder enviar os dados para o JW, pressione o botão abaixo e depois aceda ao site HUB.JW.ORG com os seus dados de acesso. Na pagina principal pressione a tecla F12 e faça colar. Depois pode colar a informação na caixa abaixo.</label>
                         <div class="field">
-                            <button class="button is-fullwidth is-success" onclick="navigator.clipboard.writeText('copy(document.cookie)')"><span>Clique Aqui</span></button>
+                            <button class="button is-fullwidth is-success is-large mt-3" onclick="navigator.clipboard.writeText('copy(document.cookie)'); notify('Texto copiado. Agora vá ao JW Hub!')"><span class="icon"><i class="fa-solid fa-arrow-pointer"></i></span><span>Clique Aqui</span></button>
                         </div>
                     </div>
                     <hr/>
                     <label class="label">Cookie - Login</label>
                     <div class="field has-addons">
                         <div class="control" style="width:100%">
-                            <input type="text" class="input has-text-centered" min="1" id="txtCookie" value="" placeholder="Insira a cookie...">
+                            <input type="text" class="input has-text-centered is-large" min="1" id="txtCookie" value="" placeholder="Insira a cookie...">
                         </div>
                     </div>
                 </div>

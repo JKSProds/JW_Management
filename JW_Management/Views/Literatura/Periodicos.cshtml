@@ -60,7 +60,7 @@
                                                 @Html.DisplayNameFor(model => model.FirstOrDefault()!.Quantidade)
                                             </th>
                                             <th class="is-hidden-touch">
-                                                @Html.DisplayNameFor(model => model.FirstOrDefault()!.Tipo)
+                                                @Html.DisplayNameFor(model => model.FirstOrDefault()!.Entrega)
                                             </th>
                                             <th></th>
                                         </tr>
@@ -68,10 +68,10 @@
                                         <tbody>
                                         @foreach (var item in Model.Where(r => r.DescricaoGeral == p))
                                         {
-                                            <tr @(item.Quantidade == 0 ? "class=has-background-success" : "")>
+                                            <tr @(item.Quantidade == 0 ? "class=has-background-success" : (item.Entrega < 10) ? "class=has-background-danger" : (item.Entrega < 30 ? "class=has-background-warning" : ""))>
                                                 <td class="is-image-cell">
                                                     <div class="image">
-                                                        <img src="@item.GetUrl()">
+                                                        <img src="@item.URL">
                                                     </div>
                                                 </td>
                                                 <td data-label="@Html.DisplayNameFor(model => model.FirstOrDefault()!.Referencia)">
@@ -81,10 +81,10 @@
                                                     <span>@item.Descricao</span>
                                                 </td>
                                                 <td data-label="@Html.DisplayNameFor(model => model.FirstOrDefault()!.Quantidade)">
-                                                    <span>@item.Quantidade</span>
+                                                    <span>@item.QuantidadeFalta / @item.Quantidade</span>
                                                 </td>
-                                                <td data-label="@Html.DisplayNameFor(model => model.FirstOrDefault()!.Tipo)">
-                                                    <span>@item.Tipo!.Descricao</span>
+                                                <td data-label="@Html.DisplayNameFor(model => model.FirstOrDefault()!.Entrega)">
+                                                    <span>@(item.Entrega < 0 ? 0 : item.Entrega) dia(s)</span>
                                                 </td>
                                                 <td class="is-actions-cell">
                                                     @if (item.Quantidade > 0)

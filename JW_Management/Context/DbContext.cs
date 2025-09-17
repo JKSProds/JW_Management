@@ -74,7 +74,7 @@
 
                     if (LstLiteratura.Last().Tipo.Id == 7)
                     {
-                        LstLiteratura.Last().Imagem = LstLiteratura.Last().GetUrl();
+                        LstLiteratura.Last().Imagem = LstLiteratura.Last().URL;
                     }
                 }
             }
@@ -309,6 +309,7 @@
                         Imagem = "data:image/jpeg;base64," + Convert.ToBase64String(f.ObterFicheiro(f.ObterCaminhoLiteratura() + result["Imagem"])),
                         Quantidade = result["Quantidade"],
                         DescricaoGeral = result["DescAdicional"],
+                        QuantidadeFalta = ObterPeriodicos(result["STAMP"]).Sum(o => o.Quantidade),
                         Tipo = LstTiposLiteratura.Where(g => g.Id == result["IdTipo"]).FirstOrDefault(new TipoLiteratura())
                     });
                 }

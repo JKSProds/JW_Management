@@ -53,7 +53,7 @@
                     </p>
                     <p class="control">
                         <button type="button" class="button is-primary is-large is-fullwidth "
-                                onclick="Bulma('#modalEntradaPeriodicos').modal().open();">
+                                onclick="ObterPeriodicos(document.getElementById('periodico').value, document.getElementById('ano').value);Bulma('#modalEntradaPeriodicos').modal().open();">
                             <span class="icon">
                                 <i class="fa-solid fa-newspaper"></i>
                             </span>
@@ -231,7 +231,7 @@
                         <label class="label" l>Escolha a publicação:</label>
                         <p class="control has-icons-left">
                             <span class="select is-fullwidth" style="width:100%">
-                                <select class="select" id="periodico" style="height: auto" onchange="ObterPeriodicos(this.value, document.getElementById('ano').value);"
+                                <select class="select" id="periodico" style="height: auto" onchange="ObterPeriodicos(document.getElementById('periodico').value, document.getElementById('ano').value);"
                                         asp-items="@(new SelectList(@ViewBag.Periodicos, "Value", "Text"))">
                                 </select>
                             </span>
@@ -244,12 +244,31 @@
                 </div>
                 <div class="field">
                     <label class="label">Ano:</label>
-                    <p class="control has-icons-left">
-                        <input class="input" id="ano" type="number" value="@DateTime.Now.Year" />
-                        <span class="icon is-small is-left">
-                            <i class="fa-regular fa-calendar"></i>
-                        </span>
-                    </p>
+                    <div class="field has-addons">
+                        <div class="control">
+                            <button type="button" class="button is-danger disable-dbl-tap-zoom"
+                                    onclick="document.getElementById('ano').value = parseInt(document.getElementById('ano').value) - 1;ObterPeriodicos(document.getElementById('periodico').value, document.getElementById('ano').value);">
+                                <span class="icon">
+                                    <i class="fas fa-minus"></i>
+                                </span>
+                            </button>
+                        </div>
+                            <p class="control has-icons-left" style="width:100%">
+                                <input class="input" id="ano" type="number" value="@DateTime.Now.Year" disabled />
+                                <span class="icon is-small is-left">
+                                    <i class="fa-regular fa-calendar"></i>
+                                </span>
+                            </p>
+                        <div class="control">
+                            <button type="button" class="button is-success disable-dbl-tap-zoom"
+                                    onclick="document.getElementById('ano').value = parseInt(document.getElementById('ano').value) + 1;ObterPeriodicos(document.getElementById('periodico').value, document.getElementById('ano').value);">
+                                <span class="icon">
+                                    <i class="fas fa-plus"></i>
+                                </span>
+                            </button>
+                        </div>
+                    </div>
+                    
                 </div>
                 <div class="field">
                     <label class="label">Quantidade</label>
@@ -280,8 +299,8 @@
         </section>
         <footer class="modal-card-foot">
             <div class="buttons is-centered" style="width:100%">
-            <a class="button is-info is-large is-fullwidth"
-               onclick="CriarPeriodico(document.getElementById('periodico').value, document.getElementById('periodico')[document.getElementById('periodico').selectedIndex].text + ' - ' + document.getElementById('ano').value, document.getElementById('ano').value.slice(-2), document.getElementById('txtQtdPeriodico').value, this)">
+            <a class="button is-info is-large is-fullwidth" id="btnCriarPeriodico"
+               onclick="CriarPeriodico(document.getElementById('periodico').value, document.getElementById('periodico')[document.getElementById('periodico').selectedIndex].text + ' - ' + document.getElementById('ano').value, document.getElementById('ano').value, document.getElementById('txtQtdPeriodico').value, this)">
                 <span class="icon">
                     <i class="fa-regular fa-floppy-disk"></i>
                 </span>
@@ -337,8 +356,7 @@
 <input id="txtHiddenStamp" hidden />
 
 <script>
-    ObterPeriodicos(document.getElementById('periodico').value, document.getElementById('ano').value);
-    
+      
     function ConfirmApagar(id) {
         document.getElementById('txtHiddenStamp').value = id;
         Bulma('#ModalConfirmApagar').modal().open();
@@ -441,6 +459,9 @@
     }
 
     function ObterPeriodicos(tipo, ano) {
+        notify('A obter periodicos... Por favor aguarde!');
+        document.getElementById('btnCriarPeriodico').style.display='none';
+        
         const containerPai = document.getElementById('divListaPeriodicos');  // substitua pelo id real
         document.getElementById('iconSelect').innerHTML = '<i class="fa-solid fa-circle-notch fa-spin"></i>';
         containerPai.innerHTML = '';
@@ -450,6 +471,7 @@
             data: { "ano": ano, "tipo": tipo },
             type: "GET",
             success: function (data) {
+                if (data.length > 0) {
                 data.forEach(obj => {
                     const container = document.createElement('div');
                     container.className = "box has-text-centered";
@@ -460,11 +482,11 @@
                     img.className = 'image is-inline-block';
 
                     const descricao = document.createElement('p');
-                    descricao.className = 'mt-3';
+                    descricao.className = 'mt-3 has-text-weight-medium';
                     descricao.textContent = obj.descricao;
 
                     const botao = document.createElement('button');
-                    botao.className = 'button is-primary mt-3';
+                    botao.className = 'button is-primary mt-3 is-fullwidth is-large';
                     botao.innerHTML = '<span class="icon">\n' +
                         '<i class="fa-solid fa-plus"></i>\n' +
                         '</span><span>Adicionar</span>';
@@ -475,9 +497,15 @@
                     container.appendChild(img);
                     container.appendChild(descricao);
                     container.appendChild(botao);
-                    
+
                     containerPai.appendChild(container);
-                });
+                    
+                    notify('Periódicos obtidos com sucesso!');
+                });                
+                }else{
+                    document.getElementById('btnCriarPeriodico').style.display='block';
+                    notify('Não foi possivel obter periodicos para este item. Talvez seja um item anual!');
+                }
                 document.getElementById('iconSelect').innerHTML = '<i class="fas fa-newspaper"></i>';
             },
             error: function (response) {

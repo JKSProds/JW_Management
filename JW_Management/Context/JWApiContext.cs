@@ -238,7 +238,7 @@ public class JWApiContext
                 Literatura l = new Literatura() {Data=$"{ano}{i:D2}", Referencia = tLiteratura.Referencia, Descricao = $"{tLiteratura.Descricao} - Nº{i} ({ano})", Tipo = new TipoLiteratura() {Id = 7}};
                 using HttpClient client = new HttpClient();
                 
-                var response = client.GetAsync(l.GetUrl()).Result;
+                var response = client.GetAsync(l.URL).Result;
 
                 if (response.IsSuccessStatusCode)
                 {
