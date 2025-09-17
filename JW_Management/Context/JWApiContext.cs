@@ -7,11 +7,7 @@ namespace JW_Management.Models;
 
 public class JWApiContext
 {
-    //INFO
-    
-    //https://login.jw.org/password?Username=MonteiroJ1
-    
-    //API CALLS
+   //API CALLS
     public AppContext _appContext { get; set; }
     private string CongId => _appContext._currentTenant.JWApiIdCongregacao;
     public string Cookies {get;set;} 

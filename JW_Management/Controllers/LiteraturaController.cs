@@ -271,7 +271,7 @@ namespace JW_Management.Controllers
                 l.Quantidade = lstLiteraturas.Where(o => o.Referencia == l.Referencia && l.Data == o.Data).DefaultIfEmpty(new Literatura()).First().Quantidade;
                 _jwApiContext.AtualizarLiteratura(i, l);
             }
-           return Json(lstLiteraturas);
+           
             return Ok(_jwApiContext.FecharInventario(i));
         }
 
