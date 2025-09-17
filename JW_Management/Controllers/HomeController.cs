@@ -50,7 +50,8 @@ namespace JW_Management.Controllers
                 };
                     var claimsIdentity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
                     await HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, new ClaimsPrincipal(claimsIdentity));
-
+                    
+                    Console.WriteLine($"[{_appContext._currentTenant.NomeCongregacao}] - Login - Utilizador: {u.Nome}");
                     _appContext._manualTenant = 0;
                     
                     if (ReturnUrl != "" && ReturnUrl != null)
