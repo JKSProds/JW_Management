@@ -22,7 +22,7 @@ namespace JW_Management.Controllers
         public IActionResult Publicador(int id)
         {
             List<Grupo> LstGrupos = _dbContext.ObterGrupos();
-            LstGrupos.Insert(0, new Grupo() { Id = 0, Nome = "N/D", Responsavel = new Publicador() { Nome = "N/D" } });
+            //LstGrupos.Insert(0, new Grupo() { Id = 0, Nome = "N/D", Responsavel = new Publicador() { Nome = "N/D" } });
             ViewBag.Grupos = LstGrupos.Select(l => new SelectListItem() { Value = l.Id.ToString(), Text = l.Nome + " (" + l.Responsavel.Nome + ")" });
 
             return View(_dbContext.ObterPublicador(id, true, true, true, false));
@@ -69,6 +69,9 @@ namespace JW_Management.Controllers
         public IActionResult Publicador(int id, bool delete)
         {
             if (!delete) return StatusCode(403);
+            var p = _dbContext.ObterPublicador(id, false, false, false, false);
+            var u = _dbContext.ObterPublicador(User.ObterId(), false, false, false, false);
+            if (p.TipoUtilizador < u.TipoUtilizador) return Forbid();
 
             return _dbContext.ApagarPublicador(id) ? StatusCode(200) : StatusCode(500);
         }
@@ -90,7 +93,7 @@ namespace JW_Management.Controllers
                 }
             }
             
-            var p = _dbContext.ObterPublicador(id, false, false, false, false);
+            var p = _dbContext.ObterPublicador(id, false, false, true, false);
             p.Password = s;
             _mailContext.MailSenhaPublicador(p);
             
