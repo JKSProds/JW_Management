@@ -534,15 +534,12 @@
             type: "GET",
             success: function (res) {
                 notify('Inventário enviado com sucesso!');
-                document.getElementById('btnEnviarInventario').classList.remove('is-loading');
             },
             error: function (response) {
                 notifyError('Ocorreu um erro ao enviar o inventario! Provavelmente o inventário deste mês já foi enviado ou o TOKEN está errado ou não tens acesso á literatura da tua congregação!');
-                document.getElementById('btnEnviarInventario').classList.remove('is-loading');
             },
             failure: function (response) {
                 notifyError('Falha ao enviar o inventario!');
-                document.getElementById('btnEnviarInventario').classList.remove('is-loading');
             },
             complete: function (xhr, status) {
                 btn.classList.remove('is-loading');
