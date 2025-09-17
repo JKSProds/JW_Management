@@ -320,7 +320,7 @@
         <footer class="modal-card-foot">
             <div class="buttons is-centered" style="width:100%">
             <a class="button is-info is-large is-fullwidth"
-               onclick="CriarPedidoEspecial(document.getElementById('txtPubStamp').value, document.getElementById('txtQtd').value, document.getElementById('txtIdPublicador').value)">
+               onclick="CriarPedidoEspecial(document.getElementById('txtPubStamp').value, document.getElementById('txtQtd').value, document.getElementById('txtIdPublicador').value, this)">
                 <span class="icon">
                     <i class="fa-regular fa-floppy-disk"></i>
                 </span>
@@ -411,7 +411,7 @@
         <footer class="modal-card-foot">
             <div class="buttons is-centered" style="width:100%">
             <a class="button is-info is-large is-fullwidth"
-               onclick="CriarPedidoPeriodico(document.getElementById('periodico').value, document.getElementById('txtQtdPeriodico').value, document.getElementById('txtIdPublicador2').value)">
+               onclick="CriarPedidoPeriodico(document.getElementById('periodico').value, document.getElementById('txtQtdPeriodico').value, document.getElementById('txtIdPublicador2').value, this)">
                 <span class="icon">
                     <i class="fa-regular fa-floppy-disk"></i>
                 </span>
@@ -448,7 +448,7 @@
         <footer class="modal-card-foot">
             <div class="buttons is-centered" style="width:100%">
             <button class="button is-danger is-fullwidth is-large"
-                    onclick="ApagarPeriodico(document.getElementById('txtHiddenStamp').value);">
+                    onclick="ApagarPeriodico(document.getElementById('txtHiddenStamp').value, this);">
                 <span class="icon">
                     <i class="fas fa-trash-can"></i>
                 </span>
@@ -484,13 +484,13 @@
         <footer class="modal-card-foot">
             <div class="buttons is-centered" style="width:100%">
             <button class="button is-danger is-fullwidth is-large"
-                    onclick="ApagarEspecial(document.getElementById('txtHiddenStamp').value);">
+                    onclick="ApagarEspecial(document.getElementById('txtHiddenStamp').value, this);">
                 <span class="icon">
                     <i class="fas fa-trash-can"></i>
                 </span>
                 <span>Confirmar</span>
             </button>
-            <button class="button is-fullwidth is-large" onclick="Bulma('#ModalConfirmApagar').modal().close();">
+            <button class="button is-fullwidth is-large" onclick="Bulma('#ModalConfirmApagarEspecial').modal().close();">
                 <span class="icon">
                     <i class="fa-solid fa-circle-xmark"></i>
                 </span>
@@ -595,7 +595,7 @@
         <footer class="modal-card-foot">
             <div class="buttons is-centered" style="width:100%">
             <a class="button is-info is-large is-fullwidth"
-               onclick="AtualizarPedidoEspecial(document.getElementById('txtHiddenStamp').value, document.getElementById('txtQtdPedido').value, document.getElementById('txtEstado')[document.getElementById('txtEstado').selectedIndex].text)">
+               onclick="AtualizarPedidoEspecial(document.getElementById('txtHiddenStamp').value, document.getElementById('txtQtdPedido').value, document.getElementById('txtEstado')[document.getElementById('txtEstado').selectedIndex].text, this)">
                 <span class="icon">
                     <i class="fa-regular fa-floppy-disk"></i>
                 </span>
@@ -637,7 +637,7 @@
         <footer class="modal-card-foot">
             <div class="buttons is-centered" style="width:100%">
             <button class="button is-info is-fullwidth is-large"
-                    onclick="EnviarEmailPedidosPendentes(document.getElementById('txtEmailPedidos').value);">
+                    onclick="EnviarEmailPedidosPendentes(document.getElementById('txtEmailPedidos').value, this);">
                 <span class="icon">
                     <i class="fas fa-paper-plane"></i>
                 </span>
@@ -693,7 +693,7 @@
         <footer class="modal-card-foot">
             <div class="buttons is-centered" style="width:100%">
             <button class="button is-info is-fullwidth is-large"
-                    onclick="EnviarEmailPedidosPeriodicos(document.getElementById('txtEmailPeriodicos').value, document.getElementById('mailperiodico').value);">
+                    onclick="EnviarEmailPedidosPeriodicos(document.getElementById('txtEmailPeriodicos').value, document.getElementById('mailperiodico').value, this);">
                 <span class="icon">
                     <i class="fas fa-paper-plane"></i>
                 </span>
@@ -718,7 +718,8 @@
         Bulma('#ModalConfirmApagarPeriodico').modal().open();
     }
 
-    function ApagarPeriodico(id) {
+    function ApagarPeriodico(id, btn) {
+        btn.classList.add('is-loading');
         $.ajax({
             url: '/Literatura/Periodico/',
             data: { "id": id },
@@ -731,6 +732,9 @@
             },
             failure: function (data) {
                 notifyError('Falha ao apagar essa publicação!');
+            },
+            complete: function (xhr, status) {
+                btn.classList.remove('is-loading');
             }
         });
     }
@@ -739,25 +743,10 @@
         document.getElementById('txtHiddenStamp').value = id;
         Bulma('#ModalConfirmApagarEspecial').modal().open();
     }
+    
 
-    function ApagarPeriodico(id) {
-        $.ajax({
-            url: '/Literatura/Periodico/',
-            data: { "id": id },
-            type: "DELETE",
-            success: function (data) {
-                window.location.reload();
-            },
-            error: function (data) {
-                notifyError('Ocorreu um erro ao apagar essa publicação!');
-            },
-            failure: function (data) {
-                notifyError('Falha ao apagar essa publicação!');
-            }
-        });
-    }
-
-    function ApagarEspecial(id) {
+    function ApagarEspecial(id, btn) {
+        btn.classList.add('is-loading');
         $.ajax({
             url: '/Literatura/Pedido/',
             data: { "id": id },
@@ -770,6 +759,9 @@
             },
             failure: function (data) {
                 notifyError('Falha ao apagar essa publicação!');
+            },
+            complete: function (xhr, status) {
+                btn.classList.remove('is-loading');
             }
         });
     }
@@ -804,7 +796,8 @@
         }).css('z-index', 50);
     });
 
-    function CriarPedidoPeriodico(referencia, qtd, idpub) {
+    function CriarPedidoPeriodico(referencia, qtd, idpub, btn) {
+        btn.classList.add('is-loading');
         $.ajax({
             url: '/Literatura/Periodico/',
             data: { "referencia": referencia, "idpub": idpub, "qtd": qtd },
@@ -818,11 +811,15 @@
             },
             failure: function (response) {
                 notifyError('Falha ao criar o pedido periodico!');
+            },
+            complete: function (xhr, status) {
+                btn.classList.remove('is-loading');
             }
         });
     }
 
-    function CriarPedidoEspecial(stamp, qtd, idpub) {
+    function CriarPedidoEspecial(stamp, qtd, idpub, btn) {
+        btn.classList.add('is-loading');
         $.ajax({
             url: '/Literatura/Pedido/',
             data: { "stamp": stamp, "idpub": idpub, "qtd": qtd },
@@ -836,11 +833,15 @@
             },
             failure: function (response) {
                 notifyError('Falha ao criar o pedido especial!');
+            },
+            complete: function (xhr, status) {
+                btn.classList.remove('is-loading');
             }
         });
     }
 
-    function AtualizarPedidoEspecial(stamp, qtd, estado) {
+    function AtualizarPedidoEspecial(stamp, qtd, estado, btn) {
+        btn.classList.add('is-loading');
         $.ajax({
             url: '/Literatura/Pedido/',
             data: { "stamp": stamp, "qtd": qtd, "estado": estado },
@@ -854,11 +855,15 @@
             },
             failure: function (response) {
                 notifyError('Falha ao atualizado o pedido especial!');
+            },
+            complete: function (xhr, status) {
+                btn.classList.remove('is-loading');
             }
         });
     }
 
-    function EnviarEmailPedidosPendentes(email) {
+    function EnviarEmailPedidosPendentes(email, btn) {
+        btn.classList.add('is-loading');
         $.ajax({
             url: '/Literatura/Pedidos/',
             data: { "email": email },
@@ -872,11 +877,15 @@
             },
             failure: function (response) {
                 notifyError('Falha ao enviar os pedidos especiais!');
+            },
+            complete: function (xhr, status) {
+                btn.classList.remove('is-loading');
             }
         });
     }
 
-    function EnviarEmailPedidosPeriodicos(email, publicacao) {
+    function EnviarEmailPedidosPeriodicos(email, publicacao, btn) {
+        btn.classList.add('is-loading');
         $.ajax({
             url: '/Literatura/Periodicos/' + publicacao,
             data: { "email": email },
@@ -890,6 +899,9 @@
             },
             failure: function (response) {
                 notifyError('Falha ao enviar os pedidos periodicos!');
+            },
+            complete: function (xhr, status) {
+                btn.classList.remove('is-loading');
             }
         });
     }

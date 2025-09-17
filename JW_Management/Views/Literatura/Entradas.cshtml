@@ -1,6 +1,6 @@
 ﻿@model IEnumerable<JW_Management.Models.Movimentos>
 @{
-    ViewData["Title"] = "Literatura - Movimentos";
+    ViewData["Title"] = "Literatura - Entradas";
 }
 
 <div class="container">
@@ -192,7 +192,7 @@
         <footer class="modal-card-foot">
             <div class="buttons is-centered" style="width:100%">
             <a class="button is-info is-large is-fullwidth"
-               onclick="GerarMovimento(document.getElementById('txtPubStamp').value, document.getElementById('txtQtd').value)">
+               onclick="GerarMovimento(document.getElementById('txtPubStamp').value, document.getElementById('txtQtd').value, this)">
                 <span class="icon">
                     <i class="fa-regular fa-floppy-disk"></i>
                 </span>
@@ -281,7 +281,7 @@
         <footer class="modal-card-foot">
             <div class="buttons is-centered" style="width:100%">
             <a class="button is-info is-large is-fullwidth"
-               onclick="CriarPeriodico(document.getElementById('periodico').value, document.getElementById('periodico')[document.getElementById('periodico').selectedIndex].text + ' - ' + document.getElementById('ano').value, document.getElementById('ano').value.slice(-2), document.getElementById('txtQtdPeriodico').value)">
+               onclick="CriarPeriodico(document.getElementById('periodico').value, document.getElementById('periodico')[document.getElementById('periodico').selectedIndex].text + ' - ' + document.getElementById('ano').value, document.getElementById('ano').value.slice(-2), document.getElementById('txtQtdPeriodico').value, this)">
                 <span class="icon">
                     <i class="fa-regular fa-floppy-disk"></i>
                 </span>
@@ -318,7 +318,7 @@
         <footer class="modal-card-foot">
             <div class="buttons is-centered" style="width:100%">
             <button class="button is-danger is-fullwidth is-large"
-                    onclick="Apagar(document.getElementById('txtHiddenStamp').value);">
+                    onclick="Apagar(document.getElementById('txtHiddenStamp').value, this);">
                 <span class="icon">
                     <i class="fas fa-trash-can"></i>
                 </span>
@@ -344,7 +344,8 @@
         Bulma('#ModalConfirmApagar').modal().open();
     }
 
-    function Apagar(id) {
+    function Apagar(id, btn) {
+        btn.classList.add('is-loading');
         $.ajax({
             url: '/Literatura/Movimentos/',
             data: { "stamp": id },
@@ -357,6 +358,9 @@
             },
             failure: function (data) {
                 notifyError('Falha ao apagar essa publicação!');
+            },
+            complete: function (xhr, status) {
+                btn.classList.remove('is-loading');
             }
         });
     }
@@ -392,7 +396,8 @@
     });
 
 
-    function GerarMovimento(stamp, qtd) {
+    function GerarMovimento(stamp, qtd, btn) {
+        btn.classList.add('is-loading');
         $.ajax({
             url: '/Literatura/Movimentos/',
             data: { "stamp": stamp, "qtd": qtd },
@@ -406,34 +411,31 @@
             },
             failure: function (response) {
                 notifyError('Falha ao gerar um movimento!');
+            },
+            complete: function (xhr, status) {
+                btn.classList.remove('is-loading');
             }
         });
     }
 
-    function CriarPeriodico(referencia, descricao, data, qtd) {
-        @*if (referencia == "es" || referencia == "eslp") {
-            //referencia += ano.slice(-2);
-            descricao += " - " + ano;
-            data = ano.slice(-2);
-        } else {
-            //referencia += mes.slice(-2) + ano.slice(-2);
-            descricao += " - Nº" + parseInt(mes) + " (" + ano + ")";
-            data = ano + mes;
-        }*@
+    function CriarPeriodico(referencia, descricao, data, qtd, btn) {
+        btn.classList.add('is-loading');
         $.ajax({
             url: '/Literatura/Literatura/',
             data: { "referencia": referencia, "descricao": descricao, "data": data, "tipo": 7 },
             type: "POST",
             success: function (data) {
                 notify('Publicação criada com sucesso!');
-                console.log(data);
-                GerarMovimento(data, qtd);
+                GerarMovimento(data, qtd, btn);
             },
             error: function (response) {
                 notifyError('Ocorreu um erro ao criar uma publicação!');
             },
             failure: function (response) {
                 notifyError('Falha ao criar uma publicação!');
+            },
+            complete: function (xhr, status) {
+                btn.classList.remove('is-loading');
             }
         });
     }

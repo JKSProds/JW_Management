@@ -228,7 +228,7 @@
         <footer class="modal-card-foot">
             <div class="buttons is-centered" style="width:100%">
             <a class="button is-info is-large is-fullwidth"
-               onclick="CriarPublicacao(document.getElementById('txtRefPub').value, document.getElementById('txtNomePub').value, document.getElementById('txtTipoPub').value, document.getElementById('txtQtdPub').value, )">
+               onclick="CriarPublicacao(document.getElementById('txtRefPub').value, document.getElementById('txtNomePub').value, document.getElementById('txtTipoPub').value, document.getElementById('txtQtdPub').value, this)">
                 <span class="icon">
                     <i class="fa-solid fa-circle-plus fa-beat-fade"></i>
                 </span>
@@ -291,7 +291,7 @@
         <footer class="modal-card-foot">
             <div class="buttons is-centered" style="width:100%">
             <a class="button is-info is-large is-fullwidth"
-               onclick="GerarMovimento(document.getElementById('txtHiddenStamp').value, document.getElementById('txtQtd').value)">
+               onclick="GerarMovimento(document.getElementById('txtHiddenStamp').value, document.getElementById('txtQtd').value, this)">
                 <span class="icon">
                     <i class="fa-regular fa-floppy-disk"></i>
                 </span>
@@ -326,7 +326,7 @@
         <footer class="modal-card-foot">
             <div class="buttons is-centered" style="width:100%">
             <button class="button is-danger is-fullwidth is-large"
-                    onclick="Apagar(document.getElementById('txtHiddenStamp').value);">
+                    onclick="Apagar(document.getElementById('txtHiddenStamp').value, this);">
                 <span class="icon">
                     <i class="fas fa-trash-can"></i>
                 </span>
@@ -407,8 +407,8 @@
         </section>
         <footer class="modal-card-foot">
             <div class="buttons is-centered" style="width:100%">
-            <a class="button is-info is-large is-fullwidth" id="btnEnviarInventario"
-               onclick="GerarInventario(document.getElementById('txtCookie').value)">
+            <a class="button is-info is-large is-fullwidth"
+               onclick="GerarInventario(document.getElementById('txtCookie').value, this)">
                 <span class="icon">
                     <i class="fa-regular fa-paper-plane"></i>
                 </span>
@@ -447,7 +447,8 @@
         Bulma('#modalAtualizarImagem').modal().open();
     }
 
-    function GerarMovimento(stamp, qtd) {
+    function GerarMovimento(stamp, qtd, btn) {
+        btn.classList.add('is-loading');
         $.ajax({
             url: '/Literatura/Literatura/',
             data: { "id": stamp },
@@ -474,30 +475,38 @@
             },
             failure: function (response) {
                 notifyError('Falha ao obter a literatura!');
+            },
+            complete: function (xhr, status) {
+                btn.classList.remove('is-loading');
             }
         });
 
     }
 
-    function CriarPublicacao(referencia, descricao, tipo, qtd) {
+    function CriarPublicacao(referencia, descricao, tipo, qtd, btn) {
+        btn.classList.add('is-loading');
         $.ajax({
             url: '/Literatura/Literatura/',
             data: { "referencia": referencia, "descricao": descricao, "data": '', "tipo": tipo },
             type: "POST",
             success: function (data) {
                 notify('Literatura criada com sucesso!');
-                GerarMovimento(data, qtd);
+                GerarMovimento(data, qtd, btn);
             },
             error: function (response) {
                 notifyError('Ocorreu um erro ao criar a literatura!');
             },
             failure: function (response) {
                 notifyError('Falha ao criar a literatura!');
+            },
+            complete: function (xhr, status) {
+                btn.classList.remove('is-loading');
             }
         });
     }
 
-    function Apagar(id) {
+    function Apagar(id, btn) {
+        btn.classList.add('is-loading');
         $.ajax({
             url: '/Literatura/Literatura/',
             data: { "stamp": id },
@@ -510,12 +519,15 @@
             },
             failure: function (data) {
                 notifyError('Falha ao apagar essa publicação!');
+            },
+            complete: function (xhr, status) {
+                btn.classList.remove('is-loading');
             }
         });
     }
     
-    function GerarInventario(token) {
-        document.getElementById('btnEnviarInventario').classList.add('is-loading');
+    function GerarInventario(token, btn) {
+        btn.classList.add('is-loading');
         $.ajax({
             url: '/Literatura/API/',
             data: { "id": token },
@@ -531,6 +543,9 @@
             failure: function (response) {
                 notifyError('Falha ao enviar o inventario!');
                 document.getElementById('btnEnviarInventario').classList.remove('is-loading');
+            },
+            complete: function (xhr, status) {
+                btn.classList.remove('is-loading');
             }
         });
     }

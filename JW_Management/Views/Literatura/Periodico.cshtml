@@ -70,7 +70,7 @@
                         <td class="is-actions-cell">
                             <div class="field has-addons is-pulled-right is-flex-wrap-nowrap" style="width:100%">
                                 <button class="button is-success is-fullwidth is-large"
-                                        onclick="this.classList.add('is-loading');GerarMovimento('@item.Stamp', @item.Quantidade, @item.Publicador.Id)">
+                                        onclick="GerarMovimento('@item.Stamp', @item.Quantidade, @item.Publicador.Id, this)">
                                     <i class="fas fa-circle-check"></i>
                                 </button>
                             </div>
@@ -84,7 +84,8 @@
 
 <script>
 
-    function GerarMovimento(stamp, qtd, idpub) {
+    function GerarMovimento(stamp, qtd, idpub, btn) {
+        btn.classList.add('is-loading');
         $.ajax({
             url: '/Literatura/Movimentos/',
             data: { "stamp": stamp, "qtd": -qtd, "idpub": 0 },
@@ -95,7 +96,8 @@
                     data: { "stamp": stamp, "qtd": qtd, "idpub": idpub },
                     type: "POST",
                     success: function (data) {
-                        window.location.reload();
+                        notify('Movimento guardado com sucesso!');
+                        btn.closest('tr').remove();
                     },
                     error: function (response) {
                         notifyError('Ocorreu um erro ao gerar um movimento!');
@@ -110,6 +112,9 @@
             },
             failure: function (response) {
                 notifyError('Falha ao gerar um movimento!');
+            },
+            complete: function (xhr, status) {
+                btn.classList.remove('is-loading');
             }
         });
     }

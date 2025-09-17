@@ -48,60 +48,60 @@
                                 <div class="table-wrapper has-mobile-cards">
                                     <table class="table is-hoverable is-fullwidth">
                                         <thead>
-                                            <tr>
-                                                <th></th>
-                                                <th>
-                                                    @Html.DisplayNameFor(model => model.FirstOrDefault()!.Referencia)
-                                                </th>
-                                                <th>
-                                                    @Html.DisplayNameFor(model => model.FirstOrDefault()!.Descricao)
-                                                </th>
-                                                <th>
-                                                    @Html.DisplayNameFor(model => model.FirstOrDefault()!.Quantidade)
-                                                </th>
-                                                <th class="is-hidden-touch">
-                                                    @Html.DisplayNameFor(model => model.FirstOrDefault()!.Tipo)
-                                                </th>
-                                                <th></th>
-                                            </tr>
+                                        <tr>
+                                            <th></th>
+                                            <th>
+                                                @Html.DisplayNameFor(model => model.FirstOrDefault()!.Referencia)
+                                            </th>
+                                            <th>
+                                                @Html.DisplayNameFor(model => model.FirstOrDefault()!.Descricao)
+                                            </th>
+                                            <th>
+                                                @Html.DisplayNameFor(model => model.FirstOrDefault()!.Quantidade)
+                                            </th>
+                                            <th class="is-hidden-touch">
+                                                @Html.DisplayNameFor(model => model.FirstOrDefault()!.Tipo)
+                                            </th>
+                                            <th></th>
+                                        </tr>
                                         </thead>
                                         <tbody>
-                                            @foreach (var item in Model.Where(r => r.DescricaoGeral == p))
-                                            {
-                                                <tr @(item.Quantidade == 0 ? "class=has-background-success" : "")>
-                                                    <td class="is-image-cell">
-                                                        <div class="image">
-                                                            <img src="@item.GetUrl()">
+                                        @foreach (var item in Model.Where(r => r.DescricaoGeral == p))
+                                        {
+                                            <tr @(item.Quantidade == 0 ? "class=has-background-success" : "")>
+                                                <td class="is-image-cell">
+                                                    <div class="image">
+                                                        <img src="@item.GetUrl()">
+                                                    </div>
+                                                </td>
+                                                <td data-label="@Html.DisplayNameFor(model => model.FirstOrDefault()!.Referencia)">
+                                                    <span>@item.Referencia</span>
+                                                </td>
+                                                <td data-label="@Html.DisplayNameFor(model => model.FirstOrDefault()!.Descricao)">
+                                                    <span>@item.Descricao</span>
+                                                </td>
+                                                <td data-label="@Html.DisplayNameFor(model => model.FirstOrDefault()!.Quantidade)">
+                                                    <span>@item.Quantidade</span>
+                                                </td>
+                                                <td data-label="@Html.DisplayNameFor(model => model.FirstOrDefault()!.Tipo)">
+                                                    <span>@item.Tipo!.Descricao</span>
+                                                </td>
+                                                <td class="is-actions-cell">
+                                                    @if (item.Quantidade > 0)
+                                                    {
+                                                        <div class="field has-addons is-pulled-right is-flex-wrap-nowrap" style="width:100%">
+                                                            <button class="button is-success is-fullwidth is-large mr-1"
+                                                                    onclick="ConfirmApagar('@item.Stamp', -@item.Quantidade)">
+                                                                <i class="fa-solid fa-circle-check"></i>
+                                                            </button>
+                                                            <a class="button is-info is-fullwidth is-large mr-1" href="~/Literatura/Periodico/@item.Stamp">
+                                                                <i class="fas fa-eye"></i>
+                                                            </a>
                                                         </div>
-                                                    </td>
-                                                    <td data-label="@Html.DisplayNameFor(model => model.FirstOrDefault()!.Referencia)">
-                                                        <span>@item.Referencia</span>
-                                                    </td>
-                                                    <td data-label="@Html.DisplayNameFor(model => model.FirstOrDefault()!.Descricao)">
-                                                        <span>@item.Descricao</span>
-                                                    </td>
-                                                    <td data-label="@Html.DisplayNameFor(model => model.FirstOrDefault()!.Quantidade)">
-                                                        <span>@item.Quantidade</span>
-                                                    </td>
-                                                    <td data-label="@Html.DisplayNameFor(model => model.FirstOrDefault()!.Tipo)">
-                                                        <span>@item.Tipo!.Descricao</span>
-                                                    </td>
-                                                    <td class="is-actions-cell">
-                                                        @if (item.Quantidade > 0)
-                                                        {
-                                                            <div class="field has-addons is-pulled-right is-flex-wrap-nowrap" style="width:100%">
-                                                                <button class="button is-success is-fullwidth is-large mr-1"
-                                                                        onclick="GerarMovimento('@item.Stamp', -@item.Quantidade)">
-                                                                    <i class="fa-solid fa-circle-check"></i>
-                                                                </button>
-                                                                <a class="button is-info is-fullwidth is-large mr-1" href="~/Literatura/Periodico/@item.Stamp">
-                                                                    <i class="fas fa-eye"></i>
-                                                                </a>
-                                                            </div>
-                                                        }
-                                                    </td>
-                                                </tr>
-                                            }
+                                                    }
+                                                </td>
+                                            </tr>
+                                        }
                                         </tbody>
                                     </table>
                                 </div>
@@ -115,9 +115,42 @@
     }
 </div>
 
+<div class="modal" id="ModalConfirmApagar">
+    <div class="modal-background"></div>
+    <div class="modal-card">
+        <header class="modal-card-head">
+            <p class="modal-card-title">Finalizar Periódico</p>
+        </header>
+        <section class="modal-card-body">
+            <div class="modal-body">
+                <p>Tem a certeza que deseja finalizar a entrega deste periódico? Ainda podem existir exemplares por entregar!</p>
+            </div>
+        </section>
+        <footer class="modal-card-foot">
+            <div class="buttons is-centered" style="width:100%">
+                <button class="button is-warning is-fullwidth is-large"
+                        onclick="GerarMovimento(document.getElementById('txtHiddenStamp').value, document.getElementById('txtHiddenQtd').value, this);">
+                    <span class="icon">
+                        <i class="fas fa-check"></i>
+                    </span>
+                    <span>Confirmar</span>
+                </button>
+                <button class="button is-fullwidth is-large" onclick="Bulma('#ModalConfirmApagar').modal().close();">
+                    <span class="icon">
+                        <i class="fa-solid fa-circle-xmark"></i>
+                    </span>
+                    <span>Não</span>
+                </button>
+            </div>
+        </footer>
+    </div>
+</div>
+<input type="hidden" id="txtHiddenStamp"/>
+<input type="hidden" id="txtHiddenQtd"/>
 
 <script>
-    function GerarMovimento(stamp, qtd) {
+    function GerarMovimento(stamp, qtd, btn) {
+        btn.classList.add('is-loading');
         $.ajax({
             url: '/Literatura/Movimentos/',
             data: { "stamp": stamp, "qtd": qtd, "idpub": 0 },
@@ -131,7 +164,17 @@
             },
             failure: function (response) {
                 notifyError('Falha ao gerar um movimento!');
+            },
+            complete: function (xhr, status) {
+                btn.classList.add('is-loading');
+                btn.classList.remove('is-loading');
             }
         });
+    }
+
+    function ConfirmApagar(id, qtd) {
+            document.getElementById('txtHiddenStamp').value = id;
+            document.getElementById('txtHiddenQtd').value = qtd;
+            Bulma('#ModalConfirmApagar').modal().open();        
     }
 </script>
