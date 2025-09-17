@@ -1,3 +1,4 @@
+using System.Data.Common;
 using System.Security.Claims;
 using MySql.Simple;
 
@@ -68,9 +69,13 @@ public class TenantContext
                         EmailSMTPPort = result["MailSenderPort"],
                         EmailHost = result["MailSenderHost"]
                     };
+                    
+                    var dbTenantName = $"sys_jw_{t.Id}";
+                    using Database dbTenant = _masterConnectionString;
+ 
+                    dbTenant.Execute($"CREATE DATABASE IF NOT EXISTS {dbTenantName};");
 
-                    using Database dbTenant = t.ConnectionString;
-
+                    t.ConnectionString += "database=" + dbTenantName;
                     LstTenants.Add(t);
                 }
                 catch
