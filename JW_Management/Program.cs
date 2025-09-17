@@ -23,6 +23,7 @@ builder.Services.AddScoped<JW_Management.Models.AppContext>();
 builder.Services.AddScoped<DbContext>();
 builder.Services.AddScoped<JWApiContext>();
 builder.Services.AddScoped<FileContext>();
+builder.Services.AddScoped<MailContext>();
 
 var _dbBackupService = new MySqlBackupService(new JW_Management.Models.AppContext(tenantContext));
 var dbService = new DbService(new JW_Management.Models.AppContext(tenantContext));

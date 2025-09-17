@@ -8,7 +8,7 @@ using Microsoft.AspNetCore.Authorization;
 namespace JW_Management.Controllers
 {
 
-    public class PublicadoresController(DbContext _dbContext) : Controller
+    public class PublicadoresController(DbContext _dbContext, MailContext _mailContext) : Controller
     {
         [Authorize(Roles = "Admin, Assistente, Coordenador, Secretario, Servico")]
         [HttpGet]
@@ -92,7 +92,7 @@ namespace JW_Management.Controllers
             
             var p = _dbContext.ObterPublicador(id, false, false, false, false);
             p.Password = s;
-            MailContext.MailSenhaPublicador(p);
+            _mailContext.MailSenhaPublicador(p);
             
             return Publicador(p);
         }

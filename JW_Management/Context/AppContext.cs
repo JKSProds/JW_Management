@@ -11,6 +11,7 @@ public class AppContext
     public DbContext _dbContext { get; set; }
     public FileContext _fileContext { get; set; }
     public JWApiContext _jwApiContext { get; set; }
+    public MailContext _mailContext { get; set; }
 
     public int _manualTenant { get; set; }
 
@@ -20,7 +21,7 @@ public class AppContext
         _dbContext = new DbContext(this);
         _fileContext = new FileContext(this);
         _jwApiContext = new JWApiContext(this);
-        _jwApiContext = new JWApiContext(this);
+        _mailContext = new MailContext(this);
         _manualTenant = manualTenant;
     }
 }

@@ -9,7 +9,7 @@ namespace JW_Management.Controllers
 {
     //[Authorize(Roles = "Admin, Assistente, Coordenador, Secretario, Servico, Territorios")]
     [Authorize(Roles = "Admin")]
-    public class TerritoriosController(DbContext _dbContext, FileContext _fileContext) : Controller
+    public class TerritoriosController(DbContext _dbContext, FileContext _fileContext, MailContext _mailContext) : Controller
     {
         [HttpGet]
         public IActionResult Index(string filtro)
@@ -97,8 +97,8 @@ namespace JW_Management.Controllers
                 Tipo = tipo == 1 ? TipoMovimentoTerritorio.ENTRADA : TipoMovimentoTerritorio.SAIDA
             };
 
-            if (tipo == 1 && !string.IsNullOrEmpty(email)) MailContext.MailTerritorioAtribuido(t, email);
-            if (tipo == 2 && !string.IsNullOrEmpty(email)) MailContext.MailTerritorioDevolver(t, email);
+            if (tipo == 1 && !string.IsNullOrEmpty(email)) _mailContext.MailTerritorioAtribuido(t, email);
+            if (tipo == 2 && !string.IsNullOrEmpty(email)) _mailContext.MailTerritorioDevolver(t, email);
 
             return _dbContext.AdicionarMovimentoTerritorio(m) ? StatusCode(200) : StatusCode(500);
         }

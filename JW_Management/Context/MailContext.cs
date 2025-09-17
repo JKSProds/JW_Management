@@ -1,9 +1,9 @@
 ﻿using System.Net.Mail;
 namespace JW_Management.Models
 {
-    public static class MailContext
+    public class MailContext(AppContext _appContext)
     {
-        private static bool EnviarMail(string EmailDestino, string Assunto, string Mensagem, List<Attachment> Anexos)
+        private bool EnviarMail(string EmailDestino, string Assunto, string Mensagem, List<Attachment> Anexos)
         {
             var configuration = new ConfigurationBuilder().AddJsonFile("appsettings.json").Build();
 
@@ -68,7 +68,7 @@ namespace JW_Management.Models
             }
             return true;
         }
-        public static bool MailPedidosEspeciaisPendentes(List<Literatura> LstLiteratura, string EmailDestino)
+        public bool MailPedidosEspeciaisPendentes(List<Literatura> LstLiteratura, string EmailDestino)
         {
             if (LstLiteratura.Count() == 0 || string.IsNullOrEmpty(EmailDestino)) return false;
 
@@ -86,7 +86,7 @@ namespace JW_Management.Models
             return EnviarMail(EmailDestino, "Pedidos Novos - " + DateTime.Now.ToShortDateString(), Mensagem, null);
         }
 
-        public static bool MailPedidosPeriodicos(List<Literatura> LstLiteratura, string EmailDestino)
+        public bool MailPedidosPeriodicos(List<Literatura> LstLiteratura, string EmailDestino)
         {
             if (LstLiteratura.Count() == 0 || string.IsNullOrEmpty(EmailDestino)) return false;
 
@@ -106,7 +106,7 @@ namespace JW_Management.Models
             return EnviarMail(EmailDestino, "Pedidos Periodicos - " + DateTime.Now.ToShortDateString(), Mensagem, null);
         }
 
-        public static bool MailPedidosPeriodicosGrupo(List<Literatura> LstLiteratura, string EmailDestino)
+        public bool MailPedidosPeriodicosGrupo(List<Literatura> LstLiteratura, string EmailDestino)
         {
             if (LstLiteratura.Count() == 0 || string.IsNullOrEmpty(EmailDestino)) return false;
             string Mensagem = "";
@@ -139,7 +139,7 @@ namespace JW_Management.Models
             return EnviarMail(EmailDestino, "Pedidos Periodicos - " + DateTime.Now.ToShortDateString(), Mensagem, null);
         }
         
-        public static bool MailSenhaPublicador(Publicador p)
+        public bool MailSenhaPublicador(Publicador p)
         {
             string Assunto = "🔐 Acesso Plataforma - Publicador - " + p.Nome;
             string Mensagem =
@@ -154,10 +154,9 @@ namespace JW_Management.Models
         }
 
 
-        public static bool MailTerritorioAtribuido(Territorio t, string EmailDestino)
+        public bool MailTerritorioAtribuido(Territorio t, string EmailDestino)
         {
             if (string.IsNullOrEmpty(t.Stamp) || string.IsNullOrEmpty(EmailDestino)) return false;
-            FileContext f = new();
 
             string Mensagem = "Abaixo segue o território atribuido a si para trabalhar num prazo máximo de 6 meses:<br><br>";
 
@@ -171,12 +170,12 @@ namespace JW_Management.Models
 
             foreach (var a in t.Anexos)
             {
-                Anexos.Add(new Attachment(new MemoryStream(f.ObterFicheiro(a.CaminhoFicheiro + a.NomeFicheiro)), a.NomeFicheiro));
+                Anexos.Add(new Attachment(new MemoryStream(_appContext._fileContext.ObterFicheiro(a.CaminhoFicheiro + a.NomeFicheiro)), a.NomeFicheiro));
             }
 
             return EnviarMail(EmailDestino, "Território Atribuido - " + t.Nome + " (" + t.Id + ")", Mensagem, Anexos);
         }
-        public static bool MailTerritorioDevolver(Territorio t, string EmailDestino)
+        public bool MailTerritorioDevolver(Territorio t, string EmailDestino)
         {
             if (string.IsNullOrEmpty(t.Stamp) || string.IsNullOrEmpty(EmailDestino)) return false;
 

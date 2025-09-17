@@ -8,7 +8,7 @@ using Microsoft.AspNetCore.Authorization;
 namespace JW_Management.Controllers
 {
     [Authorize(Roles = "Admin, Assistente, Coordenador, Secretario, Servico, Literatura")]
-    public class LiteraturaController(DbContext _dbContext, FileContext _fileContext, JWApiContext _jwApiContext) : Controller
+    public class LiteraturaController(DbContext _dbContext, FileContext _fileContext, JWApiContext _jwApiContext, MailContext _mailContext) : Controller
     {
         public IActionResult Index(string filtro, int tipo)
         {
@@ -133,7 +133,7 @@ namespace JW_Management.Controllers
                 LstLiteratura = LstLiteratura.Where(l => l.Referencia == id).OrderBy(l => l.Publicador.Nome).ToList();
             }
             
-            return Json(MailContext.MailPedidosPeriodicosGrupo(LstLiteratura, Email) ? StatusCode(200) : StatusCode(500));
+            return Json(_mailContext.MailPedidosPeriodicosGrupo(LstLiteratura, Email) ? StatusCode(200) : StatusCode(500));
         }
 
         [HttpGet]
@@ -191,7 +191,7 @@ namespace JW_Management.Controllers
                 _dbContext.AtualizarEstadoPedidoEspecial(l, new EstadoPedido("Enviado Email"));
             }
 
-            return Json(MailContext.MailPedidosEspeciaisPendentes(LstLiteratura, Email) ? StatusCode(200) : StatusCode(500));
+            return Json(_mailContext.MailPedidosEspeciaisPendentes(LstLiteratura, Email) ? StatusCode(200) : StatusCode(500));
         }
 
         [HttpPost]
