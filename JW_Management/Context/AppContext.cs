@@ -18,7 +18,7 @@ public class AppContext
     {
         _tenantContext = tenantContext;
         _dbContext = new DbContext(this);
-        _fileContext = new FileContext();
+        _fileContext = new FileContext(this);
         _jwApiContext = new JWApiContext(this);
         _jwApiContext = new JWApiContext(this);
         _manualTenant = manualTenant;

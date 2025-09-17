@@ -50,8 +50,8 @@
             List<Literatura> LstLiteratura = new();
             List<TipoLiteratura> LstTiposLiteratura = ObterTiposLiteratura();
             List<Publicador> LstPublicador = ObterPublicadores(false);
-            FileContext f = new();
-            f.ObterCaminhoLiteratura();
+            
+            _appContext._fileContext.ObterCaminhoLiteratura();
 
             using (Database db = _connectionString)
             {
@@ -65,7 +65,7 @@
                         Id = result["Id"],
                         Referencia = result["Referencia"],
                         Data = result["Data"],
-                        Imagem = "data:image/jpeg;base64," + Convert.ToBase64String(f.ObterFicheiro(f.ObterCaminhoLiteratura() + result["Imagem"])),
+                        Imagem = "data:image/jpeg;base64," + Convert.ToBase64String(_appContext._fileContext.ObterFicheiro(_appContext._fileContext.ObterCaminhoLiteratura() + result["Imagem"])),
                         Descricao = result["Descricao"],
                         Quantidade = result["Quantidade"],
                         Tipo = LstTiposLiteratura.Where(g => g.Id == result["IdTipo"]).FirstOrDefault(new TipoLiteratura()),
@@ -122,7 +122,6 @@
         {
             List<Literatura> LstLiteratura = new();
             List<TipoLiteratura> LstTiposLiteratura = ObterTiposLiteratura();
-            FileContext f = new();
 
             using (Database db = _connectionString)
             {
@@ -136,7 +135,7 @@
                         Id = result["Id"],
                         Referencia = result["Referencia"],
                         Data = result["Data"],
-                        Imagem = "data:image/jpeg;base64," + Convert.ToBase64String(f.ObterFicheiro(f.ObterCaminhoLiteratura() + result["Imagem"])),
+                        Imagem = "data:image/jpeg;base64," + Convert.ToBase64String(_appContext._fileContext.ObterFicheiro(_appContext._fileContext.ObterCaminhoLiteratura() + result["Imagem"])),
                         Descricao = result["Descricao"],
                         Quantidade = result["Quantidade"],
                         Tipo = LstTiposLiteratura.Where(g => g.Id == result["IdTipo"]).FirstOrDefault(new TipoLiteratura())
@@ -291,7 +290,6 @@
         {
             List<Literatura> LstLiteratura = new();
             List<TipoLiteratura> LstTiposLiteratura = ObterTiposLiteratura();
-            FileContext f = new();
 
             using (Database db = _connectionString)
             {
@@ -306,7 +304,7 @@
                         Referencia = result["Referencia"],
                         Data = result["Data"],
                         Descricao = result["Descricao"],
-                        Imagem = "data:image/jpeg;base64," + Convert.ToBase64String(f.ObterFicheiro(f.ObterCaminhoLiteratura() + result["Imagem"])),
+                        Imagem = "data:image/jpeg;base64," + Convert.ToBase64String(_appContext._fileContext.ObterFicheiro(_appContext._fileContext.ObterCaminhoLiteratura() + result["Imagem"])),
                         Quantidade = result["Quantidade"],
                         DescricaoGeral = result["DescAdicional"],
                         QuantidadeFalta = ObterPeriodicos(result["STAMP"]).Sum(o => o.Quantidade),
@@ -322,7 +320,6 @@
         {
             List<Literatura> LstLiteratura = new();
             List<TipoLiteratura> LstTiposLiteratura = ObterTiposLiteratura();
-            FileContext f = new();
 
             using (Database db = _connectionString)
             {
@@ -337,7 +334,7 @@
                         Referencia = result["Referencia"],
                         Data = result["Data"],
                         Descricao = result["Descricao"],
-                        Imagem = "data:image/jpeg;base64," + Convert.ToBase64String(f.ObterFicheiro(f.ObterCaminhoLiteratura() + result["Imagem"])),
+                        Imagem = "data:image/jpeg;base64," + Convert.ToBase64String(_appContext._fileContext.ObterFicheiro(_appContext._fileContext.ObterCaminhoLiteratura() + result["Imagem"])),
                         Quantidade = result["Quantidade"],
                         DescricaoGeral = result["DescAdicional"],
                         Tipo = LstTiposLiteratura.Where(g => g.Id == result["IdTipo"]).FirstOrDefault(new TipoLiteratura())
@@ -542,7 +539,6 @@
             List<Literatura> LstLiteratura = new();
             List<Publicador> LstPublicador = ObterPublicadores(true);
             List<TipoLiteratura> LstTiposLiteratura = ObterTiposLiteratura();
-            FileContext f = new();
 
             using (Database db = _connectionString)
             {
@@ -554,7 +550,7 @@
                     {
                         Stamp = result["Id"],
                         Referencia = result["Referencia"],
-                        Imagem = "data:image/jpeg;base64," + Convert.ToBase64String(f.ObterFicheiro(f.ObterCaminhoLiteratura() + result["Imagem"])),
+                        Imagem = "data:image/jpeg;base64," + Convert.ToBase64String(_appContext._fileContext.ObterFicheiro(_appContext._fileContext.ObterCaminhoLiteratura() + result["Imagem"])),
                         Descricao = result["Descricao"],
                         Quantidade = int.Parse(result["Quantidade"]),
                         Tipo = LstTiposLiteratura.Where(g => g.Id == 7).FirstOrDefault(new TipoLiteratura()),
@@ -618,7 +614,6 @@
             List<Literatura> LstLiteratura = new();
             List<Publicador> LstPublicador = ObterPublicadores(false);
             List<TipoLiteratura> LstTiposLiteratura = ObterTiposLiteratura();
-            FileContext f = new();
 
             using (Database db = _connectionString)
             {
@@ -630,7 +625,7 @@
                     {
                         Stamp = result["Id"],
                         Referencia = result["Referencia"],
-                        Imagem = "data:image/jpeg;base64," + Convert.ToBase64String(f.ObterFicheiro(f.ObterCaminhoLiteratura() + result["Imagem"])),
+                        Imagem = "data:image/jpeg;base64," + Convert.ToBase64String(_appContext._fileContext.ObterFicheiro(_appContext._fileContext.ObterCaminhoLiteratura() + result["Imagem"])),
                         EstadoPedido = new EstadoPedido(result["Estado"]),
                         Descricao = result["Descricao"],
                         Quantidade = int.Parse(result["Quantidade"]),

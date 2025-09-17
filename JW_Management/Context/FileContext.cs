@@ -9,10 +9,12 @@ using OfficeOpenXml;
 
 namespace JW_Management.Models
 {
-    public class FileContext
+    public class FileContext(AppContext appContext)
     {
         private string Caminho = "D:\\";
         private string CaminhoLinux = "/app/img/";
+        public AppContext _appContext { get; set; } = appContext;
+        public Tenant _currentTenant => _appContext._currentTenant;
 
         public string ObterCaminho()
         {
@@ -22,14 +24,14 @@ namespace JW_Management.Models
 
         public string ObterCaminhoTerritorios()
         {
-            CriarPasta(CaminhoLinux + "territorio/");
-            return CaminhoLinux + "territorio/";
+            CriarPasta(CaminhoLinux + "territorio/" + _currentTenant.Id + "/");
+            return CaminhoLinux + "territorio/" + _currentTenant.Id + "/";
         }
 
         public string ObterCaminhoLiteratura()
         {
-            CriarPasta(CaminhoLinux + "literatura/");
-            return CaminhoLinux + "literatura/";
+            CriarPasta(CaminhoLinux + "literatura/" + _currentTenant.Id + "/");
+            return CaminhoLinux + "literatura/" + _currentTenant.Id + "/";
         }
 
         private bool CriarPasta(string Caminho)
