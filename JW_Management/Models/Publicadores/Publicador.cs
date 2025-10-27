@@ -79,6 +79,7 @@ namespace JW_Management.Models
                     case 60: return "Literatura";
                     case 70: return "Territorios";
                     case 80: return "Servo";
+                    case 99: return "Congresso";
                     default: return "Publicador";
 
                 }

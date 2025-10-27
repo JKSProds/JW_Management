@@ -70,96 +70,116 @@
             <div id="navbarBasicExample" class="navbar-menu">
             @if (User.Identity.IsAuthenticated)
             {
-                <div class="navbar-start">
-                    <div class="navbar-item has-dropdown is-hoverable">
-                        <a class="navbar-link">
-                            <span class="icon mr-2">
-                                <img src="~/img/literatura.png">
-                            </span>
-                            <span>Literatura</span>
-                        </a>
-
-                        <div class="navbar-dropdown is-boxed">
-                            <a class="navbar-item" href="~/Literatura">
-                                <span class="icon">
-                                    <i class="fa-solid fa-book"></i>
-                                </span>
-                                <span>Stock</span>
-                            </a>
-                            <a class="navbar-item" href="~/Literatura/Movimentos/1">
-                                <span class="icon">
-                                    <i class="fa-solid fa-right-to-bracket"></i>
-                                </span>
-                                <span>Entradas</span>
-                            </a>
-                            <a class="navbar-item" href="~/Literatura/Movimentos/2">
-                                <span class="icon">
-                                    <i class="fa-solid fa-right-from-bracket"></i>
-                                </span>
-                                <span>Saidas</span>
-                            </a>
-                            <a class="navbar-item" href="~/Literatura/Pedidos">
-                                <span class="icon">
-                                    <i class="fa-solid fa-book-medical"></i>
-                                </span>
-                                <span>Pedidos</span>
-                            </a>
-                        </div>
-                    </div>
-                    <div class="navbar-item has-dropdown is-hoverable">
-                        <a class="navbar-link">
-                            <span class="icon mr-2">
-                                <img src="~/img/territorios.png">
-                            </span>
-                            <span>Territórios</span>
-                        </a>
-
-                        <div class="navbar-dropdown is-boxed">
-                            <a class="navbar-item" href="~/Territorios">
-                                <span class="icon">
-                                    <i class="fa-solid fa-book"></i>
-                                </span>
-                                <span>Listagem</span>
-                            </a>
-                            <a class="navbar-item" href="~/Territorios/Registros">
-                                <span class="icon">
-                                    <i class="fa-solid fa-right-to-bracket"></i>
-                                </span>
-                                <span>Registros</span>
-                            </a>
-
-                        </div>
-                    </div>
+                @if (User.ObterTenant() == 9999)
+                {
                     <div class="navbar-item has-dropdown is-hoverable">
                         <a class="navbar-link">
                             <span class="icon mr-2">
                                 <img src="~/img/reunioes.png">
                             </span>
-                            <span>Reuniões</span>
+                            <span>Congresso</span>
                         </a>
-
                         <div class="navbar-dropdown is-boxed">
-                            <a class="navbar-item" href="~/Reunioes">
+                            <a class="navbar-item" href="~/Congressos">
                                 <span class="icon">
                                     <i class="fa-solid fa-book"></i>
                                 </span>
-                                <span>Listagem</span>
-                            </a>
-                            <a class="navbar-item" href="~/Reunioes/Discursos">
-                                <span class="icon">
-                                    <i class="fa-solid fa-person"></i>
-                                </span>
-                                <span>Discursos</span>
-                            </a>
-                            <a class="navbar-item" href="~/Reunioes/Calendario">
-                                <span class="icon">
-                                    <i class="fa-solid fa-calendar"></i>
-                                </span>
-                                <span>Calendário</span>
+                                <span>Lista</span>
                             </a>
                         </div>
+                        </div>
+                }else{
+                    <div class="navbar-start">
+                        <div class="navbar-item has-dropdown is-hoverable">
+                            <a class="navbar-link">
+                                <span class="icon mr-2">
+                                    <img src="~/img/literatura.png">
+                                </span>
+                                <span>Literatura</span>
+                            </a>
+
+                            <div class="navbar-dropdown is-boxed">
+                                <a class="navbar-item" href="~/Literatura">
+                                    <span class="icon">
+                                        <i class="fa-solid fa-book"></i>
+                                    </span>
+                                    <span>Stock</span>
+                                </a>
+                                <a class="navbar-item" href="~/Literatura/Movimentos/1">
+                                    <span class="icon">
+                                        <i class="fa-solid fa-right-to-bracket"></i>
+                                    </span>
+                                    <span>Entradas</span>
+                                </a>
+                                <a class="navbar-item" href="~/Literatura/Movimentos/2">
+                                    <span class="icon">
+                                        <i class="fa-solid fa-right-from-bracket"></i>
+                                    </span>
+                                    <span>Saidas</span>
+                                </a>
+                                <a class="navbar-item" href="~/Literatura/Pedidos">
+                                    <span class="icon">
+                                        <i class="fa-solid fa-book-medical"></i>
+                                    </span>
+                                    <span>Pedidos</span>
+                                </a>
+                            </div>
+                        </div>
+                        <div class="navbar-item has-dropdown is-hoverable">
+                            <a class="navbar-link">
+                                <span class="icon mr-2">
+                                    <img src="~/img/territorios.png">
+                                </span>
+                                <span>Territórios</span>
+                            </a>
+
+                            <div class="navbar-dropdown is-boxed">
+                                <a class="navbar-item" href="~/Territorios">
+                                    <span class="icon">
+                                        <i class="fa-solid fa-book"></i>
+                                    </span>
+                                    <span>Listagem</span>
+                                </a>
+                                <a class="navbar-item" href="~/Territorios/Registros">
+                                    <span class="icon">
+                                        <i class="fa-solid fa-right-to-bracket"></i>
+                                    </span>
+                                    <span>Registros</span>
+                                </a>
+
+                            </div>
+                        </div>
+                        <div class="navbar-item has-dropdown is-hoverable">
+                            <a class="navbar-link">
+                                <span class="icon mr-2">
+                                    <img src="~/img/reunioes.png">
+                                </span>
+                                <span>Reuniões</span>
+                            </a>
+
+                            <div class="navbar-dropdown is-boxed">
+                                <a class="navbar-item" href="~/Reunioes">
+                                    <span class="icon">
+                                        <i class="fa-solid fa-book"></i>
+                                    </span>
+                                    <span>Listagem</span>
+                                </a>
+                                <a class="navbar-item" href="~/Reunioes/Discursos">
+                                    <span class="icon">
+                                        <i class="fa-solid fa-person"></i>
+                                    </span>
+                                    <span>Discursos</span>
+                                </a>
+                                <a class="navbar-item" href="~/Reunioes/Calendario">
+                                    <span class="icon">
+                                        <i class="fa-solid fa-calendar"></i>
+                                    </span>
+                                    <span>Calendário</span>
+                                </a>
+                            </div>
+                        </div>
                     </div>
-                </div>
+                }
             }
             <div class="navbar-end">
                     @if (User.Identity.IsAuthenticated)

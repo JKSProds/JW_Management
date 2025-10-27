@@ -4,7 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace JW_Management.Controllers;
 
-[Authorize(Roles = "Admin, Assistente, Coordenador, Secretario, Servico")]
+[Authorize(Roles = "Admin, Congresso")]
 public class CongressosController(DbContext _dbContext, FileContext _fileContext) : Controller
 {
     // GET
