@@ -76,7 +76,11 @@
                                                     <span>@item.Distancia metros </span>
                                                 </td>
                                                 <td class="is-actions-cell">
+                                                <div class="buttons">
+                                                    <a class="button is-success is-fullwidth" href="https://www.google.com/maps/dir/?api=1&origin=@Model.Latitude,@Model.Longitude&destination=@item.Latitude,@item.Longitude&travelmode=driving">Congregação -> Paragem</a>
                                                     <a class="button is-info is-fullwidth" href="@(Url.Action("Paragem", "Congressos", new { id = item.Id, IdIC = @item.Congresso.Id }))">Ver Paragem</a>
+                                                    <a class="button is-primary is-fullwidth" href="https://www.google.com/maps/dir/?api=1&origin=@item.Latitude,@item.Longitude&destination=@item.Congresso.Latitude,@item.Congresso.Longitude&travelmode=transit">Paragem -> Congresso</a>
+                                                </div>
                                                 </td>
                                             </tr>
                                         }
