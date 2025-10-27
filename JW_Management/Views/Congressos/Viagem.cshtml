@@ -1,0 +1,85 @@
+﻿@model JW_Management.Models.Viagem
+@{
+    ViewData["Title"] = "Viagem";
+}
+
+<form asp-action="Index" method="get" id="frmFiltrar">
+    <div class="container">
+        <div class="columns">
+            <div class="column">
+                <div class="tile">
+                    <div class="tile is-parent is-vertical">
+                        <article class="tile is-child notification is-info">
+                            <p class="title">
+                                <span class="icon mr-3">
+                                    <i class="fa-solid fa-newspaper"></i>
+                                </span>
+                                <span>@Model.Rota.Tipo.Nome - @Model.Rota.Nome - @Model.Destino</span>
+                            </p>
+                        </article>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</form>
+<hr />
+
+<div class="container">
+    @if (Model.Paragens.Count() == 0)
+    {
+        <br />
+        <button class="button is-danger is-large is-rounded is-fullwidth is-disabled">
+            Não foram encontradas
+            Paragens!
+        </button>
+    }
+    else
+    {
+            <div class="columns is-gapless">
+                <div class="column mx-1">
+                    <div class="card has-table has-mobile-sort-spaced">
+                        <header class="card-header has-background-success">
+                            <p class="card-header-title" style="color:#ffffff">Paragens</p>
+                            <button class="button is-pulled-right m-2">@Model.Paragens.Count()</button>
+                        </header>
+                        <div class="card-content">
+                            <div class="b-table">
+                                <div class="table-wrapper has-mobile-cards">
+                                    <table class="table is-hoverable is-fullwidth">
+                                        <thead>
+                                        <tr>
+                                            <th>
+                                                @Html.DisplayNameFor(model => model.Paragens.FirstOrDefault()!.Paragem.NomeParagem)
+                                            </th>
+                                            <th>
+                                                @Html.DisplayNameFor(model => model.Paragens.FirstOrDefault()!.DataPartida)
+                                            </th>
+                                            <th></th>
+                                        </tr>
+                                        </thead>
+                                        <tbody>
+                                        @foreach (var item in Model.Paragens.OrderBy(v => v.DataPartida))
+                                        {
+                                            <tr>
+                                                <td data-label="@Html.DisplayNameFor(model => model.Paragens.FirstOrDefault()!.Paragem.NomeParagem)">
+                                                    <span>@item.Paragem.NomeParagem </span>
+                                                </td>
+                                                <td data-label="@Html.DisplayNameFor(model => model.Paragens.FirstOrDefault()!.DataPartida)">
+                                                    <span>@item.DataPartida.ToShortTimeString()</span>
+                                                </td>
+                                                <td class="is-actions-cell">
+                                                    <a class="button is-info is-fullwidth" href="@(Url.Action("Paragem", "Congressos", new { id = item.Paragem.Id, IdIC = @Model.Congresso.Id }))">Ver Paragem</a>
+                                                </td>
+                                            </tr>
+                                        }
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+    }
+</div>

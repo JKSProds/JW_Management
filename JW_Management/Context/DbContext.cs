@@ -1587,6 +1587,31 @@
             return LstCongregacoes;
         }
         
+        public Congregacao ObterCongregacao(int Id, int IdIC)
+        {
+            List<Congregacao> LstCongregacoes = new List<Congregacao>();
+            Congresso c = ObterCongresso(IdIC);
+            using (Database db = _connectionString)
+            {
+                string sql = $"SELECT * from ic_congregacoes WHERE IdCongregacao={Id} and IdIC={c.Id};";
+                using var result = db.Query(sql);
+                while (result.Read())
+                {
+                    LstCongregacoes.Add(new Congregacao()
+                    {
+                        Id = result["IdCongregacao"],
+                        Nome = result["Nome"],
+                        Morada = result["Morada"],
+                        Latitude = result["Latitude"],
+                        Longitude = result["Longitude"],
+                        Telemovel = result["Telemovel"]
+                    });
+                }
+            }
+            
+            return LstCongregacoes.Last();
+        }
+        
         public List<Locais> ObterLocais(int Id)
         {
             List<Locais> LstLocais = new List<Locais>();
@@ -1628,59 +1653,348 @@
 
         public bool CriarRotas(dynamic data, Congresso c, int idTipo)
         {
-            string sql = "DELETE FROM ic_mobilidade_rotas; INSERT INTO ic_mobilidade_rotas (IdIC, IdTipoTransporte, IdRota, NomeRota) ";
+            string sql = $"DELETE FROM ic_mobilidade_rotas where IdTipoTransporte={idTipo}; INSERT INTO ic_mobilidade_rotas (IdIC, IdTipoTransporte, IdRota, NomeRota) VALUES ";
             
             foreach (var item in data)
             {
                 
-                sql += $"VALUES ('{c.Id}', '{idTipo}', '{item.route_id}', '{item.route_short_name.ToString().Replace("'", "''")}'),";
+                sql += $"('{c.Id}', '{idTipo}', '{item.route_id}', '{item.route_short_name.ToString().Replace("'", "''")}'), ";
             }
             
-            sql = sql.Substring(0, sql.Length - 1) + ";";
+            sql = sql.Substring(0, sql.Length - 2) + ";";
             return ExecutarQuery(sql);
         }
         
         public bool CriarViagens(dynamic data, Congresso c)
         {
-            string sql = "DELETE FROM ic_mobilidade_viagens; INSERT INTO ic_mobilidade_viagens (IdIC, IdRota, IdViagem, Destino) VALUES ";
+            string sql = "INSERT INTO ic_mobilidade_viagens (IdIC, IdRota, IdViagem, Destino) VALUES ";
             
             foreach (var item in data)
             {
                 
-                sql += $"('{c.Id}', '{item.route_id}', '{item.trip_id}', '{item.trip_headsign.ToString().Replace("'", "''")}'),";
+                sql += $"('{c.Id}', '{item.route_id}', '{item.trip_id}', '{item.trip_headsign.ToString().Replace("'", "''")}'), ";
             }
             
-            sql = sql.Substring(0, sql.Length - 1) + ";";
+            sql = sql.Substring(0, sql.Length - 2) + " ON DUPLICATE KEY UPDATE IdIC = VALUES(IdIC), IdRota = VALUES(IdRota), IdViagem = VALUES(IdViagem), Destino = VALUES(Destino);";
             return ExecutarQuery(sql);
         }
         
         public bool CriarParagens(dynamic data, Congresso c, int idTipo)
         {
-            string sql = "DELETE FROM ic_mobilidade_paragens; INSERT INTO ic_mobilidade_paragens (IdIC, IdTipoTransporte, IdParagem, CodParagem, NomeParagem, Latitude, Longitude, IdZona, UrlParagem) VALUES ";
+            string sql = $"DELETE FROM ic_mobilidade_paragens where IdTipoTransporte={idTipo}; INSERT INTO ic_mobilidade_paragens (IdIC, IdTipoTransporte, IdParagem, CodParagem, NomeParagem, Latitude, Longitude, IdZona, UrlParagem) VALUES ";
             
             foreach (var item in data)
             {
                 
-                sql += $"('{c.Id}', '{idTipo}', '{item.stop_id}', '{item.stop_code}', '{item.stop_name.ToString().Replace("'", "''")}', '{item.stop_lat}', '{item.stop_lon}', '{item.zone_id}', '{item.stop_url}'),";
+                sql += $"('{c.Id}', '{idTipo}', '{item.stop_id}', '{item.stop_code}', '{item.stop_name.ToString().Replace("'", "''")}', '{item.stop_lat}', '{item.stop_lon}', '{item.zone_id}', '{item.stop_url}'), ";
             }
             
-            sql = sql.Substring(0, sql.Length - 1) + ";";
+            sql = sql.Substring(0, sql.Length - 2) + ";";
             return ExecutarQuery(sql);
         }
         
         public bool CriarViagensParagens(dynamic data, Congresso c)
         {
 
-            string sql = "DELETE FROM ic_mobilidade_viagens_paragens; INSERT INTO ic_mobilidade_viagens_paragens (IdIC, IdViagem, IdParagem, HoraPartida, Sequencia) VALUES ";
+            string sql = "INSERT INTO ic_mobilidade_viagens_paragens (IdIC, IdViagem, IdParagem, HoraPartida, Sequencia) VALUES ";
             
             foreach (var item in data)
             {
                 
-                sql += $"('{c.Id}', '{item.trip_id}', '{item.stop_id}', '{item.departure_time}', '{item.stop_sequence}'),";
+                sql += $"('{c.Id}', '{item.trip_id}', '{item.stop_id}', '{item.departure_time}', '{item.stop_sequence}'), ";
             }
             
-            sql = sql.Substring(0, sql.Length - 1) + ";";
+            sql = sql.Substring(0, sql.Length - 2) + " ON DUPLICATE KEY UPDATE IdIC = VALUES(IdIC), IdViagem = VALUES(IdViagem), IdParagem = VALUES(IdParagem), HoraPartida = VALUES(HoraPartida), Sequencia = VALUES(Sequencia);";
             return ExecutarQuery(sql);
+        }
+        
+        public List<TipoTransporte> ObterTiposTransporte()
+        {
+            List<TipoTransporte> LstTipos = new List<TipoTransporte>();
+            
+            using (Database db = _connectionString)
+            {
+                string sql = $"SELECT * from ic_mobilidade_tipos;";
+                using var result = db.Query(sql);
+                while (result.Read())
+                {
+                    LstTipos.Add(new TipoTransporte()
+                    {
+                        Id = result["Id"],
+                        Nome = result["Nome"]
+                    });
+                }
+            }
+            
+            return LstTipos;
+        }
+        
+        public List<Paragem> ObterParagens(int Id)
+        {
+            List<Paragem> LstParagens = new List<Paragem>();
+            List<TipoTransporte> LstTipos = ObterTiposTransporte();
+            Congresso c = ObterCongresso(Id);
+            
+            using (Database db = _connectionString)
+            {
+                string sql = $"SELECT * from ic_mobilidade_paragens WHERE IdIC={Id};";
+                using var result = db.Query(sql);
+                while (result.Read())
+                {
+                    LstParagens.Add(new Paragem()
+                    {
+                        Id = result["IdParagem"],
+                        CodParagem = result["CodParagem"],
+                        NomeParagem = result["NomeParagem"],
+                        Latitude = result["Latitude"],
+                        Longitude = result["Longitude"],
+                        IdZona = result["IdZona"],
+                        Url = result["UrlParagem"],
+                        Tipo = LstTipos.First(t => t.Id == result["IdTipoTransporte"]),
+                        Congresso = c
+                    });
+                }
+            }
+            
+            return LstParagens;
+        }
+        
+        public Paragem ObterParagem(string Id, int IdIC, bool LoadViagens)
+        {
+            List<Paragem> LstParagens = new List<Paragem>();
+            List<TipoTransporte> LstTipos = ObterTiposTransporte();
+            Congresso c = ObterCongresso(IdIC);
+            
+            using (Database db = _connectionString)
+            {
+                string sql = $"SELECT * from ic_mobilidade_paragens WHERE IdParagem='{Id}';";
+                using var result = db.Query(sql);
+                while (result.Read())
+                {
+                    LstParagens.Add(new Paragem()
+                    {
+                        Id = result["IdParagem"],
+                        CodParagem = result["CodParagem"],
+                        NomeParagem = result["NomeParagem"],
+                        Latitude = result["Latitude"],
+                        Longitude = result["Longitude"],
+                        IdZona = result["IdZona"],
+                        Url = result["UrlParagem"],
+                        Tipo = LstTipos.First(t => t.Id == result["IdTipoTransporte"]),
+                        Congresso = c
+                    });
+                }
+            }
+
+            if (LoadViagens) LstParagens.Last().Viagens = ObterViagensParagem(LstParagens.Last());
+            return LstParagens.LastOrDefault(new Paragem());
+        }
+        
+        
+        public List<Paragem> ObterParagens(Congregacao cong, int IdIC)
+        {
+            List<Paragem> LstParagens = new List<Paragem>();
+            List<TipoTransporte> LstTipos = ObterTiposTransporte();
+            Congresso c =  ObterCongresso(IdIC);
+            using (Database db = _connectionString)
+            {
+                string sql = @$"SELECT *,ST_Distance_Sphere(POINT(Longitude, Latitude),POINT('{cong.Longitude}', '{cong.Latitude}')) AS distancia_metros FROM ic_mobilidade_paragens ORDER BY distancia_metros ASC LIMIT 10;";
+                
+                using var result = db.Query(sql);
+                while (result.Read())
+                {
+                    LstParagens.Add(new Paragem()
+                    {
+                        Id = result["IdParagem"],
+                        CodParagem = result["CodParagem"],
+                        NomeParagem = result["NomeParagem"],
+                        Latitude = result["Latitude"],
+                        Longitude = result["Longitude"],
+                        IdZona = result["IdZona"],
+                        Url = result["UrlParagem"],
+                        Tipo = LstTipos.First(t => t.Id == result["IdTipoTransporte"]),
+                        Congresso = c,
+                        Distancia = result["distancia_metros"]
+                    });
+                }
+            }
+            
+            return LstParagens;
+        }
+        public List<Rota> ObterRotas(int Id)
+        {
+            List<Rota> LstRotas = new List<Rota>();
+            List<TipoTransporte> LstTipos = ObterTiposTransporte();
+            Congresso c = ObterCongresso(Id);
+            
+            using (Database db = _connectionString)
+            {
+                string sql = $"SELECT * from ic_mobilidade_rotas WHERE IdIC={Id};";
+                using var result = db.Query(sql);
+                while (result.Read())
+                {
+                    LstRotas.Add(new Rota()
+                    {
+                        Id = result["IdRota"],
+                        Nome = result["NomeRota"],
+                        Tipo = LstTipos.First(t => t.Id == result["IdTipoTransporte"]),
+                        Congresso = c
+                    });
+                }
+            }
+            
+            return LstRotas;
+        }
+        
+        public Rota ObterRota(string Id, int IdIC, bool LoadViagens)
+        {
+            List<Rota> LstRotas = new List<Rota>();
+            List<TipoTransporte> LstTipos = ObterTiposTransporte();
+            Congresso c = ObterCongresso(IdIC);
+            
+            using (Database db = _connectionString)
+            {
+                string sql = $"SELECT * from ic_mobilidade_rotas WHERE IdRota='{Id}';";
+                using var result = db.Query(sql);
+                while (result.Read())
+                {
+                    LstRotas.Add(new Rota()
+                    {
+                        Id = result["IdRota"],
+                        Nome = result["NomeRota"],
+                        Tipo = LstTipos.First(t => t.Id == result["IdTipoTransporte"]),
+                        Congresso = c
+                    });
+                }
+            }
+
+            if (LoadViagens) LstRotas.Last().Viagens = ObterViagens(LstRotas.Last());
+            return LstRotas.Last();
+        }
+        public List<Viagem> ObterViagens(Rota r)
+        {
+            List<Viagem> LstViagens = new List<Viagem>();
+            Congresso c = ObterCongresso(r.Congresso.Id);
+            
+            using (Database db = _connectionString)
+            {
+                string sql = $"SELECT * from ic_mobilidade_viagens WHERE IdRota='{r.Id}' and IdIC={c.Id};";
+                using var result = db.Query(sql);
+                while (result.Read())
+                {
+                    LstViagens.Add(new Viagem()
+                    {
+                        Id = result["IdViagem"],
+                        Rota = r,
+                        Congresso = c,
+                        Destino = result["Destino"],
+                    });
+                }
+            }
+            
+            return LstViagens;
+        }
+        
+        public List<Viagem> ObterViagens(Congresso c)
+        {
+            List<Viagem> LstViagens = new List<Viagem>();
+            List<Rota> LstRotas = ObterRotas(c.Id);
+            using (Database db = _connectionString)
+            {
+                string sql = $"SELECT * from ic_mobilidade_viagens WHERE IdIC={c.Id};";
+                using var result = db.Query(sql);
+                while (result.Read())
+                {
+                    LstViagens.Add(new Viagem()
+                    {
+                        Id = result["IdViagem"],
+                        Congresso = c,
+                        Destino = result["Destino"],
+                        Rota = LstRotas.First(r => r.Id == result["IdRota"]),
+                    });
+                }
+            }
+            
+            return LstViagens;
+        }
+        
+        public Viagem ObterViagem(string Id, int IdIC, bool LoadParagens)
+        {
+            List<Viagem> LstViagens = new List<Viagem>();
+            Congresso c = ObterCongresso(IdIC);
+            
+            using (Database db = _connectionString)
+            {
+                string sql = $"SELECT * from ic_mobilidade_viagens WHERE IdViagem='{Id}' and IdIC={c.Id};";
+                using var result = db.Query(sql);
+                while (result.Read())
+                {
+                    LstViagens.Add(new Viagem()
+                    {
+                        Id = result["IdViagem"],
+                        Rota = ObterRota(result["IdRota"], c.Id, false),
+                        Congresso = c,
+                        Destino = result["Destino"],
+                    });
+                }
+            }
+            if (LoadParagens) LstViagens.Last().Paragens = ObterViagensParagem(LstViagens.Last());
+            return LstViagens.Last();
+        }
+        
+        public List<Viagem_Paragem> ObterViagensParagem(Viagem v)
+        {
+            List<Viagem_Paragem> LstViagensParagens = new List<Viagem_Paragem>();
+            Congresso c = ObterCongresso(v.Congresso.Id);
+            
+            using (Database db = _connectionString)
+            {
+                string sql = $"SELECT * from ic_mobilidade_viagens_paragens WHERE IdViagem='{v.Id}' and IdIC={c.Id};";
+                using var result = db.Query(sql);
+                while (result.Read())
+                {
+                    LstViagensParagens.Add(new Viagem_Paragem()
+                    {
+                        Viagem = v,
+                        Paragem = ObterParagem(result["IdParagem"], c.Id, false),
+                        Congresso = c,
+                        DataPartida = DateTime.Parse(DateTime.Today.ToShortDateString() + " " + result["HoraPartida"]),
+                        Sequencia = result["Sequencia"],
+                    });
+                }
+            }
+            
+            return LstViagensParagens;
+        }
+        
+        public List<Viagem_Paragem> ObterViagensParagem(Paragem p)
+        {
+            List<Viagem_Paragem> LstViagensParagens = new List<Viagem_Paragem>();
+            Congresso c = ObterCongresso(p.Congresso.Id);
+            List<Viagem> LstViagens = ObterViagens(c);
+            
+            using (Database db = _connectionString)
+            {
+                string sql = $"SELECT * from ic_mobilidade_viagens_paragens WHERE IdParagem='{p.Id}' and IdIC={c.Id};";
+                using var result = db.Query(sql);
+                while (result.Read())
+                {
+                    DateTime.TryParse(DateTime.Today.ToShortDateString() + " " + result["HoraPartida"],  out DateTime h);
+                    if (h > DateTime.Today)
+                    {
+                    LstViagensParagens.Add(new Viagem_Paragem()
+                    {
+                        Viagem = LstViagens.First(v => v.Id == result["IdViagem"]),
+                        Paragem = p,
+                        Congresso = c,
+                        DataPartida = h,
+                        Sequencia = result["Sequencia"],
+                    });
+                    }
+                }
+            }
+            
+            return LstViagensParagens;
         }
         #endregion
     }

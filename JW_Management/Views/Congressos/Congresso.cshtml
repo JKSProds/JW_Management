@@ -99,9 +99,9 @@
                                                 <td data-label="@Html.DisplayNameFor(model => model.Congregacoes.FirstOrDefault()!.Telemovel)">
                                                     <span>@item.Telemovel</span>
                                                 </td>
-                                                <td class="is-actions-cell">
-                                                    
-                                                </td>
+                                                    <td class="is-actions-cell">
+                                                        <a class="button is-info is-fullwidth" href="@(Url.Action("Congregacao", "Congressos", new { id = item.Id, IdIC = @Model.Id }))">Ver Congregacao</a>
+                                                    </td>
                                             </tr>
                                         }
                                         </tbody>
@@ -124,16 +124,16 @@
         <section class="modal-card-body">
             <div class="form-group">
                 <form action="/Congressos/Importar/Rotas/@Model.Id" method="POST" class="dropzone">
-                    <div class="dz-message needsclick">
-                        Largue aqui ao ficheiro para carregar as rotas (routes.txt)
-                    </div>
-                    <hr/>
-                    <select id="idTipo">
+                    <select name="idTipo">
                         <option value="1">STCP</option>
                         <option value="2">CP</option>
                         <option value="3">Metro do Porto</option>
                         <option value="4">Unir</option>
                     </select>
+                    <hr/>
+                    <div class="dz-message needsclick">
+                        Largue aqui ao ficheiro para carregar as rotas (routes.txt)
+                    </div>
                 </form>
             </div>
         </section>
@@ -188,17 +188,17 @@
         </header>
         <section class="modal-card-body">
             <div class="form-group">
-                <form action="/Congressos/Importar/Paragens/@Model.Id" method="POST" class="dropzone">
-                    <div class="dz-message needsclick">
-                        Largue aqui ao ficheiro para carregar as paragens (stops.txt)
-                    </div>
-                    <hr/>
-                    <select id="idTipo">
+                <form action="/Congressos/Importar/Paragens/@Model.Id" method="POST" class="dropzone">                    
+                    <select name="idTipo">
                         <option value="1">STCP</option>
                         <option value="2">CP</option>
                         <option value="3">Metro do Porto</option>
                         <option value="4">Unir</option>
                     </select>
+                    <hr/>
+                    <div class="dz-message needsclick">
+                        Largue aqui ao ficheiro para carregar as paragens (stops.txt)
+                    </div>
                 </form>
             </div>
         </section>
@@ -224,7 +224,7 @@
         </header>
         <section class="modal-card-body">
             <div class="form-group">
-                <form action="/Congressos/Importar/ViagensParagens/@Model.Id" method="POST" class="dropzone">
+                <form action="/Congressos/Importar/ViagensParagens/@Model.Id" method="POST" class="dropzone" id="dpzViagensParagens">
                     <div class="dz-message needsclick">
                         Largue aqui ao ficheiro para carregar as Viagens/Paragens (stop_times.txt)
                     </div>
@@ -277,6 +277,15 @@
         className: 'icon-pin'
     });
 
+    var pin3 = L.icon({
+        iconUrl: window.location.origin + '/img/pin3.png',
+        iconSize: [40, 40],
+        iconAnchor: [20, 40],
+        popupAnchor: [0, -40],
+        tooltipAnchor: [0, -30],
+        className: 'icon-pin'
+    });
+
     // Scale icon on zoom
     map.on('zoomend', () => {
         map.eachLayer(layer => {
@@ -308,7 +317,7 @@
                 html = "Congregações: <br>";
 
                 l.congregacoes.forEach((c) => {
-                    html += "["+c.id+"] <b>"+c.nome+"</b> (" + c.telemovel +")<br>"
+                    html += "["+c.id+"] <b>"+c.nome+"</b> (" + c.telemovel +")<br><br><a type='button' href='/Congressos/1/Congregacao/"+c.id+"' class='button is-info is-rounded is-fullwidth'><span class='icon'><i class='fas fa-eye'></i></span><span>Ver</span></a><hr>"
                 })
                 marker.bindPopup(html);
             });
@@ -320,4 +329,8 @@
             notifyError('Falha ao obter as congregações!');
         }
     });
+        
+    Dropzone.options.dpzViagensParagens = {
+        maxFilesize: 100
+    };
 </script>

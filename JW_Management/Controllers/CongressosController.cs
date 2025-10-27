@@ -27,6 +27,13 @@ public class CongressosController(DbContext _dbContext, FileContext _fileContext
         return Ok(_dbContext.ObterLocais(id));
     }
     
+    public IActionResult Paragens(int id)
+    {
+        if (id==0) return NotFound();
+        
+        return Ok(_dbContext.ObterParagens(id));
+    }
+    
     [HttpPost("Congressos/Importar/Rotas/{id}")]
     public IActionResult Rotas(IFormFile file, int id, int idTipo)
     {
@@ -54,6 +61,7 @@ public class CongressosController(DbContext _dbContext, FileContext _fileContext
         
         return Ok(_dbContext.CriarParagens(d, c, idTipo));
     }    
+    
     [HttpPost("Congressos/Importar/ViagensParagens/{id}")]
     public IActionResult ViagensParagens(IFormFile file, int id)
     {
@@ -62,5 +70,32 @@ public class CongressosController(DbContext _dbContext, FileContext _fileContext
         var d = _fileContext.ConvertCsv(file);
         
         return Ok(_dbContext.CriarViagensParagens(d, c));
+    }
+    
+    
+    [HttpGet("Congressos/{IdIC}/Paragem/{id}")]
+    public IActionResult Paragem(string id, int IdIC)
+    {
+        if (id==String.Empty) return NotFound();
+        var p = _dbContext.ObterParagem(id, IdIC, true);
+        return View(p);
+    }
+    
+    [HttpGet("Congressos/{IdIC}/Viagem/{id}")]
+    public IActionResult Viagem(string id, int IdIC)
+    {
+        if (id==String.Empty) return NotFound();
+        var p = _dbContext.ObterViagem(id, IdIC, true);
+        return View(p);
+    }
+    
+    [HttpGet("Congressos/{IdIC}/Congregacao/{id}")]
+    public IActionResult Congregacao(int id, int IdIC)
+    {
+        if (id==0) return NotFound();
+        var c = _dbContext.ObterCongregacao(id, IdIC);
+        c.Paragens = _dbContext.ObterParagens(c, IdIC);
+        
+        return View(c);
     }
 }
