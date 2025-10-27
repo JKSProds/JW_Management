@@ -54,6 +54,7 @@ namespace JW_Management.Models
         public string? Password { get; set; }
         public string? Email { get; set; }
         public string? Telemovel { get; set; }
+        public string? Morada { get; set; }
         public Grupo? Grupo { get; set; }
 
         public List<Movimentos>? Movimentos { get; set; }

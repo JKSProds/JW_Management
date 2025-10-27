@@ -395,7 +395,8 @@
                         Nome = result["Nome"],
                         Email = result["Email"],
                         Telemovel = result["Telemovel"],
-                        TipoUtilizador = result["Tipo"]
+                        TipoUtilizador = result["Tipo"],
+                        Morada = result["Morada"]
                     });
 
                     if (LoadGrupo) LstPublicador.Last().Grupo = LstGrupos.Where(g => g.Id == int.Parse(result["IdGrupo"])).DefaultIfEmpty(new Grupo()).First();
@@ -425,7 +426,8 @@
                         Nome = result["Nome"],
                         Email = result["Email"],
                         Telemovel = result["Telemovel"],
-                        TipoUtilizador = result["Tipo"]
+                        TipoUtilizador = result["Tipo"],
+                        Morada = result["Morada"]
                     });
 
                     if (LoadGrupo) LstPublicador.Last().Grupo = LstGrupos.Where(g => g.Id == int.Parse(result["IdGrupo"])).DefaultIfEmpty(new Grupo()).First();
@@ -454,7 +456,8 @@
                         Nome = result["Nome"],
                         Email = result["Email"],
                         Telemovel = result["Telemovel"],
-                        TipoUtilizador = result["Tipo"]
+                        TipoUtilizador = result["Tipo"],
+                        Morada = result["Morada"]
                     };
                     if (LoadMovimentos) p.Movimentos = ObterMovimentos(true, true, int.Parse(result["IdUtilizador"]), DateOnly.MinValue);
                     if (LoadPedidos)
@@ -473,8 +476,8 @@
         //Adicionar publicador
         public bool AdicionarPublicador(Publicador p)
         {
-            string sql = "INSERT INTO sys_utilizadores(IdUtilizador, Username, Password, Nome, Telemovel, Email, IdGrupo, Tipo) VALUES ";
-            sql += ("('" + p.Id + "', '" + p.Username + "', '" + p.Password + "', '" + p.Nome + "', '" + p.Telemovel + "', '" + p.Email + "', '" + p.Grupo.Id + "', '90') ON DUPLICATE KEY UPDATE Username=VALUES(Username), Password=VALUES(Password), Telemovel=VALUES(Telemovel), Email=VALUES(Email), IdGrupo=VALUES(IdGrupo), Nome=VALUES(Nome);");
+            string sql = "INSERT INTO sys_utilizadores(IdUtilizador, Username, Password, Nome, Telemovel, Email, Morada, IdGrupo, Tipo) VALUES ";
+            sql += ("('" + p.Id + "', '" + p.Username + "', '" + p.Password + "', '" + p.Nome + "', '" + p.Telemovel + "', '" + p.Email + "', '" + p.Morada + "', '" + p.Grupo.Id + "', '90') ON DUPLICATE KEY UPDATE Username=VALUES(Username), Password=VALUES(Password), Telemovel=VALUES(Telemovel), Email=VALUES(Email), Morada=VALUES(Morada), IdGrupo=VALUES(IdGrupo), Nome=VALUES(Nome);");
 
             return ExecutarQuery(sql);
         }

@@ -45,6 +45,15 @@
                         <div class="columns is-multiline">
                             <div class="column is-2">
                                 <div class="field">
+                                    <label class="label" asp-for="Role"></label>
+                                    <p class="control ">
+                                        <input type="text" class="input" readonly asp-for="Role" disabled>
+                                    </p>
+                                    <span asp-validation-for="Role" class="has-text-danger"></span>
+                                </div>
+                            </div>
+                            <div class="column is-1">
+                                <div class="field">
                                     <label class="label" asp-for="Id"></label>
                                     <p class="control ">
                                         <input type="text" class="input" readonly asp-for="Id">
@@ -63,11 +72,29 @@
                             </div>
                             <div class="column is-3">
                                 <div class="field">
-                                    <label class="label" asp-for="Role"></label>
+                                    <label class="label" asp-for="Username"></label>
                                     <p class="control ">
-                                        <input type="text" class="input" readonly asp-for="Role" disabled>
+                                        <input type="tel" class="input" readonly asp-for="Username">
                                     </p>
-                                    <span asp-validation-for="Role" class="has-text-danger"></span>
+                                    <span asp-validation-for="Username" class="has-text-danger"></span>
+                                </div>
+                            </div>
+                            <div class="column is-3">
+                                <label class="label" asp-for="Password"></label>
+                                <div class="field has-addons">
+                                    <div class="control" style="width:100%">
+                                        <input type="password" class="input" asp-for="Password" value="@Model.Password">
+                                    </div>
+                                    <span asp-validation-for="Password" class="has-text-danger"></span>
+                                    @if (!string.IsNullOrEmpty(Model.Email))
+                                    {
+                                        <div class="control">
+                                            <a type="button" data-tooltip="EnviarSenha" class="button is-fullwidth is-primary" style="height: 100%"
+                                               href="@(Url.Action("Senha", "Publicadores", new { Id = Model.Id }))">
+                                                <i class="fas fa-mail-forward"></i>
+                                            </a>
+                                        </div>
+                                    }
                                 </div>
                             </div>
                             <div class="column is-4">
@@ -89,48 +116,64 @@
                             <div class="column is-4">
                                 <div class="field">
                                     <label class="label" asp-for="Email"></label>
-                                    <p class="control ">
-                                        <input type="email" class="input" asp-for="Email">
-                                    </p>
-                                    <span asp-validation-for="Email" class="has-text-danger"></span>
-                                </div>
-                            </div>
-                            <div class="column is-2">
-                                <div class="field">
-                                    <label class="label" asp-for="Telemovel"></label>
-                                    <p class="control ">
-                                        <input type="tel" class="input" asp-for="Telemovel">
-                                    </p>
-                                    <span asp-validation-for="Telemovel" class="has-text-danger"></span>
-                                </div>
-                            </div>
-                            <div class="column is-2">
-                                <div class="field">
-                                    <label class="label" asp-for="Username"></label>
-                                    <p class="control ">
-                                        <input type="tel" class="input" readonly asp-for="Username">
-                                    </p>
-                                    <span asp-validation-for="Username" class="has-text-danger"></span>
+                                    <div class="field has-addons">
+                                        <p class="control" style="width:100%">
+                                            <input type="email" class="input" asp-for="Email">
+                                        </p>
+                                        @if (!string.IsNullOrEmpty(Model.Email))
+                                        {
+                                            <div class="control">
+                                                <a type="button" data-tooltip="Email" class="button is-fullwidth is-primary" style="height: 100%"
+                                                   href="mailto:@Model.Email">
+                                                    <i class="fas fa-paper-plane"></i>
+                                                </a>
+                                            </div>
+                                        }
+                                        <span asp-validation-for="Email" class="has-text-danger"></span>
+                                    </div>
                                 </div>
                             </div>
                             <div class="column is-4">
-                                <label class="label" asp-for="Password"></label>
-                                <div class="field has-addons">
-                                    <div class="control" style="width:100%">
-                                        <input type="password" class="input" asp-for="Password" value="@Model.Password">
+                                <div class="field">
+                                    <label class="label" asp-for="Telemovel"></label>
+                                    <div class="field has-addons">
+                                        <p class="control" style="width:100%">
+                                            <input type="tel" class="input" asp-for="Telemovel">
+                                        </p>
+                                        <span asp-validation-for="Telemovel" class="has-text-danger"></span>
+                                        @if (!string.IsNullOrEmpty(Model.Email))
+                                        {
+                                            <div class="control">
+                                                <a type="button" data-tooltip="Telefonar" class="button is-fullwidth is-success" style="height: 100%"
+                                                   href="tel:@Model.Telemovel">
+                                                    <i class="fas fa-phone"></i>
+                                                </a>
+                                            </div>
+                                        }
                                     </div>
-                                    <span asp-validation-for="Password" class="has-text-danger"></span>
-                                    @if (!string.IsNullOrEmpty(Model.Email))
-                                    {
-                                    <div class="control">
-                                        <a type="button" data-tooltip="EnviarSenha" class="button is-fullwidth is-primary" style="height: 100%"
-                                                href="@(Url.Action("Senha", "Publicadores", new { Id = Model.Id }))">
-                                            <i class="fas fa-mail-forward"></i>
-                                        </a>
-                                    </div>
-                                    }
                                 </div>
                             </div>
+                            <div class="column is-12">
+                                <div class="field">
+                                    <label class="label" asp-for="Morada"></label>
+                                    <div class="field has-addons">
+                                        <p class="control" style="width:100%">
+                                            <input type="tel" class="input" asp-for="Morada">
+                                        </p>
+                                        <span asp-validation-for="Morada" class="has-text-danger"></span>
+                                        @if (!string.IsNullOrEmpty(Model.Email))
+                                        {
+                                            <div class="control">
+                                                <a type="button" data-tooltip="Direções" class="button is-fullwidth is-primary" style="height: 100%"
+                                                   href="https://www.google.com/maps/place/@Model.Morada">
+                                                    <i class="fas fa-arrow-circle-o-left"></i>
+                                                </a>
+                                            </div>
+                                        }
+                                    </div>
+                                </div>
+                            </div>
+                            
                             <div class="column is-12">
                                 <button class="button is-large is-success is-fullwidth" type="submit">
                                     <span class="icon"><i class="fa-regular fa-floppy-disk"></i></span>
