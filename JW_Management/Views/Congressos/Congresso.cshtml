@@ -1,0 +1,323 @@
+﻿@model JW_Management.Models.Congresso
+@{
+    ViewData["Title"] = "Congresso";
+}
+
+<form asp-action="Index" method="get" id="frmFiltrar">
+    <div class="container">
+        <div class="columns">
+            <div class="column">
+                <div class="tile">
+                    <div class="tile is-parent is-vertical">
+                        <article class="tile is-child notification is-info">
+                            <p class="title">
+                                <span class="icon mr-3">
+                                    <i class="fa-solid fa-newspaper"></i>
+                                </span>
+                                <span>Congresso</span>
+                            </p>
+                        </article>
+                    </div>
+                </div>
+            </div>
+            <div class="column">
+                <div class="buttons">
+                    <button class="button is-link" type="button" onclick="Bulma('#modalRotas').modal().open();">Rotas</button>
+                    <button class="button is-link" type="button" onclick="Bulma('#modalViagens').modal().open();">Viagens</button>
+                    <button class="button is-link" type="button" onclick="Bulma('#modalParagens').modal().open();">Paragens</button>
+                    <button class="button is-link" type="button" onclick="Bulma('#modalViagensParagens').modal().open();">Viagens/Paragens</button>
+                </div>
+                
+            </div>
+        </div>
+    </div>
+</form>
+<hr />
+<div class="container">
+    <div id="map" style="height: 800px;z-index: 1">
+    </div>
+</div>
+<hr/>
+<div class="container">
+    @if (Model.Congregacoes.Count() == 0)
+    {
+        <br />
+        <button class="button is-danger is-large is-rounded is-fullwidth is-disabled">
+            Não foram encontradas
+            congregações!
+        </button>
+    }
+    else
+    {
+            <div class="columns is-gapless">
+                <div class="column mx-1">
+                    <div class="card has-table has-mobile-sort-spaced">
+                        <header class="card-header has-background-success">
+                            <p class="card-header-title" style="color:#ffffff">Congregações</p>
+                            <button class="button is-pulled-right m-2">@Model.Congregacoes.Count()</button>
+                        </header>
+                        <div class="card-content">
+                            <div class="b-table">
+                                <div class="table-wrapper has-mobile-cards">
+                                    <table class="table is-hoverable is-fullwidth">
+                                        <thead>
+                                        <tr>
+                                            <th></th>
+                                            <th>
+                                                @Html.DisplayNameFor(model => model.Congregacoes.FirstOrDefault()!.Id)
+                                            </th>
+                                            <th>
+                                                @Html.DisplayNameFor(model => model.Congregacoes.FirstOrDefault()!.Nome)
+                                            </th>
+                                            <th>
+                                                @Html.DisplayNameFor(model => model.Congregacoes.FirstOrDefault()!.Morada)
+                                            </th>
+                                            <th class="is-hidden-touch">
+                                                @Html.DisplayNameFor(model => model.Congregacoes.FirstOrDefault()!.Telemovel)
+                                            </th>
+                                            <th></th>
+                                        </tr>
+                                        </thead>
+                                        <tbody>
+                                        @foreach (var item in Model.Congregacoes)
+                                        {
+                                            <tr>
+                                                <td class="is-image-cell">
+                                                    <div class="image">
+                                                        <img src="~/img/reunioes.png">
+                                                    </div>
+                                                </td>
+                                                <td data-label="@Html.DisplayNameFor(model => model.Congregacoes.FirstOrDefault()!.Id)">
+                                                    <span>@item.Id</span>
+                                                </td>
+                                                <td data-label="@Html.DisplayNameFor(model => model.Congregacoes.FirstOrDefault()!.Nome)">
+                                                    <span>@item.Nome</span>
+                                                </td>
+                                                <td data-label="@Html.DisplayNameFor(model => model.Congregacoes.FirstOrDefault()!.Morada)">
+                                                    <span>@item.Morada</span>
+                                                </td>
+                                                <td data-label="@Html.DisplayNameFor(model => model.Congregacoes.FirstOrDefault()!.Telemovel)">
+                                                    <span>@item.Telemovel</span>
+                                                </td>
+                                                <td class="is-actions-cell">
+                                                    
+                                                </td>
+                                            </tr>
+                                        }
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+    }
+</div>
+
+<div id="modalRotas" class="modal">
+    <div class="modal-background"></div>
+    <div class="modal-card">
+        <header class="modal-card-head">
+            <p class="modal-card-title">Rotas</p>
+        </header>
+        <section class="modal-card-body">
+            <div class="form-group">
+                <form action="/Congressos/Importar/Rotas/@Model.Id" method="POST" class="dropzone">
+                    <div class="dz-message needsclick">
+                        Largue aqui ao ficheiro para carregar as rotas (routes.txt)
+                    </div>
+                    <hr/>
+                    <select id="idTipo">
+                        <option value="1">STCP</option>
+                        <option value="2">CP</option>
+                        <option value="3">Metro do Porto</option>
+                        <option value="4">Unir</option>
+                    </select>
+                </form>
+            </div>
+        </section>
+        <footer class="modal-card-foot">
+            <div class="buttons is-centered" style="width:100%">
+                <button type="button" class="button is-info is-large is-fullwidth"
+                        onclick="Bulma('#modalRotas').modal().close();">
+                    <span class="icon">
+                        <i class="fa-solid fa-circle-xmark"></i>
+                    </span>
+                    <span>Fechar</span>
+                </button>
+            </div>
+        </footer>
+    </div>
+</div>
+
+<div id="modalViagens" class="modal">
+    <div class="modal-background"></div>
+    <div class="modal-card">
+        <header class="modal-card-head">
+            <p class="modal-card-title">Viagens</p>
+        </header>
+        <section class="modal-card-body">
+            <div class="form-group">
+                <form action="/Congressos/Importar/Viagens/@Model.Id" method="POST" class="dropzone">
+                    <div class="dz-message needsclick">
+                        Largue aqui ao ficheiro para carregar as Viagens (trips.txt)
+                    </div>
+                </form>
+            </div>
+        </section>
+        <footer class="modal-card-foot">
+            <div class="buttons is-centered" style="width:100%">
+                <button type="button" class="button is-info is-large is-fullwidth"
+                        onclick="Bulma('#modalViagens').modal().close();">
+                    <span class="icon">
+                        <i class="fa-solid fa-circle-xmark"></i>
+                    </span>
+                    <span>Fechar</span>
+                </button>
+            </div>
+        </footer>
+    </div>
+</div>
+
+<div id="modalParagens" class="modal">
+    <div class="modal-background"></div>
+    <div class="modal-card">
+        <header class="modal-card-head">
+            <p class="modal-card-title">Paragens</p>
+        </header>
+        <section class="modal-card-body">
+            <div class="form-group">
+                <form action="/Congressos/Importar/Paragens/@Model.Id" method="POST" class="dropzone">
+                    <div class="dz-message needsclick">
+                        Largue aqui ao ficheiro para carregar as paragens (stops.txt)
+                    </div>
+                    <hr/>
+                    <select id="idTipo">
+                        <option value="1">STCP</option>
+                        <option value="2">CP</option>
+                        <option value="3">Metro do Porto</option>
+                        <option value="4">Unir</option>
+                    </select>
+                </form>
+            </div>
+        </section>
+        <footer class="modal-card-foot">
+            <div class="buttons is-centered" style="width:100%">
+                <button type="button" class="button is-info is-large is-fullwidth"
+                        onclick="Bulma('#modalParagens').modal().close();">
+                    <span class="icon">
+                        <i class="fa-solid fa-circle-xmark"></i>
+                    </span>
+                    <span>Fechar</span>
+                </button>
+            </div>
+        </footer>
+    </div>
+</div>
+
+<div id="modalViagensParagens" class="modal">
+    <div class="modal-background"></div>
+    <div class="modal-card">
+        <header class="modal-card-head">
+            <p class="modal-card-title">Viagens/Paragens</p>
+        </header>
+        <section class="modal-card-body">
+            <div class="form-group">
+                <form action="/Congressos/Importar/ViagensParagens/@Model.Id" method="POST" class="dropzone">
+                    <div class="dz-message needsclick">
+                        Largue aqui ao ficheiro para carregar as Viagens/Paragens (stop_times.txt)
+                    </div>
+                </form>
+            </div>
+        </section>
+        <footer class="modal-card-foot">
+            <div class="buttons is-centered" style="width:100%">
+                <button type="button" class="button is-info is-large is-fullwidth"
+                        onclick="Bulma('#modalViagensParagens').modal().close();">
+                    <span class="icon">
+                        <i class="fa-solid fa-circle-xmark"></i>
+                    </span>
+                    <span>Fechar</span>
+                </button>
+            </div>
+        </footer>
+    </div>
+</div>
+
+<script>
+    var map = L.map('map').setView([39.3999, -8.2245], 7);
+
+    if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(position => {
+            map.setView([position.coords.latitude, position.coords.longitude], 12);
+        });
+    }
+
+    L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        maxZoom: 19,
+        attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+    }).addTo(map);
+
+    var pin = L.icon({
+        iconUrl: window.location.origin + '/img/pin.png',
+        iconSize: [40, 40],
+        iconAnchor: [20, 40],
+        popupAnchor: [0, -40],
+        tooltipAnchor: [0, -30],
+        className: 'icon-pin'
+    });
+
+    var pin2 = L.icon({
+        iconUrl: window.location.origin + '/img/pin2.png',
+        iconSize: [60, 60],
+        iconAnchor: [20, 40],
+        popupAnchor: [0, -40],
+        tooltipAnchor: [0, -30],
+        className: 'icon-pin'
+    });
+
+    // Scale icon on zoom
+    map.on('zoomend', () => {
+        map.eachLayer(layer => {
+            if (layer instanceof L.Marker) {
+                const iconEl = layer.getElement?.();
+                if (iconEl && iconEl.classList.contains('icon-pin')) {
+                    const newSize = 32 + (map.getZoom() * 2);
+                    layer.setIcon(L.icon({
+                        iconUrl: iconEl.src,
+                        iconSize: [newSize, newSize],
+                        iconAnchor: [newSize / 2, newSize],
+                        popupAnchor: [0, -newSize],
+                        tooltipAnchor: [0, -newSize * 0.8],
+                        className: 'icon-pin'
+                    }));
+                }
+            }
+        });
+    });
+
+    $.ajax({
+        url: '/Congressos/Congregacoes/@Model.Id',
+        type: "GET",
+        success: function (data) {
+            L.marker(['@Model.Latitude', '@Model.Longitude'], {icon: pin2}).addTo(map).bindTooltip("@Model.Nome: @Model.DataInicio.ToShortDateString() -> @Model.DataFim.ToShortDateString()");
+            data.forEach((l) => {
+                var marker = L.marker([l.latitude, l.longitude], {icon: pin}).addTo(map);
+                marker.bindTooltip(l.congregacoes.length + (l.congregacoes.length > 1 ? " congregações" : " congregação" ));
+                html = "Congregações: <br>";
+
+                l.congregacoes.forEach((c) => {
+                    html += "["+c.id+"] <b>"+c.nome+"</b> (" + c.telemovel +")<br>"
+                })
+                marker.bindPopup(html);
+            });
+        },
+        error: function (data) {
+            notifyError('Ocorre um erro ao obter as congregações!');
+        },
+        failure: function (data) {
+            notifyError('Falha ao obter as congregações!');
+        }
+    });
+</script>

@@ -1501,5 +1501,187 @@
             return ExecutarQuery("DELETE FROM r_discursos WHERE Stamp='" + d.Stamp + "'");
         }
         #endregion
+        
+        
+        //CONGRESSOS
+        #region Congressos
+        
+        public List<Congresso> ObterCongressos()
+        {
+            List<Congresso> LstCongresso = new List<Congresso>();
+
+            using (Database db = _connectionString)
+            {
+                string sql = $"SELECT * from ic;";
+                using var result = db.Query(sql);
+                while (result.Read())
+                {
+                    LstCongresso.Add(new Congresso()
+                    {
+                        Id = result["Id"],
+                        Nome = result["Nome"],
+                        Local = result["Local"],
+                        Latitude = result["Latitude"] ?? "",
+                        Longitude = result["Longitude"]?? "",
+                        DataInicio = result["DataInicio"]?? DateTime.MinValue,
+                        DataFim = result["DataFim"]?? DateTime.MinValue
+                    });
+                }
+            }
+
+            return LstCongresso;
+        }
+
+        
+        public Congresso ObterCongresso(int Id, bool LoadCongregacoes = false)
+        {
+            Congresso c = new();
+
+            using (Database db = _connectionString)
+            {
+                string sql = $"SELECT * from ic WHERE Id={Id};";
+                using var result = db.Query(sql);
+                while (result.Read())
+                {
+                    c = new Congresso()
+                    {
+                        Id = result["Id"],
+                        Nome = result["Nome"],
+                        Local = result["Local"],
+                        Latitude = result["Latitude"],
+                        Longitude = result["Longitude"],
+                        DataInicio = result["DataInicio"],
+                        DataFim = result["DataFim"]
+                    };
+                }
+            }
+
+            if (LoadCongregacoes) c.Congregacoes = ObterCongregacoes(Id);
+
+            return c;
+        }
+        
+        
+        public List<Congregacao> ObterCongregacoes(int Id)
+        {
+            List<Congregacao> LstCongregacoes = new List<Congregacao>();
+
+            using (Database db = _connectionString)
+            {
+                string sql = $"SELECT * from ic_congregacoes WHERE IdIC={Id};";
+                using var result = db.Query(sql);
+                while (result.Read())
+                {
+                    LstCongregacoes.Add(new Congregacao()
+                    {
+                        Id = result["IdCongregacao"],
+                        Nome = result["Nome"],
+                        Morada = result["Morada"],
+                        Latitude = result["Latitude"],
+                        Longitude = result["Longitude"],
+                        Telemovel = result["Telemovel"],
+                    });
+                }
+            }
+            
+            return LstCongregacoes;
+        }
+        
+        public List<Locais> ObterLocais(int Id)
+        {
+            List<Locais> LstLocais = new List<Locais>();
+
+            using (Database db = _connectionString)
+            {
+                string sql = $"SELECT * from ic_congregacoes WHERE IdIC={Id};";
+                using var result = db.Query(sql);
+                while (result.Read())
+                {
+                    var c = new Congregacao()
+                    {
+                        Id = result["IdCongregacao"],
+                        Nome = result["Nome"],
+                        Morada = result["Morada"],
+                        Latitude = result["Latitude"],
+                        Longitude = result["Longitude"],
+                        Telemovel = result["Telemovel"],
+                    };
+                    
+                    if (LstLocais.Any(l => l.Latitude == c.Latitude && l.Longitude == c.Longitude))
+                        LstLocais.First(l => l.Latitude == c.Latitude && l.Longitude == c.Longitude).Congregacoes.Add(c);
+                    else
+                    {
+                        LstLocais.Add(new Locais()
+                        {
+                            Morada = c.Morada,
+                            Latitude = c.Latitude,
+                            Longitude = c.Longitude,
+                            Congregacoes = [c]
+                        });
+                    }
+                    
+                }
+            }
+            
+            return LstLocais;
+        }
+
+        public bool CriarRotas(dynamic data, Congresso c, int idTipo)
+        {
+            string sql = "DELETE FROM ic_mobilidade_rotas; INSERT INTO ic_mobilidade_rotas (IdIC, IdTipoTransporte, IdRota, NomeRota) ";
+            
+            foreach (var item in data)
+            {
+                
+                sql += $"VALUES ('{c.Id}', '{idTipo}', '{item.route_id}', '{item.route_short_name.ToString().Replace("'", "''")}'),";
+            }
+            
+            sql = sql.Substring(0, sql.Length - 1) + ";";
+            return ExecutarQuery(sql);
+        }
+        
+        public bool CriarViagens(dynamic data, Congresso c)
+        {
+            string sql = "DELETE FROM ic_mobilidade_viagens; INSERT INTO ic_mobilidade_viagens (IdIC, IdRota, IdViagem, Destino) VALUES ";
+            
+            foreach (var item in data)
+            {
+                
+                sql += $"('{c.Id}', '{item.route_id}', '{item.trip_id}', '{item.trip_headsign.ToString().Replace("'", "''")}'),";
+            }
+            
+            sql = sql.Substring(0, sql.Length - 1) + ";";
+            return ExecutarQuery(sql);
+        }
+        
+        public bool CriarParagens(dynamic data, Congresso c, int idTipo)
+        {
+            string sql = "DELETE FROM ic_mobilidade_paragens; INSERT INTO ic_mobilidade_paragens (IdIC, IdTipoTransporte, IdParagem, CodParagem, NomeParagem, Latitude, Longitude, IdZona, UrlParagem) VALUES ";
+            
+            foreach (var item in data)
+            {
+                
+                sql += $"('{c.Id}', '{idTipo}', '{item.stop_id}', '{item.stop_code}', '{item.stop_name.ToString().Replace("'", "''")}', '{item.stop_lat}', '{item.stop_lon}', '{item.zone_id}', '{item.stop_url}'),";
+            }
+            
+            sql = sql.Substring(0, sql.Length - 1) + ";";
+            return ExecutarQuery(sql);
+        }
+        
+        public bool CriarViagensParagens(dynamic data, Congresso c)
+        {
+
+            string sql = "DELETE FROM ic_mobilidade_viagens_paragens; INSERT INTO ic_mobilidade_viagens_paragens (IdIC, IdViagem, IdParagem, HoraPartida, Sequencia) VALUES ";
+            
+            foreach (var item in data)
+            {
+                
+                sql += $"('{c.Id}', '{item.trip_id}', '{item.stop_id}', '{item.departure_time}', '{item.stop_sequence}'),";
+            }
+            
+            sql = sql.Substring(0, sql.Length - 1) + ";";
+            return ExecutarQuery(sql);
+        }
+        #endregion
     }
 }

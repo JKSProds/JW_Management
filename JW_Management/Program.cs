@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.Extensions.Configuration;
 using LettuceEncrypt;
 using Microsoft.AspNetCore.DataProtection;
+using Microsoft.AspNetCore.Http.Features;
 using AppContext = System.AppContext;
 
 var accessor = new HttpContextAccessor();
@@ -33,6 +34,12 @@ builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationSc
 {
     cookieOptions.LoginPath = "/Home/Login";
     cookieOptions.AccessDeniedPath = "/Home/Error";
+});
+
+builder.Services.Configure<FormOptions>(options =>
+{
+    options.ValueCountLimit = int.MaxValue;
+    options.MultipartBodyLengthLimit = 100_000_000;
 });
 
 #if !DEBUG

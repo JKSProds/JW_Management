@@ -3,8 +3,10 @@ using iTextSharp.text;
 using iTextSharp.text.pdf;
 using iTextSharp.text.rtf;
 using System.Collections;
+using System.Globalization;
 using System.Reflection.Metadata;
 using System.Text;
+using CsvHelper;
 using OfficeOpenXml;
 
 namespace JW_Management.Models
@@ -436,6 +438,17 @@ namespace JW_Management.Models
 
             return outputPdfStream;
 
+        }
+
+        public dynamic ConvertCsv(IFormFile file)
+        {
+           
+            using var stream = file.OpenReadStream();
+            using var reader = new StreamReader(stream);
+            using var csv = new CsvReader(reader, CultureInfo.InvariantCulture);
+
+            var records = csv.GetRecords<dynamic>().ToList();
+            return records;
         }
     }
 }
