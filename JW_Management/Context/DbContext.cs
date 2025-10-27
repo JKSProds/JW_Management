@@ -1604,7 +1604,8 @@
                         Morada = result["Morada"],
                         Latitude = result["Latitude"],
                         Longitude = result["Longitude"],
-                        Telemovel = result["Telemovel"]
+                        Telemovel = result["Telemovel"],
+                        Congresso = c
                     });
                 }
             }
@@ -1615,10 +1616,10 @@
         public List<Locais> ObterLocais(int Id)
         {
             List<Locais> LstLocais = new List<Locais>();
-
+            Congresso congresso = ObterCongresso(Id);
             using (Database db = _connectionString)
             {
-                string sql = $"SELECT * from ic_congregacoes WHERE IdIC={Id};";
+                string sql = $"SELECT * from ic_congregacoes WHERE IdIC={congresso.Id};";
                 using var result = db.Query(sql);
                 while (result.Read())
                 {
@@ -1630,6 +1631,7 @@
                         Latitude = result["Latitude"],
                         Longitude = result["Longitude"],
                         Telemovel = result["Telemovel"],
+                        Congresso = congresso
                     };
                     
                     if (LstLocais.Any(l => l.Latitude == c.Latitude && l.Longitude == c.Longitude))
