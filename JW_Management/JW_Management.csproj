@@ -14,6 +14,9 @@
 		<None Update="Migrations\V_1.2_Congressos.sql">
 		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
 		</None>
+		<None Update="Migrations\V_1.6_Mobilidade_Recomendacoes.sql">
+		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+		</None>
 	</ItemGroup>
 
 	<ItemGroup>

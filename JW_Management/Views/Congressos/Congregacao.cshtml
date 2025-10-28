@@ -23,6 +23,7 @@
             <div class="column">
                 <div class="buttons">
                     <a class="button is-success is-fullwidth" href="https://www.google.com/maps/dir/?api=1&origin=@Model.Latitude,@Model.Longitude&destination=@Model.Congresso.Latitude,@Model.Congresso.Longitude&travelmode=transit">Congregação -> Congresso</a>
+                    <a class="button is-link is-fullwidth" onclick="Bulma('#modalRecomendacao').modal().open()">Definir Recomendação</a>
                 </div>
             </div>
         </div>
@@ -30,6 +31,87 @@
 </form>
 <hr />
 
+<div class="container">
+    @if (Model.Recomendacoes.Count() == 0)
+    {
+        <br />
+        <button class="button is-danger is-large is-rounded is-fullwidth is-disabled">
+            Não foram encontradas
+            recomendações!
+        </button>
+    }
+    else
+    {
+        foreach (var r in Model.Recomendacoes)
+        {
+            <div class="columns is-gapless">
+                <div class="column mx-1">
+                    <div class="card has-table has-mobile-sort-spaced">
+                        <header class="card-header has-background-success">
+                            <p class="card-header-title" style="color:#ffffff">Recomendação Nº @r.Sequencia</p>
+                            <button class="button is-pulled-right m-2">@r.Linhas.Count()</button>
+                        </header>
+                        <div class="card-content">
+                            <div class="b-table">
+                                <div class="table-wrapper has-mobile-cards">
+                                    <table class="table is-hoverable is-fullwidth">
+                                        <thead>
+                                        <tr>
+                                            <th>
+                                                @Html.DisplayNameFor(model => r.Linhas.FirstOrDefault()!.Sequencia)
+                                            </th>
+                                            <th>
+                                                @Html.DisplayNameFor(model => r.Linhas.FirstOrDefault()!.TipoTransporte)
+                                            </th>
+                                            <th>
+                                                @Html.DisplayNameFor(model => r.Linhas.FirstOrDefault()!.Rota)
+                                            </th>
+                                            <th>
+                                                @Html.DisplayNameFor(model => r.Linhas.FirstOrDefault()!.Viagem_Paragem.Paragem)
+                                            </th>
+                                            <th>
+                                                @Html.DisplayNameFor(model => r.Linhas.FirstOrDefault()!.Viagem_Paragem.Viagem)
+                                            </th>
+                                            <th></th>
+                                        </tr>
+                                        </thead>
+                                        <tbody>
+                                        @foreach (var item in r.Linhas)
+                                        {
+                                            <tr>
+                                                <td data-label="@Html.DisplayNameFor(model => r.Linhas.FirstOrDefault()!.Sequencia)">
+                                                    <span><button class="button is-success">@item.Sequencia</button></span>
+                                                </td>
+                                                <td data-label="@Html.DisplayNameFor(model => r.Linhas.FirstOrDefault()!.TipoTransporte)">
+                                                    <span>@item.TipoTransporte.Nome </span>
+                                                </td>
+                                                <td data-label="@Html.DisplayNameFor(model => r.Linhas.FirstOrDefault()!.Rota)">
+                                                    <span>@item.Rota.Nome </span>
+                                                </td>
+                                                <td data-label="@Html.DisplayNameFor(model => r.Linhas.FirstOrDefault()!.Viagem_Paragem.Paragem)">
+                                                    <span>@item.Viagem_Paragem.Paragem.NomeParagem</span>
+                                                </td>
+                                                <td data-label="@Html.DisplayNameFor(model => r.Linhas.FirstOrDefault()!.Viagem_Paragem.Viagem)">
+                                                    <span>@item.Viagem_Paragem.Viagem.Destino</span>
+                                                </td>
+                                                <td class="is-actions-cell">
+                                                </td>
+                                            </tr>
+                                        }
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+    }
+        
+            
+    }
+</div>
+<hr/>
 <div class="container">
     @if (Model.Paragens.Count() == 0)
     {
@@ -99,3 +181,178 @@
             </div>
     }
 </div>
+
+
+<div id="modalRecomendacao" class="modal">
+    <div class="modal-background"></div>
+    <form action="/Congressos/@Model.Congresso.Id/Congregacao/@Model.Id/Recomendacao" method="post">
+        <div class="modal-card">
+            <header class="modal-card-head">
+                <p class="modal-card-title">
+                    <span class="icon">
+                        <i class="fas fa-circle-plus"></i>
+                    </span>
+                    <span>Recomendacao</span>
+                </p>
+                <button type="button" class="delete" aria-label="close"></button>
+            </header>
+            <section class="modal-card-body">
+                <div id="transportesContainer">
+                    <!-- Grupo transporte 0 -->
+                    <div class="transporte-group" data-index="0">
+                        <div class="field">
+                            <label class="label">Tipo de Transporte</label>
+                            <p class="control has-icons-left">
+                                <span class="select is-fullwidth">
+                                    <select name="Linhas[0].Tipo" onchange="ObterRotas(this.value, this.closest('.transporte-group').getAttribute('data-index'));" class="lstTipo">
+                                        <option value="0">Selecione o tipo de transporte:</option>
+                                        <option value="1">STCP</option>
+                                        <option value="2">CP</option>
+                                        <option value="3">Metro do Porto</option>
+                                    </select>
+                                </span>
+                            </p>
+                        </div>
+                        <div class="field">
+                            <label class="label">Linhas</label>
+                            <p class="control has-icons-left">
+                                <span class="select is-fullwidth">
+                                    <select name="Linhas.[0].Rota" onchange="ObterViagens(this.options[this.selectedIndex].text, this.closest('.transporte-group').getAttribute('data-index'), this.closest('.lstTipo').value);" class="lstRotas">
+                                        <option value="0">Selecione a linha:</option>
+                                    </select>
+                                </span>
+                            </p>
+                        </div>
+                        <div class="field">
+                            <label class="label">Direção</label>
+                            <p class="control has-icons-left">
+                                <span class="select is-fullwidth">
+                                    <select name="Linhas[0].Viagem" onchange="ObterParagens(this.options[this.selectedIndex].text, this.closest('.transporte-group').getAttribute('data-index'), this.closest('.lstTipo').value);" class="lstViagens">
+                                        <option value="0">Selecione a direção:</option>
+                                    </select>
+                                </span>
+                            </p>
+                        </div>
+                        <div class="field">
+                            <label class="label">Estação</label>
+                            <p class="control has-icons-left">
+                                <span class="select is-fullwidth">
+                                    <select name="Linhas[0].Paragem" onchange="ObterHorarios(this.options[this.selectedIndex].text, this.closest('.transporte-group').getAttribute('data-index'), this.closest('.lstTipo').value);" class="lstParagens">
+                                        <option value="0">Selecione a estação:</option>
+                                    </select>
+                                </span>
+                            </p>
+                        </div>
+                        <div class="field">
+                            <label class="label">Horário</label>
+                            <p class="control has-icons-left">
+                                <span class="select is-fullwidth">
+                                    <select name="Linhas[0].Viagem_Paragem" class="lstHorarios">
+                                        <option value="0">Selecione o horário:</option>
+                                    </select>
+                                </span>
+                            </p>
+                        </div>
+                    </div>
+                    <hr/>
+                </div>
+                
+                <button type="button" class="button is-link" onclick="AdicionarTransporte()">Adicionar Transbordo</button>
+            </section>
+            <footer class="modal-card-foot">
+                <button type="submit" class="button is-info is-large is-fullwidth">
+                    <span class="icon"><i class="fa-regular fa-floppy-disk"></i></span>
+                    <span>Guardar</span>
+                </button>
+                <button type="button" class="button is-large is-fullwidth is-danger" onclick="Bulma('#modalRecomendacao').modal().close();">
+                    <span class="icon"><i class="fa-regular fa-circle-xmark"></i></span>
+                    <span>Fechar</span>
+                </button>
+            </footer>
+        </div>
+    </form>
+</div>
+
+<script>
+    let transporteIndex = 1;
+
+    function AdicionarTransporte() {
+        const container = document.getElementById('transportesContainer');
+        const newGroup = document.querySelector('.transporte-group').cloneNode(true);
+        newGroup.setAttribute('data-index', transporteIndex);
+
+        // Atualiza nomes e IDs dos selects no novo grupo
+        newGroup.querySelectorAll('select').forEach(select => {
+            const name = select.getAttribute('name');
+            const newName = name.replace(/\d+/, transporteIndex);
+            select.setAttribute('name', newName);
+            select.value = "0";
+            container.querySelectorAll('select').forEach(select => select.name = select.name.replace(/\[\d+\]/, `[${transporteIndex}]`));
+
+        });
+
+        container.appendChild(newGroup);
+        transporteIndex++;
+    }
+
+    function ObterRotas(id, idGrupo) {
+        $('#transportesContainer').find(`.transporte-group[data-index="${idGrupo}"] .lstRotas`).empty();
+        $.ajax({
+            url: '/Congressos/@Model.Congresso.Id/Tipo/' + id + '/Rotas',
+            type: 'GET',
+            success: function(data) {
+                const selectRotas = $('#transportesContainer').find(`.transporte-group[data-index="${idGrupo}"] .lstRotas`);
+                selectRotas.append('<option value="0">Selecione uma linha</option>');
+                $.each(data, function(index, r) {
+                    selectRotas.append('<option value="' + r.id + '">' + r.nome + '</option>');
+                });
+            }
+        });
+    }
+
+    function ObterViagens(id, idGrupo, tipoTransporte) {
+        $('#transportesContainer').find(`.transporte-group[data-index="${idGrupo}"] .lstViagens`).empty();
+        $.ajax({
+            url: '/Congressos/@Model.Congresso.Id/Tipo/' + tipoTransporte + '/Rotas/' + id + '/Viagens',
+            type: 'GET',
+            success: function(data) {
+                const selectViagens = $('#transportesContainer').find(`.transporte-group[data-index="${idGrupo}"] .lstViagens`);
+                selectViagens.append('<option value="0">Selecione um destino</option>');
+                $.each(data, function(index, v) {
+                    selectViagens.append('<option value="' + v.id + '">' + v.destino + '</option>');
+                });
+            }
+        });
+    }
+
+    function ObterParagens(id, idGrupo, rota) {
+        $('#transportesContainer').find(`.transporte-group[data-index="${idGrupo}"] .lstParagens`).empty();
+        $.ajax({
+            url: '/Congressos/@Model.Congresso.Id/Tipo/' + rota.tipo + '/Rotas/' + rota.id + '/Viagens/' + id + '/Paragens',
+            type: 'GET',
+            success: function(data) {
+                const selectParagens = $('#transportesContainer').find(`.transporte-group[data-index="${idGrupo}"] .lstParagens`);
+                selectParagens.append('<option value="0">Selecione uma estação</option>');
+                $.each(data, function(index, v) {
+                    selectParagens.append('<option value="' + v.id + '">' + v.nomeParagem + '</option>');
+                });
+            }
+        });
+    }
+
+    function ObterHorarios(id, idGrupo, direcao, rota, tipoTransporte) {
+        $('#transportesContainer').find(`.transporte-group[data-index="${idGrupo}"] .lstHorarios`).empty();
+        $.ajax({
+            url: '/Congressos/@Model.Congresso.Id/Tipo/' + tipoTransporte + '/Rotas/' + rota + '/Viagens/' + direcao + '/Horarios/' + id,
+            type: 'GET',
+            success: function(data) {
+                const selectHorarios = $('#transportesContainer').find(`.transporte-group[data-index="${idGrupo}"] .lstHorarios`);
+                selectHorarios.append('<option value="0">Selecione um horário</option>');
+                $.each(data, function(index, h) {
+                    selectHorarios.append('<option value="' + h.id + '">' + moment(h.dataPartida).format('HH:mm') + '</option>');
+                });
+            }
+        });
+    }
+
+</script>

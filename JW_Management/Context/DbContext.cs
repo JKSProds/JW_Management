@@ -1617,6 +1617,8 @@
         {
             List<Locais> LstLocais = new List<Locais>();
             Congresso congresso = ObterCongresso(Id);
+            List<Recomendacao> LstRecomendacoes = ObterRecomendacoes(congresso);
+            
             using (Database db = _connectionString)
             {
                 string sql = $"SELECT * from ic_congregacoes WHERE IdIC={congresso.Id};";
@@ -1631,7 +1633,8 @@
                         Latitude = result["Latitude"],
                         Longitude = result["Longitude"],
                         Telemovel = result["Telemovel"],
-                        Congresso = congresso
+                        Congresso = congresso,
+                        Recomendacoes = LstRecomendacoes.Where(r => r.IdCongregacao==result["IdCongregacao"]).ToList()
                     };
                     
                     if (LstLocais.Any(l => l.Latitude == c.Latitude && l.Longitude == c.Longitude))
@@ -1731,15 +1734,14 @@
             return LstTipos;
         }
         
-        public List<Paragem> ObterParagens(int Id)
+        public List<Paragem> ObterParagens(Congresso c)
         {
             List<Paragem> LstParagens = new List<Paragem>();
             List<TipoTransporte> LstTipos = ObterTiposTransporte();
-            Congresso c = ObterCongresso(Id);
             
             using (Database db = _connectionString)
             {
-                string sql = $"SELECT * from ic_mobilidade_paragens WHERE IdIC={Id};";
+                string sql = $"SELECT * from ic_mobilidade_paragens WHERE IdIC={c.Id};";
                 using var result = db.Query(sql);
                 while (result.Read())
                 {
@@ -1823,15 +1825,43 @@
             
             return LstParagens;
         }
-        public List<Rota> ObterRotas(int Id)
+        
+        public List<Paragem> ObterParagens(Congresso c, string NomeRota, string NomeDestino, int IdTipoTransporte)
+        {
+            List<Paragem> LstParagens = new List<Paragem>();
+            List<TipoTransporte> LstTipos = ObterTiposTransporte();
+            using (Database db = _connectionString)
+            {
+                string sql = @$"select p.* from ic_mobilidade_viagens_paragens vp join ic_mobilidade_viagens v on v.IdViagem = vp.IdViagem join ic_mobilidade_rotas r on r.IdRota = v.IdRota join ic_mobilidade_paragens p on p.IdParagem=vp.IdParagem WHERE Destino = '{NomeDestino}' and r.NomeRota = '{NomeRota}' and r.IdTipoTransporte='{IdTipoTransporte}' and r.IdIC={c.Id};";
+                
+                using var result = db.Query(sql);
+                while (result.Read())
+                {
+                    LstParagens.Add(new Paragem()
+                    {
+                        Id = result["IdParagem"],
+                        CodParagem = result["CodParagem"],
+                        NomeParagem = result["NomeParagem"],
+                        Latitude = result["Latitude"],
+                        Longitude = result["Longitude"],
+                        IdZona = result["IdZona"],
+                        Url = result["UrlParagem"],
+                        Tipo = LstTipos.First(t => t.Id == result["IdTipoTransporte"]),
+                        Congresso = c
+                    });
+                }
+            }
+            
+            return LstParagens;
+        }
+        public List<Rota> ObterRotas(Congresso c)
         {
             List<Rota> LstRotas = new List<Rota>();
             List<TipoTransporte> LstTipos = ObterTiposTransporte();
-            Congresso c = ObterCongresso(Id);
             
             using (Database db = _connectionString)
             {
-                string sql = $"SELECT * from ic_mobilidade_rotas WHERE IdIC={Id};";
+                string sql = $"SELECT * from ic_mobilidade_rotas WHERE IdIC={c.Id};";
                 using var result = db.Query(sql);
                 while (result.Read())
                 {
@@ -1840,6 +1870,29 @@
                         Id = result["IdRota"],
                         Nome = result["NomeRota"],
                         Tipo = LstTipos.First(t => t.Id == result["IdTipoTransporte"]),
+                        Congresso = c
+                    });
+                }
+            }
+            
+            return LstRotas;
+        }
+        
+        public List<Rota> ObterRotas(Congresso c, TipoTransporte t)
+        {
+            List<Rota> LstRotas = new List<Rota>();
+            
+            using (Database db = _connectionString)
+            {
+                string sql = $"SELECT * from ic_mobilidade_rotas WHERE IdIC={c.Id} and IdTipoTransporte={t.Id};";
+                using var result = db.Query(sql);
+                while (result.Read())
+                {
+                    LstRotas.Add(new Rota()
+                    {
+                        Id = result["IdRota"],
+                        Nome = result["NomeRota"],
+                        Tipo = t,
                         Congresso = c
                     });
                 }
@@ -1900,7 +1953,7 @@
         public List<Viagem> ObterViagens(Congresso c)
         {
             List<Viagem> LstViagens = new List<Viagem>();
-            List<Rota> LstRotas = ObterRotas(c.Id);
+            List<Rota> LstRotas = ObterRotas(c);
             using (Database db = _connectionString)
             {
                 string sql = $"SELECT * from ic_mobilidade_viagens WHERE IdIC={c.Id};";
@@ -1969,6 +2022,31 @@
             return LstViagensParagens;
         }
         
+        public List<Viagem_Paragem> ObterViagensParagem(Congresso c, string NomeRota, string NomeDestino, string NomeParagem, int IdTipoTransporte)
+        {
+            List<Viagem_Paragem> LstViagensParagens = new List<Viagem_Paragem>();
+            
+            using (Database db = _connectionString)
+            {
+                string sql = $"select vp.* from ic_mobilidade_viagens_paragens vp join ic_mobilidade_viagens v on v.IdViagem = vp.IdViagem join ic_mobilidade_rotas r on r.IdRota = v.IdRota join ic_mobilidade_paragens p on p.IdParagem=vp.IdParagem WHERE Destino = '{NomeDestino}' and r.NomeRota = '{NomeRota}' and p.NomeParagem='{NomeParagem}' and r.IdTipoTransporte='{IdTipoTransporte}' and r.IdIC={c.Id};";
+                using var result = db.Query(sql);
+                while (result.Read())
+                {
+                    LstViagensParagens.Add(new Viagem_Paragem()
+                    {
+                        Viagem = ObterViagem(result["IdViagem"], c.Id, false),
+                        Paragem = ObterParagem(result["IdParagem"], c.Id, false),
+                        Congresso = c,
+                        DataPartida = DateTime.Parse(DateTime.Today.ToShortDateString() + " " + result["HoraPartida"]),
+                        Sequencia = result["Sequencia"],
+                    });
+                }
+            }
+            
+            return LstViagensParagens;
+        }
+
+        
         public List<Viagem_Paragem> ObterViagensParagem(Paragem p)
         {
             List<Viagem_Paragem> LstViagensParagens = new List<Viagem_Paragem>();
@@ -1997,6 +2075,199 @@
             }
             
             return LstViagensParagens;
+        }
+        
+        public string CriarRecomendacao(Recomendacao r, Congresso c, Congregacao cng)
+        {
+            string UUID = DateTime.Now.Ticks.ToString();
+            string sql = "INSERT INTO ic_mobilidade_recomendacoes (IdIC, IdCongregacao, IdRecomendacao, Sequencia) VALUES ";
+            
+            sql += $"('{c.Id}', '{cng.Id}', '{UUID}', '{r.Sequencia}');";
+            
+            return ExecutarQuery(sql) ? UUID : string.Empty;
+        }
+        
+        public string CriarRecomendacaoLinha(Recomendacao r, Recomendacao_Linhas l, Congresso c, Congregacao cng)
+        {
+            string UUID = DateTime.Now.Ticks.ToString();
+            string sql = "INSERT INTO ic_mobilidade_recomendacoes_linhas (IdIC, IdRecomendacao, IdLinha,TipoTransporte, Rota, Viagem, Paragem, Manual, Sequencia) VALUES ";
+
+            if (l.Manual)
+            {
+                sql += $"('{c.Id}', '{r.Id}', '{UUID}', '{l.TipoTransporte.Nome}', '{l.Rota.Nome}', '{l.Viagem_Paragem.Viagem.Destino}', '{l.Viagem_Paragem.Paragem.NomeParagem}', '{(l.Manual ? 1 : 0)}', '{l.Sequencia}');";
+            }
+            else
+            {
+                sql += $"('{c.Id}', '{r.Id}', '{UUID}', '{l.TipoTransporte.Id}', '{l.Rota.Id}', '{l.Viagem_Paragem.Viagem.Id}', '{l.Viagem_Paragem.Paragem.Id}', '{(l.Manual ? 1 : 0)}', '{l.Sequencia}');";
+            }
+            
+            return ExecutarQuery(sql) ? UUID : string.Empty;
+        }
+        
+        public bool ApagarRecomendacao(Recomendacao r, Congresso c, Congregacao cng)
+        {
+            string sql = $"DELETE FROM ic_mobilidade_recomendacoes WHERE IdRecomendacao = '{r.Id}' and IdIC = {c.Id} and IdCongregacao = {cng.Id};";
+            sql += $"DELETE FROM ic_mobilidade_recomendacoes_linhas WHERE IdRecomendacao = '{r.Id}' and IdIC = {c.Id};";
+            return ExecutarQuery(sql);
+        }
+        
+        public List<Recomendacao> ObterRecomendacoes(Congresso c)
+        {
+            List<Recomendacao> LstRecomendacoes = new List<Recomendacao>();
+            List<Recomendacao_Linhas> LstRecomendacoesLinhas = ObterRecomendacaoLinhas(c);
+            
+            using (Database db = _connectionString)
+            {
+                string sql = $"SELECT * from ic_mobilidade_recomendacoes WHERE IdIC='{c.Id}'";
+                using var result = db.Query(sql);
+                while (result.Read())
+                {
+                    LstRecomendacoes.Add(new Recomendacao()
+                    {
+                        IdCongregacao = result["IdCongregacao"],
+                        Id = result["IdRecomendacao"],
+                        Sequencia = result["Sequencia"],
+                        Congresso = c,
+                        Linhas = LstRecomendacoesLinhas.Where(l => l.IdRecomendacao == result["IdRecomendacao"]).ToList(),
+                    });
+                }
+            }
+            
+            return LstRecomendacoes;
+        }
+        
+        public List<Recomendacao> ObterRecomendacoes(Congregacao cng)
+        {
+            List<Recomendacao> LstRecomendacoes = new List<Recomendacao>();
+            Congresso c = ObterCongresso(cng.Congresso.Id);
+            
+            using (Database db = _connectionString)
+            {
+                string sql = $"SELECT * from ic_mobilidade_recomendacoes WHERE IdIC='{c.Id}' and IdCongregacao={cng.Id};";
+                using var result = db.Query(sql);
+                while (result.Read())
+                {
+                    LstRecomendacoes.Add(new Recomendacao()
+                    {
+                        IdCongregacao = result["IdCongregacao"],
+                        Id = result["IdRecomendacao"],
+                        Sequencia = result["Sequencia"],
+                        Congresso = c,
+                        Linhas = ObterRecomendacaoLinhas(result["IdRecomendacao"], c)
+                    });
+                }
+            }
+            
+            return LstRecomendacoes;
+        }
+        
+        
+        public List<Recomendacao_Linhas> ObterRecomendacaoLinhas(string id, Congresso c)
+        {
+            List<Recomendacao_Linhas> LstRecomendacaoLinhas = new List<Recomendacao_Linhas>();
+            List<TipoTransporte> LstTiposTransporte = ObterTiposTransporte();
+            List<Rota> LstRotas = ObterRotas(c);
+            List<Viagem> LstViagens = ObterViagens(c);
+            List<Paragem> LstParagens = ObterParagens(c);
+            
+            using (Database db = _connectionString)
+            {
+                string sql = $"SELECT * from ic_mobilidade_recomendacoes_linhas WHERE IdIC='{c.Id}' and IdRecomendacao={id};";
+                using var result = db.Query(sql);
+                while (result.Read())
+                {
+                    if ((string)result["Manual"] == "True")
+                    {
+                        LstRecomendacaoLinhas.Add(new Recomendacao_Linhas()
+                        {
+                            IdRecomendacao = result["IdRecomendacao"],
+                            Id = result["IdLinha"],
+                            TipoTransporte = new TipoTransporte() {Nome = "Manual"},
+                            Rota = new Rota() {Nome = result["Rota"]},
+                            Viagem_Paragem = new Viagem_Paragem()
+                            {
+                                Viagem = new Viagem() {Destino = result["Viagem"]},
+                                Paragem = new Paragem() {NomeParagem = result["Paragem"]}
+                            },
+                            Sequencia = result["Sequencia"],
+                            Manual = true
+                        });
+                    }
+                    else
+                    {
+                        LstRecomendacaoLinhas.Add(new Recomendacao_Linhas()
+                        {
+                            IdRecomendacao = result["IdRecomendacao"],
+                            Id = result["IdLinha"],
+                            TipoTransporte = LstTiposTransporte.First(t => t.Id == result["TipoTransporte"]),
+                            Rota = LstRotas.First(r => r.Id == result["Rota"]),
+                            Viagem_Paragem = new Viagem_Paragem()
+                            {
+                                Viagem = LstViagens.First(v => v.Id == result["Viagem"]),
+                                Paragem = LstParagens.First(p => p.Id == result["Paragem"]),
+                            },
+                            Sequencia = result["Sequencia"],
+                            Manual = false
+                        });
+                    }
+                   
+                }
+            }
+            
+            return LstRecomendacaoLinhas;
+        }
+        
+        public List<Recomendacao_Linhas> ObterRecomendacaoLinhas(Congresso c)
+        {
+            List<Recomendacao_Linhas> LstRecomendacaoLinhas = new List<Recomendacao_Linhas>();
+            List<TipoTransporte> LstTiposTransporte = ObterTiposTransporte();
+            List<Rota> LstRotas = ObterRotas(c);
+            List<Viagem> LstViagens = ObterViagens(c);
+            List<Paragem> LstParagens = ObterParagens(c);
+            
+            using (Database db = _connectionString)
+            {
+                string sql = $"SELECT * from ic_mobilidade_recomendacoes_linhas WHERE IdIC='{c.Id}';";
+                using var result = db.Query(sql);
+                while (result.Read())
+                {
+                    if ((string)result["Manual"] == "True")
+                    {
+                        LstRecomendacaoLinhas.Add(new Recomendacao_Linhas()
+                        {
+                            Id = result["IdLinha"],
+                            TipoTransporte = new TipoTransporte() {Nome = "Manual"},
+                            Rota = new Rota() {Nome = result["Rota"]},
+                            Viagem_Paragem = new Viagem_Paragem()
+                            {
+                                Viagem = new Viagem() {Destino = result["Viagem"]},
+                                Paragem = new Paragem() {NomeParagem = result["Paragem"]}
+                            },
+                            Sequencia = result["Sequencia"],
+                            Manual = true
+                        });
+                    }
+                    else
+                    {
+                        LstRecomendacaoLinhas.Add(new Recomendacao_Linhas()
+                        {
+                            Id = result["IdLinha"],
+                            TipoTransporte = LstTiposTransporte.First(t => t.Id == result["TipoTransporte"]),
+                            Rota = LstRotas.First(r => r.Id == result["Rota"]),
+                            Viagem_Paragem = new Viagem_Paragem()
+                            {
+                                Viagem = LstViagens.First(v => v.Id == result["Viagem"]),
+                                Paragem = LstParagens.First(p => p.Id == result["Paragem"]),
+                            },
+                            Sequencia = result["Sequencia"],
+                            Manual = false
+                        });
+                    }
+                   
+                }
+            }
+            
+            return LstRecomendacaoLinhas;
         }
         #endregion
     }

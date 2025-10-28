@@ -312,12 +312,19 @@
         success: function (data) {
             L.marker(['@Model.Latitude', '@Model.Longitude'], {icon: pin2}).addTo(map).bindTooltip("@Model.Nome: @Model.DataInicio.ToShortDateString() -> @Model.DataFim.ToShortDateString()");
             data.forEach((l) => {
-                var marker = L.marker([l.latitude, l.longitude], {icon: pin}).addTo(map);
+                var p = l.recomendacoes === 2 ? pin2 : (l.recomendacoes === 1 ? pin3 : pin);
+                var marker = L.marker([l.latitude, l.longitude], {icon: p}).addTo(map);
                 marker.bindTooltip(l.congregacoes.length + (l.congregacoes.length > 1 ? " congregações" : " congregação" ));
                 html = "Congregações: <br>";
 
                 l.congregacoes.forEach((c) => {
-                    html += "["+c.id+"] <b>"+c.nome+"</b> (" + c.telemovel +")<br><br><a type='button' href='/Congressos/1/Congregacao/"+c.id+"' class='button is-info is-rounded is-fullwidth'><span class='icon'><i class='fas fa-eye'></i></span><span>Ver</span></a><hr>"
+                    html += "["+c.id+"] <b>"+c.nome+"</b> (" + c.telemovel +")<br><br><div class='buttons'>" +
+                        "<a type='button' href='/Congressos/@Model.Id/Congregacao/"+c.id+"' class='button is-info is-rounded is-fullwidth'><span class='icon'><i class='fas fa-eye'></i></span><span>Ver</span></a>";
+                        console.log(c.recomendacao);
+                        if (!c.recomendacao) {
+                            html += "<button type='button' onclick='CriarRecomendacao("+c.id+")' class='button is-success is-rounded is-fullwidth'><span class='icon'><i class='fas fa-check'></i></span><span>Validar</span></a>";
+                        }
+                        html +="</div><hr>"
                 })
                 marker.bindPopup(html);
             });
@@ -333,4 +340,14 @@
     Dropzone.options.dpzViagensParagens = {
         maxFilesize: 100
     };
+
+    function CriarRecomendacao(id) {
+        $.ajax({
+            url: '/Congressos/@Model.Id/Congregacao/' + id + '/Recomendacao',
+            type: 'POST',
+            success: function(data) {
+                window.location.reload();
+            }
+        });
+    }
 </script>

@@ -30,8 +30,8 @@ public class CongressosController(DbContext _dbContext, FileContext _fileContext
     public IActionResult Paragens(int id)
     {
         if (id==0) return NotFound();
-        
-        return Ok(_dbContext.ObterParagens(id));
+        Congresso c = _dbContext.ObterCongresso(id);
+        return Ok(_dbContext.ObterParagens(c));
     }
     
     [HttpPost("Congressos/Importar/Rotas/{id}")]
@@ -93,9 +93,85 @@ public class CongressosController(DbContext _dbContext, FileContext _fileContext
     public IActionResult Congregacao(int id, int IdIC)
     {
         if (id==0) return NotFound();
-        var c = _dbContext.ObterCongregacao(id, IdIC);
-        c.Paragens = _dbContext.ObterParagens(c, IdIC);
+        var c = _dbContext.ObterCongresso(IdIC);
         
-        return View(c);
+        var cng = _dbContext.ObterCongregacao(id, c.Id);
+        cng.Paragens = _dbContext.ObterParagens(cng, c.Id);
+        cng.Recomendacoes = _dbContext.ObterRecomendacoes(cng);
+        
+        return View(cng);
+    }
+    
+    
+    [HttpPost("Congressos/{IdIC}/Congregacao/{id}/Recomendacao")]
+    public IActionResult Recomendacao(Recomendacao r, int IdIC, int id)
+    {
+        if (IdIC==0) return NotFound();
+        var c = _dbContext.ObterCongresso(IdIC);
+        var cng = _dbContext.ObterCongregacao(id, IdIC);
+        cng.Recomendacoes = _dbContext.ObterRecomendacoes(cng);
+
+        if (r.Linhas == null || r.Linhas.Count == 0) 
+        {
+            r.Sequencia = 1;
+            r.Linhas.Add(new Recomendacao_Linhas()
+            {
+                Manual = true,
+                Rota = new Rota() {Nome = "Manual"},
+                Viagem_Paragem = new Viagem_Paragem() {Viagem = new  Viagem() {Destino = "Manual"}, Paragem = new Paragem() {NomeParagem = "Manual"}},
+                TipoTransporte = new TipoTransporte() {Nome = "Manual"},
+                Sequencia = 1
+            });
+        }
+        
+        foreach (var o in cng.Recomendacoes)
+        {
+            if (o.Sequencia == r.Sequencia) _dbContext.ApagarRecomendacao(o, c, cng);
+        }
+        
+        r.Id = _dbContext.CriarRecomendacao(r, c, cng);
+        foreach (var l in r.Linhas)
+        {
+            
+          l.Id = _dbContext.CriarRecomendacaoLinha(r, l, c, cng);
+        }
+        
+        return Ok(r);
+    }
+    
+    [HttpGet("Congressos/{IdIC}/Tipo/{id}/Rotas")]
+    public IActionResult Rotas(int id, int IdIC)
+    {
+        if (IdIC==0) return NotFound();
+        var c = _dbContext.ObterCongresso(IdIC);
+        
+        return Ok(_dbContext.ObterRotas(c, _dbContext.ObterTiposTransporte().First(o => o.Id == id)).DistinctBy(o => o.Nome).ToList().OrderBy(o => o.Nome));
+    }
+    
+    [HttpGet("Congressos/{IdIC}/Tipo/{IdTipo}/Rotas/{NomeRota}/Viagens")]
+    public IActionResult Viagens(string NomeRota, int IdIC, int IdTipo)
+    {
+        if (IdIC==0) return NotFound();
+        var c = _dbContext.ObterCongresso(IdIC);
+        var v = _dbContext.ObterViagens(c).Where(o => o.Rota.Nome == NomeRota && o.Rota.Tipo.Id == IdTipo).DistinctBy(o => o.Destino).ToList().OrderBy(o => o.Destino);
+        return Ok(v);
+    }
+    
+    [HttpGet("Congressos/{IdIC}/Tipo/{IdTipo}/Rotas/{NomeRota}/Viagens/{NomeDestino}/Paragens")]
+    public IActionResult Paragens(string NomeRota, string NomeDestino, int IdTipo, int IdIC)
+    {
+        if (IdIC==0) return NotFound();
+        var c = _dbContext.ObterCongresso(IdIC);
+        var p = _dbContext.ObterParagens(c, NomeRota, NomeDestino, IdTipo).DistinctBy(o => o.NomeParagem).ToList().OrderBy(o => o.NomeParagem);
+        return Ok(p);
+    }
+    
+    [HttpGet("Congressos/{IdIC}/Tipo/{IdTipo}/Rotas/{NomeRota}/Viagens/{NomeDestino}/Horarios/{NomeParagem}")]
+    public IActionResult Horarios(string NomeRota, string NomeDestino, string NomeParagem, int IdTipo, int IdIC)
+    {
+        if (IdIC==0) return NotFound();
+        var c = _dbContext.ObterCongresso(IdIC);
+        var h = _dbContext.ObterViagensParagem(c, NomeRota, NomeDestino, NomeParagem, IdTipo);
+        return Ok(h);
     }
 }
