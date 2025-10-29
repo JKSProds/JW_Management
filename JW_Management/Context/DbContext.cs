@@ -1556,16 +1556,16 @@
                 }
             }
 
-            if (LoadCongregacoes) c.Congregacoes = ObterCongregacoes(Id);
+            if (LoadCongregacoes) c.Congregacoes = ObterCongregacoes(Id, true);
 
             return c;
         }
         
         
-        public List<Congregacao> ObterCongregacoes(int Id)
+        public List<Congregacao> ObterCongregacoes(int Id, bool LoadRecomendacoes = false)
         {
             List<Congregacao> LstCongregacoes = new List<Congregacao>();
-
+            List<Recomendacao> LstRecomendacoes = new List<Recomendacao>();
             using (Database db = _connectionString)
             {
                 string sql = $"SELECT * from ic_congregacoes WHERE IdIC={Id};";
@@ -1581,6 +1581,8 @@
                         Longitude = result["Longitude"],
                         Telemovel = result["Telemovel"],
                     });
+                    
+                    if (LoadRecomendacoes) LstCongregacoes.Last().Recomendacoes = LstRecomendacoes.Where(r => r.IdCongregacao == LstCongregacoes.Last().Id).ToList();
                 }
             }
             
