@@ -1564,11 +1564,13 @@
         
         public List<Congregacao> ObterCongregacoes(int Id, bool LoadRecomendacoes = false)
         {
+            var c = ObterCongresso(Id);
             List<Congregacao> LstCongregacoes = new List<Congregacao>();
-            List<Recomendacao> LstRecomendacoes = new List<Recomendacao>();
+            List<Recomendacao> LstRecomendacoes = ObterRecomendacoes(c);
+            
             using (Database db = _connectionString)
             {
-                string sql = $"SELECT * from ic_congregacoes WHERE IdIC={Id};";
+                string sql = $"SELECT * from ic_congregacoes WHERE IdIC={c.Id};";
                 using var result = db.Query(sql);
                 while (result.Read())
                 {
