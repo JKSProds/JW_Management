@@ -10,7 +10,7 @@
 
         public string Paste => string.Join(" + ", Linhas.Select(o => o.TipoTransporte.Nome)) + "\t" + 
                                string.Join(" | ", Linhas.Select(o =>
-                o.Rota.Nome.ToUpper() + " (" + o.Viagem_Paragem.Paragem.NomeParagem + " -> " +
+                o.Rota.Nome.ToUpper() + " (" + o.Viagem_Paragem.Paragem.NomeParagem + " [0min/0km] -> " +
                 o.Viagem_Paragem.Viagem.Destino + ")")) + "\t" + 
                                string.Join(" + ", Linhas.Select(o =>
                     o.Viagem_Paragem.DataPartida == DateTime.MinValue
