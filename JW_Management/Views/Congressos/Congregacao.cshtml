@@ -50,7 +50,16 @@
                     <div class="card has-table has-mobile-sort-spaced">
                         <header class="card-header has-background-success">
                             <p class="card-header-title" style="color:#ffffff">Recomendação Nº @r.Sequencia</p>
-                            <button class="button is-pulled-right m-2">@r.Linhas.Count()</button>
+                            <div class="field is-grouped">
+                                <button class="button is-danger m-2 is-fullwidth" onclick="ApagarRecomendacao('@r.Id')">
+                                    <span class="has-icons-left"><i class="fa fa-trash"></i></span>
+                                </button>
+                                <button class="button is-primary m-2 is-fullwidth" onclick="navigator.clipboard.writeText('@r.Paste');notify('Copiado para o seu clipboard!')">
+                                    <span class="has-icons-left"><i class="fa fa-copy"></i></span>
+                                </button>
+                                <button class="button is-pulled-right m-2">@r.Linhas.Count()</button>
+                                </div>
+                            
                         </header>
                         <div class="card-content">
                             <div class="b-table">
@@ -96,13 +105,7 @@
                                                     <span>@item.Viagem_Paragem.Viagem.Destino</span>
                                                 </td>
                                                 <td class="is-actions-cell">
-                                                    <div class="field is-grouped">
-                                                    <button class="button is-danger is-fullwidth" onclick="ApagarRecomendacao('@item.IdRecomendacao')">
-                                                        <span class="has-icons-left"><i class="fa fa-trash"></i></span>
-                                                    </button>
-                                                    <button class="button is-success is-fullwidth" onclick="navigator.clipboard.writeText('@item.TipoTransporte.Nome\t @item.Rota.Nome.ToUpper() (@item.Viagem_Paragem.Paragem.NomeParagem -> @item.Viagem_Paragem.Viagem.Destino)\t @(item.Viagem_Paragem.DataPartida == DateTime.MinValue ? "TBD" : @item.Viagem_Paragem.DataPartida.ToString("HH:mm"))')">
-                                                        <span class="has-icons-left"><i class="fa fa-copy"></i></span>
-                                                    </button></div>
+                                                    
                                                 </td>
                                             </tr>
                                         }
@@ -262,6 +265,13 @@
                                 <input class="input" name="Linhas[0].Viagem_Paragem.DataPartida" type="text"/>
                             </div>
                         </div>
+                    </div>                        
+                    <div class="field">
+                        <label class="label">Transbordo</label>
+                        <p class="control has-icons-left">
+                            <span class="icon"><i class="fa-regular fa-arrow-down-1-9"></i></span>
+                            <input class="input" name="Linhas[0].Sequencia" value="1" type="number"/>
+                        </p>
                     </div>
                     <div class="field">
                         <label class="label">Recomendação</label>
@@ -343,6 +353,13 @@
                                 <span class="icon"><i class="fa-regular fa-clock"></i></span>
                                 <input class="input" name="Linhas[0].Viagem_Paragem.DataPartida" type="text"/>
                             </div>
+                        </div>
+                        <div class="field">
+                            <label class="label">Transbordo</label>
+                            <p class="control has-icons-left">
+                                <span class="icon"><i class="fa-regular fa-arrow-down-1-9"></i></span>
+                                <input class="input" name="Linhas[0].Sequencia" value="1" type="number"/>
+                            </p>
                         </div>
                         <div class="field">
                             <label class="label">Recomendação</label>

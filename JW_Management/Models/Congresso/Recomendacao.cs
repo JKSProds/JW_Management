@@ -7,6 +7,15 @@
         public Congresso Congresso { get; set; }
         public int IdCongregacao { get; set; }
         public int Sequencia  { get; set; }
+
+        public string Paste => string.Join(" + ", Linhas.Select(o => o.TipoTransporte.Nome)) + "\t" + 
+                               string.Join(" | ", Linhas.Select(o =>
+                o.Rota.Nome.ToUpper() + " (" + o.Viagem_Paragem.Paragem.NomeParagem + " -> " +
+                o.Viagem_Paragem.Viagem.Destino + ")")) + "\t" + 
+                               string.Join(" + ", Linhas.Select(o =>
+                    o.Viagem_Paragem.DataPartida == DateTime.MinValue
+                        ? "TBD"
+                        : o.Viagem_Paragem.DataPartida.ToString("HH:mm")));
     }
     
     public class Recomendacao_Linhas

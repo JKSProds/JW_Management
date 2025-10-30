@@ -103,12 +103,12 @@ public class CongressosController(DbContext _dbContext, FileContext _fileContext
     }
     
     
-    [HttpPost("Congressos/{IdIC}/Congregacao/{id}/Recomendacao")]
-    public IActionResult Recomendacao(Recomendacao r, int IdIC, int id)
+    [HttpPost("Congressos/{IdIC}/Congregacao/{idC}/Recomendacao")]
+    public IActionResult Recomendacao(Recomendacao r, int IdIC, int idC)
     {
         if (IdIC==0) return NotFound();
         var c = _dbContext.ObterCongresso(IdIC);
-        var cng = _dbContext.ObterCongregacao(id, IdIC);
+        var cng = _dbContext.ObterCongregacao(idC, IdIC);
         cng.Recomendacoes = _dbContext.ObterRecomendacoes(cng);
 
         r.Congresso = c;
@@ -128,15 +128,22 @@ public class CongressosController(DbContext _dbContext, FileContext _fileContext
         
         foreach (var o in cng.Recomendacoes)
         {
-            if (o.Sequencia == r.Sequencia) _dbContext.ApagarRecomendacao(o, c, cng);
+            if (o.Sequencia == r.Sequencia && o.Linhas.Any(l => l.Sequencia == r.Linhas.First().Sequencia))
+            {
+                _dbContext.ApagarRecomendacao(o, c, cng);
+            }
+            else
+            {
+                r.Id = o.Id;
+            }
         }
         
-        r.Id = _dbContext.CriarRecomendacao(r, c, cng);
+        
+        if (string.IsNullOrEmpty(r.Id)) r.Id = _dbContext.CriarRecomendacao(r, c, cng);
         foreach (var l in r.Linhas)
         {
            if (l.TipoTransporte.Id > 0) l.TipoTransporte = _dbContext.ObterTiposTransporte().First(t => t.Id == l.TipoTransporte.Id);
             l.Manual = true;
-            l.Sequencia = 1;
           l.Id = _dbContext.CriarRecomendacaoLinha(r, l, c, cng);
         }
         
