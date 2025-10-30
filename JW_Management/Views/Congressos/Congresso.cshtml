@@ -54,8 +54,7 @@
                     <div class="card has-table has-mobile-sort-spaced">
                         <header class="card-header has-background-success">
                             <p class="card-header-title" style="color:#ffffff">Congregações</p>
-                            <button class="button is-pulled-right is-link m-2">@Model.Congregacoes.Count(c => c.Recomendacao)</button>
-                            <button class="button is-pulled-right is-danger m-2">@Model.Congregacoes.Count(c => !c.Recomendacao)</button>
+                            <button class="button is-pulled-right is-link m-2">@(Model.Congregacoes.Count(c => c.Recomendacao) * 100 / Model.Congregacoes.Count()) %</button>
                             <button class="button is-pulled-right m-2">@Model.Congregacoes.Count()</button>
                         </header>
                         <div class="card-content">
