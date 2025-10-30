@@ -2108,6 +2108,7 @@
             return ExecutarQuery(sql) ? UUID : string.Empty;
         }
         
+        
         public bool ApagarRecomendacao(Recomendacao r, Congresso c, Congregacao cng)
         {
             string sql = $"DELETE FROM ic_mobilidade_recomendacoes WHERE IdRecomendacao = '{r.Id}' and IdIC = {c.Id} and IdCongregacao = {cng.Id};";
@@ -2186,7 +2187,7 @@
                         {
                             IdRecomendacao = result["IdRecomendacao"],
                             Id = result["IdLinha"],
-                            TipoTransporte = new TipoTransporte() {Nome = "Manual"},
+                            TipoTransporte = new TipoTransporte() {Nome = result["TipoTransporte"]},
                             Rota = new Rota() {Nome = result["Rota"]},
                             Viagem_Paragem = new Viagem_Paragem()
                             {

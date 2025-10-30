@@ -111,9 +111,11 @@ public class CongressosController(DbContext _dbContext, FileContext _fileContext
         var cng = _dbContext.ObterCongregacao(id, IdIC);
         cng.Recomendacoes = _dbContext.ObterRecomendacoes(cng);
 
-        if (r.Linhas == null || r.Linhas.Count == 0) 
+        r.Congresso = c;
+        r.IdCongregacao = cng.Id;
+        
+        if (r.Linhas == null || r.Linhas.Count == 0)
         {
-            r.Sequencia = 1;
             r.Linhas.Add(new Recomendacao_Linhas()
             {
                 Manual = true,
@@ -132,11 +134,22 @@ public class CongressosController(DbContext _dbContext, FileContext _fileContext
         r.Id = _dbContext.CriarRecomendacao(r, c, cng);
         foreach (var l in r.Linhas)
         {
-            
+           if (l.TipoTransporte.Id > 0) l.TipoTransporte = _dbContext.ObterTiposTransporte().First(t => t.Id == l.TipoTransporte.Id);
+            l.Manual = true;
+            l.Sequencia = 1;
           l.Id = _dbContext.CriarRecomendacaoLinha(r, l, c, cng);
         }
         
-        return Ok(r);
+        return RedirectToAction("Congregacao", new { id = cng.Id, IdIC = c.Id });
+    }
+    
+    [HttpDelete("Congressos/{IdIC}/Congregacao/{idC}/Recomendacao/{id}")]
+    public IActionResult Recomendacao(string id, int idC, int IdIC)
+    {
+        var c = _dbContext.ObterCongresso(IdIC);
+        var cng = _dbContext.ObterCongregacao(idC, IdIC);
+ 
+        return _dbContext.ApagarRecomendacao(new Recomendacao() {Id = id}, c, cng) ? Ok() : BadRequest();
     }
     
     [HttpGet("Congressos/{IdIC}/Tipo/{id}/Rotas")]

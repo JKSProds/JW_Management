@@ -24,7 +24,8 @@
                 <div class="buttons">
                     <a class="button is-success is-fullwidth" href="https://www.google.com/maps/dir/?api=1&origin=@Model.Latitude,@Model.Longitude&destination=@Model.Congresso.Latitude,@Model.Congresso.Longitude&travelmode=transit">Congregação -> Congresso</a>
                     <a class="button is-link is-fullwidth" onclick="Bulma('#modalRecomendacao').modal().open()">Definir Recomendação</a>
-                </div>
+                    <a class="button is-link is-fullwidth" onclick="Bulma('#modalRecomendacaoManual').modal().open()">Definir Recomendação Manual</a>
+                    </div>
             </div>
         </div>
     </div>
@@ -95,6 +96,13 @@
                                                     <span>@item.Viagem_Paragem.Viagem.Destino</span>
                                                 </td>
                                                 <td class="is-actions-cell">
+                                                    <div class="field is-grouped">
+                                                    <button class="button is-danger is-fullwidth" onclick="ApagarRecomendacao('@item.IdRecomendacao')">
+                                                        <span class="has-icons-left"><i class="fa fa-trash"></i></span>
+                                                    </button>
+                                                    <button class="button is-success is-fullwidth" onclick="navigator.clipboard.writeText('@item.TipoTransporte.Nome\t @item.Rota.Nome.ToUpper() (@item.Viagem_Paragem.Paragem.NomeParagem -> @item.Viagem_Paragem.Viagem.Destino)\t @(item.Viagem_Paragem.DataPartida == DateTime.MinValue ? "TBD" : @item.Viagem_Paragem.DataPartida.ToString("HH:mm"))')">
+                                                        <span class="has-icons-left"><i class="fa fa-copy"></i></span>
+                                                    </button></div>
                                                 </td>
                                             </tr>
                                         }
@@ -198,159 +206,241 @@
             </header>
             <section class="modal-card-body">
                 <div id="transportesContainer">
-                    <!-- Grupo transporte 0 -->
-                    <div class="transporte-group" data-index="0">
+                    <div class="field">
+                        <label class="label">Tipo de Transporte</label>
+                        <p class="control has-icons-left">
+                            <span class="select is-fullwidth">
+                                <span class="icon"><i class="fa-regular fa-train"></i></span>
+                                <select name="Linhas[0].TipoTransporte.Id" onchange="ObterRotas(this.value)" id="lstTipo">
+                                    <option value="0">Selecione o tipo de transporte:</option>
+                                    <option value="1">STCP</option>
+                                    <option value="2">CP</option>
+                                    <option value="3">Metro do Porto</option>
+                                </select>
+                            </span>
+                        </p>
+                    </div>
+                    <div class="field">
+                        <label class="label">Linhas</label>
+                        <p class="control has-icons-left">
+                            <span class="icon"><i class="fa-regular fa-line-chart"></i></span>
+                            <span class="select is-fullwidth">
+                                <select name="Linhas[0].Rota.Nome" onchange="ObterViagens(this.options[this.selectedIndex].text, document.getElementById('lstTipo').value);" id="lstRotas">
+                                    <option value="0">Selecione a linha:</option>
+                                </select>
+                            </span>
+                        </p>
+                    </div>
+                    <div class="field">
+                        <label class="label">Direção</label>
+                        <p class="control has-icons-left">
+                            <span class="icon"><i class="fa-regular fa-arrow-circle-right"></i></span>
+                            <span class="select is-fullwidth">
+                                <select name="Linhas[0].Viagem_Paragem.Viagem.Destino" onchange="ObterParagens(this.options[this.selectedIndex].text, document.getElementById('lstTipo').value, document.getElementById('lstRotas').options[document.getElementById('lstRotas').selectedIndex].text);" id="lstViagens">
+                                    <option value="0">Selecione a direção:</option>
+                                </select>
+                            </span>
+                        </p>
+                    </div>
+                    <div class="field">
+                        <label class="label">Estação</label>
+                        <p class="control has-icons-left">
+                            <span class="icon"><i class="fa-regular fa-timeline"></i></span>
+                            <span class="select is-fullwidth">
+                                <select name="Linhas[0].Viagem_Paragem.Paragem.NomeParagem" id="lstParagens">
+                                    <option value="0">Selecione a estação:</option>
+                                </select>
+                            </span>
+                        </p>
+                    </div>
+                    <div class="field">
+                        <label class="label">Horário</label>
+                        <div class="field">
+                            <label class="label">Horário</label>
+                            <div class="control has-icons-left">
+                                <span class="icon"><i class="fa-regular fa-clock"></i></span>
+                                <input class="input" name="Linhas[0].Viagem_Paragem.DataPartida" type="text"/>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="field">
+                        <label class="label">Recomendação</label>
+                        <p class="control has-icons-left">
+                            <span class="select is-fullwidth">
+                                <span class="icon"><i class="fa-regular fa-list-1-2"></i></span>
+                                <select name="Sequencia" >
+                                    <option value="1">Primeira</option>
+                                    <option value="2">Segunda</option>
+                                    <option value="3">Terceira</option>
+                                </select>
+                            </span>
+                        </p>
+                    </div>
+                </div>
+            </section>
+            <footer class="modal-card-foot">
+                <div class="field is-grouped">
+                    <button type="submit" class="button is-info is-large is-fullwidth" style="width: 100%">
+                        <span class="icon"><i class="fa-regular fa-floppy-disk"></i></span>
+                        <span>Guardar</span>
+                    </button>
+                    <button type="button" class="button is-large is-fullwidth is-danger" style="width: 100%" onclick="Bulma('#modalRecomendacao').modal().close();">
+                        <span class="icon"><i class="fa-regular fa-circle-xmark"></i></span>
+                        <span>Fechar</span>
+                    </button>
+                </div>
+            </footer>
+        </div>
+    </form>
+</div>
+
+<div id="modalRecomendacaoManual" class="modal">
+    <div class="modal-background"></div>
+    <form action="/Congressos/@Model.Congresso.Id/Congregacao/@Model.Id/Recomendacao" method="post">
+        <div class="modal-card">
+            <header class="modal-card-head">
+                <p class="modal-card-title">
+                    <span class="icon">
+                        <i class="fas fa-circle-plus"></i>
+                    </span>
+                    <span>Recomendacao</span>
+                </p>
+                <button type="button" class="delete" aria-label="close"></button>
+            </header>
+            <section class="modal-card-body">
+                <div id="transportesContainer">
                         <div class="field">
                             <label class="label">Tipo de Transporte</label>
-                            <p class="control has-icons-left">
-                                <span class="select is-fullwidth">
-                                    <select name="Linhas[0].Tipo" onchange="ObterRotas(this.value, this.closest('.transporte-group').getAttribute('data-index'));" class="lstTipo">
-                                        <option value="0">Selecione o tipo de transporte:</option>
-                                        <option value="1">STCP</option>
-                                        <option value="2">CP</option>
-                                        <option value="3">Metro do Porto</option>
-                                    </select>
-                                </span>
-                            </p>
+                            <div class="control has-icons-left">
+                                <span class="icon"><i class="fa-regular fa-train"></i></span>
+                                <input class="input" name="Linhas[0].TipoTransporte.Nome" type="text"/>
+                            </div>
                         </div>
                         <div class="field">
                             <label class="label">Linhas</label>
-                            <p class="control has-icons-left">
-                                <span class="select is-fullwidth">
-                                    <select name="Linhas.[0].Rota" onchange="ObterViagens(this.options[this.selectedIndex].text, this.closest('.transporte-group').getAttribute('data-index'), this.closest('.lstTipo').value);" class="lstRotas">
-                                        <option value="0">Selecione a linha:</option>
-                                    </select>
-                                </span>
-                            </p>
+                            <div class="control has-icons-left">
+                                <span class="icon"><i class="fa-regular fa-line-chart"></i></span>
+                                <input class="input" name="Linhas[0].Rota.Nome" type="text"/>
+                            </div>
                         </div>
                         <div class="field">
                             <label class="label">Direção</label>
-                            <p class="control has-icons-left">
-                                <span class="select is-fullwidth">
-                                    <select name="Linhas[0].Viagem" onchange="ObterParagens(this.options[this.selectedIndex].text, this.closest('.transporte-group').getAttribute('data-index'), this.closest('.lstTipo').value);" class="lstViagens">
-                                        <option value="0">Selecione a direção:</option>
-                                    </select>
-                                </span>
-                            </p>
+                            <div class="control has-icons-left">
+                                <span class="icon"><i class="fa-regular fa-arrow-circle-right"></i></span>
+                                <input class="input" name="Linhas[0].Viagem_Paragem.Viagem.Destino" type="text" />
+                            </div>
                         </div>
                         <div class="field">
                             <label class="label">Estação</label>
-                            <p class="control has-icons-left">
-                                <span class="select is-fullwidth">
-                                    <select name="Linhas[0].Paragem" onchange="ObterHorarios(this.options[this.selectedIndex].text, this.closest('.transporte-group').getAttribute('data-index'), this.closest('.lstTipo').value);" class="lstParagens">
-                                        <option value="0">Selecione a estação:</option>
-                                    </select>
-                                </span>
-                            </p>
+                            <div class="control has-icons-left">
+                                <span class="icon"><i class="fa-regular fa-timeline"></i></span>
+                                <input class="input" name="Linhas[0].Viagem_Paragem.Paragem.NomeParagem" type="text" />
+                            </div>
                         </div>
                         <div class="field">
                             <label class="label">Horário</label>
+                            <div class="control has-icons-left">
+                                <span class="icon"><i class="fa-regular fa-clock"></i></span>
+                                <input class="input" name="Linhas[0].Viagem_Paragem.DataPartida" type="text"/>
+                            </div>
+                        </div>
+                        <div class="field">
+                            <label class="label">Recomendação</label>
                             <p class="control has-icons-left">
                                 <span class="select is-fullwidth">
-                                    <select name="Linhas[0].Viagem_Paragem" class="lstHorarios">
-                                        <option value="0">Selecione o horário:</option>
+                                    <span class="icon"><i class="fa-regular fa-list-1-2"></i></span>
+                                    <select name="Sequencia" >
+                                        <option value="1">Primeira</option>
+                                        <option value="2">Segunda</option>
+                                        <option value="3">Terceira</option>
                                     </select>
                                 </span>
                             </p>
                         </div>
                     </div>
-                    <hr/>
-                </div>
-                
-                <button type="button" class="button is-link" onclick="AdicionarTransporte()">Adicionar Transbordo</button>
             </section>
             <footer class="modal-card-foot">
-                <button type="submit" class="button is-info is-large is-fullwidth">
+                <div class="field is-grouped">
+                <button type="submit" class="button is-info is-large is-fullwidth" style="width: 100%">
                     <span class="icon"><i class="fa-regular fa-floppy-disk"></i></span>
                     <span>Guardar</span>
                 </button>
-                <button type="button" class="button is-large is-fullwidth is-danger" onclick="Bulma('#modalRecomendacao').modal().close();">
+                <button type="button" class="button is-large is-fullwidth is-danger" style="width: 100%" onclick="Bulma('#modalRecomendacao').modal().close();">
                     <span class="icon"><i class="fa-regular fa-circle-xmark"></i></span>
                     <span>Fechar</span>
                 </button>
+                </div>
             </footer>
         </div>
     </form>
 </div>
 
 <script>
-    let transporteIndex = 1;
 
-    function AdicionarTransporte() {
-        const container = document.getElementById('transportesContainer');
-        const newGroup = document.querySelector('.transporte-group').cloneNode(true);
-        newGroup.setAttribute('data-index', transporteIndex);
-
-        // Atualiza nomes e IDs dos selects no novo grupo
-        newGroup.querySelectorAll('select').forEach(select => {
-            const name = select.getAttribute('name');
-            const newName = name.replace(/\d+/, transporteIndex);
-            select.setAttribute('name', newName);
-            select.value = "0";
-            container.querySelectorAll('select').forEach(select => select.name = select.name.replace(/\[\d+\]/, `[${transporteIndex}]`));
-
-        });
-
-        container.appendChild(newGroup);
-        transporteIndex++;
-    }
-
-    function ObterRotas(id, idGrupo) {
-        $('#transportesContainer').find(`.transporte-group[data-index="${idGrupo}"] .lstRotas`).empty();
+    function ObterRotas(id) {
+        document.getElementById('lstRotas').innerHTML = '';
         $.ajax({
             url: '/Congressos/@Model.Congresso.Id/Tipo/' + id + '/Rotas',
             type: 'GET',
             success: function(data) {
-                const selectRotas = $('#transportesContainer').find(`.transporte-group[data-index="${idGrupo}"] .lstRotas`);
-                selectRotas.append('<option value="0">Selecione uma linha</option>');
+                $('#lstRotas').append('<option value="0">Selecione uma linha</option>');
                 $.each(data, function(index, r) {
-                    selectRotas.append('<option value="' + r.id + '">' + r.nome + '</option>');
+                    $('#lstRotas').append('<option value="' + r.nome + '">' + r.nome + '</option>');
                 });
             }
         });
     }
 
-    function ObterViagens(id, idGrupo, tipoTransporte) {
-        $('#transportesContainer').find(`.transporte-group[data-index="${idGrupo}"] .lstViagens`).empty();
+    function ObterViagens(id, tipoTransporte) {
+        document.getElementById('lstViagens').innerHTML = '';
         $.ajax({
             url: '/Congressos/@Model.Congresso.Id/Tipo/' + tipoTransporte + '/Rotas/' + id + '/Viagens',
             type: 'GET',
             success: function(data) {
-                const selectViagens = $('#transportesContainer').find(`.transporte-group[data-index="${idGrupo}"] .lstViagens`);
-                selectViagens.append('<option value="0">Selecione um destino</option>');
+                $('#lstViagens').append('<option value="0">Selecione um destino</option>');
                 $.each(data, function(index, v) {
-                    selectViagens.append('<option value="' + v.id + '">' + v.destino + '</option>');
+                    $('#lstViagens').append('<option value="' + v.destino + '">' + v.destino + '</option>');
                 });
             }
         });
     }
 
-    function ObterParagens(id, idGrupo, rota) {
-        $('#transportesContainer').find(`.transporte-group[data-index="${idGrupo}"] .lstParagens`).empty();
+    function ObterParagens(id, tipoTransporte, rota) {
+        document.getElementById('lstParagens').innerHTML = '';
+        
         $.ajax({
-            url: '/Congressos/@Model.Congresso.Id/Tipo/' + rota.tipo + '/Rotas/' + rota.id + '/Viagens/' + id + '/Paragens',
+            url: '/Congressos/@Model.Congresso.Id/Tipo/' + tipoTransporte + '/Rotas/' + rota + '/Viagens/' + id + '/Paragens',
             type: 'GET',
             success: function(data) {
-                const selectParagens = $('#transportesContainer').find(`.transporte-group[data-index="${idGrupo}"] .lstParagens`);
-                selectParagens.append('<option value="0">Selecione uma estação</option>');
+                $('#lstParagens').append('<option value="0">Selecione uma estação</option>');
                 $.each(data, function(index, v) {
-                    selectParagens.append('<option value="' + v.id + '">' + v.nomeParagem + '</option>');
+                    $('#lstParagens').append('<option value="' + v.nomeParagem + '">' + v.nomeParagem + '</option>');
                 });
             }
         });
     }
 
-    function ObterHorarios(id, idGrupo, direcao, rota, tipoTransporte) {
-        $('#transportesContainer').find(`.transporte-group[data-index="${idGrupo}"] .lstHorarios`).empty();
+    function ObterHorarios(id, tipoTransporte, rota, direcao) {
+        document.getElementById('lstHorarios').innerHTML = '';
+        
         $.ajax({
             url: '/Congressos/@Model.Congresso.Id/Tipo/' + tipoTransporte + '/Rotas/' + rota + '/Viagens/' + direcao + '/Horarios/' + id,
             type: 'GET',
             success: function(data) {
-                const selectHorarios = $('#transportesContainer').find(`.transporte-group[data-index="${idGrupo}"] .lstHorarios`);
-                selectHorarios.append('<option value="0">Selecione um horário</option>');
+                $('#lstHorarios').append('<option value="0">Selecione um horário</option>');
                 $.each(data, function(index, h) {
-                    selectHorarios.append('<option value="' + h.id + '">' + moment(h.dataPartida).format('HH:mm') + '</option>');
+                    $('#lstHorarios').append('<option value="' +moment(h.dataPartida).format('HH:mm') + '">' + moment(h.dataPartida).format('HH:mm') + '</option>');
                 });
+            }
+        });
+    }
+
+    function ApagarRecomendacao(id) {
+        $.ajax({
+            url: '/Congressos/@Model.Congresso.Id/Congregacao/@Model.Id/Recomendacao/' + id,
+            type: 'DELETE',
+            success: function(data) {
+                window.location.reload();
             }
         });
     }
