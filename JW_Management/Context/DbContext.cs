@@ -1641,8 +1641,8 @@
                         Recomendacoes = LstRecomendacoes.Where(r => r.IdCongregacao==result["IdCongregacao"]).ToList()
                     };
                     
-                    if (LstLocais.Any(l => l.Latitude == c.Latitude && l.Longitude == c.Longitude))
-                        LstLocais.First(l => l.Latitude == c.Latitude && l.Longitude == c.Longitude).Congregacoes.Add(c);
+                    if (LstLocais.Any(l => l.Latitude.Trim() == c.Latitude.Trim() && l.Longitude.Trim() == c.Longitude.Trim()))
+                        LstLocais.First(l => l.Latitude.Trim() == c.Latitude.Trim() && l.Longitude.Trim() == c.Longitude.Trim()).Congregacoes.Add(c);
                     else
                     {
                         LstLocais.Add(new Locais()
