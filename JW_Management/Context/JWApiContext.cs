@@ -224,30 +224,27 @@ public class JWApiContext
         return string.Empty;
     }
     
-    public List<Literatura> ObterPeriodicos(string ano, Literatura tLiteratura)
+    // Um só HttpClient e cache em memória: os 12 números de um ano verificam-se em paralelo e uma vez por algumas horas.
+    private static readonly HttpClient Http = new() { Timeout = TimeSpan.FromSeconds(6) };
+    private static readonly System.Collections.Concurrent.ConcurrentDictionary<string, (bool Existe, DateTime Quando)> CacheImagens = new();
+
+    private static async Task<bool> ImagemExiste(string url)
     {
-        List<Literatura> LstLiteratura = new List<Literatura>();
+        if (CacheImagens.TryGetValue(url, out var c) && DateTime.UtcNow - c.Quando < (c.Existe ? TimeSpan.FromHours(12) : TimeSpan.FromMinutes(15))) return c.Existe;
         try
         {
-            for (int i = 1; i <= 12; i++)
-            {
-                Literatura l = new Literatura() {Data=$"{ano}{i:D2}", Referencia = tLiteratura.Referencia, Descricao = $"{tLiteratura.Descricao} - Nº{i} ({ano})", Tipo = new TipoLiteratura() {Id = 7}};
-                using HttpClient client = new HttpClient();
-                
-                var response = client.GetAsync(l.URL).Result;
+            using var r = await Http.GetAsync(url, HttpCompletionOption.ResponseHeadersRead);
+            var ok = r.IsSuccessStatusCode;
+            CacheImagens[url] = (ok, DateTime.UtcNow);
+            return ok;
+        }
+        catch (Exception e) { Console.WriteLine($"[Periódicos] {url}: {e.Message}"); return false; } // falha de rede não fica em cache
+    }
 
-                if (response.IsSuccessStatusCode)
-                {
-                    LstLiteratura.Add(l);
-                }
-                
-            }
-        }
-        catch (Exception e)
-        {
-            Console.WriteLine(e);
-        }
-        
-        return LstLiteratura;
+    public async Task<List<Literatura>> ObterPeriodicos(string ano, Literatura tLiteratura)
+    {
+        var candidatos = Enumerable.Range(1, 12).Select(i => new Literatura { Data = $"{ano}{i:D2}", Referencia = tLiteratura.Referencia, Descricao = $"{tLiteratura.Descricao} - Nº{i} ({ano})", Tipo = new TipoLiteratura { Id = 7 } }).ToList();
+        var existe = await Task.WhenAll(candidatos.Select(l => ImagemExiste(l.URL)));
+        return candidatos.Where((_, i) => existe[i]).ToList();
     }
 }

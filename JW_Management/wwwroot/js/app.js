@@ -170,11 +170,11 @@
     });
 
     // ---------- Menus da navbar ----------
-    // Em ecrãs largos o menu abre ao passar o rato (CSS) e também ao clicar/tocar, para funcionar em tablets.
+    // Em ecrãs largos o menu abre ao passar o rato (CSS); em todos abre também ao clicar/tocar (acordeão no telemóvel).
     document.addEventListener('click', function (e) {
         const link = e.target.closest('.app-nav .has-dropdown > .navbar-link');
         $$('.app-nav .has-dropdown.is-active').forEach(function (d) { if (!link || d !== link.parentElement) d.classList.remove('is-active'); });
-        if (link && window.matchMedia('(min-width: 1024px)').matches) { e.preventDefault(); link.parentElement.classList.toggle('is-active'); }
+        if (link) { e.preventDefault(); link.parentElement.classList.toggle('is-active'); }
     });
 
     // Atualiza os números de uma barra de estatísticas: App.stats({ sPub: 12, ... }).
@@ -316,6 +316,32 @@
         return (m ? m[m.length - 1] : t).replace(/^\s*cookie:\s*/i, '').replace(/\s*\n\s*/g, ' ').trim();
     };
 
-    // Seleccionar o publicador "Loja" (id definido pelo ecrã).
+    // Sessão do Hourglass guardada no servidor (em memória, algumas horas): se existir, esconde o passo de colar o cURL.
+    // bloco = elemento com os passos e a caixa de texto; devolve a promessa do estado.
+    App.hgSessao = function (bloco) {
+        const b = $(bloco); App.hgAtiva = false;
+        return fetch('/Reunioes/HourglassSessao').then(function (r) { return r.ok ? r.json() : { ativa: false }; }).then(function (s) {
+            App.hgAtiva = s.ativa; if (!s.ativa) return s;
+            b.hidden = true;
+            const n = document.createElement('div'); n.className = 'notice is-ok hg-sessao';
+            n.innerHTML = '<span class="icon"><i class="fa-solid fa-circle-check"></i></span><div>Sessão do Hourglass guardada até às <b></b>. <button type="button" class="button is-small is-light" data-hg="outra">Usar outra</button></div>';
+            $('b', n).textContent = s.ate; b.parentNode.insertBefore(n, b);
+            n.addEventListener('click', function (e) {
+                if (!e.target.closest('[data-hg]')) return;
+                fetch('/Reunioes/HourglassSessao?terminar=true', { method: 'DELETE' }); App.hgAtiva = false; b.hidden = false; n.remove();
+            });
+            return s;
+        }).catch(function () { return { ativa: false }; });
+    };
+    // Cookie a enviar: '' = usar a sessão guardada; null = inválida (já mostrou o erro no campo).
+    App.hgCookie = function (campo) {
+        const bruto = $(campo).value.trim();
+        if (!bruto) return App.hgAtiva ? '' : (App.campo(campo, 'Cole o pedido ou a cookie primeiro.'), null);
+        const c = App.extrairCookie(bruto);
+        if (!/hglogin=/.test(c) || !/X-Hourglass-XSRF-Token=/.test(c)) return App.campo(campo, 'Não encontrei a sessão do Hourglass (hglogin e token XSRF). Use «Copiar como cURL».'), null;
+        return c;
+    };
+
+    // Seleccionar o publicador «Congregação» (id definido pelo ecrã).
     App.lerInt = function (sel) { return parseInt($(sel).value, 10) || 0; };
 })();

@@ -17,9 +17,6 @@
             <a class="button is-info is-light" href="~/Reunioes/Programa">
                 <span class="icon"><i class="fa-solid fa-file-pdf"></i></span><span>Programa e PDF</span>
             </a>
-            <button type="button" class="button is-info is-light" data-open="modalCriar">
-                <span class="icon"><i class="fa-solid fa-calendar-plus"></i></span><span>Criar semana</span>
-            </button>
         </div>
     </div>
 
@@ -68,28 +65,7 @@
     <div id="vazio" class="empty-state" hidden>
         <span class="icon"><i class="fa-solid fa-calendar-days"></i></span>
         <strong>Não há semanas para mostrar</strong>
-        Importe as reuniões do Hourglass ou crie uma semana.
-    </div>
-</div>
-
-<div id="modalCriar" class="modal" role="dialog" aria-modal="true" aria-labelledby="tCr">
-    <div class="modal-background"></div>
-    <div class="modal-card">
-        <header class="modal-card-head">
-            <p class="modal-card-title" id="tCr"><span class="icon"><i class="fa-solid fa-calendar-plus"></i></span><span>Criar semana</span></p>
-            <button type="button" class="delete" aria-label="Fechar" data-close></button>
-        </header>
-        <section class="modal-card-body">
-            <div class="field">
-                <label class="label" for="txtData">Uma data da semana</label>
-                <input type="date" class="input" id="txtData" value="@DateTime.Now.ToString("yyyy-MM-dd")">
-                <p class="field-hint">A semana é criada com todos os tipos de designação existentes.</p>
-            </div>
-        </section>
-        <footer class="modal-card-foot">
-            <button type="button" class="button" data-close>Cancelar</button>
-            <button type="button" class="button is-info" data-action="criar" data-submit><span class="icon"><i class="fa-solid fa-check"></i></span><span>Criar</span></button>
-        </footer>
+        Importe as reuniões do Hourglass.
     </div>
 </div>
 
@@ -102,6 +78,7 @@
         </header>
         <section class="modal-card-body">
             <div id="hgPasso1">
+                <div id="hgBloco">
                 <ol class="steps">
                     <li>Abra o <a href="https://app.hourglass-app.com/v2/page/app/scheduling/mm" target="_blank" rel="noopener">Hourglass</a> com a sessão iniciada (Agendamento, Reunião de meio de semana).</li>
                     <li>Prima <kbd>F12</kbd>, abra o separador <b>Rede</b> e recarregue a página.</li>
@@ -110,7 +87,8 @@
                 <div class="field">
                     <label class="label" for="hgCookie">Pedido copiado (ou só a cookie)</label>
                     <textarea class="textarea" id="hgCookie" rows="3" spellcheck="false" autocomplete="off" placeholder="curl 'https://app.hourglass-app.com/...' -H 'Cookie: ...'"></textarea>
-                    <p class="field-hint">Só se fazem leituras no Hourglass. A cookie não é guardada e deixa de servir quando terminar a sessão.</p>
+                    <p class="field-hint">Só se fazem leituras no Hourglass. A sessão fica guardada no servidor (só em memória) durante 6 horas.</p>
+                </div>
                 </div>
                 <div class="form-grid">
                     <div class="field"><label class="label" for="hgDe">De</label><input type="date" class="input" id="hgDe"></div>
@@ -136,13 +114,6 @@
         aoAplicar: v => App.stats({ sTot: v.length, sOk: v.filter(i => i.dataset.type === 'ok').length })
     });
 
-    App.on('criar', btn => App.run(btn, async () => {
-        const d = App.$('#txtData').value; if (!d) return App.campo('#txtData', 'Indique uma data.');
-        const r = await fetch('/Reunioes/Reuniao', { method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded' }, body: new URLSearchParams({ data: d }) });
-        if (!r.ok) throw new Error('HTTP ' + r.status);
-        location.href = r.url; // o servidor redireciona para a reunião criada
-    }, 'Não foi possível criar a semana.'));
-
     App.on('apagar', async btn => {
         const it = btn.closest('.item');
         if (!await App.confirm({ title: 'Apagar semana', text: 'Apagar «' + App.$('.name', it).textContent.trim() + '» e todas as designações associadas?', ok: 'Apagar' })) return;
@@ -157,7 +128,7 @@
         const fim = new Date(seg); fim.setDate(fim.getDate() + 5 * 7 - 1);
         App.$('#hgDe').value = iso(seg); App.$('#hgAte').value = iso(fim);
 
-        let prev = null;
+        let prev = null; App.hgSessao('#hgBloco');
         let mapa = {}; try { mapa = JSON.parse(localStorage.getItem('hgMapa') || '{}'); } catch (e) { }
         const postJson = async (url, corpo) => {
             const r = await fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json', 'X-Requested-With': 'XMLHttpRequest' }, body: JSON.stringify(corpo) });
@@ -166,13 +137,11 @@
         };
 
         App.on('hgObter', btn => App.run(btn, async () => {
-            const bruto = App.$('#hgCookie').value.trim(); if (!bruto) return App.campo('#hgCookie', 'Cole o pedido ou a cookie primeiro.');
-            const cookie = App.extrairCookie(bruto);
-            if (!/hglogin=/.test(cookie) || !/X-Hourglass-XSRF-Token=/.test(cookie)) return App.campo('#hgCookie', 'Não encontrei a sessão do Hourglass (hglogin e token XSRF). Copie o pedido completo (o que tem o intervalo de datas no nome) com «Copiar como cURL».');
+            const cookie = App.hgCookie('#hgCookie'); if (cookie === null) return;
             const r = await fetch('/Reunioes/HourglassPreview', { method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
                 body: new URLSearchParams({ cookie: cookie, de: App.$('#hgDe').value, ate: App.$('#hgAte').value }) });
-            if (!r.ok) { notifyError(r.status === 401 ? 'A sessão do Hourglass expirou. Copie o pedido outra vez.' : (await r.text()) || 'Não foi possível obter os dados do Hourglass.'); return; }
-            prev = await r.json(); App.$('#hgCookie').value = '';
+            if (!r.ok) { notifyError(r.status === 401 ? 'A sessão do Hourglass expirou. Cole o pedido outra vez.' : (await r.text()) || 'Não foi possível obter os dados do Hourglass.'); return; }
+            prev = await r.json();
             desenhar();
         }, 'Não foi possível obter os dados do Hourglass.'));
 

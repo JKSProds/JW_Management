@@ -4,8 +4,8 @@ using Newtonsoft.Json.Linq;
 
 namespace JW_Management.Models;
 
-// Cliente do Hourglass só para LEITURA: expõe apenas GET, usa a sessão que o utilizador colou
-// e não a guarda nem a regista. Os endereços são os que a própria aplicação web do Hourglass usa.
+// Cliente do Hourglass só para LEITURA: expõe apenas GET e usa a sessão que o utilizador colou.
+// A cookie fica só em memória (nunca na base de dados nem nos registos), por congregação, durante algumas horas. Os endereços são os que a própria aplicação web do Hourglass usa.
 public record HgUtilizador(int Id, string Nome, string Primeiro, string Ultimo, int Grupo = 0, string Preferido = "");
 
 public class HourglassContext
@@ -15,6 +15,18 @@ public class HourglassContext
 
     // O JSON «null» chega como JValue (não como null do C#): aceder a um sub-campo dele lançaria exceção.
     public static JToken? Sub(JToken? t, string campo) => t is JObject o ? o[campo] : null;
+
+    private static readonly TimeSpan Duracao = TimeSpan.FromHours(6);
+    private static readonly System.Collections.Concurrent.ConcurrentDictionary<int, (string Cookie, DateTime Expira)> Sessoes = new();
+
+    // Cookie colada válida: guarda-a e usa-a. Sem cookie colada: usa a guardada, se ainda não expirou. null = não há sessão.
+    public string? Resolver(int tenant, string? colada)
+    {
+        if (CookieValida(colada)) { Sessoes[tenant] = (colada!, DateTime.UtcNow + Duracao); return colada; }
+        return Sessoes.TryGetValue(tenant, out var s) && s.Expira > DateTime.UtcNow ? s.Cookie : null;
+    }
+    public DateTime? SessaoAte(int tenant) => Sessoes.TryGetValue(tenant, out var s) && s.Expira > DateTime.UtcNow ? s.Expira.ToLocalTime() : null;
+    public void Terminar(int tenant) => Sessoes.TryRemove(tenant, out _);
 
     public static bool CookieValida(string? c) =>
         !string.IsNullOrWhiteSpace(c) && c.Contains("hglogin=") && Regex.IsMatch(c, @"X-Hourglass-XSRF-Token=[^;\s]+");

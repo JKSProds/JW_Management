@@ -55,28 +55,31 @@
             <button type="button" class="delete" aria-label="Fechar" data-close></button>
         </header>
         <section class="modal-card-body">
-            <div class="field">
-                <label class="label" for="periodico">Publicação</label>
-                <div class="control has-icons-left">
-                    <div class="select is-fullwidth">
-                        <select id="periodico" asp-items="@(new SelectList(ViewBag.Periodicos, "Value", "Text"))"></select>
+            <div class="per-filtros">
+                <div class="field">
+                    <label class="label" for="periodico">1. Publicação</label>
+                    <div class="control has-icons-left">
+                        <div class="select is-fullwidth">
+                            <select id="periodico" asp-items="@(new SelectList(ViewBag.Periodicos, "Value", "Text"))"></select>
+                        </div>
+                        <span class="icon is-left" id="iconSelect"><i class="fa-solid fa-newspaper"></i></span>
                     </div>
-                    <span class="icon is-left" id="iconSelect"><i class="fa-solid fa-newspaper"></i></span>
+                </div>
+                <div class="field">
+                    <label class="label" for="ano">2. Ano</label>
+                    <div class="stepper">
+                        <button type="button" data-action="anoMenos" aria-label="Ano anterior"><i class="fa-solid fa-minus"></i></button>
+                        <input type="number" class="input" id="ano" value="@DateTime.Now.Year" readonly>
+                        <button type="button" data-action="anoMais" aria-label="Ano seguinte"><i class="fa-solid fa-plus"></i></button>
+                    </div>
                 </div>
             </div>
             <div class="field">
-                <label class="label" for="ano">Ano</label>
-                <div class="stepper">
-                    <button type="button" data-action="anoMenos" aria-label="Ano anterior"><i class="fa-solid fa-minus"></i></button>
-                    <input type="number" class="input" id="ano" value="@DateTime.Now.Year" readonly>
-                    <button type="button" data-action="anoMais" aria-label="Ano seguinte"><i class="fa-solid fa-plus"></i></button>
-                </div>
-            </div>
-            <div class="field">
-                <label class="label" for="txtQtdPeriodico">Quantidade</label>
+                <label class="label" for="txtQtdPeriodico">3. Exemplares a dar entrada (por número)</label>
                 <partial name="_Stepper" model='("txtQtdPeriodico", 1, 1)' />
             </div>
-            <div id="divListaPeriodicos" class="items mt-4"></div>
+            <label class="label">4. Escolha o número</label>
+            <div id="divListaPeriodicos" class="items per-lista"></div>
         </section>
         <footer class="modal-card-foot">
             <button type="button" class="button" data-close>Fechar</button>
@@ -124,7 +127,7 @@
     let pedido = 0;
     async function obterPeriodicos() {
         const meu = ++pedido, lista = App.$('#divListaPeriodicos'), btnManual = App.$('#btnCriarPeriodico'), icon = App.$('#iconSelect');
-        btnManual.hidden = true; lista.innerHTML = '<p class="field-hint">A obter periódicos…</p>';
+        btnManual.hidden = true; lista.innerHTML = '<p class="field-hint"><i class="fa-solid fa-circle-notch fa-spin"></i> A procurar números…</p>';
         icon.innerHTML = '<i class="fa-solid fa-circle-notch fa-spin"></i>';
         try {
             const dados = await App.api('GET', '/Literatura/PesquisarPeriodicos/', { ano: App.$('#ano').value, tipo: App.$('#periodico').value });
@@ -137,11 +140,16 @@
             }
             dados.forEach(o => {
                 const el = document.createElement('article'); el.className = 'item';
-                el.innerHTML = '<div class="thumb"><img alt="" loading="lazy"></div><div class="main"><div class="name"></div></div>' +
-                    '<div class="side"><button type="button" class="button is-info"><span class="icon"><i class="fa-solid fa-arrow-down-to-line"></i></span><span>Adicionar</span></button></div>';
+                el.innerHTML = '<div class="thumb"><img alt="" loading="lazy"></div><div class="main"><div class="name"></div><div class="meta"></div></div>' +
+                    '<div class="side"><button type="button" class="button is-info"><span class="icon"><i class="fa-solid fa-plus"></i></span><span>Adicionar</span></button></div>';
                 App.$('img', el).src = o.url; App.$('.name', el).textContent = o.descricao;
+                let n = 0;
                 App.$('button', el).addEventListener('click', e => App.run(e.currentTarget, async () => {
-                    await criarPeriodico(o.referencia, o.descricao, o.data, App.lerInt('#txtQtdPeriodico')); notify('Periódico registado.');
+                    const q = App.lerInt('#txtQtdPeriodico');
+                    await criarPeriodico(o.referencia, o.descricao, o.data, q);
+                    n += q; el.classList.add('is-added');
+                    App.$('.meta', el).innerHTML = '<span><i class="fa-solid fa-circle-check"></i> ' + n + ' exemplar(es) adicionado(s)</span>';
+                    notify('Periódico registado.');
                 }, 'Não foi possível registar o periódico.'));
                 lista.appendChild(el);
             });

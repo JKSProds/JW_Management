@@ -1,4 +1,4 @@
-﻿using System.Security.Cryptography;
+using System.Security.Cryptography;
 using Microsoft.AspNetCore.Mvc;
 using JW_Management.Models;
 using Microsoft.AspNetCore.Mvc.Rendering;
@@ -8,13 +8,13 @@ using Microsoft.AspNetCore.Authorization;
 namespace JW_Management.Controllers
 {
 
-    public class PublicadoresController(DbContext _dbContext, MailContext _mailContext, HourglassSincronizador _sync) : Controller
+    public class PublicadoresController(DbContext _dbContext, MailContext _mailContext, HourglassSincronizador _sync, HourglassContext _hg) : Controller
     {
         [Authorize(Roles = "Admin, Assistente, Coordenador, Secretario, Servico")]
         [HttpGet]
         public IActionResult Index()
         {
-            return View(_dbContext.ObterPublicadores(false).OrderBy(p => p.Nome));
+            return View(_dbContext.ObterPublicadores(true).OrderBy(p => p.Nome));
         }
 
         [Authorize(Roles = "Admin, Assistente, Coordenador, Secretario, Servico")]
@@ -76,14 +76,15 @@ namespace JW_Management.Controllers
             return _dbContext.ApagarPublicador(id) ? StatusCode(200) : StatusCode(500);
         }
 
-        // Sincronização com o Hourglass: só leitura no Hourglass; a cookie é usada neste pedido e não é guardada.
+        // Sincronização com o Hourglass: só leitura no Hourglass; a sessão fica só em memória durante algumas horas.
         [Authorize(Roles = "Admin, Assistente, Coordenador, Secretario, Servico")]
         [HttpPost]
         public async Task<IActionResult> HourglassPreview(string cookie)
         {
-            if (!HourglassContext.CookieValida(cookie)) return BadRequest("Cookie inválida: falta «hglogin» ou o token XSRF.");
+            cookie = _hg.Resolver(User.ObterTenant(), cookie)!;
+            if (cookie == null) return BadRequest("Sem sessão do Hourglass: cole o pedido copiado (falta «hglogin» ou o token XSRF).");
             try { return Json(await _sync.Pre(cookie)); }
-            catch (UnauthorizedAccessException e) { return Unauthorized(e.Message); }
+            catch (UnauthorizedAccessException e) { _hg.Terminar(User.ObterTenant()); return Unauthorized(e.Message); }
             catch (HttpRequestException) { return StatusCode(502, "Não foi possível obter os dados do Hourglass."); }
         }
 

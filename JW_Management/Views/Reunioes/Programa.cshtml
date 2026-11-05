@@ -143,6 +143,7 @@
         </header>
         <section class="modal-card-body">
             <p class="modal-body-text mb-4">Lê as reuniões, o serviço de campo e o testemunho público deste mês (só leitura) e guarda-os. Depois, os PDF geram-se sem pedir a cookie.</p>
+            <div id="pgBloco">
             <ol class="steps">
                 <li>Abra o <a href="https://app.hourglass-app.com/v2/page/app/scheduling/mm" target="_blank" rel="noopener">Hourglass</a> com a sessão iniciada, prima <kbd>F12</kbd> e abra o separador <b>Rede</b>.</li>
                 <li>Num pedido cujo nome é um intervalo de datas (por exemplo <b>2026-11-01_2026-11-30</b>): botão direito, <b>Copiar</b>, <b>Copiar como cURL</b>, e cole abaixo.</li>
@@ -150,7 +151,8 @@
             <div class="field">
                 <label class="label" for="pgCookie">Pedido copiado (ou só a cookie)</label>
                 <textarea class="textarea" id="pgCookie" rows="3" spellcheck="false" autocomplete="off" placeholder="curl 'https://app.hourglass-app.com/...' -H 'Cookie: ...'"></textarea>
-                <p class="field-hint">A cookie não é guardada.</p>
+                <p class="field-hint">A sessão fica guardada no servidor (só em memória) durante 6 horas, para não ter de colar o pedido outra vez.</p>
+            </div>
             </div>
         </section>
         <footer class="modal-card-foot">
@@ -173,13 +175,13 @@
         window.open('/Reunioes/ProgramaPdf?' + q, '_blank');
     });
 
+    App.hgSessao('#pgBloco');
+
     App.on('sync', btn => App.run(btn, async () => {
-        const bruto = App.$('#pgCookie').value.trim(); if (!bruto) return App.campo('#pgCookie', 'Cole o pedido ou a cookie primeiro.');
-        const cookie = App.extrairCookie(bruto);
-        if (!/hglogin=/.test(cookie) || !/X-Hourglass-XSRF-Token=/.test(cookie)) return App.campo('#pgCookie', 'Não encontrei a sessão do Hourglass (hglogin e token XSRF). Use «Copiar como cURL».');
+        const cookie = App.hgCookie('#pgCookie'); if (cookie === null) return;
         const r = await fetch('/Reunioes/ProgramaSincronizar', { method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded' }, body: new URLSearchParams({ cookie: cookie, ano: ano, mes: mes }) });
-        if (!r.ok) { notifyError(r.status === 401 ? 'A sessão do Hourglass expirou. Copie o pedido outra vez.' : (await r.text()) || 'Não foi possível obter os dados do Hourglass.'); return; }
-        App.$('#pgCookie').value = ''; notify('Programa guardado.'); setTimeout(() => location.reload(), 700);
+        if (!r.ok) { notifyError(r.status === 401 ? 'A sessão do Hourglass expirou. Cole o pedido outra vez.' : (await r.text()) || 'Não foi possível obter os dados do Hourglass.'); return; }
+        notify('Programa guardado.'); setTimeout(() => location.reload(), 700);
     }, 'Não foi possível obter os dados do Hourglass.'));
 </script>
 }

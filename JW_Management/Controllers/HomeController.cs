@@ -70,7 +70,7 @@ namespace JW_Management.Controllers
         }
 
         [HttpGet]
-        public IActionResult Login(string ReturnUrl)
+        public IActionResult Login(string? ReturnUrl)
         {
             ViewData["ReturnUrl"] = ReturnUrl;
             return View();
@@ -79,7 +79,7 @@ namespace JW_Management.Controllers
         // A congregação deduz-se das credenciais: procura-se o utilizador em todas. Se existir em mais
         // do que uma, o ecrã pede para escolher (sem nunca reenviar a palavra-passe).
         [HttpPost]
-        public async Task<IActionResult> Login(Publicador p, int t, string ReturnUrl)
+        public async Task<IActionResult> Login(Publicador p, int t, string? ReturnUrl)
         {
             ViewData["ReturnUrl"] = ReturnUrl;
 

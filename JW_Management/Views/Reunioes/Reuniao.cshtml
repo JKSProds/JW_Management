@@ -8,17 +8,12 @@
         (0, "Tesouros da Palavra de Deus", "fa-gem"), (100, "Empenhe-se no ministério", "fa-people-arrows"), (200, "Viver como cristãos", "fa-hand-holding-heart"),
         (300, "Reunião de fim de semana", "fa-book"), (400, "Estudo de A Sentinela", "fa-book-open"), (500, "Responsabilidades", "fa-person-circle-check")
     };
-    var publicadores = ((IEnumerable<SelectListItem>)ViewBag.Publicadores).ToList();
-    var canticos = ((IEnumerable<SelectListItem>)ViewBag.Canticos).ToList();
 }
 
 <div class="container">
     <div class="page-head">
-        <div class="head-title"><div><h1>@Model.SemanaReuniao</h1></div></div>
+        <div class="head-title"><div><h1>@Model.SemanaReuniao</h1><p class="field-hint">Importado do Hourglass: para alterar, edite no Hourglass e importe de novo.</p></div></div>
         <div class="head-actions">
-            <button type="button" class="button is-info is-light" data-open="modalDesignacao">
-                <span class="icon"><i class="fa-solid fa-clipboard-list"></i></span><span>Adicionar designação</span>
-            </button>
             <a class="button is-info is-light" href="~/Reunioes">
                 <span class="icon"><i class="fa-solid fa-arrow-left"></i></span><span>Semanas</span>
             </a>
@@ -30,7 +25,7 @@
         <div class="empty-state">
             <span class="icon"><i class="fa-solid fa-clipboard-list"></i></span>
             <strong>Esta semana não tem designações</strong>
-            Não existem tipos de designação para a preencher. Importe as reuniões do Hourglass (cria os tipos) ou adicione uma designação.
+            Importe as reuniões do Hourglass para a preencher.
         </div>
     }
     else
@@ -38,18 +33,16 @@
     <div id="regiao">
         @await Html.PartialAsync("_Stats", new[] {
             ("fa-user-check", "Atribuídas", designacoes.Count(d => d.Atribuida) + " de " + designacoes.Count, "", designacoes.All(d => d.Atribuida) ? "is-ok" : ""),
-            ("fa-user-clock", "Por atribuir", designacoes.Count(d => !d.Atribuida).ToString(), "", designacoes.Any(d => !d.Atribuida) ? "is-warn" : ""),
-            ("fa-music", "Cânticos definidos", Model.Canticos.Any() ? Model.Canticos.Count(c => c.Id > 0) + " de " + Model.Canticos.Count : "Sem cânticos", "", "") })
+            ("fa-user-clock", "Por atribuir", designacoes.Count(d => !d.Atribuida).ToString(), "", designacoes.Any(d => !d.Atribuida) ? "is-warn" : "") })
 
         <div class="toolbar">
             <div class="chips" id="chipsRev" role="group" aria-label="Mostrar">
                 <button type="button" class="chip" data-vista="todas" aria-pressed="true">Todas</button>
                 <button type="button" class="chip" data-vista="falta" aria-pressed="false">Por atribuir</button>
             </div>
-            <span class="field-hint" id="autoGuardado">As alterações guardam-se sozinhas.</span>
         </div>
 
-        @if (Model.Canticos.Any())
+        @if (Model.Canticos.Any(c => c.Id > 0))
         {
         <section class="rev-secao">
             <h2 class="rev-titulo"><i class="fa-solid fa-music"></i> Cânticos</h2>
@@ -57,11 +50,8 @@
                 @for (var ci = 0; ci < Model.Canticos.Count; ci++)
                 {
                     var c = Model.Canticos[ci];
-                    <div class="rev-cantico"><span class="field-hint">@(ci == 0 ? "Início" : ci == 1 ? "Meio" : ci == 2 ? "Fim" : "Cântico " + (ci + 1))</span><div class="select">
-                        <select data-cantico="@c.Stamp" aria-label="Cântico">
-                            @foreach (var o in canticos) { <option value="@o.Value" selected="@(o.Value == c.Id.ToString())">@o.Text</option> }
-                        </select>
-                    </div></div>
+                    if (c.Id is null or 0) continue;
+                    <div class="rev-cantico"><span class="field-hint">@(ci == 0 ? "Início" : ci == 1 ? "Meio" : ci == 2 ? "Fim" : "Cântico " + (ci + 1))</span><strong>@c.Id@(string.IsNullOrWhiteSpace(c.Nome) || c.Nome == "N/D" ? "" : " · " + c.Nome)</strong></div>
                 }
             </div>
         </section>
@@ -78,29 +68,17 @@
                 {
                     var grupo = designacoes.Where(d => d.TipoDesignacao!.Id == item.TipoDesignacao!.Id && d.Local == item.Local).ToList();
                     var pendente = grupo.Any(u => !u.Atribuida);
-                    <article class="rev-linha @(pendente ? "is-falta" : "")" data-stamps="@string.Join(",", grupo.Select(g => g.Stamp))">
+                    <article class="rev-linha is-leitura @(pendente ? "is-falta" : "")">
                         <div class="rev-quem">
                             <div class="rev-nome">@item.TipoDesignacao!.Descricao @if (item.TipoDesignacao.Salas > 1) { <span class="tag is-light">@item.Local</span> }</div>
-                            <input class="input is-small tema" type="text" value="@item.NomeDesignacao" placeholder="Tema" aria-label="Tema de @item.TipoDesignacao.Descricao">
+                            @if (!string.IsNullOrWhiteSpace(item.NomeDesignacao) && item.NomeDesignacao != item.TipoDesignacao.Descricao) { <div class="field-hint">@item.NomeDesignacao</div> }
                         </div>
-                        <input class="input is-small minutos" type="number" min="0" value="@item.NMin" aria-label="Minutos" title="Minutos">
+                        <span class="num minutos-l">@(item.NMin > 0 ? item.NMin + " min" : "")</span>
                         <div class="rev-pessoas">
                             @foreach (var u in grupo)
                             {
-                                <div class="pessoa" data-stamp="@u.Stamp">
-                                    <div class="select">
-                                        <select class="pub" aria-label="Publicador">
-                                            @foreach (var p in publicadores) { <option value="@p.Value" selected="@(p.Value == u.Publicador!.Id.ToString())">@p.Text</option> }
-                                        </select>
-                                    </div>
-                                    <button type="button" class="button btn-icon is-danger-hover" data-action="apagarPessoa" aria-label="Remover publicador" title="Remover"><i class="fa-solid fa-user-minus"></i></button>
-                                </div>
+                                if (u.Atribuida) { <span class="pessoa-l">@u.Publicador!.Nome</span> } else { <span class="pessoa-l is-vazio">por atribuir</span> }
                             }
-                        </div>
-                        <div class="rev-acoes">
-                            <button type="button" class="button btn-icon" data-action="addPessoa" aria-label="Adicionar publicador" title="Adicionar publicador"><i class="fa-solid fa-user-plus"></i></button>
-                            <button type="button" class="button btn-icon is-danger-hover" data-action="apagarGrupo" aria-label="Apagar designação" title="Apagar designação"><i class="fa-solid fa-trash-can"></i></button>
-                            <span class="rev-ok" aria-hidden="true"><i class="fa-solid fa-check"></i></span>
                         </div>
                     </article>
                 }
@@ -111,103 +89,10 @@
     }
 </div>
 
-<div id="modalDesignacao" class="modal" role="dialog" aria-modal="true" aria-labelledby="tD">
-    <div class="modal-background"></div>
-    <div class="modal-card">
-        <header class="modal-card-head">
-            <p class="modal-card-title" id="tD"><span class="icon"><i class="fa-solid fa-clipboard-list"></i></span><span>Adicionar designação</span></p>
-            <button type="button" class="delete" aria-label="Fechar" data-close></button>
-        </header>
-        <section class="modal-card-body">
-            <div class="field">
-                <label class="label" for="txtIdTipo">Tipo</label>
-                <div class="select is-fullwidth"><select id="txtIdTipo" asp-items="@(new SelectList(ViewBag.Tipos, "Value", "Text"))"></select></div>
-            </div>
-            <div class="field">
-                <label class="label" for="txtLocal">Sala</label>
-                <div class="select is-fullwidth"><select id="txtLocal"><option value="Auditório">Auditório</option><option value="Sala 2">Sala 2</option></select></div>
-            </div>
-        </section>
-        <footer class="modal-card-foot">
-            <button type="button" class="button" data-close>Cancelar</button>
-            <button type="button" class="button is-info" data-action="criarDg" data-submit><span class="icon"><i class="fa-solid fa-check"></i></span><span>Adicionar</span></button>
-        </footer>
-    </div>
-</div>
-
-<div id="modalPessoa" class="modal" role="dialog" aria-modal="true" aria-labelledby="tP">
-    <div class="modal-background"></div>
-    <div class="modal-card">
-        <header class="modal-card-head">
-            <p class="modal-card-title" id="tP"><span class="icon"><i class="fa-solid fa-user-plus"></i></span><span>Adicionar publicador</span></p>
-            <button type="button" class="delete" aria-label="Fechar" data-close></button>
-        </header>
-        <section class="modal-card-body">
-            <div class="field">
-                <label class="label" for="txtIdPubAdd">Publicador</label>
-                <div class="select is-fullwidth"><select id="txtIdPubAdd">@foreach (var p in publicadores) { <option value="@p.Value">@p.Text</option> }</select></div>
-            </div>
-        </section>
-        <footer class="modal-card-foot">
-            <button type="button" class="button" data-close>Cancelar</button>
-            <button type="button" class="button is-info" data-action="criarPessoa" data-submit><span class="icon"><i class="fa-solid fa-check"></i></span><span>Adicionar</span></button>
-        </footer>
-    </div>
-</div>
-
 @section Scripts {
 <script>
-    const reuniao = '@Model.Stamp';
-    let alvo = null, vista = 'todas';
-    const timers = new WeakMap();
-
-    // Recarrega só a região e mantém o filtro «por atribuir»
-    async function recarregar() { await App.refresh('#regiao'); aplicarVista(); }
+    let vista = 'todas';
     function aplicarVista() { App.$$('.rev-linha').forEach(l => l.hidden = vista === 'falta' && !l.classList.contains('is-falta')); App.$$('.rev-secao').forEach(s => { if (App.$('.rev-linhas', s)) s.hidden = !App.$$('.rev-linha', s).some(l => !l.hidden); }); }
     document.addEventListener('click', e => { const c = e.target.closest('#chipsRev .chip'); if (!c) return; vista = c.dataset.vista; App.$$('#chipsRev .chip').forEach(x => x.setAttribute('aria-pressed', x === c)); aplicarVista(); });
-
-    // Guardar sozinho: escolher um publicador guarda logo; tema e minutos guardam ao parar de escrever
-    async function guardar(linha) {
-        const minutos = App.$('.minutos', linha).value || 0, tema = App.$('.tema', linha).value;
-        try {
-            for (const p of App.$$('.pessoa', linha)) await App.api('PUT', '/Reunioes/Designacao/', { id: p.dataset.stamp, pub: App.$('.pub', p).value, minutos: minutos, tema: tema });
-            linha.classList.toggle('is-falta', App.$$('.pub', linha).some(s => s.value === '0'));
-            linha.classList.add('is-guardado'); setTimeout(() => linha.classList.remove('is-guardado'), 1500);
-        } catch (x) { notifyError('Não foi possível guardar a designação.'); }
-    }
-    document.addEventListener('change', e => {
-        const linha = e.target.closest('.rev-linha');
-        if (linha && (e.target.matches('.pub') || e.target.matches('.minutos') || e.target.matches('.tema'))) { guardar(linha); return; }
-        const c = e.target.closest('[data-cantico]');
-        if (c) App.api('PUT', '/Reunioes/Cantico/', { id: c.value, stamp: c.dataset.cantico }).then(() => notify('Cântico atualizado.')).catch(() => notifyError('Não foi possível atualizar o cântico.'));
-    });
-    document.addEventListener('input', e => {
-        const linha = e.target.closest('.rev-linha'); if (!linha || !(e.target.matches('.tema') || e.target.matches('.minutos'))) return;
-        clearTimeout(timers.get(linha)); timers.set(linha, setTimeout(() => guardar(linha), 900));
-    });
-
-    App.on('apagarGrupo', async btn => {
-        const l = btn.closest('.rev-linha');
-        if (!await App.confirm({ title: 'Apagar designação', text: 'Apagar «' + App.$('.rev-nome', l).firstChild.textContent.trim() + '» e os publicadores associados?', ok: 'Apagar' })) return;
-        App.run(btn, async () => { await App.api('DELETE', '/Reunioes/Designacao/', { id: l.dataset.stamps }); await recarregar(); notify('Designação apagada.'); }, 'Não foi possível apagar a designação.');
-    });
-
-    App.on('apagarPessoa', async btn => {
-        const p = btn.closest('.pessoa'), l = btn.closest('.rev-linha'), unica = App.$$('.pessoa', l).length === 1;
-        if (!await App.confirm({ title: 'Remover publicador', text: unica ? 'É o único publicador: a designação será apagada.' : 'Remover este publicador da designação?', ok: 'Remover' })) return;
-        App.run(btn, async () => { await App.api('DELETE', '/Reunioes/Designacao/', { id: p.dataset.stamp }); await recarregar(); notify('Removido.'); }, 'Não foi possível remover.');
-    });
-
-    App.on('addPessoa', btn => { alvo = App.$('.pessoa', btn.closest('.rev-linha')).dataset.stamp; App.modal('modalPessoa').open(); });
-    App.on('criarPessoa', btn => App.run(btn, async () => {
-        await App.api('POST', '/Reunioes/Publicador/', { id: alvo, pub: App.$('#txtIdPubAdd').value });
-        App.modal('modalPessoa').close(); await recarregar(); notify('Publicador adicionado.');
-    }, 'Não foi possível adicionar o publicador.'));
-
-    App.on('criarDg', btn => App.run(btn, async () => {
-        await App.api('POST', '/Reunioes/Designacao/', { id: reuniao, tipo: App.$('#txtIdTipo').value, local: App.$('#txtLocal').value });
-        App.modal('modalDesignacao').close();
-        if (App.$('#regiao')) { await recarregar(); notify('Designação criada.'); } else location.reload();
-    }, 'Não foi possível criar a designação.'));
 </script>
 }

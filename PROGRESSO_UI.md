@@ -77,7 +77,7 @@ Publicadores > «Sincronizar com o Hourglass» (`HourglassSincronizador`, só le
 
 ## Revisão 10
 
-- PDF com cabeçalho único (faixa azul escura) nos três; serviço de campo com uma tabela por semana (fins de semana a amarelo claro). «Sistema sonoro» passou a «Áudio / Vídeo».
+- PDF com cabeçalho único nos três; serviço de campo com uma tabela por semana. «Sistema sonoro» passou a «Áudio / Vídeo».
 - A importação de reuniões **substitui a semana** e só cria as designações que o Hourglass tem nessa semana (já não cria a reunião-base com todos os tipos). Partes sem ninguém entram «por atribuir». Os discursos deixaram de existir (página, menu e importação).
 - Cânticos em ordem (início, meio, fim); semanas de assembleia, congresso e memorial não têm cânticos.
 - Navbar: «Reuniões» é uma ligação direta. Início: «As minhas designações» das próximas semanas (`/Home/MinhasDesignacoes`).
@@ -130,3 +130,19 @@ Regra: nenhum ecrã migrado usa `window.location.reload()`. Só há navegação 
 - `ObterMovimentos` faz uma consulta por movimento (N+1) e o SQL é montado por concatenação em `DbContext`; fora do âmbito desta fase.
 - Os ecrãs antigos ainda dependem de jQuery, jQuery UI (tema `blitzer`), Bulma JS e bulma-calendar; só se podem retirar do `_Layout` depois de migrar Territórios/Reuniões/Congressos.
 - Uma atualização do skill de design está disponível (v4.8.0); não foi aplicada.
+
+## Revisão 11
+
+- PDF simplificados a preto e branco (`PdfProgramas`): sem cores, sem faixas azuis, zebra, amarelo de fim de semana ou de eventos. Cabeçalho com título e filete preto; cinza claro só nos cabeçalhos de semana/local/secção e nas semanas de evento. Estrutura e alinhamento mantidos.
+
+## Revisão 12
+
+- **Login**: o banner vazio e a vibração ao abrir `/Home/Login` vinham de `string ReturnUrl` (não anulável) ser tratado como obrigatório; passou a `string?`.
+- «Loja (sem publicador)» passou a «Congregação (sem publicador)» (Saídas e Pedidos).
+- **Entrada de periódicos**: os 12 números do ano verificam-se em paralelo, com um só `HttpClient` e cache em memória (12 h se existe, 15 min se não); o botão tinha um ícone Font Awesome Pro, agora `fa-plus`; modal em 4 passos, com «adicionado» por número.
+- **Navbar em telemóvel**: linhas uniformes e submenus em acordeão (toque).
+- **Reuniões só de leitura**: removidos «Criar semana» e todos os endpoints e controlos de edição das designações e cânticos (só se mantém apagar semana). Tudo vem da importação do Hourglass.
+- **Sessão do Hourglass guardada 6 horas** (só em memória, por congregação, `HourglassContext.Resolver`); vale para importação de reuniões, programa e publicadores. «Usar outra» termina-a.
+- **Cânticos** separados em início, meio e fim no PDF (`cmm1..3`, `cwm1..2`) e na página da reunião; programas guardados antes continuam a ler-se (reparte «12 - 45 - 100»).
+- **Início**: literatura primeiro, depois «As minhas designações» em cartões por semana (esta semana, próxima).
+- **Logo** novo (`logo.svg`) e **Publicadores** em cartões, com filtros por contacto e função e atalhos de email e telefone.

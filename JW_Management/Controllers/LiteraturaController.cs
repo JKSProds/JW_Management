@@ -119,11 +119,11 @@ namespace JW_Management.Controllers
         }
         
         [HttpGet]
-        public IActionResult PesquisarPeriodicos(string ano, string tipo)
+        public async Task<IActionResult> PesquisarPeriodicos(string ano, string tipo)
         {
             var t = _dbContext.ObterTipoPeriodicos().FirstOrDefault(tp => tp.Referencia == tipo);
             if (t == null) return BadRequest();
-            return Json(_jwApiContext.ObterPeriodicos(ano, t));
+            return Json(await _jwApiContext.ObterPeriodicos(ano, t));
         }
 
         [HttpGet]

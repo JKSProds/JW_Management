@@ -135,10 +135,9 @@ public class ProgramaServico(HourglassContext _hg, DbContext _db)
                     }
                 if (m != null)
                 {
-                    var nums = new List<string>();
-                    foreach (var sk in new[] { "song1", "song2", "song3" })
-                        if ((int?)HourglassContext.Sub(m[sk], "number") is > 0 and var n) { nums.Add(n.ToString()); cantSem.Add((n, (string?)HourglassContext.Sub(m[sk], "title") ?? "")); }
-                    if (nums.Count > 0) v["cmm"] = string.Join(" - ", nums);
+                    // início, meio e fim em linhas separadas (cmm1, cmm2, cmm3)
+                    foreach (var (sk, i) in new[] { "song1", "song2", "song3" }.Select((x, i) => (x, i + 1)))
+                        if ((int?)HourglassContext.Sub(m[sk], "number") is > 0 and var n) { v["cmm" + i] = n.ToString(); cantSem.Add((n, (string?)HourglassContext.Sub(m[sk], "title") ?? "")); }
                 }
             }
 
@@ -152,14 +151,14 @@ public class ProgramaServico(HourglassContext _hg, DbContext _db)
                 }
                 v["wte"] = (string?)HourglassContext.Sub(w["public_talk"], "title") ?? "";
                 sem.Evento = Evento(w["event"] as JObject) ?? sem.Evento;
-                var wt = w["wt"] as JObject; var nw = new List<string>();
-                foreach (var sk in new[] { "song1", "song2" })
-                    if ((int?)HourglassContext.Sub(wt?[sk], "number") is > 0 and var n) { nw.Add(n.ToString()); cantSem.Add((n, (string?)HourglassContext.Sub(wt?[sk], "title") ?? "")); }
-                if (nw.Count > 0) v["cwm"] = string.Join(" - ", nw);
+                var wt = w["wt"] as JObject;
+                // A Sentinela tem o cântico antes do estudo (meio da reunião) e o final: cwm1 = meio, cwm2 = fim
+                foreach (var (sk, i) in new[] { "song1", "song2" }.Select((x, i) => (x, i + 1)))
+                    if ((int?)HourglassContext.Sub(wt?[sk], "number") is > 0 and var n) { v["cwm" + i] = n.ToString(); cantSem.Add((n, (string?)HourglassContext.Sub(wt?[sk], "title") ?? "")); }
             }
             if (sem.Evento.Count == 0 && mm.TryGetValue(k, out var e2) && e2["event"] is JObject ev) sem.Evento = Evento(ev) ?? sem.Evento;
             // assembleia de circuito, congresso e memorial: não há cânticos da reunião nessa semana
-            if (sem.Evento.Count > 0) { v.Remove("cmm"); v.Remove("cwm"); } else canticos.AddRange(cantSem);
+            if (sem.Evento.Count > 0) { foreach (var k2 in new[] { "cmm1", "cmm2", "cmm3", "cwm1", "cwm2" }) v.Remove(k2); } else canticos.AddRange(cantSem);
 
             if (av.TryGetValue(k, out var lista))
             {

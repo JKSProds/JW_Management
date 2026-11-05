@@ -37,13 +37,13 @@ public class ProgramaMensal
         ProgramaLinha L(string id, string rotulo) => new() { Id = id, Rotulo = rotulo };
         return new()
         {
-            new() { Titulo = "REUNIÃO DE SEMANA", Faixa = true, Linhas = { L("pres", "Presidente"), L("orac", "Oração"), L("cmm", "Cânticos") } },
+            new() { Titulo = "REUNIÃO DE SEMANA", Faixa = true, Linhas = { L("pres", "Presidente"), L("orac", "Oração"), L("cmm1", "Cântico inicial"), L("cmm2", "Cântico do meio"), L("cmm3", "Cântico final") } },
             new() { Titulo = "TESOUROS DA PALAVRA DE DEUS", Linhas = { L("tes1", "Discurso"), L("tes2", "Em Busca de Pérolas Espirituais"), L("tes3", "Leitura da Bíblia") } },
             new() { Titulo = "EMPENHE-SE NO MINISTÉRIO", Linhas = { L("min1", "Parte 1"), L("min2", "Parte 2"), L("min3", "Parte 3"), L("min4", "Parte 4") } },
             new() { Titulo = "VIVER COMO CRISTÃOS", Linhas = { L("viv1", "Parte 1"), L("viv2", "Parte 2") } },
             new() { Titulo = "ESTUDO BÍBLICO", Linhas = { L("ebd", "Dirigente"), L("ebl", "Leitor"), L("ebo", "Oração final") } },
             new() { Titulo = "REUNIÃO DE FIM DE SEMANA", Faixa = true, Linhas = { L("wpr", "Presidente"), L("wor", "Orador"), L("wco", "Congregação"), L("wte", "Tema") } },
-            new() { Titulo = "ESTUDO DE A SENTINELA", Linhas = { L("std", "Dirigente"), L("stl", "Leitor"), L("sto", "Oração final"), L("cwm", "Cânticos") } },
+            new() { Titulo = "ESTUDO DE A SENTINELA", Linhas = { L("std", "Dirigente"), L("stl", "Leitor"), L("sto", "Oração final"), L("cwm1", "Cântico do meio"), L("cwm2", "Cântico final") } },
             new() { Titulo = "INDICADORES", Linhas = { L("ind1", R("ind1", "Receção")), L("ind2", R("ind2", "Auditório")), L("ind3", R("ind3", "Estacionamento")) } },
             new() { Titulo = "ÁUDIO / VÍDEO", Linhas = { L("som", R("som", "Som")), L("mic", "Micros"), L("tri", R("tri", "Tribuna")) } },
             new() { Titulo = "", Linhas = { L("limp", R("limp", "Limpeza")) } }

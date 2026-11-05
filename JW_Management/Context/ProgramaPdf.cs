@@ -5,20 +5,14 @@ using iTextSharp.text.pdf;
 namespace JW_Management.Models;
 
 // PDF dos programas: quadro mensal (A4 horizontal), serviço de campo e testemunho público (A4 vertical).
-// Visual limpo: faixas de cor, linhas finas e zebra; só fontes base do PDF (sem ficheiros de fonte).
+// Visual a preto e branco: tons de cinza, linhas finas e sem cores; só fontes base do PDF (sem ficheiros de fonte).
 public static class PdfProgramas
 {
     private static readonly CultureInfo Pt = new("pt-PT");
-    private static readonly BaseColor Marca = new(42, 77, 208);
-    private static readonly BaseColor Escuro = new(24, 39, 96);
-    private static readonly BaseColor Tinta = new(33, 41, 66);
-    private static readonly BaseColor Suave = new(98, 108, 132);
-    private static readonly BaseColor Tint = new(232, 237, 251);
-    private static readonly BaseColor Zebra = new(246, 248, 252);
-    private static readonly BaseColor Linha = new(221, 227, 238);
-    private static readonly BaseColor FimDeSemana = new(255, 248, 225);
-    private static readonly BaseColor Ambar = new(255, 226, 138);
-    private static readonly BaseColor AmbarTexto = new(102, 66, 0);
+    private static readonly BaseColor Tinta = new(25, 25, 25);
+    private static readonly BaseColor Suave = new(105, 105, 105);
+    private static readonly BaseColor Cinza = new(236, 236, 236);
+    private static readonly BaseColor Linha = new(200, 200, 200);
 
     private record Fontes(BaseFont Normal, BaseFont Negrito, BaseFont Italico);
     private static Fontes Carregar() => new(
@@ -33,17 +27,16 @@ public static class PdfProgramas
         return c;
     }
 
-    // Cabeçalho comum aos três PDF: faixa azul escura com o título a branco e filete de cor.
+    // Cabeçalho comum aos três PDF: título a preto com um filete por baixo.
     private static void Cabecalho(Document doc, Fontes f, string sobre, string titulo, string direita, float tam = 20)
     {
         var t = new PdfPTable(2) { WidthPercentage = 100 };
         t.SetWidths(new[] { 3f, 2f });
-        var esq = new PdfPCell { Border = Rectangle.NO_BORDER, BackgroundColor = Escuro, PaddingLeft = 14, PaddingTop = 9, PaddingBottom = 9 };
-        esq.AddElement(new Paragraph(sobre.ToUpperInvariant(), new Font(f.Negrito, 7.5f, Font.NORMAL, new BaseColor(160, 184, 255))) { SpacingAfter = 1 });
-        esq.AddElement(new Paragraph(titulo, new Font(f.Negrito, tam, Font.NORMAL, BaseColor.White)));
+        var esq = new PdfPCell { Border = Rectangle.BOTTOM_BORDER, BorderWidth = 1, BorderColor = Tinta, PaddingBottom = 6, PaddingLeft = 0 };
+        esq.AddElement(new Paragraph(sobre.ToUpperInvariant(), new Font(f.Negrito, 7.5f, Font.NORMAL, Suave)) { SpacingAfter = 1 });
+        esq.AddElement(new Paragraph(titulo, new Font(f.Negrito, tam, Font.NORMAL, Tinta)));
         t.AddCell(esq);
-        t.AddCell(new PdfPCell(new Phrase(direita, new Font(f.Negrito, 10, Font.NORMAL, BaseColor.White))) { Border = Rectangle.NO_BORDER, BackgroundColor = Escuro, HorizontalAlignment = Element.ALIGN_RIGHT, VerticalAlignment = Element.ALIGN_MIDDLE, PaddingRight = 14 });
-        t.AddCell(new PdfPCell(new Phrase(" ", new Font(f.Normal, 2))) { Colspan = 2, Border = Rectangle.NO_BORDER, BackgroundColor = Marca, FixedHeight = 3 });
+        t.AddCell(new PdfPCell(new Phrase(direita, new Font(f.Negrito, 10, Font.NORMAL, Tinta))) { Border = Rectangle.BOTTOM_BORDER, BorderWidth = 1, BorderColor = Tinta, HorizontalAlignment = Element.ALIGN_RIGHT, VerticalAlignment = Element.ALIGN_BOTTOM, PaddingBottom = 6, PaddingRight = 0 });
         doc.Add(t);
         doc.Add(new Paragraph(" ", new Font(f.Normal, 6)));
     }
@@ -56,8 +49,8 @@ public static class PdfProgramas
     {
         var f = Carregar();
         var fValor = new Font(f.Normal, 7, Font.NORMAL, Tinta); var fRotulo = new Font(f.Negrito, 6.8f, Font.NORMAL, Suave);
-        var fFaixa = new Font(f.Negrito, 7.2f, Font.NORMAL, BaseColor.White); var fSecao = new Font(f.Negrito, 6.8f, Font.NORMAL, Marca);
-        var fSemana = new Font(f.Negrito, 6.8f, Font.NORMAL, BaseColor.White); var fEvento = new Font(f.Negrito, 7, Font.NORMAL, AmbarTexto);
+        var fFaixa = new Font(f.Negrito, 7.2f, Font.NORMAL, Tinta); var fSecao = new Font(f.Negrito, 6.8f, Font.NORMAL, Suave);
+        var fSemana = new Font(f.Negrito, 6.8f, Font.NORMAL, Tinta); var fEvento = new Font(f.Negrito, 7, Font.NORMAL, Tinta);
 
         using var ms = new MemoryStream();
         var doc = new Document(new Rectangle(842, 595), 26, 26, 16, 12); // A4 horizontal, sem /Rotate
@@ -70,7 +63,7 @@ public static class PdfProgramas
         t.SetWidths(new[] { 2.3f }.Concat(Enumerable.Repeat(2f, n)).ToArray());
 
         t.AddCell(Cel("", fValor, h: 16, vpad: 1));
-        foreach (var s in p.Semanas) t.AddCell(Cel(s.Titulo, fSemana, fundo: Marca, h: 16, vpad: 1));
+        foreach (var s in p.Semanas) t.AddCell(Cel(s.Titulo, fSemana, borda: Rectangle.BOTTOM_BORDER, h: 16, vpad: 1));
 
         var linhasEvento = new[] { "min1", "min2", "min3", "std", "stl", "sto" };
         foreach (var sec in p.Secoes)
@@ -78,19 +71,17 @@ public static class PdfProgramas
             t.AddCell(Cel("", fValor, borda: Rectangle.NO_BORDER, span: n + 1, h: 2, pad: 0, vpad: 0));
             if (sec.Titulo != "")
             {
-                if (sec.Faixa) t.AddCell(Cel(sec.Titulo, fFaixa, Element.ALIGN_LEFT, fundo: Escuro, span: n + 1, h: 10, pad: 6, vpad: 1));
-                else t.AddCell(Cel(sec.Titulo, fSecao, Element.ALIGN_LEFT, fundo: Tint, span: n + 1, h: 10.5f, pad: 6, vpad: 1));
+                if (sec.Faixa) t.AddCell(Cel(sec.Titulo, fFaixa, Element.ALIGN_LEFT, fundo: Cinza, span: n + 1, h: 10, pad: 6, vpad: 1));
+                else t.AddCell(Cel(sec.Titulo, fSecao, Element.ALIGN_LEFT, borda: Rectangle.BOTTOM_BORDER, span: n + 1, h: 10.5f, pad: 6, vpad: 1));
             }
-            int z = 0;
             foreach (var l in sec.Linhas)
             {
-                var fundo = z++ % 2 == 1 ? Zebra : null;
-                t.AddCell(Cel(l.Rotulo, fRotulo, Element.ALIGN_LEFT, Rectangle.BOTTOM_BORDER, fundo, h: 10.5f, pad: 6, vpad: 1));
+                t.AddCell(Cel(l.Rotulo, fRotulo, Element.ALIGN_LEFT, Rectangle.BOTTOM_BORDER, h: 10.5f, pad: 6, vpad: 1));
                 foreach (var s in p.Semanas)
                 {
                     var idx = Array.IndexOf(linhasEvento, l.Id);
-                    if (s.Evento.Count > 0 && idx >= 0) t.AddCell(Cel(idx % 3 < s.Evento.Count ? s.Evento[idx % 3] : "", fEvento, fundo: Ambar, borda: Rectangle.BOTTOM_BORDER, h: 10.5f, vpad: 1));
-                    else t.AddCell(Cel(s.Valores.GetValueOrDefault(l.Id, ""), fValor, borda: Rectangle.BOTTOM_BORDER, fundo: fundo, h: 10.5f, vpad: 1));
+                    if (s.Evento.Count > 0 && idx >= 0) t.AddCell(Cel(idx % 3 < s.Evento.Count ? s.Evento[idx % 3] : "", fEvento, fundo: Cinza, borda: Rectangle.BOTTOM_BORDER, h: 10.5f, vpad: 1));
+                    else t.AddCell(Cel(Valor(s, l.Id), fValor, borda: Rectangle.BOTTOM_BORDER, h: 10.5f, vpad: 1));
                 }
             }
         }
@@ -98,6 +89,15 @@ public static class PdfProgramas
         Rodape(doc, f);
         doc.Close();
         return ms.ToArray();
+    }
+
+    // Programas guardados antes da separação dos cânticos têm «12 - 45 - 100» numa só chave (cmm/cwm).
+    private static string Valor(ProgramaSemana s, string id)
+    {
+        if (s.Valores.TryGetValue(id, out var v)) return v;
+        if (id.Length == 4 && id[..3] is "cmm" or "cwm" && int.TryParse(id[3..], out var i) && s.Valores.TryGetValue(id[..3], out var junto))
+        { var p = junto.Split(" - "); return i <= p.Length ? p[i - 1] : ""; }
+        return "";
     }
 
     private static string Dia(string iso)
@@ -112,7 +112,7 @@ public static class PdfProgramas
     {
         var f = Carregar();
         var fValor = new Font(f.Normal, 9, Font.NORMAL, Tinta); var fNeg = new Font(f.Negrito, 9, Font.NORMAL, Tinta);
-        var fSemana = new Font(f.Negrito, 8, Font.NORMAL, Marca); var fCab = new Font(f.Negrito, 7.5f, Font.NORMAL, BaseColor.White);
+        var fCab = new Font(f.Negrito, 7.5f, Font.NORMAL, Tinta);
 
         using var ms = new MemoryStream();
         var doc = new Document(new Rectangle(595, 842), 36, 36, 30, 28);
@@ -120,24 +120,21 @@ public static class PdfProgramas
         doc.Open();
         Cabecalho(doc, f, "Serviço de campo", $"{ProgramaServico.NomeMes(mes)} {ano}", congregacao);
 
-        var fCabCol = new Font(f.Negrito, 6.8f, Font.NORMAL, Marca);
+        var fCabCol = new Font(f.Negrito, 6.8f, Font.NORMAL, Suave);
         // uma tabela por semana (segunda a domingo), cada uma com a sua faixa e sem partir ao meio
         foreach (var sem in entradas.GroupBy(e => { var d = DateTime.ParseExact(e.Data, "yyyy-MM-dd", CultureInfo.InvariantCulture); return d.AddDays(-(((int)d.DayOfWeek + 6) % 7)); }).OrderBy(g => g.Key))
         {
             var t = new PdfPTable(4) { WidthPercentage = 100, KeepTogether = true, SpacingAfter = 10 };
             t.SetWidths(new[] { 1.2f, 0.9f, 2.2f, 2.4f });
             var fim = sem.Key.AddDays(6);
-            t.AddCell(Cel(sem.Key.Month == fim.Month ? $"Semana de {sem.Key.Day} a {fim.Day} de {ProgramaServico.NomeMes(sem.Key.Month)}" : $"Semana de {sem.Key.Day} de {ProgramaServico.NomeMes(sem.Key.Month)} a {fim.Day} de {ProgramaServico.NomeMes(fim.Month)}", fCab, Element.ALIGN_LEFT, fundo: Marca, span: 4, h: 17, pad: 8));
-            foreach (var h in new[] { "DIA", "HORA", "LOCAL", "DIRIGENTE" }) t.AddCell(Cel(h, fCabCol, Element.ALIGN_LEFT, Rectangle.BOTTOM_BORDER, Tint, h: 12, pad: 8));
-            int z = 0;
+            t.AddCell(Cel(sem.Key.Month == fim.Month ? $"Semana de {sem.Key.Day} a {fim.Day} de {ProgramaServico.NomeMes(sem.Key.Month)}" : $"Semana de {sem.Key.Day} de {ProgramaServico.NomeMes(sem.Key.Month)} a {fim.Day} de {ProgramaServico.NomeMes(fim.Month)}", fCab, Element.ALIGN_LEFT, fundo: Cinza, span: 4, h: 17, pad: 8));
+            foreach (var h in new[] { "DIA", "HORA", "LOCAL", "DIRIGENTE" }) t.AddCell(Cel(h, fCabCol, Element.ALIGN_LEFT, Rectangle.BOTTOM_BORDER, h: 12, pad: 8));
             foreach (var e in sem.OrderBy(x => x.Data).ThenBy(x => x.Hora))
             {
-                var fds = DateTime.ParseExact(e.Data, "yyyy-MM-dd", CultureInfo.InvariantCulture).DayOfWeek is DayOfWeek.Saturday or DayOfWeek.Sunday;
-                var fundo = fds ? FimDeSemana : z++ % 2 == 1 ? Zebra : null;
-                t.AddCell(Cel(Dia(e.Data), fNeg, Element.ALIGN_LEFT, Rectangle.BOTTOM_BORDER, fundo, h: 17, pad: 8));
-                t.AddCell(Cel(e.Hora, fValor, Element.ALIGN_LEFT, Rectangle.BOTTOM_BORDER, fundo, h: 17, pad: 8));
-                t.AddCell(Cel(e.Local, fValor, Element.ALIGN_LEFT, Rectangle.BOTTOM_BORDER, fundo, h: 17, pad: 8));
-                t.AddCell(Cel(e.Dirigente == "" ? "—" : e.Dirigente, fValor, Element.ALIGN_LEFT, Rectangle.BOTTOM_BORDER, fundo, h: 17, pad: 8));
+                t.AddCell(Cel(Dia(e.Data), fNeg, Element.ALIGN_LEFT, Rectangle.BOTTOM_BORDER, h: 17, pad: 8));
+                t.AddCell(Cel(e.Hora, fValor, Element.ALIGN_LEFT, Rectangle.BOTTOM_BORDER, h: 17, pad: 8));
+                t.AddCell(Cel(e.Local, fValor, Element.ALIGN_LEFT, Rectangle.BOTTOM_BORDER, h: 17, pad: 8));
+                t.AddCell(Cel(e.Dirigente == "" ? "—" : e.Dirigente, fValor, Element.ALIGN_LEFT, Rectangle.BOTTOM_BORDER, h: 17, pad: 8));
             }
             doc.Add(t);
         }
@@ -151,7 +148,7 @@ public static class PdfProgramas
     {
         var f = Carregar();
         var fValor = new Font(f.Normal, 9, Font.NORMAL, Tinta); var fNeg = new Font(f.Negrito, 9, Font.NORMAL, Tinta);
-        var fVazio = new Font(f.Italico, 9, Font.NORMAL, Suave); var fLocal = new Font(f.Negrito, 9, Font.NORMAL, BaseColor.White);
+        var fVazio = new Font(f.Italico, 9, Font.NORMAL, Suave); var fLocal = new Font(f.Negrito, 9, Font.NORMAL, Tinta);
 
         using var ms = new MemoryStream();
         var doc = new Document(new Rectangle(595, 842), 36, 36, 30, 28);
@@ -163,14 +160,12 @@ public static class PdfProgramas
         {
             var t = new PdfPTable(3) { WidthPercentage = 100, KeepTogether = false, SpacingAfter = 10 };
             t.SetWidths(new[] { 1.2f, 1.6f, 4f });
-            t.AddCell(Cel(local.Key == "" ? "Sem local" : local.Key, fLocal, Element.ALIGN_LEFT, fundo: Marca, span: 3, h: 17, pad: 8));
-            int z = 0;
+            t.AddCell(Cel(local.Key == "" ? "Sem local" : local.Key, fLocal, Element.ALIGN_LEFT, fundo: Cinza, span: 3, h: 17, pad: 8));
             foreach (var e in local.OrderBy(x => x.Data).ThenBy(x => x.Inicio))
             {
-                var fundo = z++ % 2 == 1 ? Zebra : null;
-                t.AddCell(Cel(Dia(e.Data), fNeg, Element.ALIGN_LEFT, Rectangle.BOTTOM_BORDER, fundo, h: 16, pad: 7));
-                t.AddCell(Cel($"{e.Inicio} – {e.Fim}", fValor, Element.ALIGN_LEFT, Rectangle.BOTTOM_BORDER, fundo, h: 16, pad: 7));
-                t.AddCell(Cel(e.Pessoas.Count == 0 ? "por atribuir" : string.Join("  ·  ", e.Pessoas), e.Pessoas.Count == 0 ? fVazio : fValor, Element.ALIGN_LEFT, Rectangle.BOTTOM_BORDER, fundo, h: 16, pad: 7));
+                t.AddCell(Cel(Dia(e.Data), fNeg, Element.ALIGN_LEFT, Rectangle.BOTTOM_BORDER, h: 16, pad: 7));
+                t.AddCell(Cel($"{e.Inicio} – {e.Fim}", fValor, Element.ALIGN_LEFT, Rectangle.BOTTOM_BORDER, h: 16, pad: 7));
+                t.AddCell(Cel(e.Pessoas.Count == 0 ? "por atribuir" : string.Join("  ·  ", e.Pessoas), e.Pessoas.Count == 0 ? fVazio : fValor, Element.ALIGN_LEFT, Rectangle.BOTTOM_BORDER, h: 16, pad: 7));
             }
             doc.Add(t);
         }

@@ -1,4 +1,4 @@
-﻿@model IEnumerable<JW_Management.Models.Publicador>
+@model IEnumerable<JW_Management.Models.Publicador>
 @{
     ViewData["Title"] = "Publicadores";
 }
@@ -16,7 +16,7 @@
                 <span class="icon"><i class="fa-solid fa-hourglass-half"></i></span><span>Sincronizar com o Hourglass</span>
             </button>
             <button type="button" class="button is-info" data-open="modalNovo">
-                <span class="icon"><i class="fa-solid fa-id-card"></i></span><span>Novo publicador</span>
+                <span class="icon"><i class="fa-solid fa-user-plus"></i></span><span>Novo publicador</span>
             </button>
         </div>
     </div>
@@ -26,31 +26,47 @@
         ("fa-envelope", "Com email", Model.Count(p => !string.IsNullOrWhiteSpace(p.Email)).ToString(), "sMail", "is-ok"),
         ("fa-phone", "Com telemóvel", Model.Count(p => !string.IsNullOrWhiteSpace(p.Telemovel)).ToString(), "sTel", "") })
 
+    @{
+        string Slug(string? r) => (r ?? "").ToLowerInvariant().Replace(' ', '-');
+        var funcoes = Model.Select(p => p.Role).Where(r => !string.IsNullOrWhiteSpace(r)).Distinct().OrderBy(r => r).ToList();
+    }
     <div class="toolbar">
         <div class="control has-icons-left search">
-            <input type="search" class="input" id="filtro" placeholder="Pesquisar por nome ou função" aria-label="Pesquisar publicadores">
+            <input type="search" class="input" id="filtro" placeholder="Pesquisar por nome, função, grupo ou contacto" aria-label="Pesquisar publicadores">
             <span class="icon is-left"><i class="fa-solid fa-magnifying-glass"></i></span>
+        </div>
+        <div class="chips" id="chips" role="group" aria-label="Filtrar">
+            <button type="button" class="chip" data-type="0" aria-pressed="true">Todos</button>
+            <button type="button" class="chip" data-type="mail" aria-pressed="false"><i class="fa-solid fa-envelope fa-xs"></i> Com email</button>
+            <button type="button" class="chip" data-type="tel" aria-pressed="false"><i class="fa-solid fa-phone fa-xs"></i> Com telemóvel</button>
+            <button type="button" class="chip" data-type="semcontacto" aria-pressed="false">Sem contacto</button>
+            @foreach (var f in funcoes) { <button type="button" class="chip" data-type="r-@Slug(f)" aria-pressed="false">@f</button> }
         </div>
     </div>
 
-    <div id="lista" class="items">
+    <div id="lista" class="pub-grid">
         @foreach (var item in Model)
         {
-            var iniciais = string.Concat(item.Nome!.Split(' ', StringSplitOptions.RemoveEmptyEntries).Take(1).Select(p => p[0])) +
-                           string.Concat(item.Nome.Split(' ', StringSplitOptions.RemoveEmptyEntries).Skip(1).Reverse().Take(1).Select(p => p[0]));
-            <article class="item no-thumb" data-id="@item.Id" data-mail="@(string.IsNullOrWhiteSpace(item.Email) ? 0 : 1)" data-tel="@(string.IsNullOrWhiteSpace(item.Telemovel) ? 0 : 1)" data-type="0" data-search="@item.Nome @item.Role @item.Id">
-                <div class="main" style="display:flex;gap:.8rem;align-items:center">
-                    <span class="avatar" aria-hidden="true">@iniciais.ToUpper()</span>
-                    <div style="min-width:0">
-                        <div class="name">@item.Nome</div>
-                        <div class="meta"><span class="tag is-light">@item.Role</span><span class="num">Nº @item.Id</span></div>
-                    </div>
-                </div>
-                <div class="side">
-                    <div class="acts">
-                        <a class="button btn-icon" href="~/Publicadores/Publicador/@item.Id" aria-label="Abrir ficha de @item.Nome" title="Abrir ficha"><i class="fa-solid fa-eye"></i></a>
-                        <button type="button" class="button btn-icon is-danger-hover" data-action="apagar" aria-label="Apagar @item.Nome" title="Apagar"><i class="fa-solid fa-trash-can"></i></button>
-                    </div>
+            var partes = item.Nome!.Split(' ', StringSplitOptions.RemoveEmptyEntries);
+            var iniciais = (partes.Length > 0 ? partes[0][..1] : "?") + (partes.Length > 1 ? partes[^1][..1] : "");
+            var temMail = !string.IsNullOrWhiteSpace(item.Email); var temTel = !string.IsNullOrWhiteSpace(item.Telemovel);
+            var tipos = string.Join(' ', new[] { temMail ? "mail" : null, temTel ? "tel" : null, !temMail && !temTel ? "semcontacto" : null, "r-" + Slug(item.Role) }.Where(x => x != null));
+            <article class="item pub-card" data-id="@item.Id" data-mail="@(temMail ? 1 : 0)" data-tel="@(temTel ? 1 : 0)" data-type="@tipos" data-search="@item.Nome @item.Role @item.Grupo?.Nome @item.Email @item.Telemovel @item.Id">
+                <a class="pub-main" href="~/Publicadores/Publicador/@item.Id" aria-label="Abrir ficha de @item.Nome">
+                    <span class="avatar pub-avatar" aria-hidden="true">@iniciais.ToUpper()</span>
+                    <span class="pub-info">
+                        <span class="name">@item.Nome</span>
+                        <span class="meta">
+                            <span class="tag is-light">@item.Role</span>
+                            @if (!string.IsNullOrWhiteSpace(item.Grupo?.Nome)) { <span><i class="fa-solid fa-user-group fa-xs"></i> @item.Grupo.Nome</span> }
+                            <span class="num">Nº @item.Id</span>
+                        </span>
+                    </span>
+                </a>
+                <div class="pub-acts acts">
+                    @if (temMail) { <a class="button btn-icon" href="mailto:@item.Email" aria-label="Enviar email a @item.Nome" title="@item.Email"><i class="fa-solid fa-envelope"></i></a> }
+                    @if (temTel) { <a class="button btn-icon" href="tel:@item.Telemovel" aria-label="Ligar a @item.Nome" title="@item.Telemovel"><i class="fa-solid fa-phone"></i></a> }
+                    <button type="button" class="button btn-icon is-danger-hover" data-action="apagar" aria-label="Apagar @item.Nome" title="Apagar"><i class="fa-solid fa-trash-can"></i></button>
                 </div>
             </article>
         }
@@ -94,6 +110,7 @@
         <section class="modal-card-body">
             <div id="syPasso1">
                 <p class="modal-body-text mb-4">Liga cada publicador ao utilizador do Hourglass (por email ou nome) e propõe preencher email, telemóvel, morada e grupo, ou acrescentar quem ainda não existe. Não altera funções nem palavras-passe. Só se fazem leituras no Hourglass.</p>
+                <div id="syBloco">
                 <ol class="steps">
                     <li>Abra o <a href="https://app.hourglass-app.com/v2/page/app/scheduling/mm" target="_blank" rel="noopener">Hourglass</a> com a sessão iniciada, prima <kbd>F12</kbd> e abra o separador <b>Rede</b>.</li>
                     <li>Num qualquer pedido da lista (por exemplo um cujo nome é um intervalo de datas, como <b>2026-11-01_2026-11-30</b>): botão direito, <b>Copiar</b>, <b>Copiar como cURL</b>, e cole abaixo.</li>
@@ -101,7 +118,8 @@
                 <div class="field">
                     <label class="label" for="syCookie">Pedido copiado (ou só a cookie)</label>
                     <textarea class="textarea" id="syCookie" rows="3" spellcheck="false" autocomplete="off" placeholder="curl 'https://app.hourglass-app.com/...' -H 'Cookie: ...'"></textarea>
-                    <p class="field-hint">A cookie não é guardada.</p>
+                    <p class="field-hint">A sessão fica guardada no servidor (só em memória) durante 6 horas.</p>
+                </div>
                 </div>
             </div>
             <div id="syPasso2" hidden></div>
@@ -117,12 +135,12 @@
 @section Scripts {
 <script>
     App.filtro({
-        lista: '#lista', input: '#filtro', vazio: '#vazio',
+        lista: '#lista', input: '#filtro', chips: '#chips', vazio: '#vazio', semUrl: true,
         aoAplicar: v => App.stats({ sTot: v.length, sMail: v.filter(i => i.dataset.mail === '1').length, sTel: v.filter(i => i.dataset.tel === '1').length })
     });
 
     App.on('apagar', async btn => {
-        const it = btn.closest('.item'), nome = App.$('.name', it).textContent;
+        const it = btn.closest('.item'), nome = App.$('.name', it).textContent.trim();
         if (!await App.confirm({ title: 'Apagar publicador', text: 'Apagar «' + nome + '» e todos os movimentos e pedidos associados? Esta ação é irreversível.', ok: 'Apagar' })) return;
         App.run(btn, async () => { await App.api('DELETE', '/Publicadores/Publicador/', { id: it.dataset.id, delete: true }); App.removeItem(it); notify('Publicador apagado.'); },
             'Não foi possível apagar o publicador. Pode não ter permissões para apagar este utilizador.');
@@ -139,17 +157,15 @@
 
     // ---------- Sincronização com o Hourglass ----------
     (function () {
-        let prev = null;
+        let prev = null; App.hgSessao('#syBloco');
         const esc = t => String(t ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
         const rotulo = { Email: 'Email', Telemovel: 'Telemóvel', Morada: 'Morada', Grupo: 'Grupo' };
 
         App.on('syObter', btn => App.run(btn, async () => {
-            const bruto = App.$('#syCookie').value.trim(); if (!bruto) return App.campo('#syCookie', 'Cole o pedido ou a cookie primeiro.');
-            const cookie = App.extrairCookie(bruto);
-            if (!/hglogin=/.test(cookie) || !/X-Hourglass-XSRF-Token=/.test(cookie)) return App.campo('#syCookie', 'Não encontrei a sessão do Hourglass (hglogin e token XSRF). Use «Copiar como cURL».');
+            const cookie = App.hgCookie('#syCookie'); if (cookie === null) return;
             const r = await fetch('/Publicadores/HourglassPreview', { method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded' }, body: new URLSearchParams({ cookie: cookie }) });
-            if (!r.ok) { notifyError(r.status === 401 ? 'A sessão do Hourglass expirou. Copie o pedido outra vez.' : (await r.text()) || 'Não foi possível obter os dados do Hourglass.'); return; }
-            prev = await r.json(); App.$('#syCookie').value = ''; desenhar();
+            if (!r.ok) { notifyError(r.status === 401 ? 'A sessão do Hourglass expirou. Cole o pedido outra vez.' : (await r.text()) || 'Não foi possível obter os dados do Hourglass.'); return; }
+            prev = await r.json(); desenhar();
         }, 'Não foi possível obter os dados do Hourglass.'));
 
         function desenhar() {
