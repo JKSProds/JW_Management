@@ -4,7 +4,7 @@
     ViewData["Title"] = "Início";
     var autenticado = User.Identity!.IsAuthenticated;
     var congressos = autenticado && User.ObterTenant() == 9999;
-    var literatura = autenticado && new[] { "Admin", "Assistente", "Coordenador", "Secretario", "Servico", "Literatura" }.Any(User.IsInRole);
+    var literatura = autenticado && !congressos && new[] { "Admin", "Assistente", "Coordenador", "Secretario", "Servico", "Literatura" }.Any(User.IsInRole);
 }
 
 <div class="container">
@@ -13,13 +13,6 @@
         {
             <h1><span id="saudacao">Olá</span>, @User.ObterNomeCompleto().Split(' ')[0]</h1>
             <p id="dataHoje">@User.ObterCong()</p>
-            @if (literatura && !congressos)
-            {
-                <div class="status-line" id="resumo" hidden>
-                    <span><b class="num" id="rTitulos">0</b> publicações · <b class="num" id="rUnidades">0</b> unidades em stock</span>
-                    <a href="~/Literatura/Pedidos" id="rPedidos" hidden><b class="num" id="rPend">0</b> pedidos por enviar</a>
-                </div>
-            }
         }
         else
         {
@@ -31,13 +24,34 @@
         }
     </section>
 
+    @if (literatura)
+    {
+        @await Html.PartialAsync("_Stats", new[] {
+            ("fa-book", "Publicações em stock", "—", "rTitulos", ""),
+            ("fa-boxes-stacked", "Unidades em stock", "—", "rUnidades", "is-ok"),
+            ("fa-newspaper", "Exemplares por entregar", "—", "rExemplares", ""),
+            ("fa-clock", "Pedidos especiais por enviar", "—", "rPend", "") })
+
+        <div class="home-grid">
+            <section aria-labelledby="hUrg">
+                <h2 class="section-title" id="hUrg">Periódicos a entregar em breve <a href="~/Literatura/Periodicos">Ver todos</a></h2>
+                <div id="urgentes" class="items"><p class="attn-empty">A carregar…</p></div>
+            </section>
+            <section aria-labelledby="hAt">
+                <h2 class="section-title" id="hAt">Atenção</h2>
+                <div id="atencao" class="items"><p class="attn-empty">A carregar…</p></div>
+            </section>
+        </div>
+    }
+
     @if (autenticado)
     {
+        <h2 class="section-title">Módulos</h2>
         <div class="modules">
             @if (congressos)
             {
                 <article class="module">
-                    <div class="module-cover" style="background-image:url('/img/reunioes2.jpeg')"><h2>Congressos e assembleias</h2></div>
+                    <div class="module-head"><span class="icon-box"><i class="fa-solid fa-bus"></i></span><h2>Congressos e assembleias</h2></div>
                     <div class="module-body">Organização de viagens, paragens e congregações para cada evento.</div>
                     <nav class="module-links"><a href="~/Congressos">Abrir lista</a></nav>
                 </article>
@@ -45,17 +59,18 @@
             else
             {
                 <article class="module">
-                    <div class="module-cover" style="background-image:url('/img/literatura2.jpg')"><h2>Literatura</h2></div>
+                    <div class="module-head"><span class="icon-box"><i class="fa-solid fa-book"></i></span><h2>Literatura</h2></div>
                     <div class="module-body">Gestão de stocks, com as quantidades a separar por grupo.</div>
                     <nav class="module-links" aria-label="Literatura">
                         <a href="~/Literatura">Stock</a>
                         <a href="~/Literatura/Movimentos/1">Entradas</a>
                         <a href="~/Literatura/Movimentos/2">Saídas</a>
                         <a href="~/Literatura/Pedidos">Pedidos</a>
+                        <a href="~/Literatura/Periodicos">Periódicos</a>
                     </nav>
                 </article>
                 <article class="module">
-                    <div class="module-cover" style="background-image:url('/img/territorios.jpg')"><h2>Territórios</h2></div>
+                    <div class="module-head"><span class="icon-box"><i class="fa-solid fa-map-location-dot"></i></span><h2>Territórios</h2></div>
                     <div class="module-body">Informação dos territórios guardada num só sítio, com envio por email.</div>
                     <nav class="module-links" aria-label="Territórios">
                         <a href="~/Territorios">Listagem</a>
@@ -63,7 +78,7 @@
                     </nav>
                 </article>
                 <article class="module">
-                    <div class="module-cover" style="background-image:url('/img/reunioes2.jpeg')"><h2>Reuniões</h2></div>
+                    <div class="module-head"><span class="icon-box"><i class="fa-solid fa-people-group"></i></span><h2>Reuniões</h2></div>
                     <div class="module-body">Designações das reuniões de meio de semana e de fim de semana, e as responsabilidades.</div>
                     <nav class="module-links" aria-label="Reuniões">
                         <a href="~/Reunioes">Listagem</a>
@@ -87,15 +102,31 @@
         const el = document.getElementById('dataHoje');
         el.textContent = d.charAt(0).toUpperCase() + d.slice(1) + ' · ' + el.textContent;
     })();
-    @if (literatura && !congressos)
+    @if (literatura)
     {
     <text>
     // Resumo em segundo plano: a página já está utilizável quando chega.
+    const linha = (href, titulo, meta, tag) => {
+        const a = document.createElement('a'); a.href = href; a.className = 'item no-thumb'; a.style.textDecoration = 'none'; a.style.color = 'inherit';
+        a.innerHTML = '<div class="main"><div class="name"></div><div class="meta"></div></div><div class="side"><div class="qty num"></div></div>';
+        App.$('.name', a).textContent = titulo; App.$('.meta', a).textContent = meta; App.$('.qty', a).innerHTML = tag; return a;
+    };
     App.api('GET', '/Home/Resumo').then(r => {
-        App.$('#rTitulos').textContent = r.titulos; App.$('#rUnidades').textContent = r.unidades;
-        if (r.pedidosPendentes > 0) { App.$('#rPend').textContent = r.pedidosPendentes; App.$('#rPedidos').hidden = false; }
-        App.$('#resumo').hidden = false;
-    }).catch(() => { });
+        App.stats({ rTitulos: r.titulos, rUnidades: r.unidades, rExemplares: r.periodicosExemplares, rPend: r.pedidosPendentes });
+
+        const u = App.$('#urgentes'); u.innerHTML = '';
+        if (!r.urgentes.length) u.innerHTML = '<p class="attn-empty">Nenhum periódico com entrega em menos de 10 dias.</p>';
+        r.urgentes.forEach(p => u.appendChild(linha('/Literatura/Periodico/' + p.stamp, p.descricao,
+            (p.dias === 0 ? 'Entrega hoje' : 'Em ' + p.dias + ' dia(s)') + (p.geral ? ' · ' + p.geral : ''), p.falta)));
+
+        const a = App.$('#atencao'); a.innerHTML = '';
+        if (r.pedidosPendentes > 0) a.appendChild(linha('/Literatura/Pedidos', 'Pedidos especiais por enviar', 'Estado «Pendente»', r.pedidosPendentes));
+        if (r.semStock > 0) a.appendChild(linha('/Literatura', 'Publicações sem stock', 'Ver no Stock', r.semStock));
+        if (r.periodicosTitulos > 0) a.appendChild(linha('/Literatura/Periodicos', 'Periódicos por entregar', r.periodicosExemplares + ' exemplares no total', r.periodicosTitulos));
+        if (!a.children.length) a.innerHTML = '<p class="attn-empty">Tudo em ordem.</p>';
+    }).catch(() => {
+        App.$('#urgentes').innerHTML = '<p class="attn-empty">Não foi possível obter o resumo.</p>'; App.$('#atencao').innerHTML = '';
+    });
     </text>
     }
 </script>

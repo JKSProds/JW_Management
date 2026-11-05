@@ -23,9 +23,21 @@ namespace JW_Management.Controllers
         public IActionResult Resumo()
         {
             var stock = _dbContext.ObterLiteraturas("", 0).Where(l => !(l.Tipo!.Id == 7 && l.Quantidade <= 0)).ToList();
-            var pendentes = _dbContext.ObterPedidosEspeciais().Count(l => l.Quantidade > 0 && l.EstadoPedido!.Descricao == "Pendente");
+            var especiais = _dbContext.ObterPedidosEspeciais().Where(l => l.Quantidade > 0).ToList();
+            var periodicos = _dbContext.ObterPeriodicos().Where(l => l.Quantidade > 0).OrderBy(l => l.Entrega).ToList();
 
-            return Json(new { titulos = stock.Count, unidades = stock.Sum(l => l.Quantidade), pedidosPendentes = pendentes });
+            return Json(new
+            {
+                titulos = stock.Count,
+                unidades = stock.Sum(l => l.Quantidade),
+                semStock = stock.Count(l => l.Quantidade <= 0),
+                pedidosPendentes = especiais.Count(l => l.EstadoPedido!.Descricao == "Pendente"),
+                pedidosEspeciais = especiais.Count,
+                periodicosTitulos = periodicos.Count,
+                periodicosExemplares = periodicos.Sum(l => l.QuantidadeFalta),
+                urgentes = periodicos.Where(l => l.Entrega < 10).Take(5)
+                    .Select(l => new { stamp = l.Stamp, descricao = l.Descricao, geral = l.DescricaoGeral, dias = Math.Max(0, l.Entrega), falta = l.QuantidadeFalta })
+            });
         }
 
         // A lista de congregações é lida uma só vez no arranque. Se a base de dados master ainda não

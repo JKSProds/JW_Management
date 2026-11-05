@@ -6,10 +6,9 @@
 <div class="container">
     <div class="page-head">
         <div class="head-title">
-            <span class="head-icon"><i class="fa-solid fa-users"></i></span>
             <div>
                 <h1>Publicadores</h1>
-                <p>Fichas e acessos</p>
+                
             </div>
         </div>
         <div class="head-actions">
@@ -98,7 +97,7 @@
 
     App.on('criar', btn => App.run(btn, async () => {
         const nome = App.$('#txtNomeNovoPublicador').value.trim();
-        if (!nome) { notifyError('Indique o nome do publicador.'); return; }
+        if (!nome) return App.campo('#txtNomeNovoPublicador', 'Indique o nome do publicador.');
         const todos = await App.api('GET', '/Publicadores/ObterPublicadores/');
         const id = Math.max(0, ...todos.map(p => p.id)) + 1;
         await App.api('POST', '/Publicadores/Publicador/', { nome: nome, id: id });

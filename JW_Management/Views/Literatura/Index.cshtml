@@ -8,10 +8,9 @@
 <div class="container">
     <div class="page-head">
         <div class="head-title">
-            <span class="head-icon"><i class="fa-solid fa-boxes-stacked"></i></span>
             <div>
                 <h1>Stock de literatura</h1>
-                <p>Quantidades em stock e movimentos</p>
+                
             </div>
         </div>
         <div class="head-actions">
@@ -46,7 +45,7 @@
         @foreach (var item in Model)
         {
             <article class="item" data-stamp="@item.Stamp" data-type="@item.Tipo!.Id" data-qty="@item.Quantidade" data-search="@item.Referencia @item.Descricao @item.Tipo.Descricao">
-                <div class="thumb"><img src="@item.Imagem" alt="" loading="lazy" onerror="this.src='/img/l_no_photo.png'"></div>
+                <div class="thumb"><img src="@item.Imagem" alt="" loading="lazy" onerror="this.remove()"></div>
                 <div class="main">
                     <div class="name">@item.Descricao</div>
                     <div class="meta">
@@ -55,7 +54,7 @@
                     </div>
                 </div>
                 <div class="side">
-                    <div class="qty num @(item.Quantidade <= 0 ? "is-low" : "")"><span data-qty>@item.Quantidade</span><small>em stock</small></div>
+                    <div class="qty num @(item.Quantidade <= 0 ? "is-low" : "")"><span data-qty>@item.Quantidade</span><small>em stock</small><span class="qbar" aria-hidden="true"><i></i></span></div>
                     <div class="acts">
                         <button type="button" class="button btn-icon" data-action="imagem" aria-label="Alterar imagem" title="Alterar imagem"><i class="fa-solid fa-image"></i></button>
                         <button type="button" class="button btn-icon" data-action="quantidade" aria-label="Acertar quantidade" title="Acertar quantidade"><i class="fa-solid fa-pen-to-square"></i></button>
@@ -180,11 +179,20 @@
     let atual = null, imagemAlterada = false;
 
     // A barra de estatísticas segue o filtro e as alterações de quantidade.
-    const estat = visiveis => App.stats({
+    // Barra de stock relativa ao maior stock da lista: vermelha vazia a 0, âmbar até 20% do maior.
+    function barras() {
+        const todos = App.$$('#lista .item'), max = Math.max(1, ...todos.map(i => +i.dataset.qty));
+        todos.forEach(i => {
+            const q = +i.dataset.qty, b = App.$('.qbar', i);
+            App.$('i', b).style.width = Math.min(100, Math.max(0, q / max * 100)) + '%';
+            b.classList.toggle('is-zero', q <= 0); b.classList.toggle('is-warn', q > 0 && q <= max * .2);
+        });
+    }
+    const estat = visiveis => { barras(); App.stats({
         sPub: visiveis.length,
         sUn: visiveis.reduce((s, i) => s + (+i.dataset.qty), 0),
         sZero: visiveis.filter(i => +i.dataset.qty <= 0).length
-    });
+    }); };
     const filtroLista = App.filtro({ lista: '#lista', input: '#filtro', chips: '#chips', vazio: '#vazio', tipo: '@tipoAtual', aoAplicar: estat });
 
     const itemDe = el => el.closest('.item');
@@ -228,7 +236,8 @@
 
     App.on('criar', btn => App.run(btn, async () => {
         const ref = App.$('#txtRefPub').value.trim(), nome = App.$('#txtNomePub').value.trim();
-        if (!ref || !nome) { notifyError('Indique a referência e o nome.'); return; }
+        if (!ref) return App.campo('#txtRefPub', 'Indique a referência.');
+        if (!nome) return App.campo('#txtNomePub', 'Indique o nome da publicação.');
         const stamp = await App.api('POST', '/Literatura/Literatura/', { referencia: ref, descricao: nome, data: '', tipo: App.$('#txtTipoPub').value });
         const qtd = App.lerInt('#txtQtdPub');
         if (qtd !== 0) await App.api('POST', '/Literatura/Movimentos/', { stamp: stamp, qtd: qtd });
@@ -237,7 +246,7 @@
     }, 'Não foi possível criar a publicação.'));
 
     App.on('enviarHub', btn => App.run(btn, async () => {
-        const c = App.$('#txtCookie').value.trim(); if (!c) { notifyError('Cole a cookie primeiro.'); return; }
+        const c = App.$('#txtCookie').value.trim(); if (!c) return App.campo('#txtCookie', 'Cole a cookie primeiro.');
         await App.api('GET', '/Literatura/API/', { id: c });
         App.$('#txtCookie').value = ''; modalTok.close(); notify('Inventário enviado com sucesso.');
     }, 'Não foi possível enviar. O inventário deste mês pode já ter sido enviado, a cookie estar errada ou sem acesso à literatura da congregação.'));

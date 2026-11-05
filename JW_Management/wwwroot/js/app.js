@@ -255,6 +255,21 @@
         await App.api('POST', '/Literatura/Movimentos/', { stamp: stamp, qtd: qtd, idpub: idpub });
     };
 
+    // Erro junto ao campo (em vez de um aviso solto): App.campo('#txtPub', 'Escolha uma publicação.') devolve false.
+    App.campo = function (sel, msg) {
+        const el = typeof sel === 'string' ? $(sel) : sel, f = el.closest('.field') || el.parentElement;
+        $$('.field-msg', f).forEach(function (m) { m.remove(); });
+        el.classList.add('is-danger');
+        const p = document.createElement('p'); p.className = 'help is-danger field-msg'; p.setAttribute('role', 'alert'); p.textContent = msg;
+        f.appendChild(p); el.focus(); return false;
+    };
+    ['input', 'change'].forEach(function (ev) {
+        document.addEventListener(ev, function (e) {
+            const f = e.target.closest && e.target.closest('.field'); if (!f) return;
+            $$('.field-msg', f).forEach(function (m) { m.remove(); }); $$('.is-danger', f).forEach(function (i) { i.classList.remove('is-danger'); });
+        });
+    });
+
     // Seleccionar o publicador "Loja" (id definido pelo ecrã).
     App.lerInt = function (sel) { return parseInt($(sel).value, 10) || 0; };
 })();

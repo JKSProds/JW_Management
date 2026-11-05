@@ -11,8 +11,7 @@
 <div class="container">
     <div class="page-head">
         <div class="head-title">
-            <span class="head-icon"><i class="fa-solid fa-book-medical"></i></span>
-            <div><h1>Pedidos</h1><p>Periódicos e publicações especiais pedidas pelos publicadores</p></div>
+            <div><h1>Pedidos</h1></div>
         </div>
         <div class="head-actions">
             <button type="button" class="button is-info" data-open="modalPedidoEspecial">
@@ -61,7 +60,7 @@
                     @foreach (var item in periodicos)
                     {
                         <article class="item" data-stamp="@item.Stamp" data-ref="@item.Referencia">
-                            <div class="thumb"><img src="@item.Imagem" alt="" loading="lazy" onerror="this.src='/img/l_no_photo.png'"></div>
+                            <div class="thumb"><img src="@item.Imagem" alt="" loading="lazy" onerror="this.remove()"></div>
                             <div class="main">
                                 <div class="name">@item.Descricao</div>
                                 <div class="meta">
@@ -98,7 +97,7 @@
                     {
                         var estado = item.EstadoPedido!.Descricao ?? "";
                         <article class="item" data-stamp="@item.Stamp" data-estado="@estado" data-qtd="@item.Quantidade">
-                            <div class="thumb"><img src="@item.Imagem" alt="" loading="lazy" onerror="this.src='/img/l_no_photo.png'"></div>
+                            <div class="thumb"><img src="@item.Imagem" alt="" loading="lazy" onerror="this.remove()"></div>
                             <div class="main">
                                 <div class="name">@item.Descricao</div>
                                 <div class="meta">
@@ -203,7 +202,7 @@
             <p class="modal-body-text mb-4" id="estNome"></p>
             <div class="field">
                 <span class="label">Estado</span>
-                <div class="chips" id="chipsEstado" role="group" aria-label="Estado do pedido" style="flex-wrap:wrap">
+                <div class="chips is-choice" id="chipsEstado" role="group" aria-label="Estado do pedido">
                     @for (var i = 0; i < estados.Count; i++)
                     {
                         <button type="button" class="chip" data-estado="@estados[i].Value" aria-pressed="false">
@@ -308,9 +307,9 @@
 
     App.on('criarEsp', btn => App.run(btn, async () => {
         const pub = App.$('#txtIdPublicador').value, stamp = App.$('#txtPubStamp').value, qtd = App.lerInt('#txtQtd');
-        if (pub === '') { notifyError('Escolha o publicador.'); return; }
-        if (!stamp) { notifyError('Escolha uma publicação da lista de sugestões.'); return; }
-        if (qtd < 1) { notifyError('Indique uma quantidade positiva.'); return; }
+        if (pub === '') return App.campo('#txtIdPublicador', 'Escolha o publicador.');
+        if (!stamp) return App.campo('#txtPub', 'Escolha uma publicação da lista de sugestões.');
+        if (qtd < 1) return App.campo('#txtQtd', 'Indique uma quantidade positiva.');
         await App.api('POST', '/Literatura/Pedido/', { stamp: stamp, idpub: pub, qtd: qtd });
         M('modalPedidoEspecial').close(); pesq.limpar(); App.$('#txtQtd').value = 1;
         await recarregar(); notify('Pedido registado.');
@@ -318,8 +317,8 @@
 
     App.on('criarPer', btn => App.run(btn, async () => {
         const pub = App.$('#txtIdPublicador2').value, qtd = App.lerInt('#txtQtdPeriodico');
-        if (pub === '') { notifyError('Escolha o publicador.'); return; }
-        if (qtd < 1) { notifyError('Indique uma quantidade positiva.'); return; }
+        if (pub === '') return App.campo('#txtIdPublicador2', 'Escolha o publicador.');
+        if (qtd < 1) return App.campo('#txtQtdPeriodico', 'Indique uma quantidade positiva.');
         await App.api('POST', '/Literatura/Periodico/', { referencia: App.$('#periodico').value, idpub: pub, qtd: qtd });
         M('modalPedidoPeriodico').close(); App.$('#txtQtdPeriodico').value = 1;
         await recarregar(); notify('Pedido registado.');
@@ -327,6 +326,7 @@
 
     function marcarEstado(v) {
         estadoSel = v;
+        App.$$('.field-msg', App.$('#chipsEstado').closest('.field')).forEach(m => m.remove());
         App.$$('#chipsEstado .chip').forEach(c => c.setAttribute('aria-pressed', c.dataset.estado === v));
     }
     App.on('editarEsp', btn => {
@@ -339,20 +339,20 @@
     document.getElementById('chipsEstado').addEventListener('click', e => { const c = e.target.closest('.chip'); if (c) marcarEstado(c.dataset.estado); });
 
     App.on('guardarEstado', btn => App.run(btn, async () => {
-        if (!estadoSel) { notifyError('Escolha o estado.'); return; }
-        const qtd = App.lerInt('#txtQtdPedido'); if (qtd < 1) { notifyError('Indique uma quantidade positiva.'); return; }
+        if (!estadoSel) return App.campo('#chipsEstado', 'Escolha o estado.');
+        const qtd = App.lerInt('#txtQtdPedido'); if (qtd < 1) return App.campo('#txtQtdPedido', 'Indique uma quantidade positiva.');
         await App.api('PUT', '/Literatura/Pedido/', { stamp: atual.dataset.stamp, qtd: qtd, estado: estadoSel });
         M('modalEstado').close(); await recarregar(); notify('Pedido atualizado.');
     }, 'Não foi possível atualizar o pedido.'));
 
     App.on('enviarEsp', btn => App.run(btn, async () => {
-        const email = App.$('#txtEmailPedidos').value.trim(); if (!email) { notifyError('Indique o email de destino.'); return; }
+        const email = App.$('#txtEmailPedidos').value.trim(); if (!email) return App.campo('#txtEmailPedidos', 'Indique o email de destino.');
         await App.api('POST', '/Literatura/Pedidos/', { email: email });
         guardarEmail(email); M('modalMailPedidos').close(); await recarregar(); notify('Pedidos especiais enviados.');
     }, 'Não foi possível enviar os pedidos especiais.'));
 
     App.on('enviarPer', btn => App.run(btn, async () => {
-        const email = App.$('#txtEmailPeriodicos').value.trim(); if (!email) { notifyError('Indique o email de destino.'); return; }
+        const email = App.$('#txtEmailPeriodicos').value.trim(); if (!email) return App.campo('#txtEmailPeriodicos', 'Indique o email de destino.');
         await App.api('POST', '/Literatura/Periodicos/' + App.$('#mailperiodico').value, { email: email });
         guardarEmail(email); M('modalMailPeriodicos').close(); notify('Pedidos de periódicos enviados.');
     }, 'Não foi possível enviar os pedidos de periódicos.'));

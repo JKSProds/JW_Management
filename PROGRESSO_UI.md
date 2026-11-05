@@ -17,6 +17,12 @@ Fora de âmbito por agora: **Territórios, Reuniões e Congressos** (não foram 
 - Navbar: menus com borda, respiração e ponte invisível sobre o intervalo (já não fecham ao mover o rato); também abrem por clique/toque.
 - Login: a lista de congregações é relida se estiver vazia (era lida só no arranque) e há pedido AJAX de reserva com aviso de erro.
 
+- Visual plano (revisão 3): sem sombras nem gradientes nos cartões, raios de 6-10px, sem elevação ao passar o rato; sombra só nos elementos flutuantes (menus, modais, avisos).
+
+## Revisão 4 (2026-11-05)
+
+Aplicadas as 12 sugestões visuais: miniaturas com proporção fixa e ícone por tipo quando não há imagem; quantidade em destaque com barra de stock (relativa ao maior stock da lista; âmbar até 20%, vermelha a zero) e setas nas entradas/saídas; cabeçalhos sem o quadrado de ícone; estatísticas sem fundo nos ícones; filtros em texto com sublinhado; navbar alinhada com o conteúdo, módulo ativo sublinhado e menu móvel em painel lateral; Início plano com resumo (stock, exemplares por entregar, pedidos por enviar, periódicos urgentes e lista «Atenção», via `/Home/Resumo`); login com painel de marca mais estreito; erros junto ao campo (`App.campo`); linhas compactas a partir de 1024px; tabelas, separadores e cartões dos ecrãs antigos alinhados com o novo estilo.
+
 ## Minimizar refrescos de página
 
 Utilitários em `wwwroot/js/app.js` (sem dependências, usam `fetch` e delegação de eventos):

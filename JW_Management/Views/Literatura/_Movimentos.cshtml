@@ -18,7 +18,7 @@ else
         @foreach (var item in Model)
         {
             <article class="item" data-stamp="@item.Stamp">
-                <div class="thumb"><img src="@item.Literatura!.Imagem" alt="" loading="lazy" onerror="this.src='/img/l_no_photo.png'"></div>
+                <div class="thumb"><img src="@item.Literatura!.Imagem" alt="" loading="lazy" onerror="this.remove()"></div>
                 <div class="main">
                     <div class="name">@item.Literatura.Descricao</div>
                     <div class="meta">
@@ -31,7 +31,7 @@ else
                     </div>
                 </div>
                 <div class="side">
-                    <div class="qty num @(item.In ? "is-in" : "is-out")">@(item.In ? "+" : "−")@Math.Abs(item.Quantidade)</div>
+                    <div class="qty num @(item.In ? "is-in" : "is-out")"><i class="fa-solid @(item.In ? "fa-arrow-down-long" : "fa-arrow-up-long")" aria-hidden="true"></i>@(item.In ? "+" : "−")@Math.Abs(item.Quantidade)</div>
                     <div class="acts">
                         <button type="button" class="button btn-icon is-danger-hover" data-action="apagarMov" aria-label="Apagar movimento" title="Apagar movimento"><i class="fa-solid fa-trash-can"></i></button>
                     </div>

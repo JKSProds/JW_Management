@@ -6,8 +6,7 @@
 <div class="container">
     <div class="page-head">
         <div class="head-title">
-            <span class="head-icon"><i class="fa-solid fa-newspaper"></i></span>
-            <div><h1>Periódicos a entregar</h1><p>Ordenados por urgência de entrega</p></div>
+            <div><h1>Periódicos a entregar</h1></div>
         </div>
         <div class="head-actions">
             <a class="button is-info is-light" href="~/Literatura/Movimentos/2">
@@ -31,7 +30,7 @@
                     {
                         var tom = item.Entrega < 10 ? "tone-bad" : (item.Entrega < 30 ? "tone-warn" : "");
                         <article class="item @tom" data-stamp="@item.Stamp" data-qtd="@item.Quantidade" data-falta="@item.QuantidadeFalta" data-dias="@item.Entrega">
-                            <div class="thumb"><img src="@item.URL" alt="" loading="lazy" onerror="this.src='/img/l_no_photo.png'"></div>
+                            <div class="thumb"><img src="@item.URL" alt="" loading="lazy" onerror="this.remove()"></div>
                             <div class="main">
                                 <div class="name">@item.Descricao</div>
                                 <div class="meta">
