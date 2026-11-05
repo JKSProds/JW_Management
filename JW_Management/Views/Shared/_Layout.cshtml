@@ -15,7 +15,15 @@
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="color-scheme" content="light" />
+    <meta name="color-scheme" content="light dark" />
+    @* Define o tema antes de pintar (sem "flash"): preferência guardada ou a do sistema. *@
+    <script>
+        (function () {
+            var t = null; try { t = localStorage.getItem('tema'); } catch (e) { }
+            if (t !== 'light' && t !== 'dark') t = window.matchMedia && matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+            document.documentElement.setAttribute('data-theme', t);
+        })();
+    </script>
     <meta name="theme-color" content="#2a4dd0" />
     <title>@ViewData["Title"] - Gestor Congregacional @(autenticado ? $"({User.ObterCong()})" : "")</title>
 
@@ -44,7 +52,10 @@
     <script src="~/lib/bulma-toast/dist/bulma-toast.min.js"></script>
     <script src="/lib/moment.js/moment-with-locales.min.js"></script>
     <script src="~/lib/dropzone/dropzone.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/gantt-schedule-timeline-calendar"></script>
+    @if (!bare)
+    {
+        <script src="https://cdn.jsdelivr.net/npm/gantt-schedule-timeline-calendar"></script>
+    }
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
             integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
@@ -158,6 +169,7 @@
                 }
             }
                 <div class="navbar-end">
+                    <div class="navbar-item theme-item"><button type="button" class="theme-toggle" data-action="tema" aria-label="Alternar entre tema claro e escuro" title="Alternar tema"><i class="fa-solid fa-moon"></i><i class="fa-solid fa-sun"></i></button></div>
                     @if (autenticado)
                     {
                         <div class="navbar-item has-dropdown is-hoverable">
@@ -214,6 +226,7 @@
     }
     else
     {
+        <div class="auth-theme"><button type="button" class="theme-toggle" data-action="tema" aria-label="Alternar entre tema claro e escuro" title="Alternar tema"><i class="fa-solid fa-moon"></i><i class="fa-solid fa-sun"></i></button></div>
         @RenderBody()
     }
     @RenderSection("Scripts", required: false)

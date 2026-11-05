@@ -1,143 +1,82 @@
-﻿@model IEnumerable<JW_Management.Models.RegistroTerritorio>
+@model IEnumerable<JW_Management.Models.RegistroTerritorio>
 @{
-    ViewData["Title"] = "Território - Movimentos";
+    ViewData["Title"] = "Territórios - Registos";
+    bool EmCurso(JW_Management.Models.RegistroTerritorio r) => r.Saida.DataMovimento == DateTime.MinValue;
 }
 
-<form asp-action="Index" method="get" id="frmFiltrar">
-    <div class="container">
-        <div class="columns">
-            <div class="column">
-                <div class="tile">
-                    <div class="tile is-parent is-vertical">
-                        <article class="tile is-child notification is-info">
-                            <p class="title">
-                                <span class="icon mr-3">
-                                    <i class="fa-solid fa-map"></i>
-                                </span>
-                                <span>Território - Movimentos</span>
-                            </p>
-                        </article>
-                    </div>
-                </div>
-            </div>
-            <div class="column">
-            </div>
+<div class="container">
+    <div class="page-head">
+        <div class="head-title"><div><h1>Registos de territórios</h1></div></div>
+        <div class="head-actions">
+            <a class="button is-info is-light" href="~/Territorios">
+                <span class="icon"><i class="fa-solid fa-arrow-left"></i></span><span>Territórios</span>
+            </a>
         </div>
     </div>
-</form>
-<hr />
-<div class="container">
-@if (Model.Count() == 0)
-{
-<div class="container">
-    <br />
-    <button class="button is-danger is-fullwidth" disabled>Não foram encontrados registros!</button>
-</div>
-}
-else
-{
-    <div class="container ">
-        <div class="task-container columns is-multiline mx-1">
-            @foreach (var item in Model)
-            {
-                <div class="column is-6">
-                    <div class="card">
-                        <header class="card-header card-toggle has-background-@item.CorEstado">
-                            <button class="button mx-1 is-rounded my-auto" style="background-color:@item.Territorio.CorDificuldade;"><p class="" style="line-height:1;"></p></button>
-                            <p class="is-size-6 my-1 has-text-centered column">
-                                <b>@item.Territorio.Id</b> - @item.Territorio.Nome
-                            </p>
-                            <button class="card-header-icon" style="text-align:right" >
-                                
-                            </button>
-                        </header>
-                        <div class="card-content has-text-centered">
-                            <div class="content">
-                                <div class="columns">
-                                    <div class="column is-6 m-1" style="border-style:solid;border-radius:16px">
-                                        Publicador: <b>@item.Entrada.Publicador.Nome</b>
-                                    </div>
-                                    <div class="column is-6 m-1" style="border-style:solid;border-radius:16px">
-                                        @item.Descricao
-                                    </div>
-                                </div>
-                                <div class="columns my-0">
-                                    <div class="column is-6 m-1" style="border-style:solid;border-radius:16px">
-                                        Levantado a: <b>@item.Entrada.DataMovimento.ToShortDateString()</b>
-                                    </div>
-                                    <div class="column is-6 m-1" style="border-style:solid;border-radius:16px">
-                                        Devolvido a: <b>@(item.Saida.DataMovimento == @DateTime.MinValue ? "-----" :  item.Saida.DataMovimento.ToShortDateString() )</b>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                        <footer class="card-footer">
-                            <div class="container is-12">
-                                <div class="buttons has-addons">
-                                    <button class="button is-danger is-fullwidth is-large"
-                                                onclick="document.getElementById('txtHiddenStampEntrada').value = '@item.Entrada.Stamp'; document.getElementById('txtHiddenStampSaida').value = '@item.Saida.Stamp';Bulma('#ModalConfirmApagar').modal().open();">
-                                            <i class="fas fa-trash-can"></i>
-                                    </button>
-                                </div>
-                            </div>
-                        </footer>
-                    </div>
-                </div>
-            }
+
+    @await Html.PartialAsync("_Stats", new[] {
+        ("fa-clock-rotate-left", "Registos", Model.Count().ToString(), "sTot", ""),
+        ("fa-user-check", "Em curso", Model.Count(EmCurso).ToString(), "sCurso", ""),
+        ("fa-circle-check", "Concluídos", Model.Count(r => !EmCurso(r)).ToString(), "sFim", "is-ok") })
+
+    <div class="toolbar">
+        <div class="control has-icons-left search">
+            <input type="search" class="input" id="filtro" placeholder="Pesquisar por território ou publicador" aria-label="Pesquisar registos">
+            <span class="icon is-left"><i class="fa-solid fa-magnifying-glass"></i></span>
+        </div>
+        <div class="chips" id="chips" role="group" aria-label="Filtrar por estado">
+            <button type="button" class="chip" data-type="0" aria-pressed="true">Todos</button>
+            <button type="button" class="chip" data-type="curso" aria-pressed="false">Em curso</button>
+            <button type="button" class="chip" data-type="fim" aria-pressed="false">Concluídos</button>
         </div>
     </div>
-}
-</div>
 
-<div class="modal" id="ModalConfirmApagar">
-    <div class="modal-background"></div>
-    <div class="modal-card">
-        <header class="modal-card-head">
-            <p class="modal-card-title">Apagar Movimentos</p>
-        </header>
-        <section class="modal-card-body">
-            <div class="modal-body">
-                <p>Tem a certeza que deseja apagar estes movimentos? Será como se este territorio nunca tivesse sido levantado!<br /><br /><b> Esta ação é irreversivel!</b></p>
-            </div>
-        </section>
-        <footer class="modal-card-foot">
-            <button class="button is-danger is-fullwidth is-large"
-                    onclick="ApagarLinhaMovimento(document.getElementById('txtHiddenStampEntrada').value, document.getElementById('txtHiddenStampSaida').value);">
-                <span class="icon">
-                    <i class="fas fa-trash-can"></i>
-                </span>
-                <span>Confirmar</span>
-            </button>
-            <button class="button is-fullwidth is-large" onclick="Bulma('#ModalConfirmApagar').modal().close();">
-                <span class="icon">
-                    <i class="fa-solid fa-circle-xmark"></i>
-                </span>
-                <span>Não</span>
-            </button>
-        </footer>
+    <div id="lista" class="items">
+        @foreach (var item in Model)
+        {
+            var curso = EmCurso(item);
+            var tom = curso ? (item.CorEstado == "danger" ? "tone-bad" : item.CorEstado == "warning" ? "tone-warn" : "") : "";
+            <article class="item no-thumb @tom" data-type="@(curso ? "curso" : "fim")" data-entrada="@item.Entrada.Stamp" data-saida="@item.Saida.Stamp"
+                     data-label="@item.Territorio.Id - @item.Territorio.Nome" data-search="@item.Territorio.Id @item.Territorio.Nome @item.Entrada.Publicador.Nome">
+                <div class="main">
+                    <div class="name"><span class="ref-tag id-badge">@item.Territorio.Id</span> @item.Territorio.Nome</div>
+                    <div class="meta">
+                        <span><i class="fa-solid fa-user fa-xs"></i> @item.Entrada.Publicador.Nome</span>
+                        <span class="num">Levantado a @item.Entrada.DataMovimento.ToString("dd/MM/yyyy")</span>
+                        <span class="num">@(curso ? "Ainda por devolver" : "Devolvido a " + item.Saida.DataMovimento.ToString("dd/MM/yyyy"))</span>
+                        @if (!string.IsNullOrWhiteSpace(item.Descricao)) { <span>@item.Descricao</span> }
+                    </div>
+                </div>
+                <div class="side">
+                    <div class="acts">
+                        <button type="button" class="button btn-icon is-danger-hover" data-action="apagar" aria-label="Apagar registo" title="Apagar registo"><i class="fa-solid fa-trash-can"></i></button>
+                    </div>
+                </div>
+            </article>
+        }
+    </div>
+
+    <div id="vazio" class="empty-state" @(Model.Any() ? "hidden" : "")>
+        <span class="icon"><i class="fa-solid fa-clock-rotate-left"></i></span>
+        <strong>Não foram encontrados registos</strong>
+        Os levantamentos e devoluções de territórios aparecem aqui.
     </div>
 </div>
 
-<input hidden id="txtHiddenStampEntrada" />
-<input hidden id="txtHiddenStampSaida" />
-
+@section Scripts {
 <script>
+    App.filtro({
+        lista: '#lista', input: '#filtro', chips: '#chips', vazio: '#vazio',
+        aoAplicar: v => App.stats({ sTot: v.length, sCurso: v.filter(i => i.dataset.type === 'curso').length, sFim: v.filter(i => i.dataset.type === 'fim').length })
+    });
 
-    function ApagarLinhaMovimento(stamp1, stamp2) {
-        $.ajax({
-            url: '/Territorios/Registros/',
-            data: { "stampentrada": stamp1, "stampsaida": stamp2 },
-            type: "DELETE",
-            success: function (data) {
-                window.location.reload();
-            },
-            error: function (data) {
-                notifyError('Ocorreu um erro ao apagar este movimento!');
-            },
-            failure: function (data) {
-                notifyError('Falha ao apagar este movimento!');
-            }
-        });
-    }
-
+    App.on('apagar', async btn => {
+        const it = btn.closest('.item');
+        if (!await App.confirm({ title: 'Apagar registo', text: 'Apagar o registo de «' + it.dataset.label + '»? Fica como se este território nunca tivesse sido levantado. Esta ação é irreversível.', ok: 'Apagar' })) return;
+        App.run(btn, async () => {
+            await App.api('DELETE', '/Territorios/Registros/', { stampentrada: it.dataset.entrada, stampsaida: it.dataset.saida });
+            App.removeItem(it); notify('Registo apagado.');
+        }, 'Não foi possível apagar o registo.');
+    });
 </script>
+}

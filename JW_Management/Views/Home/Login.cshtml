@@ -50,9 +50,9 @@
                     </div>
                 </div>
                 <div class="field">
-                    <label class="label" for="inputPassword">Palavra-passe</label>
+                    <label class="label" for="Password">Palavra-passe</label>
                     <div class="control has-icons-left">
-                        <input class="input" type="password" asp-for="Password" id="inputPassword" autocomplete="current-password" required>
+                        <input class="input" type="password" asp-for="Password" autocomplete="current-password" required>
                         <span class="icon is-left"><i class="fa-solid fa-lock"></i></span>
                     </div>
                 </div>
@@ -76,7 +76,7 @@
     if (document.getElementById('divError')) {
         document.getElementById('authCard').classList.add('is-shaking');
         if (navigator.vibrate) navigator.vibrate(200);
-        const u = document.getElementById('Username'); (u && u.value ? document.getElementById('inputPassword') : u).focus();
+        const u = document.querySelector('[name=Username]'), pw = document.querySelector('[name=Password]'); (u && u.value ? pw : u).focus();
     }
 </script>
 }

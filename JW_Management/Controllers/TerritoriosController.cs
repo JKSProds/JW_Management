@@ -129,14 +129,16 @@ namespace JW_Management.Controllers
         {
             if (string.IsNullOrEmpty(id) || file == null) return StatusCode(500);
 
+            // A extensão vem do cliente e entra no nome do ficheiro: só se mantêm letras, números e o ponto.
+            var ext = System.Text.RegularExpressions.Regex.Replace(Path.GetExtension(file.FileName), "[^.a-zA-Z0-9]", "");
             Territorio t = _dbContext.ObterTerritorio(id, false, false, false, false);
 
             AnexosTerritorio a = new AnexosTerritorio()
             {
                 Stamp = DateTime.Now.Ticks.ToString(),
-                NomeFicheiro = "T_" + t.Id.ToUpper() + "_" + DateTime.Now.Ticks.ToString() + "." + file.FileName.Split(".").Last(),
+                NomeFicheiro = "T_" + t.Id.ToUpper() + "_" + DateTime.Now.Ticks.ToString() + ext,
                 CaminhoFicheiro = _fileContext.ObterCaminhoTerritorios(),
-                Extensao = "." + file.FileName.Split(".").Last(),
+                Extensao = ext,
                 Descricao = "Anexo de Território (" + t.Nome + ")",
                 Territorio = t
             };

@@ -30,6 +30,15 @@ Aplicadas as 12 sugestões visuais: miniaturas com proporção fixa e ícone por
 - «A entregar em breve» passou a menos de 31 dias (Início e Periódicos).
 - JW Hub: aceita o comando «Copiar como cURL» e extrai a cookie; o envio passou a POST (a cookie já não vai no URL).
 
+## Revisão 6 (2026-11-05)
+
+- Tema claro/escuro em toda a app: tokens em `:root` e `:root[data-theme="dark"]`, escolha guardada em `localStorage` (`tema`), por omissão segue o sistema. Botão na navbar e no login. As cores fixas do Bulma, jQuery UI, calendário, Swal e mapas (peças Leaflet) foram ligadas aos tokens.
+- Territórios migrados para o novo design.
+- Hourglass: ver nota abaixo.
+
+### Hourglass (investigação)
+Fontes públicas indicam que o Hourglass não tem API pública; permite exportar os dados da congregação em PDF, DOCX, CSV ou JSON e importar de KHS, NW Scheduler e TSWIN (https://www.hourglass-app.com/en/features/). Caminho seguro: importar um ficheiro exportado. Falta um ficheiro de exemplo (anonimizado) para escrever o leitor; não se deve ligar com as credenciais do utilizador.
+
 ## Minimizar refrescos de página
 
 Utilitários em `wwwroot/js/app.js` (sem dependências, usam `fetch` e delegação de eventos):
@@ -60,7 +69,8 @@ Regra: nenhum ecrã migrado usa `window.location.reload()`. Só há navegação 
 | Configuração | Feito | Cartões por secção, avisos claros |
 | Home / Index | Feito | Saudação, resumo de stock carregado em segundo plano (`/Home/Resumo`), módulos com atalhos |
 | Home / Login (+ Auth, Error) | Feito | Painel de marca + formulário; congregações renderizadas no servidor (sem pedido AJAX) |
-| Territórios, Reuniões, Congressos | **Por fazer** | Não alterados; herdam as cores novas via remapeamento do Bulma |
+| Territórios (Index, Território, Registos) | Feito | Estados disponível/atribuído/+90 dias, atribuir e devolver com envio opcional por email/SMS, anexos com lista viva, leitor QR partilhado (`App.qr`) |
+| Reuniões, Congressos | **Por fazer** | Não alterados; seguem as cores e o tema via remapeamento do Bulma (o gráfico Gantt do Calendário não segue o tema escuro) |
 
 ## Correções de código (comportamento preservado)
 

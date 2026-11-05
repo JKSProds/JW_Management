@@ -1,621 +1,307 @@
 ﻿@model IEnumerable<JW_Management.Models.Territorio>
 @{
-    ViewData["Title"] = "Território";
+    ViewData["Title"] = "Territórios";
+    var publicadores = ((IEnumerable<SelectListItem>)ViewBag.Publicadores).ToList();
+
+    bool Livre(JW_Management.Models.Territorio t) => t.UltimoMovimento?.Publicador == null || t.UltimoMovimento.Publicador.Id == 0;
+    bool Atencao(JW_Management.Models.Territorio t) => t.CorEstado is "danger" or "warning";
+    var livres = Model.Count(Livre);
+    var atencao = Model.Count(t => !Livre(t) && Atencao(t));
 }
 
-<form asp-action="Index" method="get" id="frmFiltrar">
-    <div class="container">
-        <div class="columns">
-            <div class="column">
-                <div class="tile">
-                    <div class="tile is-parent is-vertical">
-                        <article class="tile is-child notification is-info">
-                            <p class="title">
-                                <span class="icon mr-3">
-                                    <i class="fa-solid fa-map"></i>
-                                </span>
-                                <span>Territórios</span>
-                            </p>
-                        </article>
-                    </div>
-                </div>
-            </div>
-            <div class="column">
-                <div class="field has-addons has-addons-right mx-1 is-flex-wrap-wrap" style="width:100%">
-                    <p class="control has-icons-left">
-                        <input type="text" class="input" placeholder="Descrição" id="filtro" name="filtro"
-                               value="@ViewData["filtro"]">
-                        <span class="icon is-small is-left">
-                            <i class="fa-solid fa-arrow-down-a-z"></i>
-                        </span>
-                    </p>
-                    <div class="buttons has-addons is-right mt-2">
-                        <p class="control">
-                            <button type="submit" class="button is-info is-outlined is-fullwidth ">
-                                <span class="icon">
-                                    <i class="fas fa-search fa-lg"></i>
-                                </span>
-                                <span>Pesquisar</span>
-                            </button>
-                        </p>
-                        <p class="control">
-                            <a type="button" href="~/Territorios" class="button is-fullwidth ">
-                                <span class="icon">
-                                    <i class="fas fa-backspace fa-lg"></i>
-                                </span>
-                                <span>Limpar</span>
-                            </a>
-                        </p>
-                        <p class="control">
-                            <a class="button is-info is-fullwidth " onclick="Bulma('#modalNovoTerritorio').modal().open();">
-                                <span class="icon">
-                                    <i class="fa-solid fa-circle-plus"></i>
-                                </span>
-                                <span>Adicionar</span>
-                            </a>
-                        </p>
-                        <p class="control">
-                            <a type="button" class="button is-success is-fullwidth " href="~/Territorios/Formulario">
-                                <span class="icon">
-                                    <i class="fas fa-file-invoice fa-lg"></i>
-                                </span>
-                                <span>S-13</span>
-                            </a>
-                        </p>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-</form>
-<hr />
 <div class="container">
-    @if (Model.Count() == 0)
-    {
-        <br />
-        <button class="button is-danger is-large is-rounded is-fullwidth is-disabled">
-            Não foram encontrados
-            territórios!
-        </button>
-    }
-    else
-    {
-        <div class="b-table">
-            <div class="table-wrapper has-mobile-cards">
-                <table class="table is-hoverable is-fullwidth">
-                    <thead>
-                        <tr>
-                            <th>
-                                @Html.DisplayNameFor(model => model.FirstOrDefault()!.Id)
-                            </th>
-                            <th>
-                                @Html.DisplayNameFor(model => model.FirstOrDefault()!.Nome)
-                            </th>
-                            <th>
-                                @Html.DisplayNameFor(model => model.FirstOrDefault()!.Dificuldade)
-                            </th>
-                            <th>
-                                @Html.DisplayNameFor(model => model.FirstOrDefault()!.UltimoMovimento!.Publicador!)
-                            </th>
-                            <th>
-                                @Html.DisplayNameFor(model => model.FirstOrDefault()!.UltimoMovimento!.DataMovimento!)
-                            </th>
-                            <th></th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @foreach (var item in Model)
-                        {
-                            <tr class="has-background-@item.CorEstado">
-                                <td data-label="@Html.DisplayNameFor(model => model.FirstOrDefault()!.Id)">
-                                    <span>@item.Id</span>
-                                </td>
-                                <td data-label="@Html.DisplayNameFor(model => model.FirstOrDefault()!.Nome)">
-                                    <span>@item.Nome</span>
-                                </td>
-                                <td data-label="@Html.DisplayNameFor(model => model.FirstOrDefault()!.Dificuldade)">
-                                    <button class="button mx-1 is-rounded my-auto" style="background-color:@item.CorDificuldade;"><p class="" style="line-height:1;"></p></button>
-                                </td>
-                                <td data-label="@Html.DisplayNameFor(model => model.FirstOrDefault()!.UltimoMovimento!.Publicador!)">
-                                    <span> @(item.UltimoMovimento?.Publicador?.Id == 0 || item.UltimoMovimento?.Publicador == null ? "" : item.UltimoMovimento?.Publicador?.Nome)</span>
-                                </td>
-                                <td data-label="@Html.DisplayNameFor(model => model.FirstOrDefault()!.UltimoMovimento!.DataMovimento!)">
-                                    <span>@item.UltimoMovimento?.DataDescritiva</span>
-                                </td>
-                                <td class="is-actions-cell">
-                                    <div class="buttons is-pulled-right is-flex-wrap-nowrap" style="width:100%">
-                                        @if (item.UltimoMovimento?.Publicador?.Id == 0 || item.UltimoMovimento?.Publicador == null)
-                                        {
-                                            <button class="button is-info is-fullwidth is-large mr-1"
-                                                    onclick="AbrirMovimentoModal('@item.Stamp', '@item.Id - @item.Nome [@item.Dificuldade]', 1, document.getElementById('txtIdPublicador').value)">
-                                                <i class="fa-solid fa-file-circle-check"></i>
-                                            </button>
-                                        }
-                                        else
-                                        {
-                                            <button class="button is-success is-fullwidth is-large mr-1"
-                                                    onclick="AbrirMovimentoModal('@item.Stamp', '@item.Id - @item.Nome [@item.Dificuldade]', 2, @item.UltimoMovimento?.Publicador?.Id)">
-                                                <i class="fa-solid fa-file-circle-xmark"></i>
-                                            </button>
-                                        }
-
-                                        <a class="button is-warning is-fullwidth is-large mr-1"
-                                           href="~/Territorios/Territorio/@item.Stamp">
-                                            <i class="fas fa-pencil"></i>
-                                        </a>
-                                        <button class="button is-danger is-fullwidth is-large"
-                                                onclick="ConfirmApagarTerritorio('@item.Stamp')">
-                                            <i class="fas fa-trash-can"></i>
-                                        </button>
-                                    </div>
-                                </td>
-                            </tr>
-                        }
-                    </tbody>
-                </table>
-            </div>
+    <div class="page-head">
+        <div class="head-title">
+            <div><h1>Territórios</h1></div>
         </div>
-    }
-</div>
-
-
-<div id="modalNovoTerritorio" class="modal">
-    <div class="modal-background"></div>
-    <div class="modal-card">
-        <header class="modal-card-head">
-            <p class="modal-card-title">
-                <span class="icon">
-                    <i class="fas fa-circle-plus"></i>
-                </span>
-                <span>Novo - Território</span>
-            </p>
-            <button type="button" class="delete" aria-label="close"></button>
-        </header>
-        <section class="modal-card-body">
-            <div class="modal-body">
-                <div class="field">
-                    <label class="label">Núm. do Território</label>
-                    <p class="control">
-                        <input type="text" class="input" id="txtIdTerritorio">
-                    </p>
-                </div>
-                <div class="field">
-                    <label class="label">Nome do Território</label>
-                    <p class="control">
-                        <input type="text" class="input" id="txtNomeTerritorio">
-                    </p>
-                </div>
-                <div class="field">
-                    <label class="label">Dificuldade</label>
-                    <p class="control has-icons-left">
-                        <span class="select is-fullwidth">
-                            <select class="select" id="txtDificuldadeTerritorio" style="height: auto">
-                                <option value="1">FÁCIL</option>
-                                <option value="2">MODERADO</option>
-                                <option value="3">DIFICIL</option>
-                            </select>
-                        </span>
-                        <span class="icon is-small is-left">
-                            <i class="fa-solid fa-road"></i>
-                        </span>
-                    </p>
-                </div>
-                <div class="field">
-                    <label class="label">Descrição</label>
-                    <p class="control">
-                        <textarea type="text" class="textarea" rows="4" id="txtDescricaoTerritorio"></textarea>
-                    </p>
-                </div>
-
-                <label class="label">URL</label>
-                <div class="field has-addons">
-                    <div class="control" style="width:100%">
-                        <p class="control has-icons-left">
-                            <span>
-                                <input type="text" class="input" id="txtURLTerritorio">
-                            </span>
-                            <span class="icon is-small is-left">
-                                <i class="fa-solid fa-qrcode"></i>
-                            </span>
-                        </p>
-                    </div>
-                    <div class="control">
-                        <a class="button is-info"
-                           onclick="IniciarLeituraQR();Bulma('#modalLeituraQR').modal().open();" style="height:100%">
-                            <i class="fa-solid fa-qrcode"></i>
-                        </a>
-                    </div>
-                </div>
-            </div>
-        </section>
-        <footer class="modal-card-foot">
-            <div class="buttons is-centered" style="width:100%">
-            <a class="button is-info is-large is-fullwidth"
-               onclick="CriarTerritorio(document.getElementById('txtIdTerritorio').value, document.getElementById('txtNomeTerritorio').value, document.getElementById('txtDificuldadeTerritorio').value, document.getElementById('txtDescricaoTerritorio').value, document.getElementById('txtURLTerritorio').value)">
-                <span class="icon">
-                    <i class="fa-solid fa-circle-plus fa-beat-fade"></i>
-                </span>
-                <span>
-                    Criar
-                </span>
+        <div class="head-actions">
+            <button type="button" class="button is-info" data-open="modalNovo">
+                <span class="icon"><i class="fa-solid fa-map-location-dot"></i></span><span>Novo território</span>
+            </button>
+            <a class="button is-info is-light" href="~/Territorios/Formulario">
+                <span class="icon"><i class="fa-solid fa-file-pdf"></i></span><span>Formulário S-13</span>
             </a>
-            <button type="button" class="button is-large is-fullwidth is-danger"
-                    onclick="Bulma('#modalNovoTerritorio').modal().close();" href="javascript:;">
-                <span class="icon">
-                    <i class="fa-regular fa-circle-xmark"></i>
-                </span>
-                <span>Fechar</span>
-            </button>
-            </div>
-        </footer>
+        </div>
     </div>
-</div>
 
-<div id="modalAtribuirTerritorio" class="modal">
-    <div class="modal-background"></div>
-    <div class="modal-card">
-        <header class="modal-card-head">
-            <p class="modal-card-title">
-                <span class="icon">
-                    <i class="fa-solid fa-file-circle-check"></i>
-                </span>
-                <span>Atribuir - Territorio</span>
-            </p>
-            <button type="button" class="delete" aria-label="close"></button>
-        </header>
-        <section class="modal-card-body">
-            <div class="modal-body">
-                <div class="field">
-                    <label class="label">Publicador</label>
-                    <p class="control has-icons-left">
-                        <span class="select is-fullwidth">
-                            <select class="select" id="txtIdPublicador" style="height: auto" onchange="PreencherInfo(document.getElementById('txtIdPublicador').value)"
-                                    asp-items="@(new SelectList(@ViewBag.Publicadores, "Value", "Text"))">
-                            </select>
-                        </span>
-                        <span class="icon is-small is-left">
-                            <i class="fa-solid fa-user-tie"></i>
-                        </span>
-                    </p>
-                </div>
-                <div class="field">
-                    <label class="label">Data</label>
-                    <p class="control has-icons-left">
-                        <input class="input" type="date"
-                               value="@(DateTime.Now.ToString("yyyy-MM-dd"))" id="txtData"
-                               name="data" />
-                        <script>
-                            bulmaCalendar.attach('#txtData', {
-                                color: 'info',
-                                lang: 'pt',
-                                dateFormat: 'dd/MM/yyyy',
-                                todayLabel: 'Hoje',
-                                showClearButton: false,
-                                cancelLabel: 'Cancelar',
-                                displayMode: 'dialog'
-                            });
-                            document.getElementById('txtData').bulmaCalendar.on('select', function (datepicker) {
-                                document.getElementById('txtData').value = datepicker.data.value();
-                            });</script>
-                    </p>
-                </div>
-                <div class="field">
-                    <label class="label">Email</label>
-                    <div class="field has-addons">
-                        <p class="control" style="width:100%">
-                            <input type="email" class="input" id="txtEmailPublicador">
-                        </p>
-                        <a class="button is-success"
-                           onclick="GerarMovimento(document.getElementById('txtIdPublicador').value, document.getElementById('txtHiddenStamp').value, document.getElementById('txtEmailPublicador').value, '', 1, document.getElementById('txtData').value)">
-                            <span class="icon">
-                                <i class="fa-regular fa-paper-plane"></i>
-                            </span>
-                        </a>
-                    </div>
-                </div>
-                <div class="field">
-                    <label class="label">Nº Telemóvel</label>
-                    <div class="field has-addons">
-                        <p class="control" style="width:100%">
-                            <input type="tel" class="input" id="txtTelemovelPublicador">
-                        </p>
-                        <a class="button is-success"
-                           onclick="window.open('sms://'+document.getElementById('txtTelemovelPublicador').value.replace(/\s/g, '')+'?body=Foi lhe atribuido o seguinte território: ' + document.getElementById('txtHiddenText').value);GerarMovimento(document.getElementById('txtIdPublicador').value,document.getElementById('txtHiddenStamp').value, '', document.getElementById('txtTelemovelPublicador').value, 1, document.getElementById('txtData').value);">
-                            <span class="icon">
-                                <i class="fa-solid fa-message"></i>
-                            </span>
-                        </a>
-                    </div>
-                </div>
-            </div>
-        </section>
-        <footer class="modal-card-foot">
+    @await Html.PartialAsync("_Stats", new[] {
+        ("fa-map", "Territórios", Model.Count().ToString(), "sTot", ""),
+        ("fa-box-open", "Disponíveis", livres.ToString(), "sLivre", "is-ok"),
+        ("fa-user-check", "Atribuídos", (Model.Count() - livres).ToString(), "sAtr", ""),
+        ("fa-hourglass-half", "Atribuídos há mais de 90 dias", atencao.ToString(), "sAt", atencao > 0 ? "is-warn" : "") })
 
-            <button type="button" class="button is-large is-fullwidth is-danger"
-                    onclick="Bulma('#modalAtribuirTerritorio').modal().close();" href="javascript:;">
-                <span class="icon">
-                    <i class="fa-regular fa-circle-xmark"></i>
-                </span>
-                <span>Fechar</span>
-            </button>
-        </footer>
+    <div class="toolbar">
+        <div class="control has-icons-left search">
+            <input type="search" class="input" id="filtro" placeholder="Pesquisar por número, nome ou publicador" value="@ViewData["filtro"]" aria-label="Pesquisar territórios">
+            <span class="icon is-left"><i class="fa-solid fa-magnifying-glass"></i></span>
+        </div>
+        <div class="chips" id="chips" role="group" aria-label="Filtrar por estado">
+            <button type="button" class="chip" data-type="0" aria-pressed="true">Todos</button>
+            <button type="button" class="chip" data-type="livre" aria-pressed="false">Disponíveis</button>
+            <button type="button" class="chip" data-type="atribuido" aria-pressed="false">Atribuídos</button>
+            <button type="button" class="chip" data-type="atencao" aria-pressed="false">Há mais de 90 dias</button>
+        </div>
     </div>
-</div>
 
-<div class="modal" id="modalDevolverTerritorio">
-    <div class="modal-background"></div>
-    <div class="modal-card">
-        <header class="modal-card-head">
-            <p class="modal-card-title">
-                <span class="icon">
-                    <i class="fa-solid fa-file-circle-xmark"></i>
-                </span>
-                <span>Devolver - Territorio</span>
-            </p>
-        </header>
-        <section class="modal-card-body">
-            <div class="modal-body">
-                <p>Tem a certeza que deseja devolver este território ao stock da Congregação?</p>
-            </div>
-            <hr />
-            <div class="field">
-                <label class="label">Data</label>
-                <p class="control has-icons-left">
-                    <input class="input" type="date"
-                           value="@(DateTime.Now.ToString("yyyy-MM-dd"))" id="txtDataDevolver"
-                           name="data" />
-                    <script>
-                        bulmaCalendar.attach('#txtDataDevolver', {
-                            color: 'info',
-                            lang: 'pt',
-                            dateFormat: 'dd/MM/yyyy',
-                            todayLabel: 'Hoje',
-                            showClearButton: false,
-                            cancelLabel: 'Cancelar',
-                            displayMode: 'dialog'
-                        });
-                        document.getElementById('txtData').bulmaCalendar.on('select', function (datepicker) {
-                            document.getElementById('txtDataDevolver').value = datepicker.data.value();
-                        });</script>
-                </p>
-            </div>
-            <div class="field">
-                <label class="label">Email</label>
-                <div class="field has-addons">
-                    <p class="control" style="width:100%">
-                        <input type="email" class="input" id="txtEmailPublicadorDevolver">
-                    </p>
-                    <a class="button is-success"
-                       onclick="GerarMovimento(0, document.getElementById('txtHiddenStamp').value, document.getElementById('txtEmailPublicadorDevolver').value, '', 2, document.getElementById('txtDataDevolver').value)">
-                        <span class="icon">
-                            <i class="fa-regular fa-paper-plane"></i>
-                        </span>
-                    </a>
-                </div>
-            </div>
-            <div class="field">
-                <label class="label">Nº Telemóvel</label>
-                <div class="field has-addons">
-                    <p class="control" style="width:100%">
-                        <input type="tel" class="input" id="txtTelemovelPublicadorDevolver">
-                    </p>
-                    <a class="button is-success"
-                       onclick="window.open('sms://'+document.getElementById('txtTelemovelPublicadorDevolver').value.replace(/\s/g, '')+'?body=Foi devolvido o seguinte território: ' + document.getElementById('txtHiddenText').value + '. Não o pode trabalhar mais!');GerarMovimento(0,document.getElementById('txtHiddenStamp').value, '', document.getElementById('txtTelemovelPublicadorDevolver').value, 2, document.getElementById('txtDataDevolver').value);">
-                        <span class="icon">
-                            <i class="fa-solid fa-message"></i>
-                        </span>
-                    </a>
-                </div>
-            </div>
-        </section>
-        <footer class="modal-card-foot">
-            <button class="button is-fullwidth is-large is-danger" onclick="Bulma('#modalDevolverTerritorio').modal().close();">
-                <span class="icon">
-                    <i class="fa-solid fa-circle-xmark"></i>
-                </span>
-                <span>Cancelar</span>
-            </button>
-        </footer>
-    </div>
-</div>
-
-<div class="modal" id="ModalConfirmApagar">
-    <div class="modal-background"></div>
-    <div class="modal-card">
-        <header class="modal-card-head">
-            <p class="modal-card-title">Apagar Território</p>
-        </header>
-        <section class="modal-card-body">
-            <div class="modal-body">
-                <p>Tem a certeza que deseja apagar este território e todos os movimentos associados a ele?</p>
-            </div>
-        </section>
-        <footer class="modal-card-foot">
-            <button class="button is-danger is-fullwidth is-large"
-                    onclick="ApagarTerritorio(document.getElementById('txtHiddenStamp').value);">
-                <span class="icon">
-                    <i class="fas fa-trash-can"></i>
-                </span>
-                <span>Confirmar</span>
-            </button>
-            <button class="button is-fullwidth is-large" onclick="Bulma('#ModalConfirmApagar').modal().close();">
-                <span class="icon">
-                    <i class="fa-solid fa-circle-xmark"></i>
-                </span>
-                <span>Não</span>
-            </button>
-        </footer>
-    </div>
-</div>
-
-
-<div id="modalLeituraQR" class="modal">
-    <div class="modal-background"></div>
-    <div class="modal-card">
-        <header class="modal-card-head">
-            <p class="modal-card-title">
-                <span class="icon is-small is-left">
-                    <i class="fa-solid fa-qrcode"></i>
-                </span>
-                <span>Leitura de Código QR</span>
-            </p>
-        </header>
-        <section class="modal-card-body">
-            <div class="form-group">
-                <div id="reader" width="600px" height="600px"></div>
-            </div>
-        </section>
-        <footer class="modal-card-foot">
-            <button type="button" class="button is-info is-large is-fullwidth"
-                    onclick="Bulma('#modalLeituraQR').modal().close();"
-                    href="javascript:;">
-                Fechar
-            </button>
-        </footer>
-    </div>
-</div>
-
-
-<input id="txtHiddenStamp" hidden />
-<input id="txtHiddenText" hidden />
-
-<script>
-
-    function ConfirmApagarTerritorio(id) {
-        document.getElementById("txtHiddenStamp").value = id;
-        Bulma('#ModalConfirmApagar').modal().open();
-    }
-
-    function AbrirMovimentoModal(id, text, tipo, idpub) {
-        document.getElementById("txtHiddenStamp").value = id;
-        document.getElementById("txtHiddenText").value = text;
-        PreencherInfo(idpub);
-        if (tipo == 1) {
-
-            Bulma('#modalAtribuirTerritorio').modal().open();
-        } else {
-            Bulma('#modalDevolverTerritorio').modal().open();
-        }
-    }
-
-    function CriarTerritorio(id, nome, dificuldade, descricao, url) {
-        $.ajax({
-            url: '/Territorios/Territorio/',
-            data: { "id": id, "nome": nome, "dificuldade": dificuldade, "descricao": descricao, "url": url },
-            type: "PUT",
-            success: function (data) {
-                notify('Territorio criado com sucesso!');
-                window.location.reload();
-            },
-            error: function (response) {
-                notifyError('Ocorreu um erro ao criar o territorio!');
-            },
-            failure: function (response) {
-                notifyError('Falha ao criar o territorio!');
-            }
-        });
-    }
-
-    function GerarMovimento(idpub, id, email, telemovel, tipo, data) {
-        $.ajax({
-            url: '/Territorios/Movimento/',
-            data: { "id": id, "idpub": idpub, "email": email, "telemovel": telemovel, "tipo": tipo, "data": data },
-            type: "POST",
-            success: function (data) {
-                notify('Movimento criado com sucesso!');
-                window.location.reload();
-            },
-            error: function (response) {
-                notifyError('Ocorreu um erro ao criar o Movimento!');
-            },
-            failure: function (response) {
-                notifyError('Falha ao criar o Movimento!');
-            }
-        });
-    }
-
-    function ApagarTerritorio(id) {
-        $.ajax({
-            url: '/Territorios/Territorio/',
-            data: { "stamp": id },
-            type: "DELETE",
-            success: function (data) {
-                notify('Territorio apagado com sucesso!');
-                window.location.reload();
-            },
-            error: function (response) {
-                notifyError('Ocorreu um erro ao apagar o territorio!');
-            },
-            failure: function (response) {
-                notifyError('Falha ao apagar o territorio!');
-            }
-        });
-    }
-
-
-    function PreencherInfo(idpub) {
-        $.ajax({
-            url: '/Publicadores/ObterPublicador/',
-            data: { "id": idpub },
-            type: "GET",
-            success: function (data) {
-                document.getElementById('txtEmailPublicador').value = data.email;
-                document.getElementById('txtEmailPublicadorDevolver').value = data.email;
-
-                document.getElementById('txtTelemovelPublicador').value = data.telemovel;
-                document.getElementById('txtTelemovelPublicadorDevolver').value = data.telemovel;
-            },
-            error: function (response) {
-                notifyError('Ocorreu um erro ao obter o utilizador!');
-            },
-            failure: function (response) {
-                notifyError('Falha ao obter o utilizador!');
-            }
-        });
-    }
-
-    const html5QrCode = new Html5Qrcode("reader");
-    var cameraId = '';
-
-    function IniciarLeituraQR() {
-
-
-        let html5QrcodeScanner = new Html5QrcodeScanner("reader",
+    <div id="lista" class="items">
+            @foreach (var item in Model)
             {
-                fps: 10, qrbox: { width: 250, height: 250 }
-            }, false);
-
-        const qrCodeSuccessCallback = (decodedText, decodedResult) => {
-            document.getElementById('txtURLTerritorio').value = decodedText;
-            Bulma('#modalLeituraQR').modal().close();
-
-            html5QrCode.stop().then((ignore) => {
-                notify('Leitura do código QR Concluida');
-            }).catch((err) => {
-                notifyError('Ocorreu um erro ao parar a leitura do código QR: ' + err);
-            });
-        };
-        const config = {
-            fps: 10, qrbox: { width: 250, height: 250 }
-        };
-
-        Html5Qrcode.getCameras().then(devices => {
-            if (devices && devices.length) {
-                if (devices.length > 3) {
-                    cameraId = devices[3].id;
-                } else if (devices.length > 2) {
-                    cameraId = devices[1].id;
-                }
-                //cameraId = 'ae05bda7c1f421ea1c32cdeedf4598c2dc6dbca42e20e8a3be3f4dc704ee957b';
-                if (cameraId != '') {
-                    html5QrCode.start(cameraId, config, qrCodeSuccessCallback);
-                } else {
-                    html5QrCode.start({ facingMode: "environment" }, config, qrCodeSuccessCallback);
-                }
+                var livre = Livre(item);
+                var pub = livre ? "" : item.UltimoMovimento!.Publicador!.Nome;
+                var tom = livre ? "" : item.CorEstado == "danger" ? "tone-bad" : item.CorEstado == "warning" ? "tone-warn" : "";
+                var estado = livre ? "livre" : "atribuido" + (Atencao(item) ? " atencao" : "");
+                <article class="item no-thumb @tom" data-stamp="@item.Stamp" data-type="@estado" data-livre="@(livre ? 1 : 0)"
+                         data-pub="@(livre ? 0 : item.UltimoMovimento!.Publicador!.Id)" data-label="@item.Id - @item.Nome [@item.Dificuldade]"
+                         data-search="@item.Id @item.Nome @pub">
+                    <div class="main">
+                        <div class="name"><span class="ref-tag id-badge">@item.Id</span> @item.Nome</div>
+                        <div class="meta">
+                            <span class="diff diff-@item.Dificuldade">@(item.Dificuldade switch { JW_Management.Models.DificuldadeTerritorio.FACIL => "Fácil", JW_Management.Models.DificuldadeTerritorio.MODERADO => "Moderado", _ => "Difícil" })</span>
+                            @if (livre)
+                            {
+                                <span>Disponível</span>
+                                @if (!string.IsNullOrEmpty(item.UltimoMovimento?.DataDescritiva)) { <span>@item.UltimoMovimento!.DataDescritiva</span> }
+                            }
+                            else
+                            {
+                                <span><i class="fa-solid fa-user fa-xs"></i> @pub</span>
+                                <span>@item.UltimoMovimento!.DataDescritiva</span>
+                            }
+                        </div>
+                    </div>
+                    <div class="side">
+                        <div class="acts">
+                            @if (livre)
+                            {
+                                <button type="button" class="button is-info" data-action="atribuir"><span class="icon"><i class="fa-solid fa-user-check"></i></span><span>Atribuir</span></button>
+                            }
+                            else
+                            {
+                                <button type="button" class="button is-success" data-action="devolver"><span class="icon"><i class="fa-solid fa-rotate-left"></i></span><span>Devolver</span></button>
+                            }
+                            <a class="button btn-icon" href="~/Territorios/Territorio/@item.Stamp" aria-label="Abrir @item.Nome" title="Abrir ficha"><i class="fa-solid fa-pen"></i></a>
+                            <button type="button" class="button btn-icon is-danger-hover" data-action="apagar" aria-label="Apagar @item.Nome" title="Apagar"><i class="fa-solid fa-trash-can"></i></button>
+                        </div>
+                    </div>
+                </article>
             }
-        }).catch(err => {
-            notifyError('Ocorreu um erro ao iniciar a leitura do código QR: ' + err);
-        });
+    </div>
+
+    <div id="vazio" class="empty-state" hidden>
+        <span class="icon"><i class="fa-solid fa-map"></i></span>
+        <strong>Não foram encontrados territórios</strong>
+        Experimente outra pesquisa ou outro filtro.
+    </div>
+</div>
+
+<div id="modalNovo" class="modal" role="dialog" aria-modal="true" aria-labelledby="tNovo">
+    <div class="modal-background"></div>
+    <div class="modal-card">
+        <header class="modal-card-head">
+            <p class="modal-card-title" id="tNovo"><span class="icon"><i class="fa-solid fa-map-location-dot"></i></span><span>Novo território</span></p>
+            <button type="button" class="delete" aria-label="Fechar" data-close></button>
+        </header>
+        <section class="modal-card-body">
+            <div class="form-grid">
+                <div class="field">
+                    <label class="label" for="txtIdTerritorio">Número</label>
+                    <input type="text" class="input" id="txtIdTerritorio">
+                </div>
+                <div class="field">
+                    <label class="label" for="txtNomeTerritorio">Nome</label>
+                    <input type="text" class="input" id="txtNomeTerritorio">
+                </div>
+            </div>
+            <div class="field">
+                <label class="label" for="txtDificuldadeTerritorio">Dificuldade</label>
+                <div class="select is-fullwidth">
+                    <select id="txtDificuldadeTerritorio">
+                        <option value="1">Fácil</option>
+                        <option value="2">Moderado</option>
+                        <option value="3">Difícil</option>
+                    </select>
+                </div>
+            </div>
+            <div class="field">
+                <label class="label" for="txtDescricaoTerritorio">Descrição</label>
+                <textarea class="textarea" rows="3" id="txtDescricaoTerritorio"></textarea>
+            </div>
+            <div class="field">
+                <label class="label" for="txtURLTerritorio">Endereço (URL)</label>
+                <div class="input-action">
+                    <div class="control"><input type="text" class="input" id="txtURLTerritorio"></div>
+                    <button type="button" class="button btn-icon" data-action="lerQr" aria-label="Ler código QR" title="Ler código QR"><i class="fa-solid fa-qrcode"></i></button>
+                </div>
+            </div>
+        </section>
+        <footer class="modal-card-foot">
+            <button type="button" class="button" data-close>Cancelar</button>
+            <button type="button" class="button is-info" data-action="criar" data-submit><span class="icon"><i class="fa-solid fa-check"></i></span><span>Criar</span></button>
+        </footer>
+    </div>
+</div>
+
+<div id="modalAtribuir" class="modal" role="dialog" aria-modal="true" aria-labelledby="tAtr">
+    <div class="modal-background"></div>
+    <div class="modal-card">
+        <header class="modal-card-head">
+            <p class="modal-card-title" id="tAtr"><span class="icon"><i class="fa-solid fa-user-check"></i></span><span>Atribuir território</span></p>
+            <button type="button" class="delete" aria-label="Fechar" data-close></button>
+        </header>
+        <section class="modal-card-body">
+            <p class="modal-body-text mb-4" id="atrNome"></p>
+            <div class="field">
+                <label class="label" for="txtIdPublicador">Publicador</label>
+                <div class="select is-fullwidth">
+                    <select id="txtIdPublicador">
+                        <option value="" disabled selected>Escolha o publicador…</option>
+                        @foreach (var p in publicadores) { <option value="@p.Value">@p.Text</option> }
+                    </select>
+                </div>
+            </div>
+            <div class="field">
+                <label class="label" for="txtData">Data</label>
+                <input type="date" class="input" id="txtData">
+            </div>
+            <div class="form-grid">
+                <div class="field">
+                    <label class="label" for="txtEmailPublicador">Email</label>
+                    <input type="email" class="input" id="txtEmailPublicador" autocomplete="off">
+                </div>
+                <div class="field">
+                    <label class="label" for="txtTelemovelPublicador">Telemóvel</label>
+                    <input type="tel" class="input" id="txtTelemovelPublicador" autocomplete="off">
+                </div>
+            </div>
+        </section>
+        <footer class="modal-card-foot">
+            <button type="button" class="button" data-action="movimento" data-tipo="1" data-envio="nenhum">Só atribuir</button>
+            <button type="button" class="button is-info is-light" data-action="movimento" data-tipo="1" data-envio="sms"><span class="icon"><i class="fa-solid fa-message"></i></span><span>Atribuir e SMS</span></button>
+            <button type="button" class="button is-info" data-action="movimento" data-tipo="1" data-envio="email" data-submit><span class="icon"><i class="fa-regular fa-paper-plane"></i></span><span>Atribuir e email</span></button>
+        </footer>
+    </div>
+</div>
+
+<div id="modalDevolver" class="modal" role="dialog" aria-modal="true" aria-labelledby="tDev">
+    <div class="modal-background"></div>
+    <div class="modal-card">
+        <header class="modal-card-head">
+            <p class="modal-card-title" id="tDev"><span class="icon"><i class="fa-solid fa-rotate-left"></i></span><span>Devolver território</span></p>
+            <button type="button" class="delete" aria-label="Fechar" data-close></button>
+        </header>
+        <section class="modal-card-body">
+            <p class="modal-body-text mb-4" id="devNome"></p>
+            <div class="field">
+                <label class="label" for="txtDataDevolver">Data de devolução</label>
+                <input type="date" class="input" id="txtDataDevolver">
+            </div>
+            <div class="form-grid">
+                <div class="field">
+                    <label class="label" for="txtEmailDevolver">Email do publicador</label>
+                    <input type="email" class="input" id="txtEmailDevolver" autocomplete="off">
+                </div>
+                <div class="field">
+                    <label class="label" for="txtTelemovelDevolver">Telemóvel do publicador</label>
+                    <input type="tel" class="input" id="txtTelemovelDevolver" autocomplete="off">
+                </div>
+            </div>
+            <p class="field-hint">O território volta ao stock da congregação. O aviso por email ou SMS é opcional.</p>
+        </section>
+        <footer class="modal-card-foot">
+            <button type="button" class="button" data-action="movimento" data-tipo="2" data-envio="nenhum">Só devolver</button>
+            <button type="button" class="button is-success is-light" data-action="movimento" data-tipo="2" data-envio="sms"><span class="icon"><i class="fa-solid fa-message"></i></span><span>Devolver e SMS</span></button>
+            <button type="button" class="button is-success" data-action="movimento" data-tipo="2" data-envio="email" data-submit><span class="icon"><i class="fa-regular fa-paper-plane"></i></span><span>Devolver e email</span></button>
+        </footer>
+    </div>
+</div>
+
+<partial name="_ModalQr" />
+
+@section Scripts {
+<script>
+    const M = id => App.modal(id);
+    const hoje = () => { const d = new Date(); return new Date(d.getTime() - d.getTimezoneOffset() * 60000).toISOString().slice(0, 10); };
+    let atual = null;
+
+    // Estatísticas e pesquisa/filtro no browser; a lista é reconstruída pelo servidor após cada ação.
+    App.filtro({
+        lista: '#lista', input: '#filtro', chips: '#chips', vazio: '#vazio',
+        aoAplicar: v => App.stats({
+            sTot: v.length,
+            sLivre: v.filter(i => i.dataset.livre === '1').length,
+            sAtr: v.filter(i => i.dataset.livre === '0').length,
+            sAt: v.filter(i => i.dataset.type.includes('atencao')).length
+        })
+    });
+
+    async function preencher(idpub, emailSel, telSel) {
+        App.$(emailSel).value = ''; App.$(telSel).value = '';
+        if (!idpub || idpub === '0') return;
+        try {
+            const p = await App.api('GET', '/Publicadores/ObterPublicador/', { id: idpub });
+            App.$(emailSel).value = p.email || ''; App.$(telSel).value = p.telemovel || '';
+        } catch (e) { notifyError('Não foi possível obter os contactos do publicador.'); }
     }
 
+    App.on('atribuir', btn => {
+        atual = btn.closest('.item');
+        App.$('#atrNome').textContent = atual.dataset.label; App.$('#txtData').value = hoje();
+        App.$('#txtIdPublicador').value = ''; preencher('', '#txtEmailPublicador', '#txtTelemovelPublicador');
+        M('modalAtribuir').open();
+    });
+    App.$('#txtIdPublicador').addEventListener('change', e => preencher(e.target.value, '#txtEmailPublicador', '#txtTelemovelPublicador'));
+
+    App.on('devolver', btn => {
+        atual = btn.closest('.item');
+        App.$('#devNome').textContent = atual.dataset.label; App.$('#txtDataDevolver').value = hoje();
+        preencher(atual.dataset.pub, '#txtEmailDevolver', '#txtTelemovelDevolver');
+        M('modalDevolver').open();
+    });
+
+    // Atribuir/devolver, com envio opcional por email ou SMS (o email é enviado pelo servidor).
+    App.on('movimento', btn => App.run(btn, async () => {
+        const tipo = btn.dataset.tipo, envio = btn.dataset.envio, atribuir = tipo === '1';
+        const modalId = atribuir ? 'modalAtribuir' : 'modalDevolver';
+        const idpub = atribuir ? App.$('#txtIdPublicador').value : '0';
+        const email = App.$(atribuir ? '#txtEmailPublicador' : '#txtEmailDevolver').value.trim();
+        const tel = App.$(atribuir ? '#txtTelemovelPublicador' : '#txtTelemovelDevolver').value.trim();
+        const data = App.$(atribuir ? '#txtData' : '#txtDataDevolver').value;
+
+        if (atribuir && idpub === '') return App.campo('#txtIdPublicador', 'Escolha o publicador.');
+        if (!data) return App.campo(atribuir ? '#txtData' : '#txtDataDevolver', 'Indique a data.');
+        if (envio === 'email' && !email) return App.campo(atribuir ? '#txtEmailPublicador' : '#txtEmailDevolver', 'Indique o email para o enviar.');
+        if (envio === 'sms' && !tel) return App.campo(atribuir ? '#txtTelemovelPublicador' : '#txtTelemovelDevolver', 'Indique o telemóvel para o SMS.');
+
+        if (envio === 'sms') { // tem de abrir dentro do gesto do utilizador, antes do pedido
+            const texto = atribuir ? 'Foi-lhe atribuído o seguinte território: ' + atual.dataset.label
+                                   : 'Foi devolvido o seguinte território: ' + atual.dataset.label + '. Não o pode trabalhar mais!';
+            window.open('sms://' + tel.replace(/\s/g, '') + '?body=' + encodeURIComponent(texto));
+        }
+        await App.api('POST', '/Territorios/Movimento/', {
+            id: atual.dataset.stamp, idpub: idpub, email: envio === 'email' ? email : '', telemovel: envio === 'sms' ? tel : '', tipo: tipo, data: data
+        });
+        M(modalId).close(); await App.refresh('#lista'); notify(atribuir ? 'Território atribuído.' : 'Território devolvido.');
+    }, 'Não foi possível registar o movimento.'));
+
+    App.on('criar', btn => App.run(btn, async () => {
+        const id = App.$('#txtIdTerritorio').value.trim(), nome = App.$('#txtNomeTerritorio').value.trim();
+        if (!id) return App.campo('#txtIdTerritorio', 'Indique o número.');
+        if (!nome) return App.campo('#txtNomeTerritorio', 'Indique o nome.');
+        await App.api('PUT', '/Territorios/Territorio/', {
+            id: id, nome: nome, dificuldade: App.$('#txtDificuldadeTerritorio').value,
+            descricao: App.$('#txtDescricaoTerritorio').value, url: App.$('#txtURLTerritorio').value
+        });
+        M('modalNovo').close(); App.$$('#modalNovo input, #modalNovo textarea').forEach(i => i.value = '');
+        await App.refresh('#lista'); notify('Território criado.');
+    }, 'Não foi possível criar o território.'));
+
+    App.on('apagar', async btn => {
+        const it = btn.closest('.item');
+        if (!await App.confirm({ title: 'Apagar território', text: 'Apagar «' + it.dataset.label + '» e todos os movimentos associados?', ok: 'Apagar' })) return;
+        App.run(btn, async () => { await App.api('DELETE', '/Territorios/Territorio/', { stamp: it.dataset.stamp }); App.removeItem(it); notify('Território apagado.'); },
+            'Não foi possível apagar o território.');
+    });
+
+    App.on('lerQr', () => App.qr(t => App.$('#txtURLTerritorio').value = t));
 </script>
+}

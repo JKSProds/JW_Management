@@ -149,6 +149,18 @@
         }
     });
 
+    // ---------- Tema claro/escuro ----------
+    App.on('tema', function () {
+        const novo = document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+        document.documentElement.setAttribute('data-theme', novo);
+        try { localStorage.setItem('tema', novo); } catch (e) { }
+    });
+    // Sem preferência guardada, acompanha o sistema.
+    if (window.matchMedia) matchMedia('(prefers-color-scheme: dark)').addEventListener('change', function (e) {
+        let guardado = null; try { guardado = localStorage.getItem('tema'); } catch (x) { }
+        if (!guardado) document.documentElement.setAttribute('data-theme', e.matches ? 'dark' : 'light');
+    });
+
     // ---------- Menus da navbar ----------
     // Em ecrãs largos o menu abre ao passar o rato (CSS) e também ao clicar/tocar, para funcionar em tablets.
     document.addEventListener('click', function (e) {
@@ -169,7 +181,7 @@
         function aplicar() {
             const q = norm(inp.value.trim()); let n = 0;
             $$('.item', lista).forEach(function (i) {
-                const ok = (tipo === '0' || i.dataset.type === tipo) && (!q || norm(i.dataset.search).includes(q));
+                const ok = (tipo === '0' || (' ' + i.dataset.type + ' ').includes(' ' + tipo + ' ')) && (!q || norm(i.dataset.search).includes(q));
                 i.classList.toggle('is-hidden', !ok); if (ok) n++;
             });
             if (vazio) vazio.hidden = n > 0;
@@ -269,6 +281,24 @@
             $$('.field-msg', f).forEach(function (m) { m.remove(); }); $$('.is-danger', f).forEach(function (i) { i.classList.remove('is-danger'); });
         });
     });
+
+    // Leitor de códigos QR (modal #modalQr em _ModalQr.cshtml). aoLer recebe o texto lido.
+    // Mantém a escolha de câmara que a aplicação já usava (a 4.ª, ou a 2.ª se houver 3), senão a traseira.
+    let leitor = null;
+    async function pararQr() { if (leitor) { const l = leitor; leitor = null; try { await l.stop(); l.clear(); } catch (e) { } } }
+    App.qr = async function (aoLer) {
+        const m = modal('modalQr'); m.open();
+        m.el.addEventListener('closed', pararQr, { once: true });
+        try {
+            leitor = new Html5Qrcode('reader');
+            const cams = await Html5Qrcode.getCameras();
+            if (!cams || !cams.length) throw new Error('sem câmara');
+            const id = cams.length > 3 ? cams[3].id : cams.length > 2 ? cams[1].id : null;
+            await leitor.start(id || { facingMode: 'environment' }, { fps: 10, qrbox: { width: 250, height: 250 } }, function (txt) {
+                aoLer(txt); m.close(); notify('Código QR lido.');
+            });
+        } catch (e) { m.close(); notifyError('Não foi possível iniciar a leitura do código QR.'); }
+    };
 
     // Seleccionar o publicador "Loja" (id definido pelo ecrã).
     App.lerInt = function (sel) { return parseInt($(sel).value, 10) || 0; };
