@@ -1,9 +1,9 @@
 @* Lista de movimentos do dia, partilhada por Entradas e Saídas. É a região que App.refresh substitui ao mudar de data ou registar um movimento. *@
 @model IEnumerable<JW_Management.Models.Movimentos>
-@{
-    var total = Model.Sum(m => Math.Abs(m.Quantidade));
-}
-<p class="summary"><span><b class="num">@Model.Count()</b> movimentos</span><span>·</span><span><b class="num">@total</b> unidades</span></p>
+@await Html.PartialAsync("_Stats", new[] {
+    ("fa-right-left", "Movimentos", Model.Count().ToString(), "", ""),
+    ("fa-boxes-stacked", "Unidades", Model.Sum(m => Math.Abs(m.Quantidade)).ToString(), "", "is-ok"),
+    ("fa-book", "Publicações distintas", Model.Select(m => m.Literatura!.Stamp).Distinct().Count().ToString(), "", "") })
 @if (!Model.Any())
 {
     <div class="empty-state">

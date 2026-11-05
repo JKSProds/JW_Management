@@ -5,10 +5,17 @@ Fora de âmbito por agora: **Territórios, Reuniões e Congressos** (não foram 
 
 ## Direção de design
 
-- Mundo: «secretária de escriba». Papel quente (`--paper`), tinta azul-petróleo (`--brand`), tipo Figtree (auto-alojada em `wwwroot/fonts`).
+- Mundo: gabinete administrativo. Cinzentos frios (`--paper`), azul-tinta (`--brand`), tipo Figtree (auto-alojada em `wwwroot/fonts`).
 - Bulma 0.9.4 mantém-se como base; `wwwroot/css/site.css` é a camada de design (tokens em `:root`, carregada por último). As cores `is-info/is-primary/is-success/is-danger` do Bulma foram remapeadas, por isso os ecrãs ainda não migrados ficam coerentes.
 - Componentes reutilizáveis: `.page-head`, `.toolbar` + `.chips`, `.items/.item` (substitui as tabelas, funciona igual em telemóvel), `.seg` (separadores), `.stepper`, `.modal`, `.notice`, `.empty-state`, `.panel-card`.
 - Tabelas `b-table/has-mobile-cards` substituídas por listas de cartões; ícones de botões têm `aria-label`.
+
+## Revisão 2 (2026-11-05)
+
+- Paleta passou de papel quente/petróleo para cinzentos frios e azul-tinta.
+- Barra de estatísticas (`_Stats.cshtml`) no topo de cada ecrã migrado; segue o filtro e as alterações em Stock, Publicadores e Periódicos (`App.stats`).
+- Navbar: menus com borda, respiração e ponte invisível sobre o intervalo (já não fecham ao mover o rato); também abrem por clique/toque.
+- Login: a lista de congregações é relida se estiver vazia (era lida só no arranque) e há pedido AJAX de reserva com aviso de erro.
 
 ## Minimizar refrescos de página
 

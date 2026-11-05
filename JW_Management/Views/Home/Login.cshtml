@@ -94,6 +94,14 @@
             else if (sel.options.length === 2) sel.selectedIndex = 1; // só uma congregação disponível
         } catch (e) { }
         sel.addEventListener('change', () => { try { localStorage.setItem('tenant', sel.value); } catch (e) { } });
+        // Reserva: se o servidor não trouxe congregações, pede-as por AJAX e avisa se continuarem em falta.
+        if (sel.options.length <= 1) {
+            App.api('GET', '/Home/Tenants').then(l => {
+                l.forEach(t => sel.appendChild(Object.assign(document.createElement('option'), { value: t.id, textContent: t.nome })));
+                if (!l.length) notifyError('Não foi possível obter as congregações. Verifique a ligação à base de dados.');
+                else if (l.length === 1) sel.selectedIndex = 1;
+            }).catch(() => notifyError('Não foi possível obter as congregações.'));
+        }
         if (sel.value === '0') sel.focus(); else (document.getElementById('Username')).focus();
     })();
 

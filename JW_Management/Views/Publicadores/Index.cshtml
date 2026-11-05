@@ -9,7 +9,7 @@
             <span class="head-icon"><i class="fa-solid fa-users"></i></span>
             <div>
                 <h1>Publicadores</h1>
-                <p><span id="contador" class="num">@Model.Count()</span> registados</p>
+                <p>Fichas e acessos</p>
             </div>
         </div>
         <div class="head-actions">
@@ -18,6 +18,11 @@
             </button>
         </div>
     </div>
+
+    @await Html.PartialAsync("_Stats", new[] {
+        ("fa-users", "Publicadores", Model.Count().ToString(), "sTot", ""),
+        ("fa-envelope", "Com email", Model.Count(p => !string.IsNullOrWhiteSpace(p.Email)).ToString(), "sMail", "is-ok"),
+        ("fa-phone", "Com telemóvel", Model.Count(p => !string.IsNullOrWhiteSpace(p.Telemovel)).ToString(), "sTel", "") })
 
     <div class="toolbar">
         <div class="control has-icons-left search">
@@ -31,7 +36,7 @@
         {
             var iniciais = string.Concat(item.Nome!.Split(' ', StringSplitOptions.RemoveEmptyEntries).Take(1).Select(p => p[0])) +
                            string.Concat(item.Nome.Split(' ', StringSplitOptions.RemoveEmptyEntries).Skip(1).Reverse().Take(1).Select(p => p[0]));
-            <article class="item no-thumb" data-id="@item.Id" data-type="0" data-search="@item.Nome @item.Role @item.Id">
+            <article class="item no-thumb" data-id="@item.Id" data-mail="@(string.IsNullOrWhiteSpace(item.Email) ? 0 : 1)" data-tel="@(string.IsNullOrWhiteSpace(item.Telemovel) ? 0 : 1)" data-type="0" data-search="@item.Nome @item.Role @item.Id">
                 <div class="main" style="display:flex;gap:.8rem;align-items:center">
                     <span class="avatar" aria-hidden="true">@iniciais.ToUpper()</span>
                     <div style="min-width:0">
@@ -79,7 +84,10 @@
 
 @section Scripts {
 <script>
-    App.filtro({ lista: '#lista', input: '#filtro', vazio: '#vazio', contador: '#contador' });
+    App.filtro({
+        lista: '#lista', input: '#filtro', vazio: '#vazio',
+        aoAplicar: v => App.stats({ sTot: v.length, sMail: v.filter(i => i.dataset.mail === '1').length, sTel: v.filter(i => i.dataset.tel === '1').length })
+    });
 
     App.on('apagar', async btn => {
         const it = btn.closest('.item'), nome = App.$('.name', it).textContent;

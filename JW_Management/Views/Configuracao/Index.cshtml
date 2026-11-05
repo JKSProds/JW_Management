@@ -11,6 +11,11 @@
         </div>
     </div>
 
+    @await Html.PartialAsync("_Stats", new[] {
+        ("fa-server", "Authority", string.IsNullOrWhiteSpace(Model.Authority) ? "Por definir" : "Definido", "", string.IsNullOrWhiteSpace(Model.Authority) ? "is-warn" : "is-ok"),
+        ("fa-key", "Client secret", Model.ClientSecretDefinido ? "Definido" : "Por definir", "", Model.ClientSecretDefinido ? "is-ok" : "is-warn"),
+        ("fa-shield-halved", "Só OAuth", Model.SomenteOidc ? "Ativo" : "Inativo", "", Model.SomenteOidc ? "is-warn" : "") })
+
     @if (TempData["Guardado"] != null)
     {
         <div class="notice is-ok" role="status">

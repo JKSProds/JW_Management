@@ -1,0 +1,11 @@
+@* Barra de estatísticas no topo de cada ecrã. Modelo: (ícone, rótulo, valor, id do <b> para App.stats, tom: ""|"is-ok"|"is-warn"|"is-bad"). *@
+@model IEnumerable<(string Icone, string Rotulo, string Valor, string Id, string Tom)>
+<div class="statbar" role="group" aria-label="Resumo">
+    @foreach (var s in Model)
+    {
+        <div class="stat @s.Tom">
+            <span class="stat-ico" aria-hidden="true"><i class="fa-solid @s.Icone"></i></span>
+            <div><b class="num" id="@(string.IsNullOrEmpty(s.Id) ? null : s.Id)">@s.Valor</b><small>@s.Rotulo</small></div>
+        </div>
+    }
+</div>

@@ -149,6 +149,17 @@
         }
     });
 
+    // ---------- Menus da navbar ----------
+    // Em ecrãs largos o menu abre ao passar o rato (CSS) e também ao clicar/tocar, para funcionar em tablets.
+    document.addEventListener('click', function (e) {
+        const link = e.target.closest('.app-nav .has-dropdown > .navbar-link');
+        $$('.app-nav .has-dropdown.is-active').forEach(function (d) { if (!link || d !== link.parentElement) d.classList.remove('is-active'); });
+        if (link && window.matchMedia('(min-width: 1024px)').matches) { e.preventDefault(); link.parentElement.classList.toggle('is-active'); }
+    });
+
+    // Atualiza os números de uma barra de estatísticas: App.stats({ sPub: 12, ... }).
+    App.stats = function (v) { Object.keys(v).forEach(function (k) { const e = document.getElementById(k); if (e) e.textContent = v[k]; }); };
+
     // ---------- Filtro instantâneo (sem pedir a página ao servidor) ----------
     // Itens com data-search (texto em minúsculas) e data-type; chips com data-type.
     App.filtro = function (o) {
@@ -163,6 +174,7 @@
             });
             if (vazio) vazio.hidden = n > 0;
             if (o.contador) $(o.contador).textContent = n;
+            if (o.aoAplicar) o.aoAplicar($$('.item:not(.is-hidden)', lista));
             const u = new URL(location.href);
             q ? u.searchParams.set('filtro', inp.value.trim()) : u.searchParams.delete('filtro');
             tipo !== '0' ? u.searchParams.set('tipo', tipo) : u.searchParams.delete('tipo');

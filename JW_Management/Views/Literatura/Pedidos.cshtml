@@ -25,6 +25,12 @@
     </div>
 
     <div id="regiao">
+        @await Html.PartialAsync("_Stats", new[] {
+            ("fa-newspaper", "Pedidos de periódicos", periodicos.Count.ToString(), "", ""),
+            ("fa-copy", "Exemplares pedidos", periodicos.Sum(l => l.Quantidade).ToString(), "", ""),
+            ("fa-book", "Pedidos especiais", especiais.Count.ToString(), "", ""),
+            ("fa-clock", "Especiais por enviar", especiais.Count(l => l.EstadoPedido!.Descricao == "Pendente").ToString(), "", especiais.Any(l => l.EstadoPedido!.Descricao == "Pendente") ? "is-warn" : "is-ok") })
+
         <div class="seg" role="tablist" aria-label="Tipo de pedido">
             <button type="button" role="tab" id="tabPer" aria-controls="panPer" aria-selected="true">Periódicos<span class="count">@periodicos.Count</span></button>
             <button type="button" role="tab" id="tabEsp" aria-controls="panEsp" aria-selected="false">Especiais<span class="count">@especiais.Count</span></button>

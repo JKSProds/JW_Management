@@ -11,7 +11,7 @@
             <span class="head-icon"><i class="fa-solid fa-boxes-stacked"></i></span>
             <div>
                 <h1>Stock de literatura</h1>
-                <p><span id="contador" class="num">@Model.Count()</span> publicações</p>
+                <p>Quantidades em stock e movimentos</p>
             </div>
         </div>
         <div class="head-actions">
@@ -23,6 +23,11 @@
             </button>
         </div>
     </div>
+
+    @await Html.PartialAsync("_Stats", new[] {
+        ("fa-book", "Publicações", Model.Count().ToString(), "sPub", ""),
+        ("fa-boxes-stacked", "Unidades em stock", Model.Sum(l => l.Quantidade).ToString(), "sUn", "is-ok"),
+        ("fa-triangle-exclamation", "Sem stock", Model.Count(l => l.Quantidade <= 0).ToString(), "sZero", "is-bad") })
 
     <div class="toolbar">
         <div class="control has-icons-left search">
@@ -40,7 +45,7 @@
     <div id="lista" class="items">
         @foreach (var item in Model)
         {
-            <article class="item" data-stamp="@item.Stamp" data-type="@item.Tipo!.Id" data-search="@item.Referencia @item.Descricao @item.Tipo.Descricao">
+            <article class="item" data-stamp="@item.Stamp" data-type="@item.Tipo!.Id" data-qty="@item.Quantidade" data-search="@item.Referencia @item.Descricao @item.Tipo.Descricao">
                 <div class="thumb"><img src="@item.Imagem" alt="" loading="lazy" onerror="this.src='/img/l_no_photo.png'"></div>
                 <div class="main">
                     <div class="name">@item.Descricao</div>
@@ -174,7 +179,13 @@
           modalImg = App.modal('modalImagem'), modalTok = App.modal('modalToken');
     let atual = null, imagemAlterada = false;
 
-    App.filtro({ lista: '#lista', input: '#filtro', chips: '#chips', vazio: '#vazio', contador: '#contador', tipo: '@tipoAtual' });
+    // A barra de estatísticas segue o filtro e as alterações de quantidade.
+    const estat = visiveis => App.stats({
+        sPub: visiveis.length,
+        sUn: visiveis.reduce((s, i) => s + (+i.dataset.qty), 0),
+        sZero: visiveis.filter(i => +i.dataset.qty <= 0).length
+    });
+    const filtroLista = App.filtro({ lista: '#lista', input: '#filtro', chips: '#chips', vazio: '#vazio', tipo: '@tipoAtual', aoAplicar: estat });
 
     const itemDe = el => el.closest('.item');
 
@@ -190,6 +201,7 @@
         const res = await App.api('GET', '/Literatura/Literatura/', { id: stamp });
         const diff = nova - (+res.quantidade);
         if (diff !== 0) await App.api('POST', '/Literatura/Movimentos/', { stamp: stamp, qtd: diff });
+        atual.dataset.qty = nova; filtroLista.aplicar();
         const q = App.$('[data-qty]', atual); q.textContent = nova;
         q.closest('.qty').classList.toggle('is-low', nova <= 0);
         modalQtd.close(); notify('Quantidade atualizada.');

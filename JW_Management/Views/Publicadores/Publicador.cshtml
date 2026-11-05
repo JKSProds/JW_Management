@@ -24,6 +24,11 @@
         </div>
     </div>
 
+    @await Html.PartialAsync("_Stats", new[] {
+        ("fa-right-left", "Movimentos de literatura", movimentos.Count.ToString(), "", ""),
+        ("fa-book-medical", "Pedidos em aberto", pedidos.Count.ToString(), "", pedidos.Any() ? "is-warn" : ""),
+        ("fa-map", "Territórios a trabalhar", territorios.Count.ToString(), "", "") })
+
     <div class="seg" role="tablist" aria-label="Secções da ficha">
         <button type="button" role="tab" id="tabDados" aria-controls="panDados" aria-selected="true">Dados</button>
         <button type="button" role="tab" id="tabMov" aria-controls="panMov" aria-selected="false">Movimentos<span class="count">@movimentos.Count</span></button>

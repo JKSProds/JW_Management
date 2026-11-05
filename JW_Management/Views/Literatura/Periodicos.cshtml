@@ -16,6 +16,11 @@
         </div>
     </div>
 
+    @await Html.PartialAsync("_Stats", new[] {
+        ("fa-newspaper", "Periódicos a entregar", Model.Count().ToString(), "sTit", ""),
+        ("fa-copy", "Exemplares por entregar", Model.Sum(l => l.QuantidadeFalta).ToString(), "sEx", "is-ok"),
+        ("fa-fire", "Entrega em menos de 10 dias", Model.Count(l => l.Entrega < 10).ToString(), "sUrg", Model.Any(l => l.Entrega < 10) ? "is-bad" : "") })
+
     <div id="grupos">
         @foreach (var g in Model.GroupBy(p => p.DescricaoGeral))
         {
@@ -25,7 +30,7 @@
                     @foreach (var item in g)
                     {
                         var tom = item.Entrega < 10 ? "tone-bad" : (item.Entrega < 30 ? "tone-warn" : "");
-                        <article class="item @tom" data-stamp="@item.Stamp" data-qtd="@item.Quantidade">
+                        <article class="item @tom" data-stamp="@item.Stamp" data-qtd="@item.Quantidade" data-falta="@item.QuantidadeFalta" data-dias="@item.Entrega">
                             <div class="thumb"><img src="@item.URL" alt="" loading="lazy" onerror="this.src='/img/l_no_photo.png'"></div>
                             <div class="main">
                                 <div class="name">@item.Descricao</div>
@@ -70,6 +75,8 @@
             setTimeout(() => {
                 if (!App.$('.item', grupo)) grupo.remove();
                 App.$('#vazio').hidden = !!App.$('.grupo');
+                const resto = App.$$('.item');
+                App.stats({ sTit: resto.length, sEx: resto.reduce((s, i) => s + (+i.dataset.falta), 0), sUrg: resto.filter(i => +i.dataset.dias < 10).length });
             }, 300);
             notify('Entrega finalizada.');
         }, 'Não foi possível finalizar a entrega.');

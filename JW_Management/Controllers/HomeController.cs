@@ -28,10 +28,19 @@ namespace JW_Management.Controllers
             return Json(new { titulos = stock.Count, unidades = stock.Sum(l => l.Quantidade), pedidosPendentes = pendentes });
         }
 
+        // A lista de congregações é lida uma só vez no arranque. Se a base de dados master ainda não
+        // estava disponível nessa altura fica vazia para sempre; por isso volta a tentar aqui.
+        private List<Tenant> ObterTenants()
+        {
+            var ctx = _appContext._tenantContext;
+            if (ctx._tenants.Count == 0) ctx._tenants = ctx.ObterListaTenants();
+            return ctx._tenants;
+        }
+
         private void PrepararLogin(string? returnUrl)
         {
             ViewData["ReturnUrl"] = returnUrl;
-            ViewBag.Tenants = _appContext._tenantContext._tenants.Select(t => new SelectListItem(t.Nome, t.Id.ToString())).ToList();
+            ViewBag.Tenants = ObterTenants().Select(t => new SelectListItem(t.Nome, t.Id.ToString())).ToList();
         }
 
         [HttpGet]
@@ -94,7 +103,7 @@ namespace JW_Management.Controllers
         [HttpGet]
         public JsonResult Tenants()
         {
-            return Json(_appContext._tenantContext._tenants.Select(t => new Tenant() {Id = t.Id, Nome = t.Nome}));
+            return Json(ObterTenants().Select(t => new Tenant() {Id = t.Id, Nome = t.Nome}));
         }
 
         public async Task<IActionResult> Logout()

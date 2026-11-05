@@ -9,7 +9,7 @@
             <span class="head-icon"><i class="fa-solid fa-newspaper"></i></span>
             <div>
                 <h1>Saída de periódicos</h1>
-                <p><span id="total" class="num">@Math.Abs(Model.Sum(l => l.Quantidade))</span> exemplares por entregar</p>
+                <p>Pedidos por publicador</p>
             </div>
         </div>
         <div class="head-actions">
@@ -18,6 +18,10 @@
             </a>
         </div>
     </div>
+
+    @await Html.PartialAsync("_Stats", new[] {
+        ("fa-users", "Publicadores", Model.Count().ToString(), "sPub", ""),
+        ("fa-copy", "Exemplares por entregar", Math.Abs(Model.Sum(l => l.Quantidade)).ToString(), "sEx", "is-ok") })
 
     <div class="items" id="lista">
         @foreach (var item in Model)
@@ -52,7 +56,7 @@
     const atualizar = () => {
         const itens = App.$$('#lista .item');
         App.$('#vazio').hidden = itens.length > 0;
-        App.$('#total').textContent = itens.reduce((s, i) => s + Math.abs(+i.dataset.qtd), 0);
+        App.stats({ sPub: itens.length, sEx: itens.reduce((s, i) => s + Math.abs(+i.dataset.qtd), 0) });
     };
     App.$('#lista').addEventListener('changed', atualizar);
 
