@@ -1,4 +1,4 @@
-﻿@model JW_Management.Models.Publicador
+@model JW_Management.Models.Publicador
 @inject IConfiguration Configuration
 @inject JW_Management.Models.ConfigStore ConfigStore
 
@@ -8,106 +8,75 @@
     var soOidc = ConfigStore.SomenteOidcAtivo(Configuration);
     var temOidc = !string.IsNullOrEmpty(Configuration["Oidc:ClientId"]);
     var erro = !ViewData.ModelState.IsValid;
+    var escolher = ViewBag.Escolher as IEnumerable<SelectListItem>;
     var returnUrl = ViewData["ReturnUrl"]?.ToString();
 }
 
 <div class="auth-shell">
-    <aside class="auth-brand">
-        <div>
-            <img class="mark" src="~/img/logo.png" alt="">
+    <main class="auth-card" id="authCard">
+        <div class="auth-logo">
+            <span class="auth-mark"><img src="~/img/logo.png" alt=""></span>
             <h1>Gestor Congregacional</h1>
-            <p>Literatura, territórios e reuniões da congregação num só lugar.</p>
+            <p>@(soOidc ? "Entre com a sua conta Pocket ID." : "Inicie sessão para continuar.")</p>
         </div>
-        <ul>
-            <li><span class="icon"><i class="fa-solid fa-boxes-stacked"></i></span>Stock e pedidos de literatura</li>
-            <li><span class="icon"><i class="fa-solid fa-map-location-dot"></i></span>Territórios e registos</li>
-            <li><span class="icon"><i class="fa-solid fa-people-group"></i></span>Programa das reuniões</li>
-        </ul>
-    </aside>
 
-    <main class="auth-panel">
-        <div class="auth-card" id="authCard">
-            <h2>Bem-vindo</h2>
-            <p class="lead">@(soOidc ? "Entre com a sua conta Pocket ID." : "Inicie sessão para continuar.")</p>
+        @if (erro)
+        {
+            <div class="notice is-bad" role="alert" id="divError">
+                <span class="icon"><i class="fa-solid fa-circle-exclamation"></i></span>
+                <div asp-validation-summary="ModelOnly"></div>
+            </div>
+        }
 
-            @if (erro)
-            {
-                <div class="notice is-bad" role="alert" id="divError">
-                    <span class="icon"><i class="fa-solid fa-circle-exclamation"></i></span>
-                    <div asp-validation-summary="ModelOnly"></div>
-                </div>
-            }
-
-            @if (!soOidc)
-            {
-                <form method="post" novalidate>
+        @if (!soOidc)
+        {
+            <form method="post" novalidate>
+                @if (escolher != null)
+                {
                     <div class="field">
                         <label class="label" for="selectTenant">Congregação</label>
                         <div class="select is-fullwidth">
                             <select id="selectTenant" name="t" required>
-                                <option value="0" disabled selected>Escolha a sua congregação…</option>
-                                @foreach (var t in (IEnumerable<SelectListItem>)ViewBag.Tenants)
-                                {
-                                    <option value="@t.Value">@t.Text</option>
-                                }
+                                @foreach (var c in escolher) { <option value="@c.Value">@c.Text</option> }
                             </select>
                         </div>
                     </div>
-                    <div class="field">
-                        <label class="label" for="Username">Utilizador</label>
-                        <div class="control has-icons-left">
-                            <input class="input" type="text" asp-for="Username" autocomplete="username" autocapitalize="none" spellcheck="false" required>
-                            <span class="icon is-left"><i class="fa-solid fa-user"></i></span>
-                        </div>
+                }
+                <div class="field">
+                    <label class="label" for="Username">Utilizador</label>
+                    <div class="control has-icons-left">
+                        <input class="input" type="text" asp-for="Username" autocomplete="username" autocapitalize="none" spellcheck="false" required autofocus>
+                        <span class="icon is-left"><i class="fa-solid fa-user"></i></span>
                     </div>
-                    <div class="field">
-                        <label class="label" for="inputPassword">Palavra-passe</label>
-                        <div class="control has-icons-left">
-                            <input class="input" type="password" asp-for="Password" id="inputPassword" autocomplete="current-password" required>
-                            <span class="icon is-left"><i class="fa-solid fa-lock"></i></span>
-                        </div>
+                </div>
+                <div class="field">
+                    <label class="label" for="inputPassword">Palavra-passe</label>
+                    <div class="control has-icons-left">
+                        <input class="input" type="password" asp-for="Password" id="inputPassword" autocomplete="current-password" required>
+                        <span class="icon is-left"><i class="fa-solid fa-lock"></i></span>
                     </div>
-                    <button class="button is-info is-fullwidth is-submit" type="submit" id="login-button">Iniciar sessão</button>
-                    <input type="hidden" name="ReturnUrl" value="@returnUrl">
-                </form>
-            }
+                </div>
+                <button class="button is-info is-fullwidth is-submit" type="submit" id="login-button">Iniciar sessão</button>
+                <input type="hidden" name="ReturnUrl" value="@returnUrl">
+            </form>
+        }
 
-            @if (temOidc)
-            {
-                @if (!soOidc) { <div class="auth-sep">ou</div> }
-                <a class="button @(soOidc ? "is-info" : "is-info is-light") is-fullwidth is-submit" href="/login?returnUrl=@Uri.EscapeDataString(returnUrl ?? "/")">
-                    <span class="icon"><i class="fa-solid fa-fingerprint"></i></span><span>Entrar com Pocket ID</span>
-                </a>
-            }
-        </div>
+        @if (temOidc)
+        {
+            @if (!soOidc) { <div class="auth-sep">ou</div> }
+            <a class="button @(soOidc ? "is-info" : "is-info is-light") is-fullwidth is-submit" href="/login?returnUrl=@Uri.EscapeDataString(returnUrl ?? "/")">
+                <span class="icon"><i class="fa-solid fa-fingerprint"></i></span><span>Entrar com Pocket ID</span>
+            </a>
+        }
     </main>
 </div>
 
 @section Scripts {
 <script>
-    // Lembra a congregação neste dispositivo (conveniência; falha em silêncio em modo privado).
-    (function () {
-        const sel = document.getElementById('selectTenant'); if (!sel) return;
-        try {
-            const guardado = localStorage.getItem('tenant');
-            if (guardado && Array.from(sel.options).some(o => o.value === guardado)) sel.value = guardado;
-            else if (sel.options.length === 2) sel.selectedIndex = 1; // só uma congregação disponível
-        } catch (e) { }
-        sel.addEventListener('change', () => { try { localStorage.setItem('tenant', sel.value); } catch (e) { } });
-        // Reserva: se o servidor não trouxe congregações, pede-as por AJAX e avisa se continuarem em falta.
-        if (sel.options.length <= 1) {
-            App.api('GET', '/Home/Tenants').then(l => {
-                l.forEach(t => sel.appendChild(Object.assign(document.createElement('option'), { value: t.id, textContent: t.nome })));
-                if (!l.length) notifyError('Não foi possível obter as congregações. Verifique a ligação à base de dados.');
-                else if (l.length === 1) sel.selectedIndex = 1;
-            }).catch(() => notifyError('Não foi possível obter as congregações.'));
-        }
-        if (sel.value === '0') sel.focus(); else (document.getElementById('Username')).focus();
-    })();
-
     if (document.getElementById('divError')) {
         document.getElementById('authCard').classList.add('is-shaking');
         if (navigator.vibrate) navigator.vibrate(200);
+        const u = document.getElementById('Username'); (u && u.value ? document.getElementById('inputPassword') : u).focus();
     }
 </script>
 }

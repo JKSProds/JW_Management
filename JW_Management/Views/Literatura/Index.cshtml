@@ -15,7 +15,7 @@
         </div>
         <div class="head-actions">
             <button type="button" class="button is-info" data-open="modalNovaPublicacao">
-                <span class="icon"><i class="fa-solid fa-plus"></i></span><span>Nova publicação</span>
+                <span class="icon"><i class="fa-solid fa-box-open"></i></span><span>Nova publicação</span>
             </button>
             <button type="button" class="button is-success" data-open="modalToken">
                 <span class="icon"><i class="fa-solid fa-cloud-arrow-up"></i></span><span>Enviar JW Hub</span>
@@ -76,7 +76,7 @@
     <div class="modal-background"></div>
     <div class="modal-card">
         <header class="modal-card-head">
-            <p class="modal-card-title" id="tNova"><span class="icon"><i class="fa-solid fa-circle-plus"></i></span><span>Nova publicação</span></p>
+            <p class="modal-card-title" id="tNova"><span class="icon"><i class="fa-solid fa-box-open"></i></span><span>Nova publicação</span></p>
             <button type="button" class="delete" aria-label="Fechar" data-close></button>
         </header>
         <section class="modal-card-body">
@@ -155,14 +155,16 @@
             <button type="button" class="delete" aria-label="Fechar" data-close></button>
         </header>
         <section class="modal-card-body">
-            <div class="notice is-warn">
-                <span class="icon"><i class="fa-solid fa-triangle-exclamation"></i></span>
-                <span>Requer conhecimentos técnicos. Abra a página da literatura no JW Hub, prima F12, e no separador Rede procure o pedido «OVERVIEW». Copie o valor de «Cookie» na íntegra e cole-o abaixo.</span>
-            </div>
+            <ol class="steps">
+                <li>Abra a literatura no <a href="https://hub.jw.org/congregation-literature" target="_blank" rel="noopener">JW Hub</a>, com a sessão iniciada.</li>
+                <li>Prima <kbd>F12</kbd>, abra o separador <b>Rede</b> e recarregue a página.</li>
+                <li>No pedido <b>overview</b>: botão direito, <b>Copiar</b>, <b>Copiar como cURL</b>.</li>
+                <li>Cole abaixo. Pode colar o comando inteiro: a aplicação extrai a cookie sozinha.</li>
+            </ol>
             <div class="field">
-                <label class="label" for="txtCookie">Cookie de sessão</label>
-                <input type="password" class="input" id="txtCookie" placeholder="Cole aqui a cookie" autocomplete="off">
-                <p class="field-hint">O valor não é guardado; só é usado neste envio.</p>
+                <label class="label" for="txtCookie">Pedido copiado (ou só a cookie)</label>
+                <textarea class="textarea" id="txtCookie" rows="3" placeholder="curl 'https://hub.jw.org/...' -H 'cookie: ...'" autocomplete="off" spellcheck="false"></textarea>
+                <p class="field-hint">Não é guardado: só é usado neste envio e a cookie deixa de servir quando terminar a sessão no JW Hub.</p>
             </div>
         </section>
         <footer class="modal-card-foot">
@@ -245,9 +247,17 @@
         App.$$('#modalNovaPublicacao input[type=text]').forEach(i => i.value = '');
     }, 'Não foi possível criar a publicação.'));
 
+    // Aceita um comando cURL, os cabeçalhos do pedido ou só o valor da cookie.
+    function extrairCookie(t) {
+        const m = t.match(/(?:-H|--header)\s+(['"])\s*cookie:\s*([^]*?)\1/i) || t.match(/(?:-b|--cookie)\s+(['"])([^]*?)\1/i) || t.match(/^\s*cookie:\s*(.+)$/im);
+        return (m ? m[m.length - 1] : t).replace(/^\s*cookie:\s*/i, '').replace(/\s*\n\s*/g, ' ').trim();
+    }
+
     App.on('enviarHub', btn => App.run(btn, async () => {
-        const c = App.$('#txtCookie').value.trim(); if (!c) return App.campo('#txtCookie', 'Cole a cookie primeiro.');
-        await App.api('GET', '/Literatura/API/', { id: c });
+        const bruto = App.$('#txtCookie').value.trim(); if (!bruto) return App.campo('#txtCookie', 'Cole o pedido ou a cookie primeiro.');
+        const c = extrairCookie(bruto);
+        if (!/XSRF-TOKEN=/.test(c)) return App.campo('#txtCookie', 'Não encontrei a cookie XSRF-TOKEN. Copie o pedido «overview» completo, com «Copiar como cURL».');
+        await App.api('POST', '/Literatura/API/', { id: c });
         App.$('#txtCookie').value = ''; modalTok.close(); notify('Inventário enviado com sucesso.');
     }, 'Não foi possível enviar. O inventário deste mês pode já ter sido enviado, a cookie estar errada ou sem acesso à literatura da congregação.'));
 </script>

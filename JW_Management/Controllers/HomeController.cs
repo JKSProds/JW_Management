@@ -35,7 +35,7 @@ namespace JW_Management.Controllers
                 pedidosEspeciais = especiais.Count,
                 periodicosTitulos = periodicos.Count,
                 periodicosExemplares = periodicos.Sum(l => l.QuantidadeFalta),
-                urgentes = periodicos.Where(l => l.Entrega < 10).Take(5)
+                urgentes = periodicos.Where(l => l.Entrega < 31)
                     .Select(l => new { stamp = l.Stamp, descricao = l.Descricao, geral = l.DescricaoGeral, dias = Math.Max(0, l.Entrega), falta = l.QuantidadeFalta })
             });
         }
@@ -49,23 +49,19 @@ namespace JW_Management.Controllers
             return ctx._tenants;
         }
 
-        private void PrepararLogin(string? returnUrl)
-        {
-            ViewData["ReturnUrl"] = returnUrl;
-            ViewBag.Tenants = ObterTenants().Select(t => new SelectListItem(t.Nome, t.Id.ToString())).ToList();
-        }
-
         [HttpGet]
         public IActionResult Login(string ReturnUrl)
         {
-            PrepararLogin(ReturnUrl);
+            ViewData["ReturnUrl"] = ReturnUrl;
             return View();
         }
 
+        // A congregação deduz-se das credenciais: procura-se o utilizador em todas. Se existir em mais
+        // do que uma, o ecrã pede para escolher (sem nunca reenviar a palavra-passe).
         [HttpPost]
         public async Task<IActionResult> Login(Publicador p, int t, string ReturnUrl)
         {
-            PrepararLogin(ReturnUrl);
+            ViewData["ReturnUrl"] = ReturnUrl;
 
             if (_configStore.SomenteOidcAtivo(_config))
             {
@@ -73,35 +69,56 @@ namespace JW_Management.Controllers
                 return View();
             }
 
-            _appContext._manualTenant = t;
-            p.Username = (p.Username ?? "").ToLower().Trim();
-
+            var username = (p.Username ?? "").ToLower().Trim();
+            var password = p.Password ?? "";
             var passwordHasher = new PasswordHasher<string>();
-            var u = _dbContext.ObterPublicadores(t, false).FirstOrDefault(u =>
-                u.Username == p.Username && !string.IsNullOrEmpty(u.Password) &&
-                passwordHasher.VerifyHashedPassword(null!, u.Password, p.Password ?? "") == PasswordVerificationResult.Success);
 
-            if (u == null)
+            var encontrados = new List<(Tenant Tenant, Publicador Utilizador)>();
+            foreach (var tenant in ObterTenants().Where(x => t == 0 || x.Id == t))
             {
-                _appContext._manualTenant = 0;
+                try
+                {
+                    _appContext._manualTenant = tenant.Id;
+                    var u = _dbContext.ObterPublicadores(tenant.Id, false).FirstOrDefault(u =>
+                        u.Username == username && !string.IsNullOrEmpty(u.Password) &&
+                        passwordHasher.VerifyHashedPassword(null!, u.Password, password) == PasswordVerificationResult.Success);
+                    if (u != null) encontrados.Add((tenant, u));
+                }
+                catch (Exception e)
+                {
+                    // Uma congregação indisponível não pode impedir as restantes.
+                    Console.WriteLine($"[Login] Falha ao consultar a congregação {tenant.Id}: {e.Message}");
+                }
+            }
+            _appContext._manualTenant = 0;
+
+            if (encontrados.Count == 0)
+            {
                 // Mensagem única: não revela se o utilizador existe.
                 ModelState.AddModelError("", "Utilizador ou palavra-passe incorretos.");
-                return View(new Publicador { Username = p.Username });
+                return View(new Publicador { Username = username });
             }
 
+            if (encontrados.Count > 1)
+            {
+                ViewBag.Escolher = encontrados.Select(x => new SelectListItem(x.Tenant.Nome, x.Tenant.Id.ToString())).ToList();
+                ModelState.AddModelError("", "Esta conta existe em mais do que uma congregação. Escolha uma e volte a introduzir a palavra-passe.");
+                return View(new Publicador { Username = username });
+            }
+
+            var (escolhida, utilizador) = encontrados[0];
             var claims = new List<Claim>
             {
-                new Claim(ClaimTypes.Name, u.Id.ToString()),
-                new Claim(ClaimTypes.Role, u.Role),
-                new Claim(ClaimTypes.GivenName, u.Nome!),
-                new Claim(ClaimTypes.Sid, _appContext._currentTenant.Id.ToString()),
-                new Claim(ClaimTypes.PrimaryGroupSid, _appContext._currentTenant.NomeCongregacao.ToString())
+                new Claim(ClaimTypes.Name, utilizador.Id.ToString()),
+                new Claim(ClaimTypes.Role, utilizador.Role),
+                new Claim(ClaimTypes.GivenName, utilizador.Nome!),
+                new Claim(ClaimTypes.Sid, escolhida.Id.ToString()),
+                new Claim(ClaimTypes.PrimaryGroupSid, escolhida.NomeCongregacao.ToString())
             };
             var claimsIdentity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
             await HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, new ClaimsPrincipal(claimsIdentity));
 
-            Console.WriteLine($"[{_appContext._currentTenant.NomeCongregacao}] - Login - Utilizador: {u.Nome}");
-            _appContext._manualTenant = 0;
+            Console.WriteLine($"[{escolhida.NomeCongregacao}] - Login - Utilizador: {utilizador.Nome}");
 
             // Só aceita destinos locais, para o ReturnUrl não servir de redirecionamento aberto.
             return Url.IsLocalUrl(ReturnUrl) ? LocalRedirect(ReturnUrl) : RedirectToAction("Index", "Home");

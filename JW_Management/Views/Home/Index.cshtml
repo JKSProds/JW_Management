@@ -8,21 +8,31 @@
 }
 
 <div class="container">
-    <section class="home-hero">
-        @if (autenticado)
-        {
+    @if (!autenticado)
+    {
+        <section class="welcome">
+            <div class="welcome-inner">
+                <span class="auth-mark"><img src="~/img/logo.png" alt=""></span>
+                <h1>Gestor Congregacional</h1>
+                <p>Literatura, territórios e reuniões da congregação num só lugar.</p>
+                <a class="button is-info" href="~/Home/Login">
+                    <span class="icon"><i class="fa-solid fa-right-to-bracket"></i></span><span>Iniciar sessão</span>
+                </a>
+                <div class="welcome-feats">
+                    <span><i class="fa-solid fa-boxes-stacked"></i>Stock e pedidos</span>
+                    <span><i class="fa-solid fa-map-location-dot"></i>Territórios</span>
+                    <span><i class="fa-solid fa-people-group"></i>Reuniões</span>
+                </div>
+            </div>
+        </section>
+    }
+    else
+    {
+        <section class="home-hero">
             <h1><span id="saudacao">Olá</span>, @User.ObterNomeCompleto().Split(' ')[0]</h1>
             <p id="dataHoje">@User.ObterCong()</p>
-        }
-        else
-        {
-            <h1>Gestor Congregacional</h1>
-            <p>Literatura, territórios e reuniões da congregação num só lugar. Inicie sessão para continuar.</p>
-            <a class="button is-info mt-4" href="~/Home/Login">
-                <span class="icon"><i class="fa-solid fa-right-to-bracket"></i></span><span>Iniciar sessão</span>
-            </a>
-        }
-    </section>
+        </section>
+    }
 
     @if (literatura)
     {
@@ -34,7 +44,7 @@
 
         <div class="home-grid">
             <section aria-labelledby="hUrg">
-                <h2 class="section-title" id="hUrg">Periódicos a entregar em breve <a href="~/Literatura/Periodicos">Ver todos</a></h2>
+                <h2 class="section-title" id="hUrg">Periódicos a entregar em menos de 31 dias <a href="~/Literatura/Periodicos">Ver todos</a></h2>
                 <div id="urgentes" class="items"><p class="attn-empty">A carregar…</p></div>
             </section>
             <section aria-labelledby="hAt">
@@ -115,7 +125,7 @@
         App.stats({ rTitulos: r.titulos, rUnidades: r.unidades, rExemplares: r.periodicosExemplares, rPend: r.pedidosPendentes });
 
         const u = App.$('#urgentes'); u.innerHTML = '';
-        if (!r.urgentes.length) u.innerHTML = '<p class="attn-empty">Nenhum periódico com entrega em menos de 10 dias.</p>';
+        if (!r.urgentes.length) u.innerHTML = '<p class="attn-empty">Nenhum periódico com entrega em menos de 31 dias.</p>';
         r.urgentes.forEach(p => u.appendChild(linha('/Literatura/Periodico/' + p.stamp, p.descricao,
             (p.dias === 0 ? 'Entrega hoje' : 'Em ' + p.dias + ' dia(s)') + (p.geral ? ' · ' + p.geral : ''), p.falta)));
 

@@ -259,7 +259,8 @@ namespace JW_Management.Controllers
             return new FileContentResult(output.ToArray(), System.Net.Mime.MediaTypeNames.Application.Pdf);
         }
         
-        [HttpGet]
+        // POST: a cookie é um segredo e não deve ir no URL (ficaria nos registos do servidor).
+        [HttpPost]
         public IActionResult API(string id)
         {
             _jwApiContext.Cookies = id;

@@ -23,6 +23,13 @@ Fora de âmbito por agora: **Territórios, Reuniões e Congressos** (não foram 
 
 Aplicadas as 12 sugestões visuais: miniaturas com proporção fixa e ícone por tipo quando não há imagem; quantidade em destaque com barra de stock (relativa ao maior stock da lista; âmbar até 20%, vermelha a zero) e setas nas entradas/saídas; cabeçalhos sem o quadrado de ícone; estatísticas sem fundo nos ícones; filtros em texto com sublinhado; navbar alinhada com o conteúdo, módulo ativo sublinhado e menu móvel em painel lateral; Início plano com resumo (stock, exemplares por entregar, pedidos por enviar, periódicos urgentes e lista «Atenção», via `/Home/Resumo`); login com painel de marca mais estreito; erros junto ao campo (`App.campo`); linhas compactas a partir de 1024px; tabelas, separadores e cartões dos ecrãs antigos alinhados com o novo estilo.
 
+## Revisão 5 (2026-11-05)
+
+- Ícones sem cruz: `clipboard-list` (pedidos), `box-open`, `id-card`, `people-roof`, etc.
+- Login: deixou de ter seletor de congregação. O utilizador é procurado em todas as congregações; se existir em mais de uma, o ecrã pede para escolher (e volta a pedir a palavra-passe). Cartão centrado, sem painel lateral. Página inicial sem sessão centrada com o botão de entrada.
+- «A entregar em breve» passou a menos de 31 dias (Início e Periódicos).
+- JW Hub: aceita o comando «Copiar como cURL» e extrai a cookie; o envio passou a POST (a cookie já não vai no URL).
+
 ## Minimizar refrescos de página
 
 Utilitários em `wwwroot/js/app.js` (sem dependências, usam `fetch` e delegação de eventos):
