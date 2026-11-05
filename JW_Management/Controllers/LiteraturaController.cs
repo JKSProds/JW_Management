@@ -1,8 +1,6 @@
-﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc;
 using JW_Management.Models;
 using Microsoft.AspNetCore.Mvc.Rendering;
-using System.Security.Cryptography.Xml;
-using iTextSharp.text;
 using Microsoft.AspNetCore.Authorization;
 
 namespace JW_Management.Controllers
@@ -10,18 +8,32 @@ namespace JW_Management.Controllers
     [Authorize(Roles = "Admin, Assistente, Coordenador, Secretario, Servico, Literatura")]
     public class LiteraturaController(DbContext _dbContext, FileContext _fileContext, JWApiContext _jwApiContext, MailContext _mailContext) : Controller
     {
+        private static readonly string[] ExtensoesImagem = [".jpg", ".jpeg", ".png", ".webp", ".gif"];
+
+        // Resposta uniforme: 200 em caso de sucesso (com valor opcional), 500 caso contrário.
+        private IActionResult Resultado(bool ok) => ok ? Ok() : StatusCode(500);
+        private IActionResult Resultado(bool ok, object valor) => ok ? Json(valor) : StatusCode(500);
+
+        private IEnumerable<SelectListItem> ListaPublicadores() =>
+            _dbContext.ObterPublicadores(false).OrderBy(p => p.Nome).Select(l => new SelectListItem() { Value = l.Id.ToString(), Text = l.Nome });
+
+        private IEnumerable<SelectListItem> ListaPeriodicos() =>
+            _dbContext.ObterTipoPeriodicos().Select(l => new SelectListItem() { Value = l.Referencia, Text = l.Descricao });
+
+        // A pesquisa e o filtro por tipo são feitos no browser (sem recarregar); os parâmetros só pré-selecionam o estado inicial.
         public IActionResult Index(string filtro, int tipo)
         {
-            if (string.IsNullOrEmpty(filtro)) filtro = "";
-            ViewData["filtro"] = filtro;
+            ViewData["filtro"] = filtro ?? "";
             ViewData["tipo"] = tipo;
 
             List<TipoLiteratura> LstTiposLiteratura = _dbContext.ObterTiposLiteratura();
             LstTiposLiteratura.Insert(0, new TipoLiteratura() { Id = 0, Descricao = "Todos" });
             ViewBag.Tipos = LstTiposLiteratura.Select(l => new SelectListItem() { Value = l.Id.ToString(), Text = l.Descricao });
 
-            if (tipo == 0) { return View("Index", _dbContext.ObterLiteraturas(filtro, 0).OrderBy(l => l.Referencia)); }
-            return View("Index", _dbContext.ObterLiteraturas(filtro, 0).Where(l => l.Tipo.Id == tipo).OrderBy(l => l.Referencia));
+            // Periódicos sem stock não aparecem na listagem.
+            return View("Index", _dbContext.ObterLiteraturas("", 0)
+                .Where(l => !(l.Tipo!.Id == 7 && l.Quantidade <= 0))
+                .OrderBy(l => l.Referencia));
         }
 
         [HttpGet]
@@ -29,8 +41,8 @@ namespace JW_Management.Controllers
         {
             DateOnly.TryParse(data, out DateOnly d);
             if (d == DateOnly.MinValue) d = DateOnly.FromDateTime(DateTime.Now);
-            ViewBag.Publicadores = _dbContext.ObterPublicadores(false).OrderBy(p => p.Nome).Select(l => new SelectListItem() { Value = l.Id.ToString(), Text = l.Nome });
-            ViewBag.Periodicos = _dbContext.ObterTipoPeriodicos().Select(l => new SelectListItem() { Value = l.Referencia, Text = l.Descricao });
+            ViewBag.Publicadores = ListaPublicadores();
+            ViewBag.Periodicos = ListaPeriodicos();
             ViewData["Data"] = d;
 
             if (id == 1) return View("Entradas", _dbContext.ObterMovimentos(true, false, 0, d));
@@ -40,8 +52,8 @@ namespace JW_Management.Controllers
         [HttpPost]
         public IActionResult Movimentos(string stamp, int qtd, int idpub)
         {
-            Literatura l = _dbContext.ObterLiteratura(stamp);
             if (string.IsNullOrEmpty(stamp) || qtd == 0) return StatusCode(500);
+            Literatura l = _dbContext.ObterLiteratura(stamp);
 
             Movimentos m = new Movimentos()
             {
@@ -52,14 +64,14 @@ namespace JW_Management.Controllers
                 Publicador = new Publicador() { Id = idpub }
             };
 
-            return _dbContext.AdicionarMovimento(m) ? StatusCode(200) : StatusCode(500);
+            return Resultado(_dbContext.AdicionarMovimento(m));
         }
 
         [HttpDelete]
         public IActionResult Movimentos(string stamp)
         {
             if (string.IsNullOrEmpty(stamp)) return StatusCode(500);
-            return Json(_dbContext.ApagarMovimento(stamp) ? StatusCode(200) : StatusCode(500));
+            return Resultado(_dbContext.ApagarMovimento(stamp));
         }
 
         [HttpGet]
@@ -81,26 +93,21 @@ namespace JW_Management.Controllers
         {
             if (string.IsNullOrEmpty(referencia) || string.IsNullOrEmpty(descricao)) return StatusCode(500);
             
-            var lP = _dbContext.ObterPeriodicosData(data, referencia);
-            if (lP.Any())
-            {
-                return Json(lP.First().Stamp);   
-            }
-            else
-            {
-                Literatura l = new Literatura()
-                {
-                    Descricao = descricao,
-                    Referencia = referencia,
-                    Data = data,
-                    Tipo = _dbContext.ObterTiposLiteratura().Where(t => t.Id == tipo).DefaultIfEmpty(_dbContext.ObterTiposLiteratura().Last()).First(),
-                    Stamp = DateTime.Now.Ticks.ToString()
-                };
+            // Um periódico já existente (mesma referência e data) é reutilizado.
+            var existente = _dbContext.ObterPeriodicosData(data, referencia).FirstOrDefault();
+            if (existente != null) return Json(existente.Stamp);
 
-                return Json(_dbContext.AdicionarLiteratura(l) ? l.Stamp : StatusCode(500));
-            }
+            var tipos = _dbContext.ObterTiposLiteratura();
+            Literatura l = new Literatura()
+            {
+                Descricao = descricao,
+                Referencia = referencia,
+                Data = data,
+                Tipo = tipos.FirstOrDefault(t => t.Id == tipo) ?? tipos.Last(),
+                Stamp = DateTime.Now.Ticks.ToString()
+            };
 
-           
+            return Resultado(_dbContext.AdicionarLiteratura(l), l.Stamp!);
         }
 
         [HttpDelete]
@@ -108,13 +115,14 @@ namespace JW_Management.Controllers
         {
             if (string.IsNullOrEmpty(stamp)) return StatusCode(500);
 
-            return Json(_dbContext.ApagarLiteratura(stamp) ? StatusCode(200) : StatusCode(500));
+            return Resultado(_dbContext.ApagarLiteratura(stamp));
         }
         
         [HttpGet]
         public IActionResult PesquisarPeriodicos(string ano, string tipo)
         {
-            var t = _dbContext.ObterTipoPeriodicos().First(tp => tp.Referencia == tipo); 
+            var t = _dbContext.ObterTipoPeriodicos().FirstOrDefault(tp => tp.Referencia == tipo);
+            if (t == null) return BadRequest();
             return Json(_jwApiContext.ObterPeriodicos(ano, t));
         }
 
@@ -133,7 +141,7 @@ namespace JW_Management.Controllers
                 LstLiteratura = LstLiteratura.Where(l => l.Referencia == id).OrderBy(l => l.Publicador.Nome).ToList();
             }
             
-            return Json(_mailContext.MailPedidosPeriodicosGrupo(LstLiteratura, Email) ? StatusCode(200) : StatusCode(500));
+            return Resultado(_mailContext.MailPedidosPeriodicosGrupo(LstLiteratura, Email));
         }
 
         [HttpGet]
@@ -157,7 +165,7 @@ namespace JW_Management.Controllers
                 Stamp = DateTime.Now.Ticks.ToString()
             };
 
-            return Json(_dbContext.AdicionarPedidoPeriodico(l) ? l.Stamp : StatusCode(500));
+            return Resultado(_dbContext.AdicionarPedidoPeriodico(l), l.Stamp!);
         }
 
         [HttpDelete]
@@ -165,18 +173,18 @@ namespace JW_Management.Controllers
         {
             if (string.IsNullOrEmpty(id)) return StatusCode(500);
 
-            return Json(_dbContext.ApagarPedidoPeriodico(id) ? StatusCode(200) : StatusCode(500));
+            return Resultado(_dbContext.ApagarPedidoPeriodico(id));
         }
 
         [HttpGet]
         public IActionResult Pedidos()
         {
-            ViewBag.Publicadores = _dbContext.ObterPublicadores(false).OrderBy(p => p.Nome).Select(l => new SelectListItem() { Value = l.Id.ToString(), Text = l.Nome });
+            ViewBag.Publicadores = ListaPublicadores();
             ViewBag.Estados = _dbContext.ObterEstadosPedido().Select(l => new SelectListItem() { Value = l.Descricao, Text = l.Descricao });
-            ViewBag.Periodicos = _dbContext.ObterTipoPeriodicos().Select(l => new SelectListItem() { Value = l.Referencia, Text = l.Descricao });
+            ViewBag.Periodicos = ListaPeriodicos();
 
-            List<Literatura> LstPedidos = _dbContext.ObterPedidosPeriodico().Where(l => l.Quantidade > 0).OrderBy(l => l.Publicador.Nome).OrderBy(l => l.Referencia).ToList();
-            LstPedidos.AddRange(_dbContext.ObterPedidosEspeciais().Where(l => l.Quantidade > 0).OrderBy(l => l.Publicador.Nome));
+            List<Literatura> LstPedidos = _dbContext.ObterPedidosPeriodico().Where(l => l.Quantidade > 0).OrderBy(l => l.Referencia).ThenBy(l => l.Publicador!.Nome).ToList();
+            LstPedidos.AddRange(_dbContext.ObterPedidosEspeciais().Where(l => l.Quantidade > 0).OrderBy(l => l.Publicador!.Nome));
 
             return View(LstPedidos);
         }
@@ -191,7 +199,7 @@ namespace JW_Management.Controllers
                 _dbContext.AtualizarEstadoPedidoEspecial(l, new EstadoPedido("Enviado Email"));
             }
 
-            return Json(_mailContext.MailPedidosEspeciaisPendentes(LstLiteratura, Email) ? StatusCode(200) : StatusCode(500));
+            return Resultado(_mailContext.MailPedidosEspeciaisPendentes(LstLiteratura, Email));
         }
 
         [HttpPost]
@@ -206,7 +214,7 @@ namespace JW_Management.Controllers
                 Stamp = stamp
             };
 
-            return Json(_dbContext.AdicionarPedidoEspecial(l, new EstadoPedido()) ? l.Stamp : StatusCode(500));
+            return Resultado(_dbContext.AdicionarPedidoEspecial(l, new EstadoPedido()), l.Stamp);
         }
 
         [HttpPut]
@@ -218,7 +226,7 @@ namespace JW_Management.Controllers
             l.Quantidade = qtd;
             EstadoPedido e = new EstadoPedido(estado);
 
-            return Json(_dbContext.AtualizarEstadoPedidoEspecial(l, e) ? l.Stamp : StatusCode(500));
+            return Resultado(_dbContext.AtualizarEstadoPedidoEspecial(l, e), l.Stamp!);
         }
 
         [HttpDelete]
@@ -226,7 +234,7 @@ namespace JW_Management.Controllers
         {
             if (string.IsNullOrEmpty(id)) return StatusCode(500);
 
-            return Json(_dbContext.ApagarPedidoEspecial(id) ? StatusCode(200) : StatusCode(500));
+            return Resultado(_dbContext.ApagarPedidoEspecial(id));
         }
 
 
@@ -280,12 +288,14 @@ namespace JW_Management.Controllers
         {
             if (string.IsNullOrEmpty(id) || file == null) return StatusCode(500);
 
+            // Só aceita imagens: a extensão vem do cliente e faz parte do nome do ficheiro guardado.
+            var ext = Path.GetExtension(file.FileName).ToLowerInvariant();
+            if (!ExtensoesImagem.Contains(ext)) return BadRequest();
+
             Literatura l = _dbContext.ObterLiteratura(id);
-            string FileName = l.Referencia + "_" + DateTime.Now.Ticks.ToString() + "." + file.FileName.Split(".").Last();
+            string FileName = l.Referencia + "_" + DateTime.Now.Ticks.ToString() + ext;
 
-            if (_fileContext.GuardarImagemLiteratura(file, FileName)) return _dbContext.AdicionarImagemLiteratura(l, FileName) ? StatusCode(200) : StatusCode(500);
-
-            return StatusCode(500);
+            return Resultado(_fileContext.GuardarImagemLiteratura(file, FileName) && _dbContext.AdicionarImagemLiteratura(l, FileName));
         }
     }
 }

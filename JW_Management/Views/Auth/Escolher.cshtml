@@ -2,16 +2,17 @@
 @{
     ViewData["Title"] = "Escolher congregação";
 }
-<section class="section">
-    <div class="container">
-        <div class="box has-text-centered">
-            <h1 class="title">Escolha a congregação</h1>
-            <form method="post">
-                @foreach (var t in Model)
-                {
-                    <button class="button is-link is-fullwidth is-large mb-2" name="tenantId" value="@t.Id">@t.Nome</button>
-                }
-            </form>
-        </div>
+<div class="container" style="max-width:560px">
+    <div class="panel-card">
+        <h1 class="title is-4">Escolha a congregação</h1>
+        <p class="subtitle is-6">A sua conta tem acesso a mais do que uma congregação.</p>
+        <form method="post" class="items">
+            @foreach (var t in Model)
+            {
+                <button class="button is-info is-light" style="justify-content:flex-start;min-height:3.2rem" name="tenantId" value="@t.Id">
+                    <span class="icon"><i class="fa-solid fa-church"></i></span><span>@t.Nome</span>
+                </button>
+            }
+        </form>
     </div>
-</section>
+</div>

@@ -1,121 +1,67 @@
 ﻿@model IEnumerable<JW_Management.Models.Literatura>
 @{
-    ViewData["Title"] = "Literatura - Entradas";
+    ViewData["Title"] = "Periódico - Saída";
 }
 
 <div class="container">
-    <div class="columns">
-        <div class="column">
-            <div class="tile">
-                <div class="tile is-parent is-vertical">
-                    <article class="tile is-child notification is-info">
-                        <p class="title">
-                            <span class="icon mr-3">
-                                <i class="fa-solid fa-newspaper"></i>
-                            </span>
-                            <span>Saida de Periódicos</span>
-                        </p>
-                    </article>
-                </div>
+    <div class="page-head">
+        <div class="head-title">
+            <span class="head-icon"><i class="fa-solid fa-newspaper"></i></span>
+            <div>
+                <h1>Saída de periódicos</h1>
+                <p><span id="total" class="num">@Math.Abs(Model.Sum(l => l.Quantidade))</span> exemplares por entregar</p>
             </div>
         </div>
-        <div class="column is-4">
-            <button class="button is-info is-large is-pulled-right is-fullwidth " disabled>
-                @Math.Abs(Model.Sum(l =>
-                l.Quantidade))
-            </button>
+        <div class="head-actions">
+            <a class="button is-info is-light" href="~/Literatura/Periodicos">
+                <span class="icon"><i class="fa-solid fa-arrow-left"></i></span><span>Periódicos</span>
+            </a>
         </div>
     </div>
-</div>
-<hr />
-<div class="container">
-    @if (Model.Count() == 0)
-    {
-        <br />
-        <button class="button is-danger is-large is-rounded is-fullwidth is-disabled">
-            Não foram encontrados
-            periódicos!
-        </button>
-    }
-    else
-    {
-        <table class="table is-hoverable is-fullwidth">
-            <thead>
-                <tr>
-                    <th>
-                        @Html.DisplayNameFor(model => model.FirstOrDefault()!.Publicador!.Nome)
-                    </th>
-                    <th>
-                        @Html.DisplayNameFor(model => model.FirstOrDefault()!.Publicador!.Grupo!)
-                    </th>
-                    <th style="max-width:30px">
-                        @Html.DisplayNameFor(model => model.FirstOrDefault()!.Quantidade)
-                    </th>
-                    <th></th>
-                </tr>
-            </thead>
-            <tbody>
-                @foreach (var item in Model)
-                {
-                    <tr>
-                        <td data-label="@Html.DisplayNameFor(model => model.FirstOrDefault()!.Publicador!.Nome)">
-                            <span>@item.Publicador!.Nome</span>
-                        </td>
-                        <td data-label="@Html.DisplayNameFor(model => model.FirstOrDefault()!.Publicador!.Grupo!)">
-                            <span>@item.Publicador?.Grupo?.Responsavel?.Nome [@item.Publicador?.Grupo?.Id]</span>
-                        </td>
-                        <td data-label="@Html.DisplayNameFor(model => model.FirstOrDefault()!.Quantidade)">
-                            <span>@Math.Abs(item.Quantidade)</span>
-                        </td>
-                        <td class="is-actions-cell">
-                            <div class="field has-addons is-pulled-right is-flex-wrap-nowrap" style="width:100%">
-                                <button class="button is-success is-fullwidth is-large"
-                                        onclick="GerarMovimento('@item.Stamp', @item.Quantidade, @item.Publicador.Id, this)">
-                                    <i class="fas fa-circle-check"></i>
-                                </button>
-                            </div>
-                        </td>
-                    </tr>
-                }
-            </tbody>
-        </table>
-    }
+
+    <div class="items" id="lista">
+        @foreach (var item in Model)
+        {
+            <article class="item no-thumb" data-stamp="@item.Stamp" data-qtd="@item.Quantidade" data-pub="@item.Publicador!.Id">
+                <div class="main">
+                    <div class="name">@item.Publicador.Nome</div>
+                    <div class="meta">
+                        <span><i class="fa-solid fa-user-group fa-xs"></i> @item.Publicador.Grupo?.Responsavel?.Nome [@item.Publicador.Grupo?.Id]</span>
+                    </div>
+                </div>
+                <div class="side">
+                    <div class="qty num"><span>@Math.Abs(item.Quantidade)</span><small>exemplares</small></div>
+                    <div class="acts">
+                        <button type="button" class="button is-success" data-action="entregar">
+                            <span class="icon"><i class="fa-solid fa-circle-check"></i></span><span>Entregue</span>
+                        </button>
+                    </div>
+                </div>
+            </article>
+        }
+    </div>
+    <div class="empty-state" id="vazio" @(Model.Any() ? "hidden" : "")>
+        <span class="icon"><i class="fa-regular fa-circle-check"></i></span>
+        <strong>Sem exemplares por entregar</strong>
+        Todos os pedidos deste periódico foram entregues.
+    </div>
 </div>
 
+@section Scripts {
 <script>
+    const atualizar = () => {
+        const itens = App.$$('#lista .item');
+        App.$('#vazio').hidden = itens.length > 0;
+        App.$('#total').textContent = itens.reduce((s, i) => s + Math.abs(+i.dataset.qtd), 0);
+    };
+    App.$('#lista').addEventListener('changed', atualizar);
 
-    function GerarMovimento(stamp, qtd, idpub, btn) {
-        btn.classList.add('is-loading');
-        $.ajax({
-            url: '/Literatura/Movimentos/',
-            data: { "stamp": stamp, "qtd": -qtd, "idpub": 0 },
-            type: "POST",
-            success: function (data) {
-                $.ajax({
-                    url: '/Literatura/Movimentos/',
-                    data: { "stamp": stamp, "qtd": qtd, "idpub": idpub },
-                    type: "POST",
-                    success: function (data) {
-                        notify('Movimento guardado com sucesso!');
-                        btn.closest('tr').remove();
-                    },
-                    error: function (response) {
-                        notifyError('Ocorreu um erro ao gerar um movimento!');
-                    },
-                    failure: function (response) {
-                        notifyError('Falha ao gerar um movimento!');
-                    }
-                });
-            },
-            error: function (response) {
-                notifyError('Ocorreu um erro ao gerar um movimento!');
-            },
-            failure: function (response) {
-                notifyError('Falha ao gerar um movimento!');
-            },
-            complete: function (xhr, status) {
-                btn.classList.remove('is-loading');
-            }
-        });
-    }
+    App.on('entregar', btn => {
+        const it = btn.closest('.item');
+        App.run(btn, async () => {
+            await App.saida(it.dataset.stamp, +it.dataset.qtd, it.dataset.pub);
+            App.removeItem(it); notify('Entrega registada.');
+        }, 'Não foi possível registar a entrega.');
+    });
 </script>
+}

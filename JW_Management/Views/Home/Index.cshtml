@@ -1,80 +1,103 @@
-﻿@model IndexModel
+@model IndexModel
+@using JW_Management.Models
 @{
-    ViewData["Title"] = "Inicio";
+    ViewData["Title"] = "Início";
+    var autenticado = User.Identity!.IsAuthenticated;
+    var congressos = autenticado && User.ObterTenant() == 9999;
+    var literatura = autenticado && new[] { "Admin", "Assistente", "Coordenador", "Secretario", "Servico", "Literatura" }.Any(User.IsInRole);
 }
+
 <div class="container">
-    <div class="card">
-        <div class="card-content">
-            <div class="media">
-                <div class="media-left">
-                    <figure class="image is-128x128">
-                        <img src="~/img/literatura2.jpg" alt="Literatura">
-                    </figure>
+    <section class="home-hero">
+        @if (autenticado)
+        {
+            <h1><span id="saudacao">Olá</span>, @User.ObterNomeCompleto().Split(' ')[0]</h1>
+            <p id="dataHoje">@User.ObterCong()</p>
+            @if (literatura && !congressos)
+            {
+                <div class="status-line" id="resumo" hidden>
+                    <span><b class="num" id="rTitulos">0</b> publicações · <b class="num" id="rUnidades">0</b> unidades em stock</span>
+                    <a href="~/Literatura/Pedidos" id="rPedidos" hidden><b class="num" id="rPend">0</b> pedidos por enviar</a>
                 </div>
-                <div class="media-content">
-                    <p class="title is-2">Literatura</p>
-                </div>
-            </div>
+            }
+        }
+        else
+        {
+            <h1>Gestor Congregacional</h1>
+            <p>Literatura, territórios e reuniões da congregação num só lugar. Inicie sessão para continuar.</p>
+            <a class="button is-info mt-4" href="~/Home/Login">
+                <span class="icon"><i class="fa-solid fa-right-to-bracket"></i></span><span>Iniciar sessão</span>
+            </a>
+        }
+    </section>
 
-            <div class="content">
-                <p>
-                    Este site tem como objetivo ajudar os irmãos da literatura a fazer uma melhor gestão dos stocks atuais. Dando informações de quantidades a separar por grupo.
-                </p>
-            </div>
+    @if (autenticado)
+    {
+        <div class="modules">
+            @if (congressos)
+            {
+                <article class="module">
+                    <div class="module-cover" style="background-image:url('/img/reunioes2.jpeg')"><h2>Congressos e assembleias</h2></div>
+                    <div class="module-body">Organização de viagens, paragens e congregações para cada evento.</div>
+                    <nav class="module-links"><a href="~/Congressos">Abrir lista</a></nav>
+                </article>
+            }
+            else
+            {
+                <article class="module">
+                    <div class="module-cover" style="background-image:url('/img/literatura2.jpg')"><h2>Literatura</h2></div>
+                    <div class="module-body">Gestão de stocks, com as quantidades a separar por grupo.</div>
+                    <nav class="module-links" aria-label="Literatura">
+                        <a href="~/Literatura">Stock</a>
+                        <a href="~/Literatura/Movimentos/1">Entradas</a>
+                        <a href="~/Literatura/Movimentos/2">Saídas</a>
+                        <a href="~/Literatura/Pedidos">Pedidos</a>
+                    </nav>
+                </article>
+                <article class="module">
+                    <div class="module-cover" style="background-image:url('/img/territorios.jpg')"><h2>Territórios</h2></div>
+                    <div class="module-body">Informação dos territórios guardada num só sítio, com envio por email.</div>
+                    <nav class="module-links" aria-label="Territórios">
+                        <a href="~/Territorios">Listagem</a>
+                        <a href="~/Territorios/Registros">Registos</a>
+                    </nav>
+                </article>
+                <article class="module">
+                    <div class="module-cover" style="background-image:url('/img/reunioes2.jpeg')"><h2>Reuniões</h2></div>
+                    <div class="module-body">Designações das reuniões de meio de semana e de fim de semana, e as responsabilidades.</div>
+                    <nav class="module-links" aria-label="Reuniões">
+                        <a href="~/Reunioes">Listagem</a>
+                        <a href="~/Reunioes/Discursos">Discursos</a>
+                        <a href="~/Reunioes/Calendario">Calendário</a>
+                    </nav>
+                </article>
+            }
         </div>
-        <footer class="card-footer">
-            <a href="~/Literatura" class="card-footer-item">Stocks</a>
-            <a href="~/Literatura/Movimentos/1" class="card-footer-item">Entradas</a>
-            <a href="~/Literatura/Movimentos/2" class="card-footer-item">Saidas</a>
-            <a href="~/Literatura/Pedidos" class="card-footer-item">Pedidos</a>
-        </footer>
-    </div>
-    &nbsp;
-    <div class="card">
-        <div class="card-content">
-            <div class="media">
-                <div class="media-left">
-                    <figure class="image is-128x128">
-                        <img src="~/img/territorios.jpg" alt="Territórios">
-                    </figure>
-                </div>
-                <div class="media-content">
-                    <p class="title is-2">Territórios</p>
-                </div>
-            </div>
-
-            <div class="content">
-                <p>
-                    Este site permite ajudar o servo dos território a fazer uma melhor gestão dos mesmos, guardando toda a informação informaticamente e enviando os territorios por email.
-                </p>
-            </div>
-        </div>
-        <footer class="card-footer">
-            <a href="~/Territorios" class="card-footer-item">Territórios</a>
-        </footer>
-    </div>
-    &nbsp;
-    <div class="card">
-        <div class="card-content">
-            <div class="media">
-                <div class="media-left">
-                    <figure class="image is-128x128">
-                        <img src="~/img/reunioes2.jpeg" alt="Reunioes">
-                    </figure>
-                </div>
-                <div class="media-content">
-                    <p class="title is-2">Reuniões</p>
-                </div>
-            </div>
-
-            <div class="content">
-                <p>
-                    Este site permite agendar as designacoes da reuniao da semana e fim de semana, bem como as responsabilidades.
-                </p>
-            </div>
-        </div>
-        <footer class="card-footer">
-            <a href="~/Reunioes" class="card-footer-item">Reuniões</a>
-        </footer>
-    </div>
+    }
 </div>
+
+@section Scripts {
+@if (autenticado)
+{
+<script>
+    (function () {
+        const h = new Date().getHours();
+        document.getElementById('saudacao').textContent = h < 6 ? 'Boa noite' : h < 13 ? 'Bom dia' : h < 20 ? 'Boa tarde' : 'Boa noite';
+        const d = new Date().toLocaleDateString('pt-PT', { weekday: 'long', day: 'numeric', month: 'long' });
+        const el = document.getElementById('dataHoje');
+        el.textContent = d.charAt(0).toUpperCase() + d.slice(1) + ' · ' + el.textContent;
+    })();
+    @if (literatura && !congressos)
+    {
+    <text>
+    // Resumo em segundo plano: a página já está utilizável quando chega.
+    App.api('GET', '/Home/Resumo').then(r => {
+        App.$('#rTitulos').textContent = r.titulos; App.$('#rUnidades').textContent = r.unidades;
+        if (r.pedidosPendentes > 0) { App.$('#rPend').textContent = r.pedidosPendentes; App.$('#rPedidos').hidden = false; }
+        App.$('#resumo').hidden = false;
+    }).catch(() => { });
+    </text>
+    }
+</script>
+}
+}

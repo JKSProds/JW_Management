@@ -1,354 +1,197 @@
 ﻿@model JW_Management.Models.Publicador
 @{
     ViewData["Title"] = "Publicador";
+    var movimentos = Model.Movimentos ?? new();
+    var pedidos = Model.Pedidos ?? new();
+    var territorios = Model.Territorios ?? new();
+    var iniciais = string.Concat((Model.Nome ?? "?").Split(' ', StringSplitOptions.RemoveEmptyEntries).Take(1).Select(p => p[0])) +
+                   string.Concat((Model.Nome ?? "").Split(' ', StringSplitOptions.RemoveEmptyEntries).Skip(1).Reverse().Take(1).Select(p => p[0]));
 }
 
-<form asp-action="Index" method="get" id="frmFiltrar">
-    <div class="container">
-        <div class="columns">
-            <div class="column">
-                <div class="tile">
-                    <div class="tile is-parent is-vertical">
-                        <article class="tile is-child notification is-info">
-                            <p class="title">
-                                <span class="icon mr-3">
-                                    <i class="fa-solid fa-user-tie"></i>
-                                </span>
-                                <span>Publicador - @Model.Nome</span>
-                            </p>
-                        </article>
+<div class="container">
+    <div class="page-head">
+        <div class="head-title">
+            <span class="avatar" style="width:46px;height:46px;font-size:1rem" aria-hidden="true">@iniciais.ToUpper()</span>
+            <div>
+                <h1>@Model.Nome</h1>
+                <p>@Model.Role · Nº @Model.Id</p>
+            </div>
+        </div>
+        <div class="head-actions">
+            <a class="button is-info is-light" href="~/Publicadores">
+                <span class="icon"><i class="fa-solid fa-arrow-left"></i></span><span>Publicadores</span>
+            </a>
+        </div>
+    </div>
+
+    <div class="seg" role="tablist" aria-label="Secções da ficha">
+        <button type="button" role="tab" id="tabDados" aria-controls="panDados" aria-selected="true">Dados</button>
+        <button type="button" role="tab" id="tabMov" aria-controls="panMov" aria-selected="false">Movimentos<span class="count">@movimentos.Count</span></button>
+        <button type="button" role="tab" id="tabPed" aria-controls="panPed" aria-selected="false">Pedidos<span class="count">@pedidos.Count</span></button>
+        <button type="button" role="tab" id="tabTer" aria-controls="panTer" aria-selected="false">Territórios<span class="count">@territorios.Count</span></button>
+    </div>
+
+    <section id="panDados" role="tabpanel" aria-labelledby="tabDados">
+        <form method="post" id="frmPublicador" class="panel-card">
+            <div class="form-grid">
+                <div class="field">
+                    <label class="label" asp-for="Id">Número</label>
+                    <input type="text" class="input" readonly asp-for="Id">
+                </div>
+                <div class="field">
+                    <label class="label" asp-for="Role">Função</label>
+                    <input type="text" class="input" readonly disabled asp-for="Role">
+                </div>
+                <div class="field">
+                    <label class="label" asp-for="Nome">Nome</label>
+                    <input type="text" class="input" readonly asp-for="Nome">
+                </div>
+                <div class="field">
+                    <label class="label" asp-for="Username">Utilizador</label>
+                    <input type="text" class="input" readonly asp-for="Username" autocomplete="off">
+                </div>
+                <div class="field">
+                    <label class="label" for="Password">Palavra-passe</label>
+                    <div class="input-action">
+                        <div class="control">
+                            @* O hash nunca é enviado para o browser: vazio mantém a palavra-passe atual (ver PublicadoresController). *@
+                            <input type="password" class="input" id="Password" name="Password" value="" autocomplete="new-password" placeholder="Deixe vazio para manter">
+                        </div>
+                        @if (!string.IsNullOrEmpty(Model.Email))
+                        {
+                            <button type="button" class="button btn-icon" data-action="novaSenha" aria-label="Gerar e enviar nova palavra-passe por email" title="Gerar e enviar nova palavra-passe por email"><i class="fa-solid fa-key"></i></button>
+                        }
+                    </div>
+                </div>
+                <div class="field">
+                    <label class="label" for="Grupo_Id">Grupo</label>
+                    <div class="control has-icons-left">
+                        <div class="select is-fullwidth">
+                            <select asp-for="Grupo.Id" asp-items="@(new SelectList(ViewBag.Grupos, "Value", "Text", Model.Grupo!.Id))"></select>
+                        </div>
+                        <span class="icon is-left"><i class="fa-solid fa-user-group"></i></span>
+                    </div>
+                </div>
+                <div class="field">
+                    <label class="label" asp-for="Email">Email</label>
+                    <div class="input-action">
+                        <div class="control"><input type="email" class="input" asp-for="Email" autocomplete="off"></div>
+                        @if (!string.IsNullOrEmpty(Model.Email))
+                        {
+                            <a class="button btn-icon" href="mailto:@Model.Email" aria-label="Enviar email" title="Enviar email"><i class="fa-solid fa-paper-plane"></i></a>
+                        }
+                    </div>
+                </div>
+                <div class="field">
+                    <label class="label" asp-for="Telemovel">Telemóvel</label>
+                    <div class="input-action">
+                        <div class="control"><input type="tel" class="input" asp-for="Telemovel" autocomplete="off"></div>
+                        @if (!string.IsNullOrEmpty(Model.Telemovel))
+                        {
+                            <a class="button btn-icon is-ok-hover" href="tel:@Model.Telemovel" aria-label="Telefonar" title="Telefonar"><i class="fa-solid fa-phone"></i></a>
+                        }
+                    </div>
+                </div>
+                <div class="field span-all">
+                    <label class="label" asp-for="Morada">Morada</label>
+                    <div class="input-action">
+                        <div class="control"><input type="text" class="input" asp-for="Morada" autocomplete="off"></div>
+                        @if (!string.IsNullOrEmpty(Model.Morada))
+                        {
+                            <a class="button btn-icon" href="https://www.google.com/maps/search/?api=1&query=@Uri.EscapeDataString(Model.Morada)" target="_blank" rel="noopener" aria-label="Ver no mapa" title="Ver no mapa"><i class="fa-solid fa-location-dot"></i></a>
+                        }
                     </div>
                 </div>
             </div>
-            <div class="column">
+            <div class="mt-5">
+                <button class="button is-success" type="submit" id="btnGuardar">
+                    <span class="icon"><i class="fa-regular fa-floppy-disk"></i></span><span>Guardar alterações</span>
+                </button>
             </div>
-        </div>
-    </div>
-</form>
+        </form>
+    </section>
 
+    <section id="panMov" role="tabpanel" aria-labelledby="tabMov" hidden>
+        @if (!movimentos.Any())
+        {
+            <div class="empty-state"><span class="icon"><i class="fa-solid fa-right-left"></i></span><strong>Sem movimentos</strong>Este publicador ainda não tem movimentos de literatura.</div>
+        }
+        else
+        {
+            <div class="items">
+                @foreach (var item in movimentos)
+                {
+                    <article class="item no-thumb">
+                        <div class="main">
+                            <div class="name">@item.Literatura!.Descricao</div>
+                            <div class="meta"><span class="num">@item.DataMovimento.ToString("dd/MM/yyyy HH:mm")</span></div>
+                        </div>
+                        <div class="side"><div class="qty num @(item.In ? "is-in" : "is-out")">@(item.In ? "+" : "−")@Math.Abs(item.Quantidade)</div></div>
+                    </article>
+                }
+            </div>
+        }
+    </section>
 
-<hr />
-<div class="container">
-    <div class="tabs-wrapper">
-        <div class="tabs is-toggle is-toggle-rounded is-fullwidth">
-            <ul>
-                <li class="is-active"><a>Dados</a></li>
-                <li><a>Movimentos</a></li>
-                <li><a>Pedidos</a></li>
-                <li><a>Territórios</a></li>
-            </ul>
-        </div>
-        <div class="tabs-content mx-2">
-            <ul>
-                <li class="is-active">
-                    <form method="post">
-                        <div class="columns is-multiline">
-                            <div class="column is-2">
-                                <div class="field">
-                                    <label class="label" asp-for="Role"></label>
-                                    <p class="control ">
-                                        <input type="text" class="input" readonly asp-for="Role" disabled>
-                                    </p>
-                                    <span asp-validation-for="Role" class="has-text-danger"></span>
-                                </div>
-                            </div>
-                            <div class="column is-1">
-                                <div class="field">
-                                    <label class="label" asp-for="Id"></label>
-                                    <p class="control ">
-                                        <input type="text" class="input" readonly asp-for="Id">
-                                    </p>
-                                    <span asp-validation-for="Id" class="has-text-danger"></span>
-                                </div>
-                            </div>
-                            <div class="column is-3">
-                                <div class="field">
-                                    <label class="label" asp-for="Nome"></label>
-                                    <p class="control ">
-                                        <input type="text" class="input" readonly asp-for="Nome">
-                                    </p>
-                                    <span asp-validation-for="Nome" class="has-text-danger"></span>
-                                </div>
-                            </div>
-                            <div class="column is-3">
-                                <div class="field">
-                                    <label class="label" asp-for="Username"></label>
-                                    <p class="control ">
-                                        <input type="tel" class="input" readonly asp-for="Username">
-                                    </p>
-                                    <span asp-validation-for="Username" class="has-text-danger"></span>
-                                </div>
-                            </div>
-                            <div class="column is-3">
-                                <label class="label" asp-for="Password"></label>
-                                <div class="field has-addons">
-                                    <div class="control" style="width:100%">
-                                        <input type="password" class="input" asp-for="Password" value="@Model.Password">
-                                    </div>
-                                    <span asp-validation-for="Password" class="has-text-danger"></span>
-                                    @if (!string.IsNullOrEmpty(Model.Email))
-                                    {
-                                        <div class="control">
-                                            <a type="button" data-tooltip="EnviarSenha" class="button is-fullwidth is-primary" style="height: 100%"
-                                               href="@(Url.Action("Senha", "Publicadores", new { Id = Model.Id }))">
-                                                <i class="fas fa-mail-forward"></i>
-                                            </a>
-                                        </div>
-                                    }
-                                </div>
-                            </div>
-                            <div class="column is-4">
-                                <div class="field">
-                                    <label class="label" asp-for="Grupo"></label>
-                                    <p class="control has-icons-left">
-                                        <span class="select is-fullwidth">
-                                            <select class="select" asp-for="Grupo.Id" style="height: auto"
-                                                    asp-items="@(new SelectList(@ViewBag.Grupos, "Value", "Text", Model.Grupo!.Id))">
-                                            </select>
-                                        </span>
-                                        <span class="icon is-small is-left">
-                                            <i class="fa-solid fa-user-group"></i>
-                                        </span>
-                                    </p>
-                                    <span asp-validation-for="Grupo" class="has-text-danger"></span>
-                                </div>
-                            </div>
-                            <div class="column is-4">
-                                <div class="field">
-                                    <label class="label" asp-for="Email"></label>
-                                    <div class="field has-addons">
-                                        <p class="control" style="width:100%">
-                                            <input type="email" class="input" asp-for="Email">
-                                        </p>
-                                        @if (!string.IsNullOrEmpty(Model.Email))
-                                        {
-                                            <div class="control">
-                                                <a type="button" data-tooltip="Email" class="button is-fullwidth is-primary" style="height: 100%"
-                                                   href="mailto:@Model.Email">
-                                                    <i class="fas fa-paper-plane"></i>
-                                                </a>
-                                            </div>
-                                        }
-                                        <span asp-validation-for="Email" class="has-text-danger"></span>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="column is-4">
-                                <div class="field">
-                                    <label class="label" asp-for="Telemovel"></label>
-                                    <div class="field has-addons">
-                                        <p class="control" style="width:100%">
-                                            <input type="tel" class="input" asp-for="Telemovel">
-                                        </p>
-                                        <span asp-validation-for="Telemovel" class="has-text-danger"></span>
-                                        @if (!string.IsNullOrEmpty(Model.Email))
-                                        {
-                                            <div class="control">
-                                                <a type="button" data-tooltip="Telefonar" class="button is-fullwidth is-success" style="height: 100%"
-                                                   href="tel:@Model.Telemovel">
-                                                    <i class="fas fa-phone"></i>
-                                                </a>
-                                            </div>
-                                        }
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="column is-12">
-                                <div class="field">
-                                    <label class="label" asp-for="Morada"></label>
-                                    <div class="field has-addons">
-                                        <p class="control" style="width:100%">
-                                            <input type="tel" class="input" asp-for="Morada">
-                                        </p>
-                                        <span asp-validation-for="Morada" class="has-text-danger"></span>
-                                        @if (!string.IsNullOrEmpty(Model.Email))
-                                        {
-                                            <div class="control">
-                                                <a type="button" data-tooltip="Direções" class="button is-fullwidth is-primary" style="height: 100%"
-                                                   href="https://www.google.com/maps/place/@Model.Morada">
-                                                    <i class="fas fa-arrow-circle-o-left"></i>
-                                                </a>
-                                            </div>
-                                        }
-                                    </div>
-                                </div>
-                            </div>
-                            
-                            <div class="column is-12">
-                                <button class="button is-large is-success is-fullwidth" type="submit">
-                                    <span class="icon"><i class="fa-regular fa-floppy-disk"></i></span>
-                                    <span>Guardar</span>
-                                </button>
-                            </div>
+    <section id="panPed" role="tabpanel" aria-labelledby="tabPed" hidden>
+        @if (!pedidos.Any())
+        {
+            <div class="empty-state"><span class="icon"><i class="fa-solid fa-book-medical"></i></span><strong>Sem pedidos</strong>Não há pedidos em aberto para este publicador.</div>
+        }
+        else
+        {
+            <div class="items">
+                @foreach (var item in pedidos)
+                {
+                    <article class="item no-thumb">
+                        <div class="main">
+                            <div class="name">@item.Descricao</div>
+                            <div class="meta"><span class="ref-tag">@item.Referencia</span></div>
                         </div>
-                    </form>
-                </li>
-                <li>
-                    @if (Model.Movimentos!.Count() == 0)
-                    {
-                        <br />
-                        <button class="button is-danger is-large is-rounded is-fullwidth is-disabled">
-                            Não foram encontrados
-                            movimentos!
-                        </button>
-                    }
-                    else
-                    {
-                        <div class="b-table">
-                            <div class="table-wrapper has-mobile-cards">
-                                <table class="table is-hoverable is-fullwidth">
-                                    <thead>
-                                        <tr>
-                                            <th>
-                                                @Html.DisplayNameFor(model => model.Movimentos!.FirstOrDefault()!.Literatura!.Descricao)
-                                            </th>
-                                            <th>
-                                                @Html.DisplayNameFor(model => model.Movimentos!.FirstOrDefault()!.Quantidade)
-                                            </th>
-                                            <th>
-                                                @Html.DisplayNameFor(model => model.Movimentos!.FirstOrDefault()!.Publicador!.Nome)
-                                            </th>
-                                            <th>
-                                                @Html.DisplayNameFor(model => model.Movimentos!.FirstOrDefault()!.DataMovimento)
-                                            </th>
-                                            <th></th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        @foreach (var item in Model.Movimentos!)
-                                        {
-                                            <tr @(item.In ? "class=has-background-success" : "class=has-background-danger")>
-                                                <td data-label="@Html.DisplayNameFor(model => model.Movimentos!.FirstOrDefault()!.Literatura!.Descricao)">
-                                                    <span>@item.Literatura!.Descricao</span>
-                                                </td>
-                                                <td data-label="@Html.DisplayNameFor(model => model.Movimentos!.FirstOrDefault()!.Quantidade)">
-                                                    <span>@item.Quantidade</span>
-                                                </td>
-                                                <td data-label="@Html.DisplayNameFor(model => model.Movimentos!.FirstOrDefault()!.Publicador!.Nome)">
-                                                    <span>@item.Publicador!.Nome</span>
-                                                </td>
-                                                <td data-label="@Html.DisplayNameFor(model => model.Movimentos!.FirstOrDefault()!.DataMovimento)">
-                                                    <span>@item.DataMovimento</span>
-                                                </td>
-                                                <td class="is-actions-cell">
-                                                    <div class="buttons is-pulled-right is-flex-wrap-nowrap" style="width:100%">
-                                                    </div>
-                                                </td>
-                                            </tr>
-                                        }
-                                    </tbody>
-                                </table>
-                            </div>
+                        <div class="side"><div class="qty num">@item.Quantidade</div></div>
+                    </article>
+                }
+            </div>
+        }
+    </section>
+
+    <section id="panTer" role="tabpanel" aria-labelledby="tabTer" hidden>
+        @if (!territorios.Any())
+        {
+            <div class="empty-state"><span class="icon"><i class="fa-solid fa-map"></i></span><strong>Sem territórios</strong>Não há territórios a trabalhar por este publicador.</div>
+        }
+        else
+        {
+            <div class="items">
+                @foreach (var item in territorios)
+                {
+                    <article class="item no-thumb">
+                        <div class="main">
+                            <div class="name">@item.Nome</div>
+                            <div class="meta"><span class="num">Nº @item.Id</span><span class="num">desde @item.UltimoMovimento?.DataMovimento</span></div>
                         </div>
-                    }
-                </li>
-                <li>
-                    @if (Model.Pedidos!.Count() == 0)
-                    {
-                        <br />
-                        <button class="button is-danger is-large is-rounded is-fullwidth is-disabled">
-                            Não foram encontrados
-                            Pedidos!
-                        </button>
-                    }
-                    else
-                    {
-                        <div class="b-table">
-                            <div class="table-wrapper has-mobile-cards">
-                                <table class="table is-hoverable is-fullwidth">
-                                    <thead>
-                                        <tr>
-                                            <th>
-                                                @Html.DisplayNameFor(model => model.Pedidos!.FirstOrDefault()!.Referencia)
-                                            </th>
-                                            <th>
-                                                @Html.DisplayNameFor(model => model.Pedidos!.FirstOrDefault()!.Descricao)
-                                            </th>
-                                            <th>
-                                                @Html.DisplayNameFor(model => model.Pedidos!.FirstOrDefault()!.Quantidade)
-                                            </th>
-                                            <th></th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        @foreach (var item in Model.Pedidos!)
-                                        {
-                                            <tr>
-                                                <td data-label="@Html.DisplayNameFor(model => model.Pedidos!.FirstOrDefault()!.Referencia)">
-                                                    <span>@item.Referencia</span>
-                                                </td>
-                                                <td data-label="@Html.DisplayNameFor(model => model.Pedidos!.FirstOrDefault()!.Descricao)">
-                                                    <span>@item.Descricao</span>
-                                                </td>
-                                                <td data-label="@Html.DisplayNameFor(model => model.Pedidos!.FirstOrDefault()!.Quantidade)">
-                                                    <span>@item.Quantidade</span>
-                                                </td>
-                                                <td class="is-actions-cell">
-                                                    <div class="buttons is-pulled-right is-flex-wrap-nowrap" style="width:100%">
-                                                    </div>
-                                                </td>
-                                            </tr>
-                                        }
-                                    </tbody>
-                                </table>
-                            </div>
-                        </div>
-                    }
-                </li>
-                <li>
-                    @if (Model.Territorios!.Count() == 0)
-                    {
-                        <br />
-                        <button class="button is-danger is-large is-rounded is-fullwidth is-disabled">
-                            Não foram encontrados
-                            territórios a trabalhar!
-                        </button>
-                    }
-                    else
-                    {
-                        <div class="b-table">
-                            <div class="table-wrapper has-mobile-cards">
-                                <table class="table is-hoverable is-fullwidth">
-                                    <thead>
-                                        <tr>
-                                            <th>
-                                                @Html.DisplayNameFor(model => model.Territorios!.FirstOrDefault()!.Id)
-                                            </th>
-                                            <th>
-                                                @Html.DisplayNameFor(model => model.Territorios!.FirstOrDefault()!.Nome)
-                                            </th>
-                                            <th>
-                                                @Html.DisplayNameFor(model => model.Territorios!.FirstOrDefault()!.UltimoMovimento!.DataMovimento)
-                                            </th>
-                                            <th></th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        @foreach (var item in Model.Territorios!)
-                                        {
-                                            <tr>
-                                                <td data-label="@Html.DisplayNameFor(model =>  model.Territorios!.FirstOrDefault()!.Id)">
-                                                    <span>@item.Id</span>
-                                                </td>
-                                                <td data-label="@Html.DisplayNameFor(model =>  model.Territorios!.FirstOrDefault()!.Nome)">
-                                                    <span>@item.Nome</span>
-                                                </td>
-                                                <td data-label="@Html.DisplayNameFor(model => model.Territorios!.FirstOrDefault()!.UltimoMovimento!.DataMovimento)">
-                                                    <span>@item.UltimoMovimento!.DataMovimento</span>
-                                                </td>
-                                                <td class="is-actions-cell">
-                                                    <div class="buttons is-pulled-right is-flex-wrap-nowrap" style="width:100%">
-                                                    </div>
-                                                </td>
-                                            </tr>
-                                        }
-                                    </tbody>
-                                </table>
-                            </div>
-                        </div>
-                    }
-                </li>
-            </ul>
-        </div>
-    </div>
+                    </article>
+                }
+            </div>
+        }
+    </section>
 </div>
+
+@section Scripts {
+<script>
+    // Guardar sem recarregar a página; um valor vazio na palavra-passe mantém a atual.
+    App.$('#frmPublicador').addEventListener('submit', e => {
+        e.preventDefault();
+        App.run(App.$('#btnGuardar'), async () => {
+            await App.api('POST', location.pathname, Object.fromEntries(new FormData(e.target)));
+            App.$('#Password').value = ''; notify('Dados guardados.');
+        }, 'Não foi possível guardar os dados.');
+    });
+
+    App.on('novaSenha', async btn => {
+        if (!await App.confirm({ title: 'Nova palavra-passe', text: 'Gerar uma nova palavra-passe e enviá-la por email para @Model.Email? A atual deixa de funcionar.', ok: 'Gerar e enviar', danger: false })) return;
+        App.run(btn, async () => { await App.api('GET', '/Publicadores/Senha/@Model.Id'); notify('Nova palavra-passe gerada e enviada.'); },
+            'Não foi possível gerar a palavra-passe.');
+    });
+</script>
+}

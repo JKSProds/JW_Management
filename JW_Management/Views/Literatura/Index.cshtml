@@ -1,546 +1,233 @@
 ﻿@model IEnumerable<JW_Management.Models.Literatura>
 @{
     ViewData["Title"] = "Literatura";
+    var tipos = ((IEnumerable<SelectListItem>)ViewBag.Tipos).ToList();
+    var tipoAtual = (ViewData["tipo"] ?? 0).ToString();
 }
 
-<form asp-action="Index" method="get" id="frmFiltrar">
-    <div class="container">
-        <div class="columns">
-            <div class="column">
-                <div class="tile">
-                    <div class="tile is-parent is-vertical">
-                        <article class="tile is-child notification is-info">
-                            <p class="title">
-                                <span class="icon mr-3">
-                                    <i class="fa-solid fa-book"></i>
-                                </span>
-                                <span>Literatura</span>
-                            </p>
-                        </article>
-                    </div>
-                </div>
-            </div>
-            <div class="column">
-                <div class="field has-addons has-addons-right mx-1 is-flex-wrap-wrap" style="width:100%">
-                    <p class="control has-icons-left">
-                        <input type="text" class="input" placeholder="Descrição" id="filtro" name="filtro"
-                               value="@ViewData["filtro"]">
-                        <span class="icon is-small is-left">
-                            <i class="fa-solid fa-arrow-down-a-z"></i>
-                        </span>
-                    </p>
-                    <p class="control has-icons-left">
-                        <span class="select is-fullwidth">
-                            <select class="select" id="txtTipo" name="tipo"
-                                    onchange="document.getElementById('frmFiltrar').submit();" style="height: auto"
-                                    asp-items="@(new SelectList(@ViewBag.Tipos, "Value", "Text", ViewData["tipo"]))">
-                            </select>
-                        </span>
-                        <span class="icon is-small is-left">
-                            <i class="fa-solid fa-book"></i>
-                        </span>
-                    </p>
-                    <div class="buttons has-addons is-right mt-2">
-                        <p class="control">
-                            <button type="submit" class="button is-info is-outlined is-fullwidth ">
-                                <span class="icon">
-                                    <i class="fas fa-search fa-lg"></i>
-                                </span>
-                                <span>Pesquisar</span>
-                            </button>
-                        </p>
-                        <p class="control">
-                            <a type="button" href="~/Literatura" class="button is-fullwidth ">
-                                <span class="icon">
-                                    <i class="fas fa-backspace fa-lg"></i>
-                                </span>
-                                <span>Limpar</span>
-                            </a>
-                        </p>
-                        <p class="control">
-                            <a class="button is-info is-fullwidth " onclick="Bulma('#modalNovaPublicacao').modal().open();">
-                                <span class="icon">
-                                    <i class="fa-solid fa-book fa-lg"></i>
-                                </span>
-                                <span>Adicionar</span>
-                            </a>
-                        </p>
-                        <p class="control">
-                            <a type="button" class="button is-success is-fullwidth " onclick="Bulma('#modalToken').modal().open();">
-                                <span class="icon">
-                                    <i class="fas fa-arrow-alt-circle-up fa-lg"></i>
-                                </span>
-                                <span>Enviar JW HUB</span>
-                            </a>
-                        </p>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-</form>
-<hr />
 <div class="container">
-    @if (Model.Count() == 0)
-    {
-        <br />
-        <button class="button is-danger is-large is-rounded is-fullwidth is-disabled">
-            Não foram encontradas
-            publicações!
-        </button>
-    }
-    else
-    {
-        <div class="b-table">
-            <div class="table-wrapper has-mobile-cards">
-                <table class="table is-hoverable is-fullwidth">
-                    <thead>
-                        <tr>
-                            <th></th>
-                            <th>
-                                @Html.DisplayNameFor(model => model.FirstOrDefault()!.Referencia)
-                            </th>
-                            <th>
-                                @Html.DisplayNameFor(model => model.FirstOrDefault()!.Descricao)
-                            </th>
-                            <th>
-                                @Html.DisplayNameFor(model => model.FirstOrDefault()!.Quantidade)
-                            </th>
-                            <th>
-                                @Html.DisplayNameFor(model => model.FirstOrDefault()!.Tipo)
-                            </th>
-                            <th></th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @foreach (var item in Model)
-                        {
-                            if(!(item.Tipo!.Id == 7 && item.Quantidade <= 0)) {
-                                <tr>
-                                    <td class="is-image-cell">
-                                        <div class="image">
-                                            <img src="@item.Imagem">
-                                        </div>
-                                    </td>
-                                    <td data-label="@Html.DisplayNameFor(model => model.FirstOrDefault()!.Referencia)">
-                                        <span>@item.Referencia</span>
-                                    </td>
-                                    <td data-label="@Html.DisplayNameFor(model => model.FirstOrDefault()!.Descricao)">
-                                        <span>@item.Descricao</span>
-                                    </td>
-                                    <td data-label="@Html.DisplayNameFor(model => model.FirstOrDefault()!.Quantidade)">
-                                        <span>@item.Quantidade</span>
-                                    </td>
-                                    <td data-label="@Html.DisplayNameFor(model => model.FirstOrDefault()!.Tipo)">
-                                        <span>@item.Tipo!.Descricao</span>
-                                    </td>
-                                    <td class="is-actions-cell">
-                                        <div class="field has-addons is-pulled-right is-flex-wrap-nowrap" style="width:100%">
-                                            <button class="button is-primary is-fullwidth is-large mr-1"
-                                                    onclick="AtualizarImagem('@item.Stamp')">
-                                                <i class="fas fa-image"></i>
-                                            </button>
-                                            <button class="button is-info is-fullwidth is-large mr-1"
-                                                    onclick="AtualizarQuantidade('@item.Stamp')">
-                                                <i class="fas fa-refresh"></i>
-                                            </button>
-                                            <button class="button is-danger is-fullwidth is-large"
-                                                    onclick="ConfirmApagar('@item.Stamp')">
-                                                <i class="fas fa-trash-can"></i>
-                                            </button>
-                                        </div>
-                                    </td>
-                                </tr>
-                            }
-                        }
-                    </tbody>
-                </table>
+    <div class="page-head">
+        <div class="head-title">
+            <span class="head-icon"><i class="fa-solid fa-boxes-stacked"></i></span>
+            <div>
+                <h1>Stock de literatura</h1>
+                <p><span id="contador" class="num">@Model.Count()</span> publicações</p>
             </div>
         </div>
-    }
+        <div class="head-actions">
+            <button type="button" class="button is-info" data-open="modalNovaPublicacao">
+                <span class="icon"><i class="fa-solid fa-plus"></i></span><span>Nova publicação</span>
+            </button>
+            <button type="button" class="button is-success" data-open="modalToken">
+                <span class="icon"><i class="fa-solid fa-cloud-arrow-up"></i></span><span>Enviar JW Hub</span>
+            </button>
+        </div>
+    </div>
+
+    <div class="toolbar">
+        <div class="control has-icons-left search">
+            <input type="search" class="input" id="filtro" placeholder="Pesquisar por referência ou descrição" value="@ViewData["filtro"]" aria-label="Pesquisar publicações">
+            <span class="icon is-left"><i class="fa-solid fa-magnifying-glass"></i></span>
+        </div>
+        <div class="chips" id="chips" role="group" aria-label="Filtrar por tipo">
+            @foreach (var t in tipos)
+            {
+                <button type="button" class="chip" data-type="@t.Value" aria-pressed="@((t.Value == tipoAtual).ToString().ToLower())">@t.Text</button>
+            }
+        </div>
+    </div>
+
+    <div id="lista" class="items">
+        @foreach (var item in Model)
+        {
+            <article class="item" data-stamp="@item.Stamp" data-type="@item.Tipo!.Id" data-search="@item.Referencia @item.Descricao @item.Tipo.Descricao">
+                <div class="thumb"><img src="@item.Imagem" alt="" loading="lazy" onerror="this.src='/img/l_no_photo.png'"></div>
+                <div class="main">
+                    <div class="name">@item.Descricao</div>
+                    <div class="meta">
+                        <span class="ref-tag">@item.Referencia</span>
+                        <span>@item.Tipo.Descricao</span>
+                    </div>
+                </div>
+                <div class="side">
+                    <div class="qty num @(item.Quantidade <= 0 ? "is-low" : "")"><span data-qty>@item.Quantidade</span><small>em stock</small></div>
+                    <div class="acts">
+                        <button type="button" class="button btn-icon" data-action="imagem" aria-label="Alterar imagem" title="Alterar imagem"><i class="fa-solid fa-image"></i></button>
+                        <button type="button" class="button btn-icon" data-action="quantidade" aria-label="Acertar quantidade" title="Acertar quantidade"><i class="fa-solid fa-pen-to-square"></i></button>
+                        <button type="button" class="button btn-icon is-danger-hover" data-action="apagar" aria-label="Apagar" title="Apagar"><i class="fa-solid fa-trash-can"></i></button>
+                    </div>
+                </div>
+            </article>
+        }
+    </div>
+
+    <div id="vazio" class="empty-state" hidden>
+        <span class="icon"><i class="fa-solid fa-book-open"></i></span>
+        <strong>Não foram encontradas publicações</strong>
+        Experimente outra pesquisa ou adicione uma nova publicação.
+    </div>
 </div>
 
-<div id="modalNovaPublicacao" class="modal">
+<div id="modalNovaPublicacao" class="modal" role="dialog" aria-modal="true" aria-labelledby="tNova">
     <div class="modal-background"></div>
     <div class="modal-card">
         <header class="modal-card-head">
-            <p class="modal-card-title">
-                <span class="icon">
-                    <i class="fas fa-circle-plus"></i>
-                </span>
-                <span>Nova - Publicação</span>
-            </p>
-            <button type="button" class="delete" aria-label="close"></button>
+            <p class="modal-card-title" id="tNova"><span class="icon"><i class="fa-solid fa-circle-plus"></i></span><span>Nova publicação</span></p>
+            <button type="button" class="delete" aria-label="Fechar" data-close></button>
         </header>
         <section class="modal-card-body">
-            <div class="modal-body">
-                <div class="field">
-                    <label class="label">Referência</label>
-                    <p class="control ">
-                        <input type="text" class="input" id="txtRefPub">
-                    </p>
+            <div class="field">
+                <label class="label" for="txtRefPub">Referência</label>
+                <input type="text" class="input" id="txtRefPub" placeholder="ex.: lff">
+            </div>
+            <div class="field">
+                <label class="label" for="txtNomePub">Nome</label>
+                <input type="text" class="input" id="txtNomePub">
+            </div>
+            <div class="field">
+                <label class="label" for="txtTipoPub">Tipo</label>
+                <div class="select is-fullwidth">
+                    <select id="txtTipoPub" asp-items="@(new SelectList(tipos, "Value", "Text"))"></select>
                 </div>
-                <div class="field">
-                    <label class="label">Nome</label>
-                    <p class="control ">
-                        <input type="text" class="input" id="txtNomePub">
-                    </p>
-                </div>
-                <div class="field">
-                    <label class="label">Tipo</label>
-                    <p class="control has-icons-left">
-                        <span class="select is-fullwidth">
-                            <select class="select" id="txtTipoPub" style="height: auto"
-                                    asp-items="@(new SelectList(@ViewBag.Tipos, "Value", "Text"))">
-                            </select>
-                        </span>
-                        <span class="icon is-small is-left">
-                            <i class="fa-solid fa-book"></i>
-                        </span>
-                    </p>
-                </div>
-                <div class="field">
-                    <label class="label">Quantidade</label>
-                    <div class="field has-addons">
-                        <div class="control">
-                            <button type="button" class="button is-danger disable-dbl-tap-zoom"
-                                    onclick="document.getElementById('txtQtdPub').value = parseInt(document.getElementById('txtQtdPub').value) - 1">
-                                <span class="icon">
-                                    <i class="fas fa-minus"></i>
-                                </span>
-                            </button>
-                        </div>
-                        <div class="control" style="width:100%">
-                            <input type="number" class="input has-text-centered" min="1" id="txtQtdPub" value="1">
-                        </div>
-                        <div class="control">
-                            <button type="button" class="button is-success disable-dbl-tap-zoom"
-                                    onclick="document.getElementById('txtQtdPub').value = parseInt(document.getElementById('txtQtdPub').value) + 1">
-                                <span class="icon">
-                                    <i class="fas fa-plus"></i>
-                                </span>
-                            </button>
-                        </div>
-                    </div>
-                </div>
+            </div>
+            <div class="field">
+                <label class="label" for="txtQtdPub">Quantidade inicial</label>
+                <partial name="_Stepper" model='("txtQtdPub", 1, 0)' />
             </div>
         </section>
         <footer class="modal-card-foot">
-            <div class="buttons is-centered" style="width:100%">
-            <a class="button is-info is-large is-fullwidth"
-               onclick="CriarPublicacao(document.getElementById('txtRefPub').value, document.getElementById('txtNomePub').value, document.getElementById('txtTipoPub').value, document.getElementById('txtQtdPub').value, this)">
-                <span class="icon">
-                    <i class="fa-solid fa-circle-plus fa-beat-fade"></i>
-                </span>
-                <span>
-                    Criar
-                </span>
-            </a>
-            <button type="button" class="button is-large is-fullwidth is-danger"
-                    onclick="Bulma('#modalNovaPublicacao').modal().close();" href="javascript:;">
-                <span class="icon">
-                    <i class="fa-regular fa-circle-xmark"></i>
-                </span>
-                <span>Fechar</span>
-            </button>
-            </div>
+            <button type="button" class="button" data-close>Cancelar</button>
+            <button type="button" class="button is-info" data-action="criar" data-submit><span class="icon"><i class="fa-solid fa-check"></i></span><span>Criar</span></button>
         </footer>
     </div>
 </div>
 
-<div id="modalAtualizarQuantidade" class="modal">
+<div id="modalQuantidade" class="modal" role="dialog" aria-modal="true" aria-labelledby="tQtd">
     <div class="modal-background"></div>
     <div class="modal-card">
         <header class="modal-card-head">
-            <p class="modal-card-title">
-                <span class="icon">
-                    <i class="fas fa-circle-plus"></i>
-                </span>
-                <span>Entrada - Publicações</span>
-            </p>
-            <button type="button" class="delete" aria-label="close"></button>
+            <p class="modal-card-title" id="tQtd"><span class="icon"><i class="fa-solid fa-pen-to-square"></i></span><span>Acertar quantidade</span></p>
+            <button type="button" class="delete" aria-label="Fechar" data-close></button>
         </header>
         <section class="modal-card-body">
-            <div class="modal-body">
-                <div class="field">
-                    <label class="label">Quantidade</label>
-                    <div class="field has-addons">
-                        <div class="control">
-                            <button type="button" class="button is-danger disable-dbl-tap-zoom"
-                                    onclick="document.getElementById('txtQtd').value = parseInt(document.getElementById('txtQtd').value) - 1">
-                                <span class="icon">
-                                    <i class="fas fa-minus"></i>
-                                </span>
-                            </button>
-                        </div>
-                        <div class="control" style="width:100%">
-                            <input type="number" class="input has-text-centered" min="1" id="txtQtd" value="1">
-                        </div>
-                        <div class="control">
-                            <button type="button" class="button is-success disable-dbl-tap-zoom"
-                                    onclick="document.getElementById('txtQtd').value = parseInt(document.getElementById('txtQtd').value) + 1">
-                                <span class="icon">
-                                    <i class="fas fa-plus"></i>
-                                </span>
-                            </button>
-                        </div>
-                    </div>
-                </div>
+            <p class="modal-body-text mb-4" id="qtdNome"></p>
+            <div class="field">
+                <label class="label" for="txtQtd">Quantidade em stock</label>
+                <partial name="_Stepper" model='("txtQtd", 0, 0)' />
+                <p class="field-hint">É criado um movimento com a diferença para o stock atual.</p>
             </div>
         </section>
         <footer class="modal-card-foot">
-            <div class="buttons is-centered" style="width:100%">
-            <a class="button is-info is-large is-fullwidth"
-               onclick="GerarMovimento(document.getElementById('txtHiddenStamp').value, document.getElementById('txtQtd').value, this)">
-                <span class="icon">
-                    <i class="fa-regular fa-floppy-disk"></i>
-                </span>
-                <span>
-                    Guardar
-                </span>
-            </a>
-            <button type="button" class="button is-large is-fullwidth is-danger"
-                    onclick="Bulma('#modalAtualizarQuantidade').modal().close();" href="javascript:;">
-                <span class="icon">
-                    <i class="fa-regular fa-circle-xmark"></i>
-                </span>
-                <span>Fechar</span>
-            </button>
-            </div>
+            <button type="button" class="button" data-close>Cancelar</button>
+            <button type="button" class="button is-info" data-action="guardarQtd" data-submit><span class="icon"><i class="fa-regular fa-floppy-disk"></i></span><span>Guardar</span></button>
         </footer>
     </div>
 </div>
 
-
-<div class="modal" id="ModalConfirmApagar">
+<div id="modalImagem" class="modal" role="dialog" aria-modal="true" aria-labelledby="tImg">
     <div class="modal-background"></div>
     <div class="modal-card">
         <header class="modal-card-head">
-            <p class="modal-card-title">Apagar Publicação</p>
+            <p class="modal-card-title" id="tImg"><span class="icon"><i class="fa-solid fa-image"></i></span><span>Imagem da publicação</span></p>
+            <button type="button" class="delete" aria-label="Fechar" data-close></button>
         </header>
         <section class="modal-card-body">
-            <div class="modal-body">
-                <p>Tem a certeza que deseja apagar esta publicação e todos os movimentos associados a ela?</p>
-            </div>
+            <form action="/Literatura/Imagem" method="POST" class="dropzone" id="frmImagem">
+                <input type="hidden" name="id" id="txtStampImagem">
+                <div class="dz-message needsclick">Largue aqui a imagem ou toque para escolher</div>
+            </form>
         </section>
         <footer class="modal-card-foot">
-            <div class="buttons is-centered" style="width:100%">
-            <button class="button is-danger is-fullwidth is-large"
-                    onclick="Apagar(document.getElementById('txtHiddenStamp').value, this);">
-                <span class="icon">
-                    <i class="fas fa-trash-can"></i>
-                </span>
-                <span>Confirmar</span>
-            </button>
-            <button class="button is-fullwidth is-large" onclick="Bulma('#ModalConfirmApagar').modal().close();">
-                <span class="icon">
-                    <i class="fa-solid fa-circle-xmark"></i>
-                </span>
-                <span>Não</span>
-            </button>
-            </div>
+            <button type="button" class="button is-info" data-close>Fechar</button>
         </footer>
     </div>
 </div>
 
-<div id="modalAtualizarImagem" class="modal">
+<div id="modalToken" class="modal" role="dialog" aria-modal="true" aria-labelledby="tTok">
     <div class="modal-background"></div>
     <div class="modal-card">
         <header class="modal-card-head">
-            <p class="modal-card-title">Anexos</p>
+            <p class="modal-card-title" id="tTok"><span class="icon"><i class="fa-solid fa-cloud-arrow-up"></i></span><span>Enviar inventário para o JW Hub</span></p>
+            <button type="button" class="delete" aria-label="Fechar" data-close></button>
         </header>
         <section class="modal-card-body">
-            <div class="form-group">
-                <form action="/Literatura/Imagem" method="POST" class="dropzone">
-                    <input type="hidden" name="id" id="txtStampLiteraturaImagem">
-                    <div class="dz-message needsclick">
-                        Largue aqui a imagem da publicação para fazer o upload
-                    </div>
-                </form>
+            <div class="notice is-warn">
+                <span class="icon"><i class="fa-solid fa-triangle-exclamation"></i></span>
+                <span>Requer conhecimentos técnicos. Abra a página da literatura no JW Hub, prima F12, e no separador Rede procure o pedido «OVERVIEW». Copie o valor de «Cookie» na íntegra e cole-o abaixo.</span>
+            </div>
+            <div class="field">
+                <label class="label" for="txtCookie">Cookie de sessão</label>
+                <input type="password" class="input" id="txtCookie" placeholder="Cole aqui a cookie" autocomplete="off">
+                <p class="field-hint">O valor não é guardado; só é usado neste envio.</p>
             </div>
         </section>
         <footer class="modal-card-foot">
-            <div class="buttons is-centered" style="width:100%">
-            <button type="button" class="button is-info is-large is-fullwidth"
-                    onclick="Bulma('#modalAtualizarImagem').modal().close();" id="btnConfirmAddAnexo"
-                    href="javascript:;">
-                <span class="icon">
-                    <i class="fa-solid fa-circle-xmark"></i>
-                </span>
-                <span>Fechar</span>
-            </button>
-            </div>
+            <button type="button" class="button" data-close>Cancelar</button>
+            <button type="button" class="button is-success" data-action="enviarHub" data-submit><span class="icon"><i class="fa-regular fa-paper-plane"></i></span><span>Enviar</span></button>
         </footer>
     </div>
 </div>
 
-<div id="modalToken" class="modal">
-    <div class="modal-background"></div>
-    <div class="modal-card">
-        <header class="modal-card-head">
-            <p class="modal-card-title">
-                <span class="icon">
-                    <i class="fas fa-arrow-alt-circle-up"></i>
-                </span>
-                <span>Enviar Inventário - JW HUB</span>
-            </p>
-            <button type="button" class="delete" aria-label="close"></button>
-        </header>
-        <section class="modal-card-body">
-            <div class="modal-body">
-                <div class="field">
-                    <div class="control">
-                        <label><b>Para puder enviar os dados para o JW HUB, é necessário conhecimentos tecnicos de JS.</b><br/><br/> Para obter o valor a colocar abaixo deverá aceder à página da literatura do JW HUB e depois pressionar a tecla F12. Debaixo da aba Rede deverá procurar no pedido 'OVERVIEW' pela 'Cookie' e copiá-la na sua inteireza. Depois pode colar a informação na caixa abaixo.</label>
-                    </div>
-                    <hr/>
-                    <label class="label">Cookie - Login</label>
-                    <div class="field has-addons">
-                        <div class="control" style="width:100%">
-                            <input type="text" class="input has-text-centered is-large" min="1" id="txtCookie" value="" placeholder="Insira a cookie...">
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </section>
-        <footer class="modal-card-foot">
-            <div class="buttons is-centered" style="width:100%">
-            <a class="button is-info is-large is-fullwidth"
-               onclick="GerarInventario(document.getElementById('txtCookie').value, this)">
-                <span class="icon">
-                    <i class="fa-regular fa-paper-plane"></i>
-                </span>
-                <span>
-                    Enviar
-                </span>
-            </a>
-            <button type="button" class="button is-large is-fullwidth is-danger"
-                    onclick="Bulma('#modalToken').modal().close();" href="javascript:;">
-                <span class="icon">
-                    <i class="fa-regular fa-circle-xmark"></i>
-                </span>
-                <span>Fechar</span>
-            </button>
-            </div>
-        </footer>
-    </div>
-</div>
-
-<input id="txtHiddenStamp" hidden />
-
+@section Scripts {
 <script>
-    function ConfirmApagar(id) {
-        document.getElementById('txtHiddenStamp').value = id;
-        Bulma('#ModalConfirmApagar').modal().open();
-    }
+    const modalNova = App.modal('modalNovaPublicacao'), modalQtd = App.modal('modalQuantidade'),
+          modalImg = App.modal('modalImagem'), modalTok = App.modal('modalToken');
+    let atual = null, imagemAlterada = false;
 
-    function AtualizarQuantidade(id, qtd) {
-        document.getElementById('txtHiddenStamp').value = id;
-        Bulma('#modalAtualizarQuantidade').modal().open();
-    }
+    App.filtro({ lista: '#lista', input: '#filtro', chips: '#chips', vazio: '#vazio', contador: '#contador', tipo: '@tipoAtual' });
 
-    function AtualizarImagem(id) {
-        document.getElementById('txtHiddenStamp').value = id;
-        document.getElementById('txtStampLiteraturaImagem').value = id;
-        Bulma('#modalAtualizarImagem').modal().open();
-    }
+    const itemDe = el => el.closest('.item');
 
-    function GerarMovimento(stamp, qtd, btn) {
-        btn.classList.add('is-loading');
-        $.ajax({
-            url: '/Literatura/Literatura/',
-            data: { "id": stamp },
-            type: "GET",
-            success: function (res) {
-                $.ajax({
-                    url: '/Literatura/Movimentos/',
-                    data: { "stamp": stamp, "qtd": qtd - (+res.quantidade) },
-                    type: "POST",
-                    success: function (data) {
-                        notify('Movimento criado com sucesso!');
-                        window.location.reload();
-                    },
-                    error: function (response) {
-                        notifyError('Ocorreu um erro ao gerar um movimento!');
-                    },
-                    failure: function (response) {
-                        notifyError('Falha ao gerar um movimento!');
-                    }
-                });
-            },
-            error: function (response) {
-                notifyError('Ocorreu um erro ao obter a literatura!');
-            },
-            failure: function (response) {
-                notifyError('Falha ao obter a literatura!');
-            },
-            complete: function (xhr, status) {
-                btn.classList.remove('is-loading');
-            }
-        });
+    App.on('quantidade', btn => {
+        atual = itemDe(btn);
+        App.$('#qtdNome').textContent = '[' + App.$('.ref-tag', atual).textContent + '] ' + App.$('.name', atual).textContent;
+        App.$('#txtQtd').value = App.$('[data-qty]', atual).textContent;
+        modalQtd.open();
+    });
 
-    }
+    App.on('guardarQtd', btn => App.run(btn, async () => {
+        const stamp = atual.dataset.stamp, nova = App.lerInt('#txtQtd');
+        const res = await App.api('GET', '/Literatura/Literatura/', { id: stamp });
+        const diff = nova - (+res.quantidade);
+        if (diff !== 0) await App.api('POST', '/Literatura/Movimentos/', { stamp: stamp, qtd: diff });
+        const q = App.$('[data-qty]', atual); q.textContent = nova;
+        q.closest('.qty').classList.toggle('is-low', nova <= 0);
+        modalQtd.close(); notify('Quantidade atualizada.');
+    }, 'Não foi possível atualizar a quantidade.'));
 
-    function CriarPublicacao(referencia, descricao, tipo, qtd, btn) {
-        btn.classList.add('is-loading');
-        $.ajax({
-            url: '/Literatura/Literatura/',
-            data: { "referencia": referencia, "descricao": descricao, "data": '', "tipo": tipo },
-            type: "POST",
-            success: function (data) {
-                notify('Literatura criada com sucesso!');
-                GerarMovimento(data, qtd, btn);
-            },
-            error: function (response) {
-                notifyError('Ocorreu um erro ao criar a literatura!');
-            },
-            failure: function (response) {
-                notifyError('Falha ao criar a literatura!');
-            },
-            complete: function (xhr, status) {
-                btn.classList.remove('is-loading');
-            }
-        });
-    }
+    App.on('apagar', async btn => {
+        const it = itemDe(btn);
+        if (!await App.confirm({ title: 'Apagar publicação', text: 'Apagar «' + App.$('.name', it).textContent + '» e todos os movimentos associados?', ok: 'Apagar' })) return;
+        App.run(btn, async () => { await App.api('DELETE', '/Literatura/Literatura/', { stamp: it.dataset.stamp }); App.removeItem(it); notify('Publicação apagada.'); },
+            'Não foi possível apagar a publicação.');
+    });
 
-    function Apagar(id, btn) {
-        btn.classList.add('is-loading');
-        $.ajax({
-            url: '/Literatura/Literatura/',
-            data: { "stamp": id },
-            type: "DELETE",
-            success: function (data) {
-                window.location.reload();
-            },
-            error: function (data) {
-                notifyError('Ocorreu um erro ao apagar essa publicação!');
-            },
-            failure: function (data) {
-                notifyError('Falha ao apagar essa publicação!');
-            },
-            complete: function (xhr, status) {
-                btn.classList.remove('is-loading');
-            }
-        });
-    }
-    
-    function GerarInventario(token, btn) {
-        btn.classList.add('is-loading');
-        $.ajax({
-            url: '/Literatura/API/',
-            data: { "id": token },
-            type: "GET",
-            success: function (res) {
-                notify('Inventário enviado com sucesso!');
-            },
-            error: function (response) {
-                notifyError('Ocorreu um erro ao enviar o inventario! Provavelmente o inventário deste mês já foi enviado ou o TOKEN está errado ou não tens acesso á literatura da tua congregação!');
-            },
-            failure: function (response) {
-                notifyError('Falha ao enviar o inventario!');
-            },
-            complete: function (xhr, status) {
-                btn.classList.remove('is-loading');
-            }
-        });
-    }
-    </script>
+    App.on('imagem', btn => {
+        atual = itemDe(btn); imagemAlterada = false;
+        App.$('#txtStampImagem').value = atual.dataset.stamp;
+        Dropzone.forElement('#frmImagem').removeAllFiles(true);
+        modalImg.open();
+    });
+    // A imagem nova só aparece depois de o servidor a registar: atualiza a lista ao fechar, sem recarregar a página.
+    // O Dropzone só inicializa o formulário em DOMContentLoaded (registado antes, no <head>).
+    document.addEventListener('DOMContentLoaded', () =>
+        Dropzone.forElement('#frmImagem').on('success', () => { imagemAlterada = true; notify('Imagem guardada.'); }));
+    modalImg.el.addEventListener('closed', () => { if (imagemAlterada) App.refresh('#lista'); });
+
+    App.on('criar', btn => App.run(btn, async () => {
+        const ref = App.$('#txtRefPub').value.trim(), nome = App.$('#txtNomePub').value.trim();
+        if (!ref || !nome) { notifyError('Indique a referência e o nome.'); return; }
+        const stamp = await App.api('POST', '/Literatura/Literatura/', { referencia: ref, descricao: nome, data: '', tipo: App.$('#txtTipoPub').value });
+        const qtd = App.lerInt('#txtQtdPub');
+        if (qtd !== 0) await App.api('POST', '/Literatura/Movimentos/', { stamp: stamp, qtd: qtd });
+        modalNova.close(); await App.refresh('#lista'); notify('Publicação criada.');
+        App.$$('#modalNovaPublicacao input[type=text]').forEach(i => i.value = '');
+    }, 'Não foi possível criar a publicação.'));
+
+    App.on('enviarHub', btn => App.run(btn, async () => {
+        const c = App.$('#txtCookie').value.trim(); if (!c) { notifyError('Cole a cookie primeiro.'); return; }
+        await App.api('GET', '/Literatura/API/', { id: c });
+        App.$('#txtCookie').value = ''; modalTok.close(); notify('Inventário enviado com sucesso.');
+    }, 'Não foi possível enviar. O inventário deste mês pode já ter sido enviado, a cookie estar errada ou sem acesso à literatura da congregação.'));
+</script>
+}

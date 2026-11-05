@@ -3,227 +3,98 @@
     ViewData["Title"] = "Publicadores";
 }
 
-<form asp-action="Index" method="get" id="frmFiltrar">
-    <div class="container">
-        <div class="columns">
-            <div class="column">
-                <div class="tile">
-                    <div class="tile is-parent is-vertical">
-                        <article class="tile is-child notification is-info">
-                            <p class="title">
-                                <span class="icon mr-3">
-                                    <i class="fa-solid fa-users"></i>
-                                </span>
-                                <span>Publicadores</span>
-                            </p>
-                        </article>
-                    </div>
-                </div>
-            </div>
-            <div class="column">
-                <div class="field has-addons has-addons-right mx-1 mt-3 is-flex-wrap-wrap" style="width:100%">
-                    <div class="buttons is-right" style="width:100%">
-                        <p class="control" style="width:100%">
-                            <button type="button" class="button is-primary is-large is-fullwidth "
-                                    onclick="Bulma('#modalAdicionarPublicador').modal().open();">
-                                <span class="icon">
-                                    <i class="fas fa-plus"></i>
-                                </span>
-                                <span>Novo Publicador</span>
-                            </button>
-                        </p>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-</form>
-<hr />
 <div class="container">
-    @if (Model.Count() == 0)
-    {
-        <br />
-        <button class="button is-danger is-large is-rounded is-fullwidth is-disabled">Não foram encontrados publicadores!</button>
-    }
-    else
-    {
-        <div class="b-table">
-            <div class="table-wrapper has-mobile-cards">
-                <table class="table is-hoverable is-fullwidth">
-                    <thead>
-                        <tr>
-                            <th>
-                                @Html.DisplayNameFor(model => model.FirstOrDefault()!.Id)
-                            </th>
-                            <th>
-                                @Html.DisplayNameFor(model => model.FirstOrDefault()!.Nome)
-                            </th>
-                            <th>
-                                @Html.DisplayNameFor(model => model.FirstOrDefault()!.Role)
-                            </th>
-                            <th class=""></th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @foreach (var item in Model)
-                        {
-                            <tr>
-                                <td data-label="@Html.DisplayNameFor(model => model.FirstOrDefault()!.Id)">
-                                    <span>@item.Id</span>
-                                </td>
-                                <td data-label="@Html.DisplayNameFor(model => model.FirstOrDefault()!.Nome)">
-                                    <span>@item.Nome</span>
-                                </td>
-                                <td data-label="@Html.DisplayNameFor(model => model.FirstOrDefault()!.Role)">
-                                    <span>@item.Role</span>
-                                </td>
-                                <td class="is-actions-cell">
-                                    <div class="field has-addons is-pulled-right is-flex-wrap-nowrap" style="width:100%">
-                                        <a class="button is-info is-fullwidth is-large mr-1"
-                                           href="~/Publicadores/Publicador/@item.Id">
-                                            <i class="fas fa-eye"></i>
-                                        </a>
-                                        <button class="button is-danger is-fullwidth is-large"
-                                                onclick="ConfirmApagar('@item.Id')">
-                                            <i class="fas fa-trash-can"></i>
-                                        </button>
-                                    </div>
-                                </td>
-                            </tr>
-                        }
-                    </tbody>
-                </table>
+    <div class="page-head">
+        <div class="head-title">
+            <span class="head-icon"><i class="fa-solid fa-users"></i></span>
+            <div>
+                <h1>Publicadores</h1>
+                <p><span id="contador" class="num">@Model.Count()</span> registados</p>
             </div>
         </div>
-    }
-</div>
-
-<div class="modal" id="ModalConfirmApagar">
-    <div class="modal-background"></div>
-    <div class="modal-card">
-        <header class="modal-card-head">
-            <p class="modal-card-title">Apagar Publicador</p>
-        </header>
-        <section class="modal-card-body">
-            <div class="modal-body">
-                <p>Tem a certeza que deseja apagar este publicador e todos os movimentos e pedidos associados a ele? <b>Esta ação é irreversivel!</b></p>
-            </div>
-        </section>
-        <footer class="modal-card-foot">
-            <div class="buttons is-centered" style="width:100%">
-            <button class="button is-danger is-fullwidth is-large"
-                    onclick="Apagar(document.getElementById('txtHiddenStamp').value);">
-                <span class="icon">
-                    <i class="fas fa-trash-can"></i>
-                </span>
-                <span>Confirmar</span>
+        <div class="head-actions">
+            <button type="button" class="button is-info" data-open="modalNovo">
+                <span class="icon"><i class="fa-solid fa-user-plus"></i></span><span>Novo publicador</span>
             </button>
-            <button class="button is-fullwidth is-large" onclick="Bulma('#ModalConfirmApagar').modal().close();">
-                <span class="icon">
-                    <i class="fa-solid fa-circle-xmark"></i>
-                </span>
-                <span>Não</span>
-            </button>
-            </div>
-        </footer>
+        </div>
     </div>
-</div>
 
-<div class="modal" id="modalAdicionarPublicador">
-    <div class="modal-background"></div>
-    <div class="modal-card">
-        <header class="modal-card-head">
-            <p class="modal-card-title">
-                <span class="icon">
-                    <i class="fas fa-plus"></i>
-                </span>
-                <span>Novo Publicador</span>
-            </p>
-        </header>
-        <section class="modal-card-body">
-            <div class="modal-body">
-                <p>Insira abaixo o nome do publicador a criar:</p>
-                &nbsp;
-                <div class="control" style="width:100%">
-                    <input type="text" class="input has-text-centered" id="txtNomeNovoPublicador" value="" placeholder="Nome">
+    <div class="toolbar">
+        <div class="control has-icons-left search">
+            <input type="search" class="input" id="filtro" placeholder="Pesquisar por nome ou função" aria-label="Pesquisar publicadores">
+            <span class="icon is-left"><i class="fa-solid fa-magnifying-glass"></i></span>
+        </div>
+    </div>
+
+    <div id="lista" class="items">
+        @foreach (var item in Model)
+        {
+            var iniciais = string.Concat(item.Nome!.Split(' ', StringSplitOptions.RemoveEmptyEntries).Take(1).Select(p => p[0])) +
+                           string.Concat(item.Nome.Split(' ', StringSplitOptions.RemoveEmptyEntries).Skip(1).Reverse().Take(1).Select(p => p[0]));
+            <article class="item no-thumb" data-id="@item.Id" data-type="0" data-search="@item.Nome @item.Role @item.Id">
+                <div class="main" style="display:flex;gap:.8rem;align-items:center">
+                    <span class="avatar" aria-hidden="true">@iniciais.ToUpper()</span>
+                    <div style="min-width:0">
+                        <div class="name">@item.Nome</div>
+                        <div class="meta"><span class="tag is-light">@item.Role</span><span class="num">Nº @item.Id</span></div>
+                    </div>
                 </div>
+                <div class="side">
+                    <div class="acts">
+                        <a class="button btn-icon" href="~/Publicadores/Publicador/@item.Id" aria-label="Abrir ficha de @item.Nome" title="Abrir ficha"><i class="fa-solid fa-eye"></i></a>
+                        <button type="button" class="button btn-icon is-danger-hover" data-action="apagar" aria-label="Apagar @item.Nome" title="Apagar"><i class="fa-solid fa-trash-can"></i></button>
+                    </div>
+                </div>
+            </article>
+        }
+    </div>
+
+    <div id="vazio" class="empty-state" hidden>
+        <span class="icon"><i class="fa-solid fa-user-slash"></i></span>
+        <strong>Não foram encontrados publicadores</strong>
+        Experimente outra pesquisa.
+    </div>
+</div>
+
+<div id="modalNovo" class="modal" role="dialog" aria-modal="true" aria-labelledby="tNovo">
+    <div class="modal-background"></div>
+    <div class="modal-card">
+        <header class="modal-card-head">
+            <p class="modal-card-title" id="tNovo"><span class="icon"><i class="fa-solid fa-user-plus"></i></span><span>Novo publicador</span></p>
+            <button type="button" class="delete" aria-label="Fechar" data-close></button>
+        </header>
+        <section class="modal-card-body">
+            <div class="field">
+                <label class="label" for="txtNomeNovoPublicador">Nome</label>
+                <input type="text" class="input" id="txtNomeNovoPublicador" placeholder="Nome completo">
+                <p class="field-hint">Os restantes dados preenche-os na ficha do publicador.</p>
             </div>
         </section>
         <footer class="modal-card-foot">
-            <div class="buttons is-centered" style="width:100%">
-            <button class="button is-info is-fullwidth is-large"
-                    onclick="CriarPublicador(document.getElementById('txtNomeNovoPublicador').value);">
-                <span class="icon">
-                    <i class="fas fa-plus"></i>
-                </span>
-                <span>Criar Publicador</span>
-            </button>
-            <button class="button is-fullwidth is-large" onclick="Bulma('#modalAdicionarPublicador').modal().close();">
-                <span class="icon">
-                    <i class="fa-solid fa-circle-xmark"></i>
-                </span>
-                <span>Cancelar</span>
-            </button>
-            </div>
+            <button type="button" class="button" data-close>Cancelar</button>
+            <button type="button" class="button is-info" data-action="criar" data-submit><span class="icon"><i class="fa-solid fa-plus"></i></span><span>Criar</span></button>
         </footer>
     </div>
 </div>
 
-<input id="txtHiddenStamp" hidden />
-
+@section Scripts {
 <script>
-    function ConfirmApagar(id) {
-        document.getElementById('txtHiddenStamp').value = id;
-        Bulma('#ModalConfirmApagar').modal().open();
-    }
+    App.filtro({ lista: '#lista', input: '#filtro', vazio: '#vazio', contador: '#contador' });
 
-    function Apagar(id) {
-        $.ajax({
-            url: '/Publicadores/Publicador/',
-            data: { "id": id, "delete": true },
-            type: "DELETE",
-            success: function (data) {
-                window.location.reload();
-            },
-            error: function (data) {
-                notifyError('Ocorreu um erro ao apagar esse publicador!');
-            },
-            failure: function (data) {
-                notifyError('Falha ao apagar esse publicador!');
-            }
-        });
-    }
+    App.on('apagar', async btn => {
+        const it = btn.closest('.item'), nome = App.$('.name', it).textContent;
+        if (!await App.confirm({ title: 'Apagar publicador', text: 'Apagar «' + nome + '» e todos os movimentos e pedidos associados? Esta ação é irreversível.', ok: 'Apagar' })) return;
+        App.run(btn, async () => { await App.api('DELETE', '/Publicadores/Publicador/', { id: it.dataset.id, delete: true }); App.removeItem(it); notify('Publicador apagado.'); },
+            'Não foi possível apagar o publicador. Pode não ter permissões para apagar este utilizador.');
+    });
 
-
-    function CriarPublicador(nome) {
-        $.ajax({
-            url: '/Publicadores/ObterPublicadores/',
-            type: "GET",
-            success: function (data) {
-                var id = (data.sort((a, b) => a.id - b.id)[data.length - 1].id) + 1;
-                $.ajax({
-                    url: '/Publicadores/Publicador/',
-                    data: { "nome": nome, "id": id },
-                    type: "POST",
-                    success: function (data) {
-                        notify("Utilizador criado com sucesso!");
-                        window.location.href = 'Publicadores/Publicador/' + id;
-                    },
-                    error: function (data) {
-                        notifyError('Ocorreu um erro ao adicionar esse publicador!');
-                    },
-                    failure: function (data) {
-                        notifyError('Falha ao adicionar esse publicador!');
-                    }
-                });
-            },
-            error: function (data) {
-                notifyError('Ocorreu um erro ao obter todos os publicadores!');
-            },
-            failure: function (data) {
-                notifyError('Falha ao obter todos os publicadores!');
-            }
-        });
-
-    }
+    App.on('criar', btn => App.run(btn, async () => {
+        const nome = App.$('#txtNomeNovoPublicador').value.trim();
+        if (!nome) { notifyError('Indique o nome do publicador.'); return; }
+        const todos = await App.api('GET', '/Publicadores/ObterPublicadores/');
+        const id = Math.max(0, ...todos.map(p => p.id)) + 1;
+        await App.api('POST', '/Publicadores/Publicador/', { nome: nome, id: id });
+        location.href = '/Publicadores/Publicador/' + id;
+    }, 'Não foi possível criar o publicador.'));
 </script>
+}

@@ -4,516 +4,150 @@
 }
 
 <div class="container">
-    <div class="columns">
-        <div class="column">
-            <div class="tile">
-                <div class="tile is-parent is-vertical">
-                    <article class="tile is-child notification is-info">
-                        <p class="title">
-                            <span class="icon mr-3">
-                                <i class="fa-solid fa-right-to-bracket"></i>
-                            </span>
-                            <span>Entradas</span>
-                        </p>
-                    </article>
-                </div>
-            </div>
+    <div class="page-head">
+        <div class="head-title">
+            <span class="head-icon"><i class="fa-solid fa-right-to-bracket"></i></span>
+            <div><h1>Entradas</h1><p>Literatura recebida em stock</p></div>
         </div>
-        <div class="column">
-            <div class="field has-addons has-addons-right mx-1 is-flex-wrap-wrap" style="width:100%">
-                <form style="width:100%">
-                    <p class="control has-icons-left">
-                        <input class="input" type="date"
-                               value="@(DateTime.Parse(ViewData["Data"]!.ToString()!).ToString("yyyy-MM-dd"))" id="txtData"
-                               name="data" />
-                        <script>
-                            bulmaCalendar.attach('#txtData', {
-                                color: 'info',
-                                lang: 'pt',
-                                dateFormat: 'dd/MM/yyyy',
-                                todayLabel: 'Hoje',
-                                showClearButton: false,
-                                cancelLabel: 'Cancelar'
-                            });
-                            document.getElementById('txtData').bulmaCalendar.on('select', function (datepicker) {
-                                document.getElementById('txtData').value = datepicker.data.value();
-                                $('form').submit();
-                            });</script>
-                    </p>
-                </form>
-                <div class="buttons has-addons is-right mt-2">
-                    <p class="control">
-                        <button type="button" class="button is-info is-large is-fullwidth "
-                                onclick="Bulma('#modalEntradaPublicacoes').modal().open();">
-                            <span class="icon">
-                                <i class="fa-solid fa-book"></i>
-                            </span>
-                            <span>Publicações</span>
-                        </button>
-                    </p>
-                    <p class="control">
-                        <button type="button" class="button is-primary is-large is-fullwidth "
-                                onclick="ObterPeriodicos(document.getElementById('periodico').value, document.getElementById('ano').value);Bulma('#modalEntradaPeriodicos').modal().open();">
-                            <span class="icon">
-                                <i class="fa-solid fa-newspaper"></i>
-                            </span>
-                            <span>Periódicos</span>
-                        </button>
-                    </p>
-                </div>
-            </div>
+        <div class="head-actions">
+            <button type="button" class="button is-info" data-open="modalEntrada">
+                <span class="icon"><i class="fa-solid fa-book"></i></span><span>Publicações</span>
+            </button>
+            <button type="button" class="button is-info is-light" data-action="abrirPeriodicos">
+                <span class="icon"><i class="fa-solid fa-newspaper"></i></span><span>Periódicos</span>
+            </button>
         </div>
     </div>
-</div>
-<hr />
-<div class="container">
-    @if (Model.Count() == 0)
-    {
-        <br />
-        <button class="button is-danger is-large is-rounded is-fullwidth is-disabled">
-            Não foram encontrados
-            movimentos!
-        </button>
-    }
-    else
-    {
-        <div class="b-table">
-            <div class="table-wrapper has-mobile-cards">
-                <table class="table is-hoverable is-fullwidth">
-                    <thead>
-                        <tr>
-                            <th></th>
-                            <th>
-                                @Html.DisplayNameFor(model => model.FirstOrDefault()!.Literatura!.Referencia)
-                            </th>
-                            <th>
-                                @Html.DisplayNameFor(model => model.FirstOrDefault()!.Literatura!.Descricao)
-                            </th>
-                            <th>
-                                @Html.DisplayNameFor(model => model.FirstOrDefault()!.Quantidade)
-                            </th>
-                            <th>
-                                @Html.DisplayNameFor(model => model.FirstOrDefault()!.Publicador!.Nome)
-                            </th>
-                            <th>
-                                @Html.DisplayNameFor(model => model.FirstOrDefault()!.DataMovimento)
-                            </th>
-                            <th></th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @foreach (var item in Model)
-                        {
-                            <tr>
-                                <td class="is-image-cell">
-                                    <div class="image">
-                                        <img src="@item.Literatura!.Imagem">
-                                    </div>
-                                </td>
-                                <td data-label="@Html.DisplayNameFor(model => model.FirstOrDefault()!.Literatura!.Descricao)">
-                                    <span>@item.Literatura!.Referencia</span>
-                                </td>
-                                <td data-label="@Html.DisplayNameFor(model => model.FirstOrDefault()!.Literatura!.Descricao)">
-                                    <span>@item.Literatura!.Descricao</span>
-                                </td>
-                                <td data-label="@Html.DisplayNameFor(model => model.FirstOrDefault()!.Quantidade)">
-                                    <span>@item.Quantidade</span>
-                                </td>
-                                <td data-label="@Html.DisplayNameFor(model => model.FirstOrDefault()!.Publicador!.Nome)">
-                                    <span>@item.Publicador!.Nome</span>
-                                </td>
-                                <td data-label="@Html.DisplayNameFor(model => model.FirstOrDefault()!.DataMovimento)">
-                                    <span>@item.DataMovimento</span>
-                                </td>
-                                <td class="is-actions-cell">
-                                    <div class="buttons is-pulled-right is-flex-wrap-nowrap" style="width:100%">
-                                        <button class="button is-danger is-fullwidth is-large"
-                                                onclick="ConfirmApagar('@item.Stamp')">
-                                            <i class="fas fa-trash-can"></i>
-                                        </button>
-                                    </div>
-                                </td>
-                            </tr>
-                        }
-                    </tbody>
-                </table>
-            </div>
-        </div>
-    }
+
+    <partial name="_BarraData" />
+    <div id="regiao"><partial name="_Movimentos" model="Model" /></div>
 </div>
 
-<div id="modalEntradaPublicacoes" class="modal">
+<div id="modalEntrada" class="modal" role="dialog" aria-modal="true" aria-labelledby="tEnt">
     <div class="modal-background"></div>
     <div class="modal-card">
         <header class="modal-card-head">
-            <p class="modal-card-title">
-                <span class="icon">
-                    <i class="fas fa-circle-plus"></i>
-                </span>
-                <span>Entrada - Publicações</span>
-            </p>
-            <button type="button" class="delete" aria-label="close"></button>
+            <p class="modal-card-title" id="tEnt"><span class="icon"><i class="fa-solid fa-circle-plus"></i></span><span>Entrada de publicações</span></p>
+            <button type="button" class="delete" aria-label="Fechar" data-close></button>
         </header>
         <section class="modal-card-body">
-            <div class="modal-body">
+            <div class="field">
+                <label class="label" for="txtPub">Publicação</label>
+                <div><input type="text" class="input" id="txtPub" placeholder="Escreva a referência ou o nome"></div>
                 <input type="hidden" id="txtPubStamp" />
-                <div class="field">
-                    <label class="label">Publicação</label>
-                    <p class="control ">
-                        <input type="text" class="input" id="txtPub">
-                    </p>
-                </div>
-                <div class="field">
-                    <label class="label">Quantidade</label>
-                    <div class="field has-addons">
-                        <div class="control">
-                            <button type="button" class="button is-danger disable-dbl-tap-zoom"
-                                    onclick="document.getElementById('txtQtd').value = parseInt(document.getElementById('txtQtd').value) - 1">
-                                <span class="icon">
-                                    <i class="fas fa-minus"></i>
-                                </span>
-                            </button>
-                        </div>
-                        <div class="control" style="width:100%">
-                            <input type="number" class="input has-text-centered" min="1" id="txtQtd" value="1">
-                        </div>
-                        <div class="control">
-                            <button type="button" class="button is-success disable-dbl-tap-zoom"
-                                    onclick="document.getElementById('txtQtd').value = parseInt(document.getElementById('txtQtd').value) + 1">
-                                <span class="icon">
-                                    <i class="fas fa-plus"></i>
-                                </span>
-                            </button>
-                        </div>
-                    </div>
-                </div>
+            </div>
+            <div class="field">
+                <label class="label" for="txtQtd">Quantidade</label>
+                <partial name="_Stepper" model='("txtQtd", 1, 1)' />
             </div>
         </section>
         <footer class="modal-card-foot">
-            <div class="buttons is-centered" style="width:100%">
-            <a class="button is-info is-large is-fullwidth"
-               onclick="GerarMovimento(document.getElementById('txtPubStamp').value, document.getElementById('txtQtd').value, this)">
-                <span class="icon">
-                    <i class="fa-regular fa-floppy-disk"></i>
-                </span>
-                <span>
-                    Guardar
-                </span>
-            </a>
-            <button type="button" class="button is-large is-fullwidth is-danger"
-                    onclick="Bulma('#modalEntradaPublicacoes').modal().close();" href="javascript:;">
-                <span class="icon">
-                    <i class="fa-regular fa-circle-xmark"></i>
-                </span>
-                <span>Fechar</span>
-            </button>
-            </div>
+            <button type="button" class="button" data-close>Cancelar</button>
+            <button type="button" class="button is-info" data-action="guardar" data-submit><span class="icon"><i class="fa-regular fa-floppy-disk"></i></span><span>Guardar</span></button>
         </footer>
     </div>
 </div>
 
-<div id="modalEntradaPeriodicos" class="modal">
+<div id="modalPeriodicos" class="modal" role="dialog" aria-modal="true" aria-labelledby="tPer">
     <div class="modal-background"></div>
     <div class="modal-card">
         <header class="modal-card-head">
-            <p class="modal-card-title">
-                <span class="icon">
-                    <i class="fas fa-circle-plus"></i>
-                </span>
-                <span>Entrada - Periódicos</span>
-            </p>
-            <button type="button" class="delete" aria-label="close"></button>
+            <p class="modal-card-title" id="tPer"><span class="icon"><i class="fa-solid fa-newspaper"></i></span><span>Entrada de periódicos</span></p>
+            <button type="button" class="delete" aria-label="Fechar" data-close></button>
         </header>
         <section class="modal-card-body">
-            <div class="modal-body">
-                <div class="field">
-                    <div class="control" style="width:100%">
-                        <label class="label" l>Escolha a publicação:</label>
-                        <p class="control has-icons-left">
-                            <span class="select is-fullwidth" style="width:100%">
-                                <select class="select" id="periodico" style="height: auto" onchange="ObterPeriodicos(document.getElementById('periodico').value, document.getElementById('ano').value);"
-                                        asp-items="@(new SelectList(@ViewBag.Periodicos, "Value", "Text"))">
-                                </select>
-                            </span>
-                            <span class="icon is-small is-left" id="iconSelect">
-                                <i class="fas fa-newspaper"></i>
-                            </span>
-                        </p>
-
+            <div class="field">
+                <label class="label" for="periodico">Publicação</label>
+                <div class="control has-icons-left">
+                    <div class="select is-fullwidth">
+                        <select id="periodico" asp-items="@(new SelectList(ViewBag.Periodicos, "Value", "Text"))"></select>
                     </div>
+                    <span class="icon is-left" id="iconSelect"><i class="fa-solid fa-newspaper"></i></span>
                 </div>
-                <div class="field">
-                    <label class="label">Ano:</label>
-                    <div class="field has-addons">
-                        <div class="control">
-                            <button type="button" class="button is-danger disable-dbl-tap-zoom"
-                                    onclick="document.getElementById('ano').value = parseInt(document.getElementById('ano').value) - 1;ObterPeriodicos(document.getElementById('periodico').value, document.getElementById('ano').value);">
-                                <span class="icon">
-                                    <i class="fas fa-minus"></i>
-                                </span>
-                            </button>
-                        </div>
-                            <p class="control has-icons-left" style="width:100%">
-                                <input class="input" id="ano" type="number" value="@DateTime.Now.Year" disabled />
-                                <span class="icon is-small is-left">
-                                    <i class="fa-regular fa-calendar"></i>
-                                </span>
-                            </p>
-                        <div class="control">
-                            <button type="button" class="button is-success disable-dbl-tap-zoom"
-                                    onclick="document.getElementById('ano').value = parseInt(document.getElementById('ano').value) + 1;ObterPeriodicos(document.getElementById('periodico').value, document.getElementById('ano').value);">
-                                <span class="icon">
-                                    <i class="fas fa-plus"></i>
-                                </span>
-                            </button>
-                        </div>
-                    </div>
-                    
-                </div>
-                <div class="field">
-                    <label class="label">Quantidade</label>
-                    <div class="field has-addons">
-                        <div class="control">
-                            <button type="button" class="button is-danger disable-dbl-tap-zoom"
-                                    onclick="document.getElementById('txtQtdPeriodico').value = parseInt(document.getElementById('txtQtdPeriodico').value) - 1">
-                                <span class="icon">
-                                    <i class="fas fa-minus"></i>
-                                </span>
-                            </button>
-                        </div>
-                        <div class="control" style="width:100%">
-                            <input type="number" class="input has-text-centered" min="1" id="txtQtdPeriodico" value="1">
-                        </div>
-                        <div class="control">
-                            <button type="button" class="button is-success disable-dbl-tap-zoom"
-                                    onclick="document.getElementById('txtQtdPeriodico').value = parseInt(document.getElementById('txtQtdPeriodico').value) + 1">
-                                <span class="icon">
-                                    <i class="fas fa-plus"></i>
-                                </span>
-                            </button>
-                        </div>
-                    </div>
-                </div>
-                <div id="divListaPeriodicos"></div>
             </div>
+            <div class="field">
+                <label class="label" for="ano">Ano</label>
+                <div class="stepper">
+                    <button type="button" data-action="anoMenos" aria-label="Ano anterior"><i class="fa-solid fa-minus"></i></button>
+                    <input type="number" class="input" id="ano" value="@DateTime.Now.Year" readonly>
+                    <button type="button" data-action="anoMais" aria-label="Ano seguinte"><i class="fa-solid fa-plus"></i></button>
+                </div>
+            </div>
+            <div class="field">
+                <label class="label" for="txtQtdPeriodico">Quantidade</label>
+                <partial name="_Stepper" model='("txtQtdPeriodico", 1, 1)' />
+            </div>
+            <div id="divListaPeriodicos" class="items mt-4"></div>
         </section>
         <footer class="modal-card-foot">
-            <div class="buttons is-centered" style="width:100%">
-            <a class="button is-info is-large is-fullwidth" id="btnCriarPeriodico"
-               onclick="CriarPeriodico(document.getElementById('periodico').value, document.getElementById('periodico')[document.getElementById('periodico').selectedIndex].text + ' - ' + document.getElementById('ano').value, document.getElementById('ano').value, document.getElementById('txtQtdPeriodico').value, this)">
-                <span class="icon">
-                    <i class="fa-regular fa-floppy-disk"></i>
-                </span>
-                <span>Guardar</span>
-            </a>
-            <button type="button" class="button is-large is-fullwidth is-danger"
-                    onclick="Bulma('#modalEntradaPeriodicos').modal().close();" href="javascript:;">
-                <span class="icon">
-                    <i class="fa-regular fa-circle-xmark"></i>
-                </span>
-                <span>Fechar</span>
-            </button>
-            </div>
+            <button type="button" class="button" data-close>Fechar</button>
+            <button type="button" class="button is-info" id="btnCriarPeriodico" data-action="guardarPeriodico" hidden><span class="icon"><i class="fa-regular fa-floppy-disk"></i></span><span>Guardar</span></button>
         </footer>
     </div>
 </div>
 
-<div class="modal" id="ModalConfirmApagar">
-    <div class="modal-background"></div>
-    <div class="modal-card">
-        <header class="modal-card-head">
-            <p class="modal-card-title">
-                <span class="icon">
-                    <i class="fas fa-trash-can"></i>
-                </span>
-                <span>Apagar Movimento</span>
-            </p>
-        </header>
-        <section class="modal-card-body">
-            <div class="modal-body">
-                <p>Tem a certeza que deseja apagar este movimento?</p>
-            </div>
-        </section>
-        <footer class="modal-card-foot">
-            <div class="buttons is-centered" style="width:100%">
-            <button class="button is-danger is-fullwidth is-large"
-                    onclick="Apagar(document.getElementById('txtHiddenStamp').value, this);">
-                <span class="icon">
-                    <i class="fas fa-trash-can"></i>
-                </span>
-                <span>Confirmar</span>
-            </button>
-            <button class="button is-fullwidth is-large" onclick="Bulma('#ModalConfirmApagar').modal().close();">
-                <span class="icon">
-                    <i class="fa-solid fa-circle-xmark"></i>
-                </span>
-                <span>Não</span>
-            </button>
-            </div>
-        </footer>
-    </div>
-</div>
-<input id="txtHiddenStamp" hidden />
-
+@section Scripts {
+<partial name="_ScriptMovimentos" />
 <script>
-      
-    function ConfirmApagar(id) {
-        document.getElementById('txtHiddenStamp').value = id;
-        Bulma('#ModalConfirmApagar').modal().open();
+    const modalEntrada = App.modal('modalEntrada'), modalPer = App.modal('modalPeriodicos');
+    const pesq = App.pesquisaPublicacao('#txtPub', '#txtPubStamp', false);
+
+    async function registarEntrada(stamp, qtd) {
+        await App.api('POST', '/Literatura/Movimentos/', { stamp: stamp, qtd: qtd });
+        await App.refresh('#regiao');
     }
 
-    function Apagar(id, btn) {
-        btn.classList.add('is-loading');
-        $.ajax({
-            url: '/Literatura/Movimentos/',
-            data: { "stamp": id },
-            type: "DELETE",
-            success: function (data) {
-                window.location.reload();
-            },
-            error: function (data) {
-                notifyError('Ocorreu um erro ao apagar essa publicação!');
-            },
-            failure: function (data) {
-                notifyError('Falha ao apagar essa publicação!');
-            },
-            complete: function (xhr, status) {
-                btn.classList.remove('is-loading');
-            }
-        });
+    App.on('guardar', btn => App.run(btn, async () => {
+        const stamp = App.$('#txtPubStamp').value, qtd = App.lerInt('#txtQtd');
+        if (!stamp) { notifyError('Escolha uma publicação da lista de sugestões.'); return; }
+        if (qtd < 1) { notifyError('Indique uma quantidade positiva.'); return; }
+        await registarEntrada(stamp, qtd);
+        modalEntrada.close(); pesq.limpar(); App.$('#txtQtd').value = 1; notify('Entrada registada.');
+    }, 'Não foi possível registar a entrada.'));
+
+    // Cria (ou reutiliza) o periódico e regista a entrada.
+    async function criarPeriodico(ref, desc, data, qtd) {
+        const stamp = await App.api('POST', '/Literatura/Literatura/', { referencia: ref, descricao: desc, data: data, tipo: 7 });
+        await registarEntrada(stamp, qtd);
     }
 
-    $(function () {
-        $("#txtPub").autocomplete({
-            source: function (request, response) {
-                $.ajax({
-                    url: '/Literatura/Literaturas/',
-                    data: { "filtro": request.term, "periodico": false },
-                    type: "GET",
-                    success: function (data) {
-                        response($.map(data, function (item) {
-                            return {
-                                label: "[" + item.referencia + "] " + item.descricao,
-                                val: item.stamp
-                            };
-                        }))
-                    },
-                    error: function (response) {
-                        notifyError('Ocorreu um erro ao obter as publicações!');
-                    },
-                    failure: function (response) {
-                        notifyError('Falha ao obter as publicações');
-                    }
-                });
-            },
-            select: function (e, i) {
-                $("#txtPubStamp").val(i.item.val);
-            },
-            minLength: 1
-        }).css('z-index', 50);
-    });
+    App.on('abrirPeriodicos', () => { modalPer.open(); obterPeriodicos(); });
+    App.on('anoMenos', () => { App.$('#ano').value = App.lerInt('#ano') - 1; obterPeriodicos(); });
+    App.on('anoMais', () => { App.$('#ano').value = App.lerInt('#ano') + 1; obterPeriodicos(); });
+    App.$('#periodico').addEventListener('change', obterPeriodicos);
 
+    App.on('guardarPeriodico', btn => App.run(btn, async () => {
+        const sel = App.$('#periodico'), ano = App.$('#ano').value;
+        await criarPeriodico(sel.value, sel.options[sel.selectedIndex].text + ' - ' + ano, ano, App.lerInt('#txtQtdPeriodico'));
+        notify('Periódico registado.');
+    }, 'Não foi possível registar o periódico.'));
 
-    function GerarMovimento(stamp, qtd, btn) {
-        btn.classList.add('is-loading');
-        $.ajax({
-            url: '/Literatura/Movimentos/',
-            data: { "stamp": stamp, "qtd": qtd },
-            type: "POST",
-            success: function (data) {
-                notify('Movimento criado com sucesso!');
-                window.location.reload();
-            },
-            error: function (response) {
-                notifyError('Ocorreu um erro ao gerar um movimento!');
-            },
-            failure: function (response) {
-                notifyError('Falha ao gerar um movimento!');
-            },
-            complete: function (xhr, status) {
-                btn.classList.remove('is-loading');
+    let pedido = 0;
+    async function obterPeriodicos() {
+        const meu = ++pedido, lista = App.$('#divListaPeriodicos'), btnManual = App.$('#btnCriarPeriodico'), icon = App.$('#iconSelect');
+        btnManual.hidden = true; lista.innerHTML = '<p class="field-hint">A obter periódicos…</p>';
+        icon.innerHTML = '<i class="fa-solid fa-circle-notch fa-spin"></i>';
+        try {
+            const dados = await App.api('GET', '/Literatura/PesquisarPeriodicos/', { ano: App.$('#ano').value, tipo: App.$('#periodico').value });
+            if (meu !== pedido) return;
+            lista.innerHTML = '';
+            if (!dados.length) {
+                btnManual.hidden = false;
+                lista.innerHTML = '<p class="field-hint">Não foi possível obter periódicos para este item. Pode ser um item anual: use «Guardar».</p>';
+                return;
             }
-        });
-    }
-
-    function CriarPeriodico(referencia, descricao, data, qtd, btn) {
-        btn.classList.add('is-loading');
-        $.ajax({
-            url: '/Literatura/Literatura/',
-            data: { "referencia": referencia, "descricao": descricao, "data": data, "tipo": 7 },
-            type: "POST",
-            success: function (data) {
-                notify('Publicação criada com sucesso!');
-                GerarMovimento(data, qtd, btn);
-            },
-            error: function (response) {
-                notifyError('Ocorreu um erro ao criar uma publicação!');
-            },
-            failure: function (response) {
-                notifyError('Falha ao criar uma publicação!');
-            },
-            complete: function (xhr, status) {
-                btn.classList.remove('is-loading');
-            }
-        });
-    }
-
-    function ObterPeriodicos(tipo, ano) {
-        notify('A obter periodicos... Por favor aguarde!');
-        document.getElementById('btnCriarPeriodico').style.display='none';
-        
-        const containerPai = document.getElementById('divListaPeriodicos');  // substitua pelo id real
-        document.getElementById('iconSelect').innerHTML = '<i class="fa-solid fa-circle-notch fa-spin"></i>';
-        containerPai.innerHTML = '';
-        
-        $.ajax({
-            url: '/Literatura/PesquisarPeriodicos/',
-            data: { "ano": ano, "tipo": tipo },
-            type: "GET",
-            success: function (data) {
-                if (data.length > 0) {
-                data.forEach(obj => {
-                    const container = document.createElement('div');
-                    container.className = "box has-text-centered";
-
-                    const img = document.createElement('img');
-                    img.src = obj.url;
-                    img.alt = obj.descricao;
-                    img.className = 'image is-inline-block';
-
-                    const descricao = document.createElement('p');
-                    descricao.className = 'mt-3 has-text-weight-medium';
-                    descricao.textContent = obj.descricao;
-
-                    const botao = document.createElement('button');
-                    botao.className = 'button is-primary mt-3 is-fullwidth is-large';
-                    botao.innerHTML = '<span class="icon">\n' +
-                        '<i class="fa-solid fa-plus"></i>\n' +
-                        '</span><span>Adicionar</span>';
-                    botao.onclick = () => {
-                        CriarPeriodico(obj.referencia, obj.descricao, obj.data, document.getElementById('txtQtdPeriodico').value, botao)
-                    };
-
-                    container.appendChild(img);
-                    container.appendChild(descricao);
-                    container.appendChild(botao);
-
-                    containerPai.appendChild(container);
-                    
-                    notify('Periódicos obtidos com sucesso!');
-                });                
-                }else{
-                    document.getElementById('btnCriarPeriodico').style.display='block';
-                    notify('Não foi possivel obter periodicos para este item. Talvez seja um item anual!');
-                }
-                document.getElementById('iconSelect').innerHTML = '<i class="fas fa-newspaper"></i>';
-            },
-            error: function (response) {
-                notifyError('Ocorreu um erro ao obter os periodicos!');
-            },
-            failure: function (response) {
-                notifyError('Falha ao obter os periodicos!');
-            }
-        });
+            dados.forEach(o => {
+                const el = document.createElement('article'); el.className = 'item';
+                el.innerHTML = '<div class="thumb"><img alt="" loading="lazy"></div><div class="main"><div class="name"></div></div>' +
+                    '<div class="side"><button type="button" class="button is-info"><span class="icon"><i class="fa-solid fa-plus"></i></span><span>Adicionar</span></button></div>';
+                App.$('img', el).src = o.url; App.$('.name', el).textContent = o.descricao;
+                App.$('button', el).addEventListener('click', e => App.run(e.currentTarget, async () => {
+                    await criarPeriodico(o.referencia, o.descricao, o.data, App.lerInt('#txtQtdPeriodico')); notify('Periódico registado.');
+                }, 'Não foi possível registar o periódico.'));
+                lista.appendChild(el);
+            });
+        } catch (e) { if (meu === pedido) { lista.innerHTML = ''; notifyError('Não foi possível obter os periódicos.'); } }
+        finally { if (meu === pedido) icon.innerHTML = '<i class="fa-solid fa-newspaper"></i>'; }
     }
 </script>
+}

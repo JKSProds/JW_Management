@@ -2,11 +2,10 @@
 using JW_Management.Models;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
-using System;
-using System.Collections.Generic;
+using Microsoft.AspNetCore.Mvc.Rendering;
 using System.Security.Claims;
-using AppContext = System.AppContext;
 
 namespace JW_Management.Controllers
 {
@@ -18,70 +17,80 @@ namespace JW_Management.Controllers
             return View();
         }
 
+        // Resumo para o início. Pedido depois de a página carregar, para não atrasar a abertura.
+        [Authorize(Roles = "Admin, Assistente, Coordenador, Secretario, Servico, Literatura")]
         [HttpGet]
-        public async Task<IActionResult> Login(string ReturnUrl)
+        public IActionResult Resumo()
         {
-            ViewData["ReturnUrl"] = ReturnUrl;
+            var stock = _dbContext.ObterLiteraturas("", 0).Where(l => !(l.Tipo!.Id == 7 && l.Quantidade <= 0)).ToList();
+            var pendentes = _dbContext.ObterPedidosEspeciais().Count(l => l.Quantidade > 0 && l.EstadoPedido!.Descricao == "Pendente");
+
+            return Json(new { titulos = stock.Count, unidades = stock.Sum(l => l.Quantidade), pedidosPendentes = pendentes });
+        }
+
+        private void PrepararLogin(string? returnUrl)
+        {
+            ViewData["ReturnUrl"] = returnUrl;
+            ViewBag.Tenants = _appContext._tenantContext._tenants.Select(t => new SelectListItem(t.Nome, t.Id.ToString())).ToList();
+        }
+
+        [HttpGet]
+        public IActionResult Login(string ReturnUrl)
+        {
+            PrepararLogin(ReturnUrl);
             return View();
         }
 
         [HttpPost]
         public async Task<IActionResult> Login(Publicador p, int t, string ReturnUrl)
         {
+            PrepararLogin(ReturnUrl);
+
             if (_configStore.SomenteOidcAtivo(_config))
             {
                 ModelState.AddModelError("", "O login com palavra-passe está desativado. Use o Pocket ID.");
                 return View();
             }
+
             _appContext._manualTenant = t;
-            p.Username = p.Username.ToLower().Trim();
-            
-            List<Publicador> LstUtilizadores = _dbContext.ObterPublicadores(t, false).Where(u => u.Username == p.Username).ToList();
-            
-            foreach (var u in LstUtilizadores)
+            p.Username = (p.Username ?? "").ToLower().Trim();
+
+            var passwordHasher = new PasswordHasher<string>();
+            var u = _dbContext.ObterPublicadores(t, false).FirstOrDefault(u =>
+                u.Username == p.Username && !string.IsNullOrEmpty(u.Password) &&
+                passwordHasher.VerifyHashedPassword(null!, u.Password, p.Password ?? "") == PasswordVerificationResult.Success);
+
+            if (u == null)
             {
-                var passwordHasher = new PasswordHasher<string>();
-
-                if (passwordHasher.VerifyHashedPassword(null, u.Password!, p.Password!) == PasswordVerificationResult.Success)
-                {
-
-                    var claims = new List<Claim>
-                        {
-                            new Claim(ClaimTypes.Name, u.Id.ToString()),
-                            new Claim(ClaimTypes.Role, u.Role),
-                            new Claim(ClaimTypes.GivenName, u.Nome!),
-                            new Claim(ClaimTypes.Sid, _appContext._currentTenant.Id.ToString()),
-                            new Claim(ClaimTypes.PrimaryGroupSid, _appContext._currentTenant.NomeCongregacao.ToString())
-                };
-                    var claimsIdentity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
-                    await HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, new ClaimsPrincipal(claimsIdentity));
-                    
-                    Console.WriteLine($"[{_appContext._currentTenant.NomeCongregacao}] - Login - Utilizador: {u.Nome}");
-                    _appContext._manualTenant = 0;
-                    
-                    if (ReturnUrl != "" && ReturnUrl != null)
-                    {
-                        Response.Redirect(ReturnUrl, true);
-                    }
-                    else
-                    {
-                        return RedirectToAction("Index", "Home");
-                    }
-                }
-                else
-                {
-                    ModelState.AddModelError("", "Password errada!");
-                }
+                _appContext._manualTenant = 0;
+                // Mensagem única: não revela se o utilizador existe.
+                ModelState.AddModelError("", "Utilizador ou palavra-passe incorretos.");
+                return View(new Publicador { Username = p.Username });
             }
-            ModelState.AddModelError("", "Utilizador não encontrado!");
-            return View();
+
+            var claims = new List<Claim>
+            {
+                new Claim(ClaimTypes.Name, u.Id.ToString()),
+                new Claim(ClaimTypes.Role, u.Role),
+                new Claim(ClaimTypes.GivenName, u.Nome!),
+                new Claim(ClaimTypes.Sid, _appContext._currentTenant.Id.ToString()),
+                new Claim(ClaimTypes.PrimaryGroupSid, _appContext._currentTenant.NomeCongregacao.ToString())
+            };
+            var claimsIdentity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
+            await HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, new ClaimsPrincipal(claimsIdentity));
+
+            Console.WriteLine($"[{_appContext._currentTenant.NomeCongregacao}] - Login - Utilizador: {u.Nome}");
+            _appContext._manualTenant = 0;
+
+            // Só aceita destinos locais, para o ReturnUrl não servir de redirecionamento aberto.
+            return Url.IsLocalUrl(ReturnUrl) ? LocalRedirect(ReturnUrl) : RedirectToAction("Index", "Home");
         }
 
         public IActionResult Error()
         {
             return View();
         }
-        
+
         [HttpGet]
         public JsonResult Tenants()
         {

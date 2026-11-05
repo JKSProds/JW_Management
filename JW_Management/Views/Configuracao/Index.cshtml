@@ -2,40 +2,79 @@
 @{
     ViewData["Title"] = "Configuração";
 }
-<section class="section">
-    <div class="container">
-        <h1 class="title">Configuração do início de sessão</h1>
-        @if (TempData["Guardado"] != null)
-        {
-            <div class="notification is-success is-light">Guardado. Alterações ao OIDC e ao proxy só têm efeito depois de reiniciar a aplicação.</div>
-        }
-        <div class="notification is-warning is-light">
-            Se o OIDC ficar mal configurado com "Só OAuth" ativo, o acesso só se recupera na base de dados master
-            (tabela sys_config, chave Auth:SomenteOidc).
+
+<div class="container" style="max-width:760px">
+    <div class="page-head">
+        <div class="head-title">
+            <span class="head-icon"><i class="fa-solid fa-gear"></i></span>
+            <div><h1>Configuração</h1><p>Início de sessão com OpenID Connect (Pocket ID)</p></div>
         </div>
-        <form method="post" class="box">
-            <div asp-validation-summary="All" class="has-text-danger"></div>
-            <div class="field">
-                <label class="label">Authority (emissor OIDC)</label>
-                <input class="input" asp-for="Authority" />
-            </div>
-            <div class="field">
-                <label class="label">ClientId</label>
-                <input class="input" asp-for="ClientId" autocomplete="off" />
-            </div>
-            <div class="field">
-                <label class="label">ClientSecret @(Model.ClientSecretDefinido ? "(definido)" : "(não definido)")</label>
-                <input class="input" type="password" asp-for="ClientSecret" autocomplete="new-password"
-                       placeholder="Deixe vazio para manter o atual" />
-            </div>
-            <div class="field">
-                <label class="label">IP do proxy (Caddy)</label>
-                <input class="input" asp-for="KnownProxy" />
-            </div>
-            <div class="field">
-                <label class="checkbox"><input type="checkbox" asp-for="SomenteOidc" /> Permitir apenas OAuth (desativa o login com palavra-passe)</label>
-            </div>
-            <button class="button is-link" type="submit">Guardar</button>
-        </form>
     </div>
-</section>
+
+    @if (TempData["Guardado"] != null)
+    {
+        <div class="notice is-ok" role="status">
+            <span class="icon"><i class="fa-solid fa-circle-check"></i></span>
+            <span>Guardado. As alterações ao OIDC e ao proxy só têm efeito depois de reiniciar a aplicação.</span>
+        </div>
+    }
+    <div class="notice is-warn">
+        <span class="icon"><i class="fa-solid fa-triangle-exclamation"></i></span>
+        <span>Se o OIDC ficar mal configurado com «Só OAuth» ativo, o acesso só se recupera na base de dados master (tabela <code>sys_config</code>, chave <code>Auth:SomenteOidc</code>).</span>
+    </div>
+
+    <form method="post" id="frmConfig">
+        @if (!ViewData.ModelState.IsValid)
+        {
+            <div class="notice is-bad" role="alert">
+                <span class="icon"><i class="fa-solid fa-circle-exclamation"></i></span>
+                <div asp-validation-summary="All"></div>
+            </div>
+        }
+
+        <div class="panel-card">
+            <h2>Fornecedor de identidade</h2>
+            <div class="field">
+                <label class="label" asp-for="Authority">Authority (emissor OIDC)</label>
+                <input class="input" asp-for="Authority" placeholder="https://id.exemplo.pt" />
+                <p class="field-hint">Tem de ser um URL https.</p>
+            </div>
+            <div class="form-grid">
+                <div class="field">
+                    <label class="label" asp-for="ClientId">Client ID</label>
+                    <input class="input" asp-for="ClientId" autocomplete="off" />
+                </div>
+                <div class="field">
+                    <label class="label" asp-for="ClientSecret">
+                        Client secret
+                        <span class="tag @(Model.ClientSecretDefinido ? "is-success" : "is-light") ml-1">@(Model.ClientSecretDefinido ? "definido" : "não definido")</span>
+                    </label>
+                    <input class="input" type="password" asp-for="ClientSecret" autocomplete="new-password"
+                           placeholder="Deixe vazio para manter o atual" />
+                </div>
+            </div>
+        </div>
+
+        <div class="panel-card">
+            <h2>Proxy</h2>
+            <div class="field">
+                <label class="label" asp-for="KnownProxy">IP do proxy (Caddy)</label>
+                <input class="input" asp-for="KnownProxy" inputmode="decimal" />
+            </div>
+        </div>
+
+        <div class="panel-card">
+            <h2>Política de acesso</h2>
+            <label class="checkbox" style="display:flex;gap:.7rem;align-items:flex-start">
+                <input type="checkbox" asp-for="SomenteOidc" style="margin-top:.3rem;width:1.1rem;height:1.1rem" />
+                <span><strong>Permitir apenas OAuth</strong><br><span class="field-hint">Desativa o início de sessão com palavra-passe. Exige Authority, Client ID e Client secret definidos.</span></span>
+            </label>
+        </div>
+
+        <div class="mt-5">
+            <button class="button is-info" type="submit">
+                <span class="icon"><i class="fa-regular fa-floppy-disk"></i></span><span>Guardar configuração</span>
+            </button>
+        </div>
+    </form>
+</div>

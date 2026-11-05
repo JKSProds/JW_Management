@@ -1,908 +1,354 @@
 ﻿@model IEnumerable<JW_Management.Models.Literatura>
 @{
     ViewData["Title"] = "Literatura - Pedidos";
+    var periodicos = Model.Where(l => l.Tipo!.Id == 7).ToList();
+    var especiais = Model.Where(l => l.Tipo!.Id != 7).ToList();
+    var estados = ((IEnumerable<SelectListItem>)ViewBag.Estados).ToList();
+    var iconesEstado = new[] { "clock", "envelope", "truck-fast", "check-double" };
+    var publicadores = ((IEnumerable<SelectListItem>)ViewBag.Publicadores).ToList();
 }
 
 <div class="container">
-    <div class="columns">
-        <div class="column">
-            <div class="tile">
-                <div class="tile is-parent is-vertical">
-                    <article class="tile is-child notification is-info">
-                        <p class="title">
-                            <span class="icon mr-3">
-                                <i class="fa-solid fa-book-medical"></i>
-                            </span>
-                            <span>Pedidos</span>
-                        </p>
-                    </article>
-                </div>
-            </div>
+    <div class="page-head">
+        <div class="head-title">
+            <span class="head-icon"><i class="fa-solid fa-book-medical"></i></span>
+            <div><h1>Pedidos</h1><p>Periódicos e publicações especiais pedidas pelos publicadores</p></div>
         </div>
-        <div class="column">
-            <div class="field has-addons has-addons-right mx-1 is-flex-wrap-wrap" style="width:100%">
+        <div class="head-actions">
+            <button type="button" class="button is-info" data-open="modalPedidoEspecial">
+                <span class="icon"><i class="fa-solid fa-book"></i></span><span>Pedir publicação</span>
+            </button>
+            <button type="button" class="button is-info is-light" data-open="modalPedidoPeriodico">
+                <span class="icon"><i class="fa-solid fa-newspaper"></i></span><span>Pedir periódico</span>
+            </button>
+        </div>
+    </div>
 
-                <div class="buttons has-addons is-right mt-2">
-                    <p class="control">
-                        <button type="button" class="button is-info is-large is-fullwidth "
-                                onclick="Bulma('#modalPedidoPublicacoes').modal().open();">
-                            <span class="icon">
-                                <i class="fa-solid fa-book"></i>
-                            </span>
-                            <span>Publicações</span>
-                        </button>
-                    </p>
-                    <p class="control">
-                        <button type="button" class="button is-primary is-large is-fullwidth "
-                                onclick="Bulma('#modalPedidoPeriodicos').modal().open();">
-                            <span class="icon">
-                                <i class="fa-solid fa-newspaper"></i>
-                            </span>
-                            <span>Periódicos</span>
-                        </button>
-                    </p>
-                </div>
-            </div>
+    <div id="regiao">
+        <div class="seg" role="tablist" aria-label="Tipo de pedido">
+            <button type="button" role="tab" id="tabPer" aria-controls="panPer" aria-selected="true">Periódicos<span class="count">@periodicos.Count</span></button>
+            <button type="button" role="tab" id="tabEsp" aria-controls="panEsp" aria-selected="false">Especiais<span class="count">@especiais.Count</span></button>
         </div>
+
+        <section id="panPer" role="tabpanel" aria-labelledby="tabPer">
+            @if (!periodicos.Any())
+            {
+                <div class="empty-state"><span class="icon"><i class="fa-regular fa-newspaper"></i></span><strong>Sem pedidos de periódicos</strong>Use «Pedir periódico» para registar o primeiro.</div>
+            }
+            else
+            {
+                <div class="toolbar">
+                    <div class="select search">
+                        <select id="filtrop" aria-label="Filtrar pela publicação" style="width:100%">
+                            <option value="0">Todas as publicações</option>
+                            @foreach (var p in (IEnumerable<SelectListItem>)ViewBag.Periodicos)
+                            {
+                                <option value="@p.Value">@p.Text</option>
+                            }
+                        </select>
+                    </div>
+                    <button type="button" class="button is-success" data-open="modalMailPeriodicos">
+                        <span class="icon"><i class="fa-solid fa-paper-plane"></i></span><span>Enviar pedidos</span>
+                    </button>
+                </div>
+                <div class="items" id="listaPer">
+                    @foreach (var item in periodicos)
+                    {
+                        <article class="item" data-stamp="@item.Stamp" data-ref="@item.Referencia">
+                            <div class="thumb"><img src="@item.Imagem" alt="" loading="lazy" onerror="this.src='/img/l_no_photo.png'"></div>
+                            <div class="main">
+                                <div class="name">@item.Descricao</div>
+                                <div class="meta">
+                                    <span class="ref-tag">@item.Referencia</span>
+                                    <span><i class="fa-solid fa-user fa-xs"></i> @item.Publicador!.Nome</span>
+                                </div>
+                            </div>
+                            <div class="side">
+                                <div class="qty num"><span>@item.Quantidade</span><small>exemplares</small></div>
+                                <div class="acts">
+                                    <button type="button" class="button btn-icon is-danger-hover" data-action="apagarPer" aria-label="Apagar pedido" title="Apagar pedido"><i class="fa-solid fa-trash-can"></i></button>
+                                </div>
+                            </div>
+                        </article>
+                    }
+                </div>
+            }
+        </section>
+
+        <section id="panEsp" role="tabpanel" aria-labelledby="tabEsp" hidden>
+            @if (!especiais.Any())
+            {
+                <div class="empty-state"><span class="icon"><i class="fa-solid fa-book"></i></span><strong>Sem pedidos especiais</strong>Use «Pedir publicação» para registar o primeiro.</div>
+            }
+            else
+            {
+                <div class="toolbar">
+                    <button type="button" class="button is-success" data-open="modalMailPedidos">
+                        <span class="icon"><i class="fa-solid fa-paper-plane"></i></span><span>Enviar pedidos novos</span>
+                    </button>
+                </div>
+                <div class="items">
+                    @foreach (var item in especiais)
+                    {
+                        var estado = item.EstadoPedido!.Descricao ?? "";
+                        <article class="item" data-stamp="@item.Stamp" data-estado="@estado" data-qtd="@item.Quantidade">
+                            <div class="thumb"><img src="@item.Imagem" alt="" loading="lazy" onerror="this.src='/img/l_no_photo.png'"></div>
+                            <div class="main">
+                                <div class="name">@item.Descricao</div>
+                                <div class="meta">
+                                    <span class="ref-tag">@item.Referencia</span>
+                                    <span><i class="fa-solid fa-user fa-xs"></i> @item.Publicador!.Nome</span>
+                                    <span class="tag estado-@(estado.Split(' ')[0])">@estado</span>
+                                </div>
+                            </div>
+                            <div class="side">
+                                <div class="qty num"><span>@item.Quantidade</span><small>unidades</small></div>
+                                <div class="acts">
+                                    <button type="button" class="button btn-icon is-ok-hover" data-action="editarEsp" aria-label="Atualizar estado" title="Atualizar estado"><i class="fa-solid fa-arrows-rotate"></i></button>
+                                    <button type="button" class="button btn-icon is-danger-hover" data-action="apagarEsp" aria-label="Apagar pedido" title="Apagar pedido"><i class="fa-solid fa-trash-can"></i></button>
+                                </div>
+                            </div>
+                        </article>
+                    }
+                </div>
+            }
+        </section>
     </div>
 </div>
 
-<hr />
-<div class="container">
-    <div class="tabs-wrapper">
-        <div class="tabs is-toggle is-toggle-rounded is-fullwidth">
-            <ul>
-                <li class="is-active"><a>Periódicos</a></li>
-                <li><a>Especiais</a></li>
-            </ul>
-        </div>
-        <div class="tabs-content mx-2">
-            <ul>
-                <li class="is-active">
-                    @if (Model.Where(l => l.Tipo!.Id == 7).Count() == 0)
-                    {
-                        <br />
-                        <button class="button is-danger is-large is-rounded is-fullwidth is-disabled">
-                            Não foram encontrados
-                            pedidos periodicos!
-                        </button>
-                    }
-                    else
-                    {
-                        <p class="control">
-                            <button type="button" class="button is-success is-large is-fullwidth "
-                                    onclick="Bulma('#modalMailPeriodicos').modal().open();">
-                                <span class="icon">
-                                    <i class="fa-solid fa-paper-plane"></i>
-                                </span>
-                                <span>Enviar Pedidos Periodicos</span>
-                            </button>
-                        </p>
-                        <br />
-                        <div class="control" style="width:100%">
-                            <label class="label" l>Filtrar pela publicação:</label>
-                            <p class="control has-icons-left">
-                                <span class="select is-fullwidth" style="width:100%">
-                                    <select class="select" id="filtrop" style="height: auto"
-                                        asp-items="@(new SelectList(@ViewBag.Periodicos, "Value", "Text"))" onchange="Array.prototype.slice.call(document.querySelector('#tblPeriodicos').childNodes[3].childNodes).forEach(function(v, i, a) { if (v.childNodes[3]) v.style.display = document.getElementById('filtrop').value == 0 ? 'table-row' : (v.childNodes[3].childNodes[1].childNodes[0].textContent != document.getElementById('filtrop').value ? 'none' : 'table-row');  });">
-                                        <option value="0">Todos</option>
-                                    </select>
-                                </span>
-                                <span class="icon is-small is-left">
-                                    <i class="fas fa-newspaper"></i>
-                                </span>
-                            </p>
-                        </div>
-                        <br />
-                        <div class="b-table">
-                            <div class="table-wrapper has-mobile-cards">
-                                <table class="table is-hoverable is-fullwidth" id="tblPeriodicos">
-                                    <thead>
-                                        <tr>
-                                            <th></th>
-                                            <th>
-                                                @Html.DisplayNameFor(model => model.FirstOrDefault()!.Referencia)
-                                            </th>
-                                            <th>
-                                                @Html.DisplayNameFor(model => model.FirstOrDefault()!.Descricao)
-                                            </th>
-                                            <th>
-                                                @Html.DisplayNameFor(model => model.FirstOrDefault()!.Quantidade)
-                                            </th>
-                                            <th>
-                                                @Html.DisplayNameFor(model => model.FirstOrDefault()!.Publicador!.Nome)
-                                            </th>
-                                            <th></th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        @foreach (var item in Model.Where(l => l.Tipo!.Id == 7))
-                                        {
-                                            <tr>
-                                                <td class="is-image-cell">
-                                                    <div class="image">
-                                                        <img src="@item.Imagem">
-                                                    </div>
-                                                </td>
-                                                <td data-label="@Html.DisplayNameFor(model => model.FirstOrDefault()!.Referencia)">
-                                                    <span>@item.Referencia</span>
-                                                </td>
-                                                <td data-label="@Html.DisplayNameFor(model => model.FirstOrDefault()!.Descricao)">
-                                                    <span>@item.Descricao</span>
-                                                </td>
-                                                <td data-label="@Html.DisplayNameFor(model => model.FirstOrDefault()!.Quantidade)">
-                                                    <span>@item.Quantidade</span>
-                                                </td>
-                                                <td data-label="@Html.DisplayNameFor(model => model.FirstOrDefault()!.Publicador!.Nome)">
-                                                    <span>@item.Publicador!.Nome</span>
-                                                </td>
-                                                <td class="is-actions-cell">
-                                                    <div class="field has-addons is-pulled-right is-flex-wrap-nowrap" style="width:100%">
-                                                        <button class="button is-danger is-fullwidth is-large"
-                                                                onclick="ConfirmApagarPeriodico('@item.Stamp')">
-                                                            <i class="fas fa-trash-can"></i>
-                                                        </button>
-                                                    </div>
-                                                </td>
-                                            </tr>
-                                        }
-                                    </tbody>
-                                </table>
-                            </div>
-                        </div>
-                    }
-                </li>
-                <li>
-                    
-                    @if (Model.Where(l => l.Tipo!.Id != 7).Count() == 0)
-                    {
-                        <br />
-                        <button class="button is-danger is-large is-rounded is-fullwidth is-disabled">
-                            Não foram encontrados
-                            pedidos especiais!
-                        </button>
-                    }
-                    else
-                    {
-                        <p class="control">
-                            <button type="button" class="button is-success is-large is-fullwidth "
-                                    onclick="Bulma('#modalMailPedidos').modal().open();">
-                                <span class="icon">
-                                    <i class="fa-solid fa-paper-plane"></i>
-                                </span>
-                                <span>Enviar Pedidos Novos</span>
-                            </button>
-                        </p>
-                        <br />
-                        <div class="b-table">
-                            <div class="table-wrapper has-mobile-cards">
-                                <table class="table is-hoverable is-fullwidth">
-                                    <thead>
-                                        <tr>
-                                            <th></th>
-                                            <th>
-                                                @Html.DisplayNameFor(model => model.FirstOrDefault()!.Referencia)
-                                            </th>
-                                            <th>
-                                                @Html.DisplayNameFor(model => model.FirstOrDefault()!.Descricao)
-                                            </th>
-                                            <th>
-                                                @Html.DisplayNameFor(model => model.FirstOrDefault()!.Quantidade)
-                                            </th>
-                                            <th>
-                                                @Html.DisplayNameFor(model => model.FirstOrDefault()!.Publicador!.Nome)
-                                            </th>
-                                            <th>
-                                                @Html.DisplayNameFor(model => model.FirstOrDefault()!.EstadoPedido!)
-                                            </th>
-                                            <th></th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        @foreach (var item in Model.Where(l => l.Tipo!.Id != 7))
-                                        {
-                                            <tr>
-                                                <td class="is-image-cell">
-                                                    <div class="image">
-                                                        <img src="@item.Imagem">
-                                                    </div>
-                                                </td>
-                                                <td data-label="@Html.DisplayNameFor(model => model.FirstOrDefault()!.Referencia)">
-                                                    <span>@item.Referencia</span>
-                                                </td>
-                                                <td data-label="@Html.DisplayNameFor(model => model.FirstOrDefault()!.Descricao)">
-                                                    <span>@item.Descricao</span>
-                                                </td>
-                                                <td data-label="@Html.DisplayNameFor(model => model.FirstOrDefault()!.Quantidade)">
-                                                    <span>@item.Quantidade</span>
-                                                </td>
-                                                <td data-label="@Html.DisplayNameFor(model => model.FirstOrDefault()!.Publicador!.Nome)">
-                                                    <span>@item.Publicador!.Nome</span>
-                                                </td>
-                                                <td data-label="@Html.DisplayNameFor(model => model.FirstOrDefault()!.EstadoPedido!)">
-                                                    <span>@item.EstadoPedido!.Descricao</span>
-                                                </td>
-                                                <td class="is-actions-cell">
-                                                    <div class="field has-addons is-pulled-right is-flex-wrap-nowrap" style="width:100%">
-                                                        <button class="button is-success is-fullwidth is-large mr-1" onclick="Bulma('#modalAtualizarEstado').modal().open();document.getElementById('txtEstado').value = '@item.EstadoPedido.Descricao'; document.getElementById('txtQtdPedido').value = @item.Quantidade;document.getElementById('txtHiddenStamp').value = '@item.Stamp'">
-                                                            <i class="fa-solid fa-arrows-rotate"></i>
-                                                        </button>
-                                                        <button class="button is-danger is-fullwidth is-large"
-                                                                onclick="ConfirmApagarEspecial('@item.Stamp')">
-                                                            <i class="fas fa-trash-can"></i>
-                                                        </button>
-                                                    </div>
-                                                </td>
-                                            </tr>
-                                        }
-                                    </tbody>
-                                </table>
-                            </div>
-                        </div>
-                    }
-                </li>
-            </ul>
-        </div>
-    </div>
-</div>
-
-
-<div id="modalPedidoPublicacoes" class="modal">
+<div id="modalPedidoEspecial" class="modal" role="dialog" aria-modal="true" aria-labelledby="tPE">
     <div class="modal-background"></div>
     <div class="modal-card">
         <header class="modal-card-head">
-            <p class="modal-card-title">
-                <span class="icon">
-                    <i class="fas fa-circle-plus"></i>
-                </span>
-                <span>Pedido - Publicações</span>
-            </p>
-            <button type="button" class="delete" aria-label="close"></button>
+            <p class="modal-card-title" id="tPE"><span class="icon"><i class="fa-solid fa-circle-plus"></i></span><span>Pedir publicação</span></p>
+            <button type="button" class="delete" aria-label="Fechar" data-close></button>
         </header>
         <section class="modal-card-body">
-            <div class="modal-body">
-                <div class="field">
-                    <label class="label">Publicador</label>
-                    <div class="field has-addons">
-                        <div class="control has-icons-left" style="width:100%">
-                            <span class="select is-fullwidth">
-                                <select class="select" id="txtIdPublicador" style="height: auto"
-                                        asp-items="@(new SelectList(@ViewBag.Publicadores, "Value", "Text"))">
-                                </select>
-                            </span>
-                            <span class="icon is-small is-left">
-                                <i class="fa-solid fa-user-tie"></i>
-                            </span>
-                        </div>
-                        <div class="control">
-                            <button type="button" class="button is-info disable-dbl-tap-zoom"
-                                    onclick="document.getElementById('txtIdPublicador').value=0;">
-                                <span class="icon">
-                                    <i class="fas fa-shop"></i>
-                                </span>
-                            </button>
-                        </div>
-                    </div>
+            <div class="field">
+                <label class="label" for="txtIdPublicador">Publicador</label>
+                <div class="select is-fullwidth">
+                    <select id="txtIdPublicador">
+                        <option value="" disabled selected>Escolha o publicador…</option>
+                        <option value="0">Loja (sem publicador)</option>
+                        @foreach (var p in publicadores) { <option value="@p.Value">@p.Text</option> }
+                    </select>
                 </div>
+            </div>
+            <div class="field">
+                <label class="label" for="txtPub">Publicação</label>
+                <div><input type="text" class="input" id="txtPub" placeholder="Escreva a referência ou o nome"></div>
                 <input type="hidden" id="txtPubStamp" />
-                <div class="field">
-                    <label class="label">Publicação</label>
-                    <p class="control ">
-                        <input type="text" class="input" id="txtPub">
-                    </p>
-                </div>
-                <div class="field">
-                    <label class="label">Quantidade</label>
-                    <div class="field has-addons">
-                        <div class="control">
-                            <button type="button" class="button is-danger disable-dbl-tap-zoom"
-                                    onclick="document.getElementById('txtQtd').value = parseInt(document.getElementById('txtQtd').value) - 1">
-                                <span class="icon">
-                                    <i class="fas fa-minus"></i>
-                                </span>
-                            </button>
-                        </div>
-                        <div class="control" style="width:100%">
-                            <input type="number" class="input has-text-centered" min="1" id="txtQtd" value="1">
-                        </div>
-                        <div class="control">
-                            <button type="button" class="button is-success disable-dbl-tap-zoom"
-                                    onclick="document.getElementById('txtQtd').value = parseInt(document.getElementById('txtQtd').value) + 1">
-                                <span class="icon">
-                                    <i class="fas fa-plus"></i>
-                                </span>
-                            </button>
-                        </div>
-                    </div>
-                </div>
+            </div>
+            <div class="field">
+                <label class="label" for="txtQtd">Quantidade</label>
+                <partial name="_Stepper" model='("txtQtd", 1, 1)' />
             </div>
         </section>
         <footer class="modal-card-foot">
-            <div class="buttons is-centered" style="width:100%">
-            <a class="button is-info is-large is-fullwidth"
-               onclick="CriarPedidoEspecial(document.getElementById('txtPubStamp').value, document.getElementById('txtQtd').value, document.getElementById('txtIdPublicador').value, this)">
-                <span class="icon">
-                    <i class="fa-regular fa-floppy-disk"></i>
-                </span>
-                <span>
-                    Guardar
-                </span>
-            </a>
-            <button type="button" class="button is-large is-fullwidth is-danger"
-                    onclick="Bulma('#modalPedidoPublicacoes').modal().close();" href="javascript:;">
-                <span class="icon">
-                    <i class="fa-regular fa-circle-xmark"></i>
-                </span>
-                <span>Fechar</span>
-            </button>
-            </div>
+            <button type="button" class="button" data-close>Cancelar</button>
+            <button type="button" class="button is-info" data-action="criarEsp" data-submit><span class="icon"><i class="fa-regular fa-floppy-disk"></i></span><span>Guardar</span></button>
         </footer>
     </div>
 </div>
 
-<div id="modalPedidoPeriodicos" class="modal">
+<div id="modalPedidoPeriodico" class="modal" role="dialog" aria-modal="true" aria-labelledby="tPP">
     <div class="modal-background"></div>
     <div class="modal-card">
         <header class="modal-card-head">
-            <p class="modal-card-title">
-                <span class="icon">
-                    <i class="fas fa-circle-plus"></i>
-                </span>
-                <span>Pedido - Periódicos</span>
-            </p>
-            <button type="button" class="delete" aria-label="close"></button>
+            <p class="modal-card-title" id="tPP"><span class="icon"><i class="fa-solid fa-circle-plus"></i></span><span>Pedir periódico</span></p>
+            <button type="button" class="delete" aria-label="Fechar" data-close></button>
         </header>
         <section class="modal-card-body">
-            <div class="modal-body">
-                <div class="field">
-                    <label class="label">Publicador</label>
-                    <p class="control has-icons-left">
-                        <span class="select is-fullwidth">
-                            <select class="select" id="txtIdPublicador2" style="height: auto"
-                                    asp-items="@(new SelectList(@ViewBag.Publicadores, "Value", "Text"))">
-                            </select>
-                        </span>
-                        <span class="icon is-small is-left">
-                            <i class="fa-solid fa-user-tie"></i>
-                        </span>
-                    </p>
+            <div class="field">
+                <label class="label" for="txtIdPublicador2">Publicador</label>
+                <div class="select is-fullwidth">
+                    <select id="txtIdPublicador2">
+                        <option value="" disabled selected>Escolha o publicador…</option>
+                        @foreach (var p in publicadores) { <option value="@p.Value">@p.Text</option> }
+                    </select>
                 </div>
-                <div class="field">
-                    <div class="control" style="width:100%">
-                        <label class="label" l>Escolha a publicação:</label>
-                        <p class="control has-icons-left">
-                            <span class="select is-fullwidth" style="width:100%">
-                                <select class="select" id="periodico" style="height: auto"
-                                        asp-items="@(new SelectList(@ViewBag.Periodicos, "Value", "Text"))">
-                                </select>
-                            </span>
-                            <span class="icon is-small is-left">
-                                <i class="fas fa-newspaper"></i>
-                            </span>
-                        </p>
-                    </div>
+            </div>
+            <div class="field">
+                <label class="label" for="periodico">Publicação</label>
+                <div class="select is-fullwidth">
+                    <select id="periodico" asp-items="@(new SelectList(ViewBag.Periodicos, "Value", "Text"))"></select>
                 </div>
-                <div class="field">
-                    <label class="label">Quantidade</label>
-                    <div class="field has-addons">
-                        <div class="control">
-                            <button type="button" class="button is-danger disable-dbl-tap-zoom"
-                                    onclick="document.getElementById('txtQtdPeriodico').value = parseInt(document.getElementById('txtQtdPeriodico').value) - 1">
-                                <span class="icon">
-                                    <i class="fas fa-minus"></i>
-                                </span>
-                            </button>
-                        </div>
-                        <div class="control" style="width:100%">
-                            <input type="number" class="input has-text-centered" min="1" id="txtQtdPeriodico" value="1">
-                        </div>
-                        <div class="control">
-                            <button type="button" class="button is-success disable-dbl-tap-zoom"
-                                    onclick="document.getElementById('txtQtdPeriodico').value = parseInt(document.getElementById('txtQtdPeriodico').value) + 1">
-                                <span class="icon">
-                                    <i class="fas fa-plus"></i>
-                                </span>
-                            </button>
-                        </div>
-                    </div>
-                </div>
+            </div>
+            <div class="field">
+                <label class="label" for="txtQtdPeriodico">Quantidade</label>
+                <partial name="_Stepper" model='("txtQtdPeriodico", 1, 1)' />
             </div>
         </section>
         <footer class="modal-card-foot">
-            <div class="buttons is-centered" style="width:100%">
-            <a class="button is-info is-large is-fullwidth"
-               onclick="CriarPedidoPeriodico(document.getElementById('periodico').value, document.getElementById('txtQtdPeriodico').value, document.getElementById('txtIdPublicador2').value, this)">
-                <span class="icon">
-                    <i class="fa-regular fa-floppy-disk"></i>
-                </span>
-                <span>Guardar</span>
-            </a>
-            <button type="button" class="button is-large is-fullwidth is-danger"
-                    onclick="Bulma('#modalPedidoPeriodicos').modal().close();" href="javascript:;">
-                <span class="icon">
-                    <i class="fa-regular fa-circle-xmark"></i>
-                </span>
-                <span>Fechar</span>
-            </button>
-            </div>
+            <button type="button" class="button" data-close>Cancelar</button>
+            <button type="button" class="button is-info" data-action="criarPer" data-submit><span class="icon"><i class="fa-regular fa-floppy-disk"></i></span><span>Guardar</span></button>
         </footer>
     </div>
 </div>
 
-<div class="modal" id="ModalConfirmApagarPeriodico">
+<div id="modalEstado" class="modal" role="dialog" aria-modal="true" aria-labelledby="tEst">
     <div class="modal-background"></div>
     <div class="modal-card">
         <header class="modal-card-head">
-            <p class="modal-card-title">
-                <span class="icon">
-                    <i class="fas fa-trash-can"></i>
-                </span>
-                <span>Apagar Pedido Periodico</span>
-            </p>
+            <p class="modal-card-title" id="tEst"><span class="icon"><i class="fa-solid fa-pen"></i></span><span>Atualizar pedido</span></p>
+            <button type="button" class="delete" aria-label="Fechar" data-close></button>
         </header>
         <section class="modal-card-body">
-            <div class="modal-body">
-                <p>Tem a certeza que deseja apagar este pedido periodico?</p>
-            </div>
-        </section>
-        <footer class="modal-card-foot">
-            <div class="buttons is-centered" style="width:100%">
-            <button class="button is-danger is-fullwidth is-large"
-                    onclick="ApagarPeriodico(document.getElementById('txtHiddenStamp').value, this);">
-                <span class="icon">
-                    <i class="fas fa-trash-can"></i>
-                </span>
-                <span>Confirmar</span>
-            </button>
-            <button class="button is-fullwidth is-large" onclick="Bulma('#ModalConfirmApagarPeriodico').modal().close();">
-                <span class="icon">
-                    <i class="fa-solid fa-circle-xmark"></i>
-                </span>
-                <span>Não</span>
-            </button>
-            </div>
-        </footer>
-    </div>
-</div>
-
-<div class="modal" id="ModalConfirmApagarEspecial">
-    <div class="modal-background"></div>
-    <div class="modal-card">
-        <header class="modal-card-head">
-            <p class="modal-card-title">
-                <span class="icon">
-                    <i class="fas fa-trash-can"></i>
-                </span>
-                <span>Apagar Pedido Especial</span>
-            </p>
-        </header>
-        <section class="modal-card-body">
-            <div class="modal-body">
-                <p>Tem a certeza que deseja apagar este pedido especial?</p>
-            </div>
-        </section>
-        <footer class="modal-card-foot">
-            <div class="buttons is-centered" style="width:100%">
-            <button class="button is-danger is-fullwidth is-large"
-                    onclick="ApagarEspecial(document.getElementById('txtHiddenStamp').value, this);">
-                <span class="icon">
-                    <i class="fas fa-trash-can"></i>
-                </span>
-                <span>Confirmar</span>
-            </button>
-            <button class="button is-fullwidth is-large" onclick="Bulma('#ModalConfirmApagarEspecial').modal().close();">
-                <span class="icon">
-                    <i class="fa-solid fa-circle-xmark"></i>
-                </span>
-                <span>Não</span>
-            </button>
-            </div>
-        </footer>
-    </div>
-</div>
-
-<div id="modalAtualizarEstado" class="modal">
-    <div class="modal-background"></div>
-    <div class="modal-card">
-        <header class="modal-card-head">
-            <p class="modal-card-title">
-                <span class="icon">
-                    <i class="fa-solid fa-pencil"></i>
-                </span>
-                <span>Pedido - Publicações</span>
-            </p>
-            <button type="button" class="delete" aria-label="close"></button>
-        </header>
-        <section class="modal-card-body">
-            <div class="modal-body">
-                <div class="field">
-                    <label class="label">Estado</label>
-                    <div class="field has-addons">
-                        <div class="control has-icons-left" style="width:100%">
-                            <span class="select is-fullwidth">
-                                <select class="select" id="txtEstado" style="height: auto"
-                                        asp-items="@(new SelectList(@ViewBag.Estados, "Value", "Text"))">
-                                </select>
-                            </span>
-                            <span class="icon is-small is-left">
-                                <i class="fa-solid fa-circle-check"></i>
-                            </span>
-                        </div>
-                        <div class="field has-addons has-addons-right">
-                            <p class="control">
-                                <button type="button" class="button is-warning disable-dbl-tap-zoom"
-                                        onclick="document.getElementById('txtEstado').selectedIndex=0;">
-                                    <span class="icon">
-                                        <i class="fa-solid fa-clock"></i>
-                                    </span>
-                                </button>
-                            </p>
-                            <p class="control">
-                                <button type="button" class="button is-info disable-dbl-tap-zoom"
-                                        onclick="document.getElementById('txtEstado').selectedIndex=1;">
-                                    <span class="icon">
-                                        <i class="fa-solid fa-envelope"></i>
-
-                                    </span>
-                                </button>
-                            </p>
-                            <p class="control">
-                                <button type="button" class="button is-primary disable-dbl-tap-zoom"
-                                        onclick="document.getElementById('txtEstado').selectedIndex=2;">
-                                    <span class="icon">
-                                        <i class="fa-solid fa-truck-fast"></i>
-                                    </span>
-                                </button>
-                            </p>
-                            <p class="control">
-                                <button type="button" class="button is-success disable-dbl-tap-zoom"
-                                        onclick="document.getElementById('txtEstado').selectedIndex=3;">
-                                    <span class="icon">
-                                        <i class="fa-solid fa-check-double"></i>
-                                    </span>
-                                </button>
-                            </p>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="field">
-                    <label class="label">Quantidade</label>
-                    <div class="field has-addons">
-                        <div class="control">
-                            <button type="button" class="button is-danger disable-dbl-tap-zoom"
-                                    onclick="document.getElementById('txtQtdPedido').value = parseInt(document.getElementById('txtQtdPedido').value) - 1">
-                                <span class="icon">
-                                    <i class="fas fa-minus"></i>
-                                </span>
-                            </button>
-                        </div>
-                        <div class="control" style="width:100%">
-                            <input type="number" class="input has-text-centered" min="1" id="txtQtdPedido" value="1">
-                        </div>
-                        <div class="control">
-                            <button type="button" class="button is-success disable-dbl-tap-zoom"
-                                    onclick="document.getElementById('txtQtdPedido').value = parseInt(document.getElementById('txtQtdPedido').value) + 1">
-                                <span class="icon">
-                                    <i class="fas fa-plus"></i>
-                                </span>
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </section>
-        <footer class="modal-card-foot">
-            <div class="buttons is-centered" style="width:100%">
-            <a class="button is-info is-large is-fullwidth"
-               onclick="AtualizarPedidoEspecial(document.getElementById('txtHiddenStamp').value, document.getElementById('txtQtdPedido').value, document.getElementById('txtEstado')[document.getElementById('txtEstado').selectedIndex].text, this)">
-                <span class="icon">
-                    <i class="fa-regular fa-floppy-disk"></i>
-                </span>
-                <span>
-                    Guardar
-                </span>
-            </a>
-            <button type="button" class="button is-large is-fullwidth is-danger"
-                    onclick="Bulma('#modalAtualizarEstado').modal().close();" href="javascript:;">
-                <span class="icon">
-                    <i class="fa-regular fa-circle-xmark"></i>
-                </span>
-                <span>Fechar</span>
-            </button>
-            </div>
-        </footer>
-    </div>
-</div>
-
-<div class="modal" id="modalMailPedidos">
-    <div class="modal-background"></div>
-    <div class="modal-card">
-        <header class="modal-card-head">
-            <p class="modal-card-title">
-                <span class="icon">
-                    <i class="fas fa-paper-plane"></i>
-                </span>
-                <span>Enviar Especiais</span>
-            </p>
-        </header>
-        <section class="modal-card-body">
-            <div class="modal-body">
-                <p>Tem a certeza que deseja enviar todos os pedidos pendentes para o email indicado abaixo?</p>
-                &nbsp;                <div class="control" style="width:100%">
-                    <input type="email" class="input has-text-centered" id="txtEmailPedidos">
-                </div>
-            </div>
-        </section>
-        <footer class="modal-card-foot">
-            <div class="buttons is-centered" style="width:100%">
-            <button class="button is-info is-fullwidth is-large"
-                    onclick="EnviarEmailPedidosPendentes(document.getElementById('txtEmailPedidos').value, this);">
-                <span class="icon">
-                    <i class="fas fa-paper-plane"></i>
-                </span>
-                <span>Enviar</span>
-            </button>
-            <button class="button is-fullwidth is-large" onclick="Bulma('#modalMailPedidos').modal().close();">
-                <span class="icon">
-                    <i class="fa-solid fa-circle-xmark"></i>
-                </span>
-                <span>Não</span>
-            </button>
-            </div>
-        </footer>
-    </div>
-</div>
-
-<div class="modal" id="modalMailPeriodicos">
-    <div class="modal-background"></div>
-    <div class="modal-card">
-        <header class="modal-card-head">
-            <p class="modal-card-title">
-                <span class="icon">
-                    <i class="fas fa-paper-plane"></i>
-                </span>
-                <span>Enviar Periodicos</span>
-            </p>
-        </header>
-        <section class="modal-card-body">
-            <div class="modal-body">
-                <p>Tem a certeza que deseja enviar os pedidos periodicos para o email indicado abaixo?</p>
-                &nbsp;
-                <div class="field">
-                    <div class="control" style="width:100%">
-                        <label class="label" l>Escolha a publicação:</label>
-                        <p class="control has-icons-left">
-                            <span class="select is-fullwidth" style="width:100%">
-                                <select class="select" id="mailperiodico" style="height: auto"
-                                        asp-items="@(new SelectList(@ViewBag.Periodicos, "Value", "Text"))">
-                                    <option value="0">Todos</option>
-                                </select>
-                            </span>
-                            <span class="icon is-small is-left">
-                                <i class="fas fa-newspaper"></i>
-                            </span>
-                        </p>
-                    </div>
-                </div>
-                <div class="control" style="width:100%">
-                    <input type="email" class="input has-text-centered" id="txtEmailPeriodicos">
-                </div>
-            </div>
-        </section>
-        <footer class="modal-card-foot">
-            <div class="buttons is-centered" style="width:100%">
-            <button class="button is-info is-fullwidth is-large"
-                    onclick="EnviarEmailPedidosPeriodicos(document.getElementById('txtEmailPeriodicos').value, document.getElementById('mailperiodico').value, this);">
-                <span class="icon">
-                    <i class="fas fa-paper-plane"></i>
-                </span>
-                <span>Enviar</span>
-            </button>
-            <button class="button is-fullwidth is-large" onclick="Bulma('#modalMailPeriodicos').modal().close();">
-                <span class="icon">
-                    <i class="fa-solid fa-circle-xmark"></i>
-                </span>
-                <span>Não</span>
-            </button>
-            </div>
-        </footer>
-    </div>
-</div>
-
-<input id="txtHiddenStamp" hidden />
-
-<script>
-    function ConfirmApagarPeriodico(id) {
-        document.getElementById('txtHiddenStamp').value = id;
-        Bulma('#ModalConfirmApagarPeriodico').modal().open();
-    }
-
-    function ApagarPeriodico(id, btn) {
-        btn.classList.add('is-loading');
-        $.ajax({
-            url: '/Literatura/Periodico/',
-            data: { "id": id },
-            type: "DELETE",
-            success: function (data) {
-                window.location.reload();
-            },
-            error: function (data) {
-                notifyError('Ocorreu um erro ao apagar essa publicação!');
-            },
-            failure: function (data) {
-                notifyError('Falha ao apagar essa publicação!');
-            },
-            complete: function (xhr, status) {
-                btn.classList.remove('is-loading');
-            }
-        });
-    }
-
-    function ConfirmApagarEspecial(id) {
-        document.getElementById('txtHiddenStamp').value = id;
-        Bulma('#ModalConfirmApagarEspecial').modal().open();
-    }
-    
-
-    function ApagarEspecial(id, btn) {
-        btn.classList.add('is-loading');
-        $.ajax({
-            url: '/Literatura/Pedido/',
-            data: { "id": id },
-            type: "DELETE",
-            success: function (data) {
-                window.location.reload();
-            },
-            error: function (data) {
-                notifyError('Ocorreu um erro ao apagar essa publicação!');
-            },
-            failure: function (data) {
-                notifyError('Falha ao apagar essa publicação!');
-            },
-            complete: function (xhr, status) {
-                btn.classList.remove('is-loading');
-            }
-        });
-    }
-
-    $(function () {
-        $("#txtPub").autocomplete({
-            source: function (request, response) {
-                $.ajax({
-                    url: '/Literatura/Literaturas/',
-                    data: { "filtro": request.term, "periodico": false },
-                    type: "GET",
-                    success: function (data) {
-                        response($.map(data, function (item) {
-                            return {
-                                label: "[" + item.referencia + "] " + item.descricao,
-                                val: item.stamp
-                            };
-                        }))
-                    },
-                    error: function (response) {
-                        notifyError('Ocorreu um erro ao obter as publicações!');
-                    },
-                    failure: function (response) {
-                        notifyError('Falha ao obter as publicações');
+            <p class="modal-body-text mb-4" id="estNome"></p>
+            <div class="field">
+                <span class="label">Estado</span>
+                <div class="chips" id="chipsEstado" role="group" aria-label="Estado do pedido" style="flex-wrap:wrap">
+                    @for (var i = 0; i < estados.Count; i++)
+                    {
+                        <button type="button" class="chip" data-estado="@estados[i].Value" aria-pressed="false">
+                            <i class="fa-solid fa-@(iconesEstado[Math.Min(i, iconesEstado.Length - 1)]) mr-1"></i>@estados[i].Text
+                        </button>
                     }
-                });
-            },
-            select: function (e, i) {
-                $("#txtPubStamp").val(i.item.val);
-            },
-            minLength: 1
-        }).css('z-index', 50);
+                </div>
+            </div>
+            <div class="field">
+                <label class="label" for="txtQtdPedido">Quantidade</label>
+                <partial name="_Stepper" model='("txtQtdPedido", 1, 1)' />
+            </div>
+        </section>
+        <footer class="modal-card-foot">
+            <button type="button" class="button" data-close>Cancelar</button>
+            <button type="button" class="button is-info" data-action="guardarEstado" data-submit><span class="icon"><i class="fa-regular fa-floppy-disk"></i></span><span>Guardar</span></button>
+        </footer>
+    </div>
+</div>
+
+<div id="modalMailPedidos" class="modal" role="dialog" aria-modal="true" aria-labelledby="tMP">
+    <div class="modal-background"></div>
+    <div class="modal-card">
+        <header class="modal-card-head">
+            <p class="modal-card-title" id="tMP"><span class="icon"><i class="fa-solid fa-paper-plane"></i></span><span>Enviar pedidos especiais</span></p>
+            <button type="button" class="delete" aria-label="Fechar" data-close></button>
+        </header>
+        <section class="modal-card-body">
+            <p class="modal-body-text mb-4">Os pedidos <strong>pendentes</strong> serão enviados por email e passam ao estado «Enviado Email».</p>
+            <div class="field">
+                <label class="label" for="txtEmailPedidos">Email de destino</label>
+                <input type="email" class="input" id="txtEmailPedidos" data-email autocomplete="email">
+            </div>
+        </section>
+        <footer class="modal-card-foot">
+            <button type="button" class="button" data-close>Cancelar</button>
+            <button type="button" class="button is-info" data-action="enviarEsp" data-submit><span class="icon"><i class="fa-solid fa-paper-plane"></i></span><span>Enviar</span></button>
+        </footer>
+    </div>
+</div>
+
+<div id="modalMailPeriodicos" class="modal" role="dialog" aria-modal="true" aria-labelledby="tMPer">
+    <div class="modal-background"></div>
+    <div class="modal-card">
+        <header class="modal-card-head">
+            <p class="modal-card-title" id="tMPer"><span class="icon"><i class="fa-solid fa-paper-plane"></i></span><span>Enviar pedidos de periódicos</span></p>
+            <button type="button" class="delete" aria-label="Fechar" data-close></button>
+        </header>
+        <section class="modal-card-body">
+            <div class="field">
+                <label class="label" for="mailperiodico">Publicação</label>
+                <div class="select is-fullwidth">
+                    <select id="mailperiodico">
+                        <option value="0">Todas</option>
+                        @foreach (var p in (IEnumerable<SelectListItem>)ViewBag.Periodicos) { <option value="@p.Value">@p.Text</option> }
+                    </select>
+                </div>
+            </div>
+            <div class="field">
+                <label class="label" for="txtEmailPeriodicos">Email de destino</label>
+                <input type="email" class="input" id="txtEmailPeriodicos" data-email autocomplete="email">
+            </div>
+        </section>
+        <footer class="modal-card-foot">
+            <button type="button" class="button" data-close>Cancelar</button>
+            <button type="button" class="button is-info" data-action="enviarPer" data-submit><span class="icon"><i class="fa-solid fa-paper-plane"></i></span><span>Enviar</span></button>
+        </footer>
+    </div>
+</div>
+
+@section Scripts {
+<script>
+    const M = id => App.modal(id);
+    const pesq = App.pesquisaPublicacao('#txtPub', '#txtPubStamp', false);
+    let atual = null, estadoSel = null;
+
+    // Lembra o último email usado neste dispositivo (conveniência; falha em silêncio).
+    const guardarEmail = v => { try { localStorage.setItem('emailPedidos', v); } catch (e) { } };
+    try { const e = localStorage.getItem('emailPedidos'); if (e) App.$$('[data-email]').forEach(i => i.value = e); } catch (e) { }
+
+    const recarregar = () => App.refresh('#regiao');
+
+    // Filtro por publicação (client-side). Delegado, porque a região é substituída após cada ação.
+    document.addEventListener('change', e => {
+        if (e.target.id !== 'filtrop') return;
+        App.$$('#listaPer .item').forEach(i => i.classList.toggle('is-hidden', e.target.value !== '0' && i.dataset.ref !== e.target.value));
     });
 
-    function CriarPedidoPeriodico(referencia, qtd, idpub, btn) {
-        btn.classList.add('is-loading');
-        $.ajax({
-            url: '/Literatura/Periodico/',
-            data: { "referencia": referencia, "idpub": idpub, "qtd": qtd },
-            type: "POST",
-            success: function (data) {
-                notify('Pedido periodico criada com sucesso!');
-                window.location.reload();
-            },
-            error: function (response) {
-                notifyError('Ocorreu um erro ao criar o pedido periodico!');
-            },
-            failure: function (response) {
-                notifyError('Falha ao criar o pedido periodico!');
-            },
-            complete: function (xhr, status) {
-                btn.classList.remove('is-loading');
-            }
-        });
-    }
+    App.on('apagarPer', async btn => {
+        const it = btn.closest('.item');
+        if (!await App.confirm({ title: 'Apagar pedido', text: 'Apagar o pedido de «' + App.$('.name', it).textContent + '»?', ok: 'Apagar' })) return;
+        App.run(btn, async () => { await App.api('DELETE', '/Literatura/Periodico/', { id: it.dataset.stamp }); await recarregar(); notify('Pedido apagado.'); },
+            'Não foi possível apagar o pedido.');
+    });
 
-    function CriarPedidoEspecial(stamp, qtd, idpub, btn) {
-        btn.classList.add('is-loading');
-        $.ajax({
-            url: '/Literatura/Pedido/',
-            data: { "stamp": stamp, "idpub": idpub, "qtd": qtd },
-            type: "POST",
-            success: function (data) {
-                notify('Pedido especial criada com sucesso!');
-                window.location.reload();
-            },
-            error: function (response) {
-                notifyError('Ocorreu um erro ao criar o pedido especial!');
-            },
-            failure: function (response) {
-                notifyError('Falha ao criar o pedido especial!');
-            },
-            complete: function (xhr, status) {
-                btn.classList.remove('is-loading');
-            }
-        });
-    }
+    App.on('apagarEsp', async btn => {
+        const it = btn.closest('.item');
+        if (!await App.confirm({ title: 'Apagar pedido', text: 'Apagar o pedido especial de «' + App.$('.name', it).textContent + '»?', ok: 'Apagar' })) return;
+        App.run(btn, async () => { await App.api('DELETE', '/Literatura/Pedido/', { id: it.dataset.stamp }); await recarregar(); notify('Pedido apagado.'); },
+            'Não foi possível apagar o pedido.');
+    });
 
-    function AtualizarPedidoEspecial(stamp, qtd, estado, btn) {
-        btn.classList.add('is-loading');
-        $.ajax({
-            url: '/Literatura/Pedido/',
-            data: { "stamp": stamp, "qtd": qtd, "estado": estado },
-            type: "PUT",
-            success: function (data) {
-                notify('Pedido especial atualizado com sucesso!');
-                window.location.reload();
-            },
-            error: function (response) {
-                notifyError('Ocorreu um erro ao atualizado o pedido especial!');
-            },
-            failure: function (response) {
-                notifyError('Falha ao atualizado o pedido especial!');
-            },
-            complete: function (xhr, status) {
-                btn.classList.remove('is-loading');
-            }
-        });
-    }
+    App.on('criarEsp', btn => App.run(btn, async () => {
+        const pub = App.$('#txtIdPublicador').value, stamp = App.$('#txtPubStamp').value, qtd = App.lerInt('#txtQtd');
+        if (pub === '') { notifyError('Escolha o publicador.'); return; }
+        if (!stamp) { notifyError('Escolha uma publicação da lista de sugestões.'); return; }
+        if (qtd < 1) { notifyError('Indique uma quantidade positiva.'); return; }
+        await App.api('POST', '/Literatura/Pedido/', { stamp: stamp, idpub: pub, qtd: qtd });
+        M('modalPedidoEspecial').close(); pesq.limpar(); App.$('#txtQtd').value = 1;
+        await recarregar(); notify('Pedido registado.');
+    }, 'Não foi possível registar o pedido.'));
 
-    function EnviarEmailPedidosPendentes(email, btn) {
-        btn.classList.add('is-loading');
-        $.ajax({
-            url: '/Literatura/Pedidos/',
-            data: { "email": email },
-            type: "POST",
-            success: function (data) {
-                notify('Pedidos especiais enviados com sucesso!');
-                window.location.reload();
-            },
-            error: function (response) {
-                notifyError('Ocorreu um erro ao enviar os pedidos especiais!');
-            },
-            failure: function (response) {
-                notifyError('Falha ao enviar os pedidos especiais!');
-            },
-            complete: function (xhr, status) {
-                btn.classList.remove('is-loading');
-            }
-        });
-    }
+    App.on('criarPer', btn => App.run(btn, async () => {
+        const pub = App.$('#txtIdPublicador2').value, qtd = App.lerInt('#txtQtdPeriodico');
+        if (pub === '') { notifyError('Escolha o publicador.'); return; }
+        if (qtd < 1) { notifyError('Indique uma quantidade positiva.'); return; }
+        await App.api('POST', '/Literatura/Periodico/', { referencia: App.$('#periodico').value, idpub: pub, qtd: qtd });
+        M('modalPedidoPeriodico').close(); App.$('#txtQtdPeriodico').value = 1;
+        await recarregar(); notify('Pedido registado.');
+    }, 'Não foi possível registar o pedido.'));
 
-    function EnviarEmailPedidosPeriodicos(email, publicacao, btn) {
-        btn.classList.add('is-loading');
-        $.ajax({
-            url: '/Literatura/Periodicos/' + publicacao,
-            data: { "email": email },
-            type: "POST",
-            success: function (data) {
-                notify('Pedidos periodicos enviados com sucesso!');
-                window.location.reload();
-            },
-            error: function (response) {
-                notifyError('Ocorreu um erro ao enviar os pedidos periodicos!');
-            },
-            failure: function (response) {
-                notifyError('Falha ao enviar os pedidos periodicos!');
-            },
-            complete: function (xhr, status) {
-                btn.classList.remove('is-loading');
-            }
-        });
+    function marcarEstado(v) {
+        estadoSel = v;
+        App.$$('#chipsEstado .chip').forEach(c => c.setAttribute('aria-pressed', c.dataset.estado === v));
     }
+    App.on('editarEsp', btn => {
+        atual = btn.closest('.item');
+        App.$('#estNome').textContent = App.$('.name', atual).textContent + ' · ' + App.$('.meta span:nth-child(2)', atual).textContent.trim();
+        App.$('#txtQtdPedido').value = atual.dataset.qtd;
+        marcarEstado(atual.dataset.estado);
+        M('modalEstado').open();
+    });
+    document.getElementById('chipsEstado').addEventListener('click', e => { const c = e.target.closest('.chip'); if (c) marcarEstado(c.dataset.estado); });
+
+    App.on('guardarEstado', btn => App.run(btn, async () => {
+        if (!estadoSel) { notifyError('Escolha o estado.'); return; }
+        const qtd = App.lerInt('#txtQtdPedido'); if (qtd < 1) { notifyError('Indique uma quantidade positiva.'); return; }
+        await App.api('PUT', '/Literatura/Pedido/', { stamp: atual.dataset.stamp, qtd: qtd, estado: estadoSel });
+        M('modalEstado').close(); await recarregar(); notify('Pedido atualizado.');
+    }, 'Não foi possível atualizar o pedido.'));
+
+    App.on('enviarEsp', btn => App.run(btn, async () => {
+        const email = App.$('#txtEmailPedidos').value.trim(); if (!email) { notifyError('Indique o email de destino.'); return; }
+        await App.api('POST', '/Literatura/Pedidos/', { email: email });
+        guardarEmail(email); M('modalMailPedidos').close(); await recarregar(); notify('Pedidos especiais enviados.');
+    }, 'Não foi possível enviar os pedidos especiais.'));
+
+    App.on('enviarPer', btn => App.run(btn, async () => {
+        const email = App.$('#txtEmailPeriodicos').value.trim(); if (!email) { notifyError('Indique o email de destino.'); return; }
+        await App.api('POST', '/Literatura/Periodicos/' + App.$('#mailperiodico').value, { email: email });
+        guardarEmail(email); M('modalMailPeriodicos').close(); notify('Pedidos de periódicos enviados.');
+    }, 'Não foi possível enviar os pedidos de periódicos.'));
 </script>
+}

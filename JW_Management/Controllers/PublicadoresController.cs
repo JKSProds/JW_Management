@@ -61,7 +61,7 @@ namespace JW_Management.Controllers
                 p.Password = pOriginal.Password;
             }
 
-            return _dbContext.AdicionarPublicador(p) ? RedirectToAction("Publicador", p.Id) : StatusCode(500);
+            return _dbContext.AdicionarPublicador(p) ? RedirectToAction("Publicador", new { id = p.Id }) : StatusCode(500);
         }
 
         [Authorize(Roles = "Admin, Assistente, Coordenador, Secretario, Servico")]

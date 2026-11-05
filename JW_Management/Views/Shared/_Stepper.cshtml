@@ -1,0 +1,7 @@
+@* Controlo de quantidade. Modelo: (id do input, valor inicial, mínimo). O comportamento está em app.js ([data-step]). *@
+@model (string Id, int Valor, int Min)
+<div class="stepper">
+    <button type="button" data-step="-1" aria-label="Diminuir"><i class="fa-solid fa-minus"></i></button>
+    <input type="number" class="input" id="@Model.Id" value="@Model.Valor" min="@Model.Min" inputmode="numeric" aria-label="Quantidade">
+    <button type="button" data-step="1" aria-label="Aumentar"><i class="fa-solid fa-plus"></i></button>
+</div>

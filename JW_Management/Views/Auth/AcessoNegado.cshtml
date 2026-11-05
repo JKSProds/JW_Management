@@ -1,12 +1,11 @@
 @{
     ViewData["Title"] = "Acesso negado";
 }
-<section class="section">
-    <div class="container">
-        <div class="box has-text-centered">
-            <h1 class="title">Acesso negado</h1>
-            <p>Não foi possível associar o seu utilizador a uma conta local. Contacte o administrador.</p>
-            <a class="button is-link mt-4" href="/Home/Login">Voltar</a>
-        </div>
+<div class="container" style="max-width:560px">
+    <div class="panel-card has-text-centered">
+        <span class="head-icon" style="margin:0 auto 1rem;background:var(--bad)"><i class="fa-solid fa-lock"></i></span>
+        <h1 class="title is-4">Acesso negado</h1>
+        <p class="subtitle is-6">Não foi possível associar o seu utilizador a uma conta local. Contacte o administrador.</p>
+        <a class="button is-info" href="/Home/Login">Voltar ao início de sessão</a>
     </div>
-</section>
+</div>

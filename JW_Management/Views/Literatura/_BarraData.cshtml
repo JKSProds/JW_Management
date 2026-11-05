@@ -1,0 +1,10 @@
+@* Seletor de dia. A troca de data atualiza só #regiao (ver script da vista). *@
+@{
+    var d = (DateOnly)ViewData["Data"]!;
+}
+<div class="toolbar" role="group" aria-label="Escolher dia">
+    <button type="button" class="button btn-icon" data-action="diaAnt" aria-label="Dia anterior"><i class="fa-solid fa-chevron-left"></i></button>
+    <input type="date" class="input" id="txtData" value="@d.ToString("yyyy-MM-dd")" style="width:auto" aria-label="Data">
+    <button type="button" class="button btn-icon" data-action="diaSeg" aria-label="Dia seguinte"><i class="fa-solid fa-chevron-right"></i></button>
+    <button type="button" class="button is-ghost" data-action="hoje">Hoje</button>
+</div>

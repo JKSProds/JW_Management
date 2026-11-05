@@ -1,0 +1,27 @@
+@* Navegação por dia e apagar movimentos, partilhado por Entradas e Saídas. Nada recarrega a página: só #regiao é substituída. *@
+<script>
+    (function () {
+        const inp = App.$('#txtData');
+        async function irPara(iso) {
+            if (!iso) return;
+            inp.value = iso;
+            const u = new URL(location.href); u.searchParams.set('data', iso);
+            history.replaceState(null, '', u);
+            try { await App.refresh('#regiao', u); } catch (e) { notifyError('Não foi possível obter os movimentos.'); }
+        }
+        const deslocar = n => { const d = new Date((inp.value || new Date().toISOString().slice(0, 10)) + 'T12:00:00'); d.setDate(d.getDate() + n); return d.toISOString().slice(0, 10); };
+        inp.addEventListener('change', () => irPara(inp.value));
+        App.on('diaAnt', () => irPara(deslocar(-1)));
+        App.on('diaSeg', () => irPara(deslocar(1)));
+        App.on('hoje', () => { const h = new Date(); irPara(new Date(h.getTime() - h.getTimezoneOffset() * 60000).toISOString().slice(0, 10)); });
+
+        App.on('apagarMov', async btn => {
+            const it = btn.closest('.item');
+            if (!await App.confirm({ title: 'Apagar movimento', text: 'Tem a certeza que deseja apagar este movimento?', ok: 'Apagar' })) return;
+            App.run(btn, async () => {
+                await App.api('DELETE', '/Literatura/Movimentos/', { stamp: it.dataset.stamp });
+                await App.refresh('#regiao'); notify('Movimento apagado.');
+            }, 'Não foi possível apagar o movimento.');
+        });
+    })();
+</script>
