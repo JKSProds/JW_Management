@@ -75,6 +75,13 @@ Publicadores > «Sincronizar com o Hourglass» (`HourglassSincronizador`, só le
 - Endpoints do Hourglass usados (GET): `scheduling/other/fm` (serviço de campo), `scheduling/fsmeetings/locations`, `scheduling/pw/schedule/{datas}`, `scheduling/pw/locations?disabled=true`; instantes do testemunho em UTC, convertidos para a hora de Lisboa.
 - Interface: Semanas (lista com progresso e filtros), Reunião (linhas com gravação automática e filtro «por atribuir»), Programa e PDF (substitui o Calendário), Discursos.
 
+## Revisão 10
+
+- PDF com cabeçalho único (faixa azul escura) nos três; serviço de campo com uma tabela por semana (fins de semana a amarelo claro). «Sistema sonoro» passou a «Áudio / Vídeo».
+- A importação de reuniões **substitui a semana** e só cria as designações que o Hourglass tem nessa semana (já não cria a reunião-base com todos os tipos). Partes sem ninguém entram «por atribuir». Os discursos deixaram de existir (página, menu e importação).
+- Cânticos em ordem (início, meio, fim); semanas de assembleia, congresso e memorial não têm cânticos.
+- Navbar: «Reuniões» é uma ligação direta. Início: «As minhas designações» das próximas semanas (`/Home/MinhasDesignacoes`).
+
 ## Minimizar refrescos de página
 
 Utilitários em `wwwroot/js/app.js` (sem dependências, usam `fetch` e delegação de eventos):

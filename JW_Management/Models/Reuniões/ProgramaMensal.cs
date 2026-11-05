@@ -45,7 +45,7 @@ public class ProgramaMensal
             new() { Titulo = "REUNIÃO DE FIM DE SEMANA", Faixa = true, Linhas = { L("wpr", "Presidente"), L("wor", "Orador"), L("wco", "Congregação"), L("wte", "Tema") } },
             new() { Titulo = "ESTUDO DE A SENTINELA", Linhas = { L("std", "Dirigente"), L("stl", "Leitor"), L("sto", "Oração final"), L("cwm", "Cânticos") } },
             new() { Titulo = "INDICADORES", Linhas = { L("ind1", R("ind1", "Receção")), L("ind2", R("ind2", "Auditório")), L("ind3", R("ind3", "Estacionamento")) } },
-            new() { Titulo = "SISTEMA SONORO", Linhas = { L("som", R("som", "Som")), L("mic", "Micros"), L("tri", R("tri", "Tribuna")) } },
+            new() { Titulo = "ÁUDIO / VÍDEO", Linhas = { L("som", R("som", "Som")), L("mic", "Micros"), L("tri", R("tri", "Tribuna")) } },
             new() { Titulo = "", Linhas = { L("limp", R("limp", "Limpeza")) } }
         };
     }

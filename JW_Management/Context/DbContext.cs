@@ -1317,6 +1317,27 @@
             return ExecutarQuery(sql);
         }
 
+        // Designações de um publicador em todas as semanas (para o «as minhas designações» do Início).
+        public List<Designacao> ObterDesignacoesPublicador(int idPub)
+        {
+            var res = new List<Designacao>();
+            var tipos = ObterTiposDesignacao();
+            using (Database db = _connectionString)
+            {
+                using var result = db.Query("SELECT * FROM r_designacoes WHERE IdPublicador=" + idPub + ";");
+                while (result.Read())
+                {
+                    res.Add(new Designacao()
+                    {
+                        Stamp = result["Stamp"], StampReuniao = result["StampReuniao"], SemanaReuniao = result["Semana"], NomeDesignacao = result["Designacao"],
+                        NMin = int.TryParse(result["Minutos"], out var m) ? m : 0, Local = result["Local"],
+                        TipoDesignacao = tipos.FirstOrDefault(t => t.Id.ToString() == result["IdTipo"]) ?? new TipoDesignacao { Descricao = result["Designacao"] }
+                    });
+                }
+            }
+            return res;
+        }
+
         // ---------- Programa mensal (documentos JSON em r_programa) ----------
         private static string EscSql(string? s) => (s ?? "").Replace("\\", "\\\\").Replace("'", "''");
 

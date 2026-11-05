@@ -785,3 +785,6 @@ input[type="date"].input, input[type="time"].input { appearance: none; -webkit-a
 .prog-tabela td.evento { background: #ffe28a; color: #664200; font-weight: 700; }
 .rev-linha .select:not(.is-multiple) { height: 2.2rem; }
 .rev-linha .select select { min-height: 2.2rem; }
+.item.is-fds { background: color-mix(in srgb, var(--warn) 7%, var(--surface)); }
+.rev-cantico { display: grid; gap: .2rem; }
+.rev-cantico .select, .rev-cantico select { width: 100%; }

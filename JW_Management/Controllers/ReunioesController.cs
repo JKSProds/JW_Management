@@ -33,8 +33,8 @@ namespace JW_Management.Controllers
         {
             try
             {
-                var (semanas, designacoes, discursos) = _hourglass.Importar(dados);
-                return Json(new { semanas, designacoes, discursos });
+                var (semanas, designacoes) = _hourglass.Importar(dados);
+                return Json(new { semanas, designacoes });
             }
             catch (InvalidOperationException e) { return StatusCode(500, e.Message); }
         }
@@ -171,47 +171,6 @@ namespace JW_Management.Controllers
             Cantico c = new Models.Cantico() { Id = id, Stamp = stamp };
 
             return _dbContext.AtualizarCantico(c) ? StatusCode(200) : StatusCode(500);
-        }
-
-        [HttpGet]
-        public IActionResult Discursos()
-        {
-            ViewBag.Publicadores = _dbContext.ObterPublicadores(false).OrderBy(p => p.Nome).Select(l => new SelectListItem() { Value = l.Id.ToString(), Text = l.Id == 0 ? "Não Definido" : l.Nome });
-            ViewBag.Discursos = _dbContext.ObterDiscursoTemas().OrderBy(p => p.NumDiscurso).Select(l => new SelectListItem() { Value = l.NumDiscurso.ToString(), Text = l.NumDiscurso + " - " + l.TemaDiscurso });
-
-            return View(_dbContext.ObterDiscursos());
-        }
-
-        [HttpPost]
-        public IActionResult Discurso(int txtIdPub, string txtNomePub, string txtCongPub, int txtIdDiscurso, DateTime txtData)
-        {
-            txtNomePub = Esc(txtNomePub); txtCongPub = Esc(txtCongPub);
-            Publicador p = _dbContext.ObterPublicador(txtIdPub, false, false, false, false);
-            Discurso t = _dbContext.ObterDiscursoTema(txtIdDiscurso);
-
-            if (txtIdPub > 0) txtCongPub = "INTERNO";
-            if (txtIdPub > 0) txtNomePub = p.Nome;
-
-            Discurso d = new Discurso()
-            {
-                Stamp = DateTime.Now.Ticks.ToString(),
-                Pub = p,
-                NomePublicador = txtNomePub,
-                Congregacao = txtCongPub,
-                NumDiscurso = t.NumDiscurso,
-                TemaDiscurso = t.TemaDiscurso,
-                DataDiscurso = txtData
-            };
-
-            _dbContext.CriarDiscurso(d);
-
-            return RedirectToAction("Discursos");
-        }
-
-        [HttpDelete]
-        public IActionResult Discurso(string id, bool apagar)
-        {
-            return _dbContext.ApagarDiscurso(_dbContext.ObterDiscurso(id)) ? StatusCode(200) : StatusCode(500);
         }
     }
 }

@@ -181,14 +181,10 @@
             if (!prev.semanas.length) { cont.innerHTML = '<div class="empty-state"><strong>Sem reuniões neste intervalo</strong>Tente outras datas.</div>'; }
             const base = '<option value="0">— não importar —</option>';
             const opcoes = prev.tipos.map(t => '<option value="' + t.id + '">' + t.id + ' · ' + esc(t.descricao || t.adicional) + '</option>').join('');
-            const mes = ['jan', 'fev', 'mar', 'abr', 'mai', 'jun', 'jul', 'ago', 'set', 'out', 'nov', 'dez'];
-            const dia = iso => { const d = new Date(iso + 'T12:00:00'); return d.getDate() + ' ' + mes[d.getMonth()]; };
-            const rotuloDia = (iso, nome) => nome + ' ' + dia(iso);
             prev.semanas.forEach((s, si) => {
                 const el = document.createElement('section'); el.className = 'hg-semana'; el.dataset.i = si;
                 const novos = s.itens.filter(i => i.tipoId === -1).length;
                 el.innerHTML = '<header><label class="checkbox"><input type="checkbox" class="hg-on" checked> ' + esc(s.semana) + '</label>' +
-                    '<span class="num">Fim de semana: ' + dia(s.sabado) + ' e ' + dia(s.domingo) + '</span>' +
                     (s.existe ? '<span class="tag is-warning">já existe: será substituída</span>' : '') + (novos ? '<span class="tag is-info">' + novos + ' tipo(s) a criar</span>' : '') + '</header>' +
                     '<table><thead><tr><th>Parte</th><th>Sala</th><th>Min.</th><th>Pessoa(s)</th><th>Tipo local</th></tr></thead><tbody></tbody></table>';
                 const tb = App.$('tbody', el);
@@ -202,8 +198,6 @@
                 });
                 const extra = [];
                 if (s.canticos.some(c => c > 0)) extra.push('<span>Cânticos: <b class="num">' + s.canticos.filter(c => c > 0).join(', ') + '</b></span>');
-                if (s.discurso) extra.push('<span>Discurso <b>' + s.discurso.numero + '</b> ' + esc(s.discurso.tema) + ' · ' + esc(s.discurso.orador) + (s.discurso.congregacao && !s.discurso.pubId ? ' (' + esc(s.discurso.congregacao) + ')' : '') +
-                    ' · <span class="select is-small"><select class="hg-data" aria-label="Dia do discurso"><option value="' + s.sabado + '"' + (s.discurso.data === s.sabado ? ' selected' : '') + '>' + rotuloDia(s.sabado, 'Sábado') + '</option><option value="' + s.domingo + '"' + (s.discurso.data === s.domingo ? ' selected' : '') + '>' + rotuloDia(s.domingo, 'Domingo') + '</option></select></span>' + (s.discurso.existe ? ' <span class="tag is-light">já registado: não será repetido</span>' : '') + '</span>');
                 if (extra.length) { const d = document.createElement('div'); d.className = 'extra'; d.innerHTML = extra.join(''); el.appendChild(d); }
                 cont.appendChild(el);
             });
@@ -216,7 +210,6 @@
             App.$$('#hgPasso2 .hg-semana').forEach(el => {
                 const s = prev.semanas[el.dataset.i]; s.importar = App.$('.hg-on', el).checked;
                 App.$$('tbody tr', el).forEach(tr => { const it = s.itens[tr.dataset.i]; it.tipoId = +App.$('select', tr).value; if (it.tipoId > 0) mapa[it.chave] = it.tipoId; });
-                const dt = App.$('.hg-data', el); if (dt && s.discurso) s.discurso.data = dt.value;
             });
             const n = prev.semanas.filter(s => s.importar).length; if (!n) { notifyError('Selecione pelo menos uma semana.'); return; }
             const subst = prev.semanas.filter(s => s.importar && s.existe).length;
@@ -224,7 +217,7 @@
             App.run(btn, async () => {
                 try { localStorage.setItem('hgMapa', JSON.stringify(mapa)); } catch (e) { }
                 const r = await postJson('/Reunioes/HourglassImportar', prev);
-                notify(r.semanas + ' semana(s), ' + r.designacoes + ' designações e ' + r.discursos + ' discurso(s) importados.');
+                notify(r.semanas + ' semana(s) e ' + r.designacoes + ' designações importadas.');
                 setTimeout(() => location.reload(), 900); // a lista de reuniões é desta página
             }, 'Não foi possível importar as reuniões.');
         });

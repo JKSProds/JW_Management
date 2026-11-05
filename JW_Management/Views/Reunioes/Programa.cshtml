@@ -90,15 +90,21 @@
         else if (!Model.Campo.Any()) { <div class="empty-state"><strong>Sem reuniões de serviço neste mês</strong></div> }
         else
         {
-            <div class="items">
-            @foreach (var e in Model.Campo)
+            @foreach (var sem in Model.Campo.GroupBy(e => { var d = DateTime.ParseExact(e.Data, "yyyy-MM-dd", CultureInfo.InvariantCulture); return d.AddDays(-(((int)d.DayOfWeek + 6) % 7)); }).OrderBy(g => g.Key))
             {
-                <article class="item no-thumb">
-                    <div class="main"><div class="name">@Dia(e.Data)</div><div class="meta"><span class="num">@e.Hora</span><span><i class="fa-solid fa-location-dot fa-xs"></i> @e.Local</span></div></div>
-                    <div class="side"><span class="tag @(e.Dirigente == "" ? "is-light" : "is-info")">@(e.Dirigente == "" ? "Sem dirigente" : e.Dirigente)</span></div>
-                </article>
+                var fimSem = sem.Key.AddDays(6);
+                <h2 class="group-title">Semana de @sem.Key.Day @(sem.Key.Month != fimSem.Month ? "de " + ProgramaServico.NomeMes(sem.Key.Month) + " " : "")a @fimSem.Day de @ProgramaServico.NomeMes(fimSem.Month)</h2>
+                <div class="items">
+                @foreach (var e in sem.OrderBy(x => x.Data).ThenBy(x => x.Hora))
+                {
+                    var fds = DateTime.ParseExact(e.Data, "yyyy-MM-dd", CultureInfo.InvariantCulture).DayOfWeek is DayOfWeek.Saturday or DayOfWeek.Sunday;
+                    <article class="item no-thumb @(fds ? "is-fds" : "")">
+                        <div class="main"><div class="name">@Dia(e.Data)</div><div class="meta"><span class="num">@e.Hora</span><span><i class="fa-solid fa-location-dot fa-xs"></i> @e.Local</span></div></div>
+                        <div class="side"><span class="tag @(e.Dirigente == "" ? "is-light" : "is-info")">@(e.Dirigente == "" ? "Sem dirigente" : e.Dirigente)</span></div>
+                    </article>
+                }
+                </div>
             }
-            </div>
         }
     </section>
 

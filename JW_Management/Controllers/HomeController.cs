@@ -42,6 +42,26 @@ namespace JW_Management.Controllers
 
         // A lista de congregações é lida uma só vez no arranque. Se a base de dados master ainda não
         // estava disponível nessa altura fica vazia para sempre; por isso volta a tentar aqui.
+        // As designações do utilizador autenticado nas próximas semanas. A semana vem como «SEMANA n DE aaaa»
+        // (mesma contagem de 7 em 7 dias a partir de 1 de janeiro com que a reunião é criada).
+        [Authorize]
+        [HttpGet]
+        public IActionResult MinhasDesignacoes()
+        {
+            var hoje = DateTime.Today;
+            var lista = _dbContext.ObterDesignacoesPublicador(User.ObterId())
+                .Select(d =>
+                {
+                    var m = System.Text.RegularExpressions.Regex.Match(d.SemanaReuniao ?? "", @"(\d+)\D+(\d{4})");
+                    if (!m.Success) return null;
+                    var inicio = new DateTime(int.Parse(m.Groups[2].Value), 1, 1).AddDays((int.Parse(m.Groups[1].Value) - 1) * 7);
+                    return new { stamp = d.StampReuniao, semana = d.SemanaReuniao, inicio = inicio.ToString("yyyy-MM-dd"), fim = inicio.AddDays(6).ToString("yyyy-MM-dd"),
+                                 tipo = d.TipoDesignacao?.Descricao, tema = d.NomeDesignacao, minutos = d.NMin, local = d.Local, ordem = inicio, tid = d.TipoDesignacao?.Id ?? 0 };
+                })
+                .Where(x => x != null && x.ordem.AddDays(6) >= hoje).OrderBy(x => x!.ordem).ThenBy(x => x!.tid).Take(30);
+            return Json(lista);
+        }
+
         private List<Tenant> ObterTenants()
         {
             var ctx = _appContext._tenantContext;

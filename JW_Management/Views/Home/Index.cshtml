@@ -33,6 +33,14 @@
         </section>
     }
 
+    @if (autenticado && !congressos)
+    {
+        <section class="mb-5" aria-labelledby="hMin">
+            <h2 class="section-title" id="hMin">As minhas designações <a href="~/Reunioes">Ver reuniões</a></h2>
+            <div id="minhas" class="items"><p class="attn-empty">A carregar…</p></div>
+        </section>
+    }
+
     @if (literatura)
     {
         @await Html.PartialAsync("_Stats", new[] {
@@ -83,7 +91,7 @@
                     <div class="module-body">Designações das reuniões de meio de semana e de fim de semana, e as responsabilidades.</div>
                     <nav class="module-links" aria-label="Reuniões">
                         <a href="~/Reunioes">Listagem</a>
-                        <a href="~/Reunioes/Discursos">Discursos</a>
+                        <a href="~/Reunioes/Programa">Programa e PDF</a>
                         <a href="~/Reunioes/Calendario">Calendário</a>
                     </nav>
                 </article>
@@ -103,6 +111,26 @@
         const el = document.getElementById('dataHoje');
         el.textContent = d.charAt(0).toUpperCase() + d.slice(1) + ' · ' + el.textContent;
     })();
+    @if (!congressos)
+    {
+    <text>
+    // As minhas designações das próximas semanas (agrupadas por semana)
+    App.api('GET', '/Home/MinhasDesignacoes').then(l => {
+        const c = App.$('#minhas'); c.innerHTML = '';
+        if (!l.length) { c.innerHTML = '<p class="attn-empty">Não tem designações nas próximas semanas.</p>'; return; }
+        const mes = ['jan', 'fev', 'mar', 'abr', 'mai', 'jun', 'jul', 'ago', 'set', 'out', 'nov', 'dez'];
+        const dia = iso => { const d = new Date(iso + 'T12:00:00'); return d.getDate() + ' ' + mes[d.getMonth()]; };
+        let semana = null;
+        l.forEach(x => {
+            if (x.semana !== semana) { semana = x.semana; const h = document.createElement('h3'); h.className = 'group-title'; h.textContent = dia(x.inicio) + ' a ' + dia(x.fim); c.appendChild(h); }
+            const a = document.createElement('a'); a.href = '/Reunioes/Reuniao/' + x.stamp; a.className = 'item no-thumb'; a.style.cssText = 'text-decoration:none;color:inherit';
+            a.innerHTML = '<div class="main"><div class="name"></div><div class="meta"></div></div><div class="side"><div class="qty num"></div></div>';
+            App.$('.name', a).textContent = x.tipo || x.tema; App.$('.meta', a).textContent = [x.tema && x.tema !== x.tipo ? x.tema : '', x.local && x.local !== 'Auditório' ? x.local : ''].filter(Boolean).join(' · ');
+            App.$('.qty', a).innerHTML = x.minutos ? x.minutos + '<small>min</small>' : ''; c.appendChild(a);
+        });
+    }).catch(() => { App.$('#minhas').innerHTML = '<p class="attn-empty">Não foi possível obter as suas designações.</p>'; });
+    </text>
+    }
     @if (literatura)
     {
     <text>

@@ -39,7 +39,7 @@
         @await Html.PartialAsync("_Stats", new[] {
             ("fa-user-check", "Atribuídas", designacoes.Count(d => d.Atribuida) + " de " + designacoes.Count, "", designacoes.All(d => d.Atribuida) ? "is-ok" : ""),
             ("fa-user-clock", "Por atribuir", designacoes.Count(d => !d.Atribuida).ToString(), "", designacoes.Any(d => !d.Atribuida) ? "is-warn" : ""),
-            ("fa-music", "Cânticos definidos", Model.Canticos.Count(c => c.Id > 0) + " de " + Model.Canticos.Count, "", "") })
+            ("fa-music", "Cânticos definidos", Model.Canticos.Any() ? Model.Canticos.Count(c => c.Id > 0) + " de " + Model.Canticos.Count : "Sem cânticos", "", "") })
 
         <div class="toolbar">
             <div class="chips" id="chipsRev" role="group" aria-label="Mostrar">
@@ -49,19 +49,23 @@
             <span class="field-hint" id="autoGuardado">As alterações guardam-se sozinhas.</span>
         </div>
 
+        @if (Model.Canticos.Any())
+        {
         <section class="rev-secao">
             <h2 class="rev-titulo"><i class="fa-solid fa-music"></i> Cânticos</h2>
             <div class="rev-canticos">
-                @foreach (var c in Model.Canticos)
+                @for (var ci = 0; ci < Model.Canticos.Count; ci++)
                 {
-                    <div class="select">
+                    var c = Model.Canticos[ci];
+                    <div class="rev-cantico"><span class="field-hint">@(ci == 0 ? "Início" : ci == 1 ? "Meio" : ci == 2 ? "Fim" : "Cântico " + (ci + 1))</span><div class="select">
                         <select data-cantico="@c.Stamp" aria-label="Cântico">
                             @foreach (var o in canticos) { <option value="@o.Value" selected="@(o.Value == c.Id.ToString())">@o.Text</option> }
                         </select>
-                    </div>
+                    </div></div>
                 }
             </div>
         </section>
+        }
 
         @foreach (var sec in secoes)
         {

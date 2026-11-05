@@ -110,7 +110,7 @@ public class ProgramaServico(HourglassContext _hg, DbContext _db)
         var canticos = new List<(int, string)>();
         foreach (var d in seg)
         {
-            var k = d.ToString("yyyy-MM-dd"); var fim = d.AddDays(6); var v = new Dictionary<string, string>();
+            var k = d.ToString("yyyy-MM-dd"); var fim = d.AddDays(6); var v = new Dictionary<string, string>(); var cantSem = new List<(int, string)>();
             var sem = new ProgramaSemana { Inicio = d, Valores = v, Titulo = d.Month == fim.Month ? $"Semana de {d.Day} a {fim.Day} de {NomeMes(d.Month)}" : $"Semana de {d.Day} de {NomeMes(d.Month)} a {fim.Day} de {NomeMes(fim.Month)}" };
 
             if (mm.TryGetValue(k, out var aTok) && aTok is JObject a)
@@ -137,7 +137,7 @@ public class ProgramaServico(HourglassContext _hg, DbContext _db)
                 {
                     var nums = new List<string>();
                     foreach (var sk in new[] { "song1", "song2", "song3" })
-                        if ((int?)HourglassContext.Sub(m[sk], "number") is > 0 and var n) { nums.Add(n.ToString()); canticos.Add((n, (string?)HourglassContext.Sub(m[sk], "title") ?? "")); }
+                        if ((int?)HourglassContext.Sub(m[sk], "number") is > 0 and var n) { nums.Add(n.ToString()); cantSem.Add((n, (string?)HourglassContext.Sub(m[sk], "title") ?? "")); }
                     if (nums.Count > 0) v["cmm"] = string.Join(" - ", nums);
                 }
             }
@@ -154,10 +154,12 @@ public class ProgramaServico(HourglassContext _hg, DbContext _db)
                 sem.Evento = Evento(w["event"] as JObject) ?? sem.Evento;
                 var wt = w["wt"] as JObject; var nw = new List<string>();
                 foreach (var sk in new[] { "song1", "song2" })
-                    if ((int?)HourglassContext.Sub(wt?[sk], "number") is > 0 and var n) { nw.Add(n.ToString()); canticos.Add((n, (string?)HourglassContext.Sub(wt?[sk], "title") ?? "")); }
+                    if ((int?)HourglassContext.Sub(wt?[sk], "number") is > 0 and var n) { nw.Add(n.ToString()); cantSem.Add((n, (string?)HourglassContext.Sub(wt?[sk], "title") ?? "")); }
                 if (nw.Count > 0) v["cwm"] = string.Join(" - ", nw);
             }
             if (sem.Evento.Count == 0 && mm.TryGetValue(k, out var e2) && e2["event"] is JObject ev) sem.Evento = Evento(ev) ?? sem.Evento;
+            // assembleia de circuito, congresso e memorial: não há cânticos da reunião nessa semana
+            if (sem.Evento.Count > 0) { v.Remove("cmm"); v.Remove("cwm"); } else canticos.AddRange(cantSem);
 
             if (av.TryGetValue(k, out var lista))
             {

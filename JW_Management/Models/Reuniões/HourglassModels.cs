@@ -23,30 +23,16 @@ public class HgItem
     public int TipoId { get; set; }             // tipo local (r_tipos): >0 existente, -1 = criar a partir do Hourglass, 0 = não importar
 }
 
-public class HgDiscurso
-{
-    public string Data { get; set; } = "";
-    public int Numero { get; set; }
-    public string Tema { get; set; } = "";
-    public string Orador { get; set; } = "";
-    public int PubId { get; set; }
-    public string Congregacao { get; set; } = "";
-    public bool Existe { get; set; }
-}
-
 public class HgSemana
 {
     public string Stamp { get; set; } = "";
     public string Semana { get; set; } = "";
     public string Data { get; set; } = "";
-    public string Sabado { get; set; } = "";
-    public string Domingo { get; set; } = "";
     public bool Existe { get; set; }
     public bool Importar { get; set; } = true;
     public List<int> Canticos { get; set; } = new();
     public List<string> CanticoTitulos { get; set; } = new();   // títulos, na mesma ordem dos números
     public List<HgItem> Itens { get; set; } = new();
-    public HgDiscurso? Discurso { get; set; }
 }
 
 public class HgTipo
