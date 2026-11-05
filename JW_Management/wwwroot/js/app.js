@@ -4,13 +4,21 @@
 (function () {
     'use strict';
 
-    // ---------- Notificações (SweetAlert2 continua a ser usado pelos ecrãs antigos) ----------
-    function toast(icon, title) {
-        Swal.mixin({ toast: true, position: 'top-end', showConfirmButton: false, timer: 4000, timerProgressBar: true })
-            .fire({ icon: icon, title: title });
+    // ---------- Notificações (próprias, com as cores do tema; o SweetAlert2 trazia cores fixas) ----------
+    function toast(tipo, texto) {
+        let c = document.getElementById('toasts');
+        if (!c) { c = document.createElement('div'); c.id = 'toasts'; c.setAttribute('aria-live', 'polite'); document.body.appendChild(c); }
+        const el = document.createElement('div');
+        el.className = 'toast is-' + tipo; el.setAttribute('role', tipo === 'erro' ? 'alert' : 'status');
+        el.innerHTML = '<i class="fa-solid ' + (tipo === 'erro' ? 'fa-circle-exclamation' : 'fa-circle-check') + '" aria-hidden="true"></i><span></span>';
+        el.lastChild.textContent = texto;
+        const fechar = function () { el.classList.add('is-out'); setTimeout(function () { el.remove(); }, 250); };
+        el.addEventListener('click', fechar);
+        c.appendChild(el);
+        setTimeout(fechar, tipo === 'erro' ? 7000 : 4000);
     }
-    window.notify = function (m) { toast('success', m); };
-    window.notifyError = function (m) { toast('error', m); };
+    window.notify = function (m) { toast('ok', m); };
+    window.notifyError = function (m) { toast('erro', m); };
 
     const App = window.App = {};
     const $ = (s, r) => (r || document).querySelector(s);
@@ -187,10 +195,12 @@
             if (vazio) vazio.hidden = n > 0;
             if (o.contador) $(o.contador).textContent = n;
             if (o.aoAplicar) o.aoAplicar($$('.item:not(.is-hidden)', lista));
-            const u = new URL(location.href);
-            q ? u.searchParams.set('filtro', inp.value.trim()) : u.searchParams.delete('filtro');
-            tipo !== '0' ? u.searchParams.set('tipo', tipo) : u.searchParams.delete('tipo');
-            history.replaceState(null, '', u);
+            if (!o.semUrl) {
+                const u = new URL(location.href);
+                q ? u.searchParams.set('filtro', inp.value.trim()) : u.searchParams.delete('filtro');
+                tipo !== '0' ? u.searchParams.set('tipo', tipo) : u.searchParams.delete('tipo');
+                history.replaceState(null, '', u);
+            }
         }
         let t; inp.addEventListener('input', function () { clearTimeout(t); t = setTimeout(aplicar, 120); });
         if (chips) chips.addEventListener('click', function (e) {

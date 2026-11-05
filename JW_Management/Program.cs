@@ -93,6 +93,8 @@ if (!string.IsNullOrEmpty(oidc["ClientId"]))
             OnTokenValidated = OidcLogin.OnTokenValidated,
             OnRemoteFailure = ctx =>
             {
+                // Fica nos registos do servidor para diagnosticar falhas do início de sessão com passkey.
+                Console.WriteLine($"[OIDC] Falha no início de sessão: {ctx.Failure?.Message}");
                 ctx.Response.Redirect("/acesso-negado");
                 ctx.HandleResponse();
                 return Task.CompletedTask;

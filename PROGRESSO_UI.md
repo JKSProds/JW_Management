@@ -59,6 +59,13 @@ Publicadores > «Sincronizar com o Hourglass» (`HourglassSincronizador`, só le
 - Sincronização de publicadores: seleção em bloco (tudo, nada, só email, só telemóvel, só morada, só grupo, só novos). «Tudo» substitui também dados já preenchidos.
 - Instruções do Hourglass: o pedido a copiar é o que tem o intervalo de datas no nome (ex.: `2026-11-01_2026-11-30`).
 
+## Revisão 8
+
+- O Bulma carregado é a **1.x** (variáveis `--bulma-*`): no tema escuro aplicam-se as variáveis de escuro do próprio Bulma, o que corrige os menus brancos da navbar. Itens dos menus com `!important` por causa da regra `:not()` do Bulma.
+- Notificações próprias (`notify`/`notifyError`) com as cores do tema, no lugar do SweetAlert2 (removido do layout). O GSTC (gráfico do Calendário) só carrega nessa página: dava erro de sintaxe no Safari em todas as outras.
+- Pedidos reescrito: pesquisa, filtro por estado com contagens, agrupar por publicador/publicação, seleção em bloco (visíveis, grupo ou individual) com barra de ações (marcar como Pendente/Enviado/Fornecido, apagar), botão «Avançar» ao estado seguinte, tudo sem recarregar. Novos endpoints `PedidoEstado` e `PedidosApagar` (ids só numéricos).
+- Login com passkey: falhas do OIDC passam a ficar registadas no servidor (`[OIDC] Falha no início de sessão`).
+
 ## Minimizar refrescos de página
 
 Utilitários em `wwwroot/js/app.js` (sem dependências, usam `fetch` e delegação de eventos):

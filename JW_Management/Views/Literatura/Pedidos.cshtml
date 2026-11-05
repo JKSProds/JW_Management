@@ -1,4 +1,4 @@
-﻿@model IEnumerable<JW_Management.Models.Literatura>
+@model IEnumerable<JW_Management.Models.Literatura>
 @{
     ViewData["Title"] = "Literatura - Pedidos";
     var periodicos = Model.Where(l => l.Tipo!.Id == 7).ToList();
@@ -6,13 +6,12 @@
     var estados = ((IEnumerable<SelectListItem>)ViewBag.Estados).ToList();
     var iconesEstado = new[] { "clock", "envelope", "truck-fast", "check-double" };
     var publicadores = ((IEnumerable<SelectListItem>)ViewBag.Publicadores).ToList();
+    var pendentes = especiais.Count(l => l.EstadoPedido!.Descricao == "Pendente");
 }
 
 <div class="container">
     <div class="page-head">
-        <div class="head-title">
-            <div><h1>Pedidos</h1></div>
-        </div>
+        <div class="head-title"><div><h1>Pedidos</h1></div></div>
         <div class="head-actions">
             <button type="button" class="button is-info" data-open="modalPedidoEspecial">
                 <span class="icon"><i class="fa-solid fa-book"></i></span><span>Pedir publicação</span>
@@ -23,102 +22,133 @@
         </div>
     </div>
 
-    <div id="regiao">
-        @await Html.PartialAsync("_Stats", new[] {
-            ("fa-newspaper", "Pedidos de periódicos", periodicos.Count.ToString(), "", ""),
-            ("fa-copy", "Exemplares pedidos", periodicos.Sum(l => l.Quantidade).ToString(), "", ""),
-            ("fa-book", "Pedidos especiais", especiais.Count.ToString(), "", ""),
-            ("fa-clock", "Especiais por enviar", especiais.Count(l => l.EstadoPedido!.Descricao == "Pendente").ToString(), "", especiais.Any(l => l.EstadoPedido!.Descricao == "Pendente") ? "is-warn" : "is-ok") })
+    @await Html.PartialAsync("_Stats", new[] {
+        ("fa-newspaper", "Pedidos de periódicos", periodicos.Count.ToString(), "pPer", ""),
+        ("fa-copy", "Exemplares pedidos", periodicos.Sum(l => l.Quantidade).ToString(), "pEx", ""),
+        ("fa-book", "Pedidos especiais", especiais.Count.ToString(), "pEsp", ""),
+        ("fa-clock", "Especiais por enviar", pendentes.ToString(), "pPend", pendentes > 0 ? "is-warn" : "is-ok") })
 
-        <div class="seg" role="tablist" aria-label="Tipo de pedido">
-            <button type="button" role="tab" id="tabPer" aria-controls="panPer" aria-selected="true">Periódicos<span class="count">@periodicos.Count</span></button>
-            <button type="button" role="tab" id="tabEsp" aria-controls="panEsp" aria-selected="false">Especiais<span class="count">@especiais.Count</span></button>
-        </div>
-
-        <section id="panPer" role="tabpanel" aria-labelledby="tabPer">
-            @if (!periodicos.Any())
-            {
-                <div class="empty-state"><span class="icon"><i class="fa-regular fa-newspaper"></i></span><strong>Sem pedidos de periódicos</strong>Use «Pedir periódico» para registar o primeiro.</div>
-            }
-            else
-            {
-                <div class="toolbar">
-                    <div class="select search">
-                        <select id="filtrop" aria-label="Filtrar pela publicação" style="width:100%">
-                            <option value="0">Todas as publicações</option>
-                            @foreach (var p in (IEnumerable<SelectListItem>)ViewBag.Periodicos)
-                            {
-                                <option value="@p.Value">@p.Text</option>
-                            }
-                        </select>
-                    </div>
-                    <button type="button" class="button is-success" data-open="modalMailPeriodicos">
-                        <span class="icon"><i class="fa-solid fa-paper-plane"></i></span><span>Enviar pedidos</span>
-                    </button>
-                </div>
-                <div class="items" id="listaPer">
-                    @foreach (var item in periodicos)
-                    {
-                        <article class="item" data-stamp="@item.Stamp" data-ref="@item.Referencia">
-                            <div class="thumb"><img src="@item.Imagem" alt="" loading="lazy" onerror="this.remove()"></div>
-                            <div class="main">
-                                <div class="name">@item.Descricao</div>
-                                <div class="meta">
-                                    <span class="ref-tag">@item.Referencia</span>
-                                    <span><i class="fa-solid fa-user fa-xs"></i> @item.Publicador!.Nome</span>
-                                </div>
-                            </div>
-                            <div class="side">
-                                <div class="qty num"><span>@item.Quantidade</span><small>exemplares</small></div>
-                                <div class="acts">
-                                    <button type="button" class="button btn-icon is-danger-hover" data-action="apagarPer" aria-label="Apagar pedido" title="Apagar pedido"><i class="fa-solid fa-trash-can"></i></button>
-                                </div>
-                            </div>
-                        </article>
-                    }
-                </div>
-            }
-        </section>
-
-        <section id="panEsp" role="tabpanel" aria-labelledby="tabEsp" hidden>
-            @if (!especiais.Any())
-            {
-                <div class="empty-state"><span class="icon"><i class="fa-solid fa-book"></i></span><strong>Sem pedidos especiais</strong>Use «Pedir publicação» para registar o primeiro.</div>
-            }
-            else
-            {
-                <div class="toolbar">
-                    <button type="button" class="button is-success" data-open="modalMailPedidos">
-                        <span class="icon"><i class="fa-solid fa-paper-plane"></i></span><span>Enviar pedidos novos</span>
-                    </button>
-                </div>
-                <div class="items">
-                    @foreach (var item in especiais)
-                    {
-                        var estado = item.EstadoPedido!.Descricao ?? "";
-                        <article class="item" data-stamp="@item.Stamp" data-estado="@estado" data-qtd="@item.Quantidade">
-                            <div class="thumb"><img src="@item.Imagem" alt="" loading="lazy" onerror="this.remove()"></div>
-                            <div class="main">
-                                <div class="name">@item.Descricao</div>
-                                <div class="meta">
-                                    <span class="ref-tag">@item.Referencia</span>
-                                    <span><i class="fa-solid fa-user fa-xs"></i> @item.Publicador!.Nome</span>
-                                    <span class="tag estado-@(estado.Split(' ')[0])">@estado</span>
-                                </div>
-                            </div>
-                            <div class="side">
-                                <div class="qty num"><span>@item.Quantidade</span><small>unidades</small></div>
-                                <div class="acts">
-                                    <button type="button" class="button btn-icon is-ok-hover" data-action="editarEsp" aria-label="Atualizar estado" title="Atualizar estado"><i class="fa-solid fa-arrows-rotate"></i></button>
-                                    <button type="button" class="button btn-icon is-danger-hover" data-action="apagarEsp" aria-label="Apagar pedido" title="Apagar pedido"><i class="fa-solid fa-trash-can"></i></button>
-                                </div>
-                            </div>
-                        </article>
-                    }
-                </div>
-            }
-        </section>
+    <div class="seg" role="tablist" aria-label="Tipo de pedido">
+        <button type="button" role="tab" id="tabPer" aria-controls="panPer" aria-selected="true">Periódicos<span class="count" id="cPer">@periodicos.Count</span></button>
+        <button type="button" role="tab" id="tabEsp" aria-controls="panEsp" aria-selected="false">Especiais<span class="count" id="cEsp">@especiais.Count</span></button>
     </div>
+
+    <section id="panPer" role="tabpanel" aria-labelledby="tabPer" data-painel="per">
+        <div class="toolbar">
+            <div class="control has-icons-left search">
+                <input type="search" class="input" id="fPer" placeholder="Pesquisar por publicador ou publicação" aria-label="Pesquisar pedidos de periódicos">
+                <span class="icon is-left"><i class="fa-solid fa-magnifying-glass"></i></span>
+            </div>
+            <div class="select">
+                <select id="filtrop" aria-label="Filtrar pela publicação">
+                    <option value="0">Todas as publicações</option>
+                    @foreach (var p in (IEnumerable<SelectListItem>)ViewBag.Periodicos) { <option value="@p.Value">@p.Text</option> }
+                </select>
+            </div>
+            <button type="button" class="button is-success" data-open="modalMailPeriodicos">
+                <span class="icon"><i class="fa-solid fa-paper-plane"></i></span><span>Enviar pedidos</span>
+            </button>
+        </div>
+        <div class="list-tools">
+            <label class="check-all"><input type="checkbox" id="todosPer"> <span>Selecionar visíveis</span></label>
+            <div class="chips is-choice" id="modoPer" role="group" aria-label="Agrupar por">
+                <span class="field-hint">Agrupar por</span>
+                <button type="button" class="chip" data-modo="publicacao" aria-pressed="true">Publicação</button>
+                <button type="button" class="chip" data-modo="publicador" aria-pressed="false">Publicador</button>
+            </div>
+        </div>
+        <div id="listaPer" class="items">
+            @foreach (var item in periodicos)
+            {
+                <article class="item has-sel" data-stamp="@item.Stamp" data-ref="@item.Referencia" data-desc="@item.Descricao" data-pub="@item.Publicador!.Nome" data-qtd="@item.Quantidade"
+                         data-search="@item.Referencia @item.Descricao @item.Publicador.Nome">
+                    <label class="sel"><input type="checkbox" class="sel-cb" aria-label="Selecionar pedido de @item.Publicador.Nome"></label>
+                    <div class="thumb"><img src="@item.Imagem" alt="" loading="lazy" onerror="this.remove()"></div>
+                    <div class="main">
+                        <div class="name">@item.Descricao</div>
+                        <div class="meta">
+                            <span class="ref-tag">@item.Referencia</span>
+                            <span><i class="fa-solid fa-user fa-xs"></i> @item.Publicador.Nome</span>
+                        </div>
+                    </div>
+                    <div class="side">
+                        <div class="qty num"><span>@item.Quantidade</span><small>exemplares</small></div>
+                        <div class="acts">
+                            <button type="button" class="button btn-icon is-danger-hover" data-action="apagarUm" aria-label="Apagar pedido" title="Apagar pedido"><i class="fa-solid fa-trash-can"></i></button>
+                        </div>
+                    </div>
+                </article>
+            }
+        </div>
+        <div id="vazioPer" class="empty-state" hidden><span class="icon"><i class="fa-regular fa-newspaper"></i></span><strong>Sem pedidos de periódicos</strong>Não há resultados. Use «Pedir periódico» para registar um pedido.</div>
+    </section>
+
+    <section id="panEsp" role="tabpanel" aria-labelledby="tabEsp" data-painel="esp" hidden>
+        <div class="toolbar">
+            <div class="control has-icons-left search">
+                <input type="search" class="input" id="fEsp" placeholder="Pesquisar por publicador ou publicação" aria-label="Pesquisar pedidos especiais">
+                <span class="icon is-left"><i class="fa-solid fa-magnifying-glass"></i></span>
+            </div>
+            <button type="button" class="button is-success" data-open="modalMailPedidos">
+                <span class="icon"><i class="fa-solid fa-paper-plane"></i></span><span>Enviar pedidos novos</span>
+            </button>
+            <div class="chips" id="chipsEsp" role="group" aria-label="Filtrar por estado">
+                <button type="button" class="chip" data-estado="0" aria-pressed="true">Todos <span class="num" data-n="0"></span></button>
+                @foreach (var e in estados)
+                {
+                    <button type="button" class="chip" data-estado="@e.Value" aria-pressed="false">@e.Text <span class="num" data-n="@e.Value"></span></button>
+                }
+            </div>
+        </div>
+        <div class="list-tools">
+            <label class="check-all"><input type="checkbox" id="todosEsp"> <span>Selecionar visíveis</span></label>
+            <div class="chips is-choice" id="modoEsp" role="group" aria-label="Agrupar por">
+                <span class="field-hint">Agrupar por</span>
+                <button type="button" class="chip" data-modo="publicador" aria-pressed="true">Publicador</button>
+                <button type="button" class="chip" data-modo="publicacao" aria-pressed="false">Publicação</button>
+            </div>
+        </div>
+        <div id="listaEsp" class="items">
+            @foreach (var item in especiais)
+            {
+                var estado = item.EstadoPedido!.Descricao ?? "";
+                <article class="item has-sel" data-stamp="@item.Stamp" data-ref="@item.Referencia" data-desc="@item.Descricao" data-pub="@item.Publicador!.Nome" data-qtd="@item.Quantidade" data-estado="@estado"
+                         data-search="@item.Referencia @item.Descricao @item.Publicador.Nome @estado">
+                    <label class="sel"><input type="checkbox" class="sel-cb" aria-label="Selecionar pedido de @item.Publicador.Nome"></label>
+                    <div class="thumb"><img src="@item.Imagem" alt="" loading="lazy" onerror="this.remove()"></div>
+                    <div class="main">
+                        <div class="name">@item.Descricao</div>
+                        <div class="meta">
+                            <span class="ref-tag">@item.Referencia</span>
+                            <span><i class="fa-solid fa-user fa-xs"></i> @item.Publicador.Nome</span>
+                            <span class="tag estado-tag estado-@(estado.Split(' ')[0])">@estado</span>
+                        </div>
+                    </div>
+                    <div class="side">
+                        <div class="qty num"><span>@item.Quantidade</span><small>unidades</small></div>
+                        <div class="acts">
+                            <button type="button" class="button is-info is-light" data-action="avancar"><span class="icon"><i class="fa-solid fa-forward-step"></i></span><span class="avancar-txt">Avançar</span></button>
+                            <button type="button" class="button btn-icon" data-action="editarEsp" aria-label="Editar pedido" title="Editar estado e quantidade"><i class="fa-solid fa-pen"></i></button>
+                            <button type="button" class="button btn-icon is-danger-hover" data-action="apagarUm" aria-label="Apagar pedido" title="Apagar pedido"><i class="fa-solid fa-trash-can"></i></button>
+                        </div>
+                    </div>
+                </article>
+            }
+        </div>
+        <div id="vazioEsp" class="empty-state" hidden><span class="icon"><i class="fa-solid fa-book"></i></span><strong>Sem pedidos especiais</strong>Não há resultados. Use «Pedir publicação» para registar um pedido.</div>
+    </section>
+</div>
+
+<div id="bulkbar" class="bulkbar" role="region" aria-label="Ações sobre os pedidos selecionados" hidden>
+    <span class="bulk-n"><b class="num" id="bulkN">0</b> selecionado(s)</span>
+    <div class="chips is-choice" id="bulkEstados" aria-label="Marcar como">
+        @for (var i = 0; i < estados.Count; i++)
+        {
+            <button type="button" class="chip" data-bulk-estado="@estados[i].Value"><i class="fa-solid fa-@(iconesEstado[Math.Min(i, iconesEstado.Length - 1)]) mr-1"></i>@estados[i].Text</button>
+        }
+    </div>
+    <button type="button" class="button is-danger is-light" data-action="apagarSel"><span class="icon"><i class="fa-solid fa-trash-can"></i></span><span>Apagar</span></button>
+    <button type="button" class="button is-ghost" data-action="limparSel">Limpar seleção</button>
 </div>
 
 <div id="modalPedidoEspecial" class="modal" role="dialog" aria-modal="true" aria-labelledby="tPE">
@@ -277,34 +307,160 @@
 <script>
     const M = id => App.modal(id);
     const pesq = App.pesquisaPublicacao('#txtPub', '#txtPubStamp', false);
+    const estados = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(estados.Select(e => e.Value)));
+    const P = {
+        per: { sec: '#panPer', lista: '#listaPer', q: '#fPer', vazio: '#vazioPer', todos: '#todosPer', modo: '#modoPer' },
+        esp: { sec: '#panEsp', lista: '#listaEsp', q: '#fEsp', vazio: '#vazioEsp', todos: '#todosEsp', modo: '#modoEsp', chips: '#chipsEsp' }
+    };
+    const norm = t => (t || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+    const itens = k => App.$$('.item', App.$(P[k].lista));
+    const ativo = () => App.$('#tabPer').getAttribute('aria-selected') === 'true' ? 'per' : 'esp';
     let atual = null, estadoSel = null;
+    const modo = { per: lembrado('per', 'publicacao'), esp: lembrado('esp', 'publicador') };
+
+    function lembrado(k, padrao) { try { return localStorage.getItem('pedidosModo_' + k) || padrao; } catch (e) { return padrao; } }
 
     // Lembra o último email usado neste dispositivo (conveniência; falha em silêncio).
     const guardarEmail = v => { try { localStorage.setItem('emailPedidos', v); } catch (e) { } };
     try { const e = localStorage.getItem('emailPedidos'); if (e) App.$$('[data-email]').forEach(i => i.value = e); } catch (e) { }
 
-    const recarregar = () => App.refresh('#regiao');
+    // ---------- Agrupar, filtrar e contar ----------
+    function agrupar(k) {
+        const lista = App.$(P[k].lista); App.$$('.group-title', lista).forEach(h => h.remove());
+        const chave = i => modo[k] === 'publicador' ? i.dataset.pub : (i.dataset.desc + ' · ' + i.dataset.ref);
+        const todos = itens(k).sort((a, b) => chave(a).localeCompare(chave(b), 'pt') || a.dataset.pub.localeCompare(b.dataset.pub, 'pt'));
+        let ultima = null;
+        todos.forEach(i => {
+            if (chave(i) !== ultima) {
+                ultima = chave(i);
+                const h = document.createElement('h3'); h.className = 'group-title';
+                h.innerHTML = '<label class="check-group"><input type="checkbox" class="grp-cb" aria-label="Selecionar o grupo"> <span></span> <span class="count"></span></label>';
+                App.$('span', h).textContent = ultima; lista.appendChild(h);
+            }
+            lista.appendChild(i);
+        });
+        App.$$('[data-modo]', App.$(P[k].modo)).forEach(b => b.setAttribute('aria-pressed', b.dataset.modo === modo[k]));
+    }
 
-    // Filtro por publicação (client-side). Delegado, porque a região é substituída após cada ação.
+    function aplicar(k) {
+        const p = P[k], q = norm(App.$(p.q).value.trim());
+        const ref = k === 'per' ? App.$('#filtrop').value : '0';
+        const est = k === 'esp' ? (App.$('[aria-pressed=true]', App.$(p.chips)) || {}).dataset?.estado || '0' : '0';
+        let n = 0;
+        itens(k).forEach(i => {
+            const ok = (!q || norm(i.dataset.search).includes(q)) && (k === 'per' ? (ref === '0' || i.dataset.ref === ref) : (est === '0' || i.dataset.estado === est));
+            i.classList.toggle('is-hidden', !ok); if (ok) n++;
+        });
+        // cabeçalhos de grupo: só aparecem com itens visíveis e mostram quantos
+        const lista = App.$(p.lista); let cab = null, cont = 0;
+        const fecha = () => { if (cab) { cab.classList.toggle('is-hidden', cont === 0); App.$('.count', cab).textContent = cont; } };
+        Array.from(lista.children).forEach(el => {
+            if (el.classList.contains('group-title')) { fecha(); cab = el; cont = 0; }
+            else if (!el.classList.contains('is-hidden')) cont++;
+        }); fecha();
+        App.$(p.vazio).hidden = n > 0;
+        if (k === 'esp') {
+            App.$$('[data-n]', App.$(p.chips)).forEach(s => { const e = s.dataset.n; s.textContent = itens('esp').filter(i => e === '0' || i.dataset.estado === e).length; });
+        }
+        sincronizarSel();
+    }
+
+    function estatisticas() {
+        const per = itens('per'), esp = itens('esp');
+        App.stats({ pPer: per.length, pEx: per.reduce((s, i) => s + (+i.dataset.qtd), 0), pEsp: esp.length, pPend: esp.filter(i => i.dataset.estado === 'Pendente').length });
+        App.$('#cPer').textContent = per.length; App.$('#cEsp').textContent = esp.length;
+        esp.forEach(i => { // texto e destino do botão «Avançar» de cada pedido
+            const pos = estados.indexOf(i.dataset.estado), b = App.$('[data-action=avancar]', i); if (!b) return;
+            const seguinte = estados[pos + 1]; b.disabled = !seguinte;
+            App.$('.avancar-txt', b).textContent = seguinte ? seguinte : 'Concluído'; b.title = seguinte ? 'Avançar para «' + seguinte + '»' : 'Já está no último estado';
+        });
+    }
+
+    function tudo() { ['per', 'esp'].forEach(k => { agrupar(k); aplicar(k); }); estatisticas(); }
+    ['per', 'esp'].forEach(k => {
+        App.$(P[k].q).addEventListener('input', () => aplicar(k));
+        App.$(P[k].modo).addEventListener('click', e => { const b = e.target.closest('[data-modo]'); if (!b) return; modo[k] = b.dataset.modo; try { localStorage.setItem('pedidosModo_' + k, modo[k]); } catch (x) { } agrupar(k); aplicar(k); });
+    });
+    App.$('#filtrop').addEventListener('change', () => aplicar('per'));
+    App.$(P.esp.chips).addEventListener('click', e => { const c = e.target.closest('.chip'); if (!c) return; App.$$('.chip', App.$(P.esp.chips)).forEach(x => x.setAttribute('aria-pressed', x === c)); aplicar('esp'); });
+
+    // ---------- Seleção em bloco ----------
+    const selecionados = k => itens(k).filter(i => App.$('.sel-cb', i).checked);
+    function sincronizarSel() {
+        const k = ativo(), sel = selecionados(k), vis = itens(k).filter(i => !i.classList.contains('is-hidden'));
+        const todos = App.$(P[k].todos); todos.checked = vis.length > 0 && vis.every(i => App.$('.sel-cb', i).checked); todos.indeterminate = !todos.checked && vis.some(i => App.$('.sel-cb', i).checked);
+        itens(k).forEach(i => i.classList.toggle('is-selected', App.$('.sel-cb', i).checked));
+        const lista = App.$(P[k].lista);
+        App.$$('.group-title', lista).forEach(h => { // caixa do grupo reflete os itens visíveis dele
+            const doGrupo = []; for (let el = h.nextElementSibling; el && !el.classList.contains('group-title'); el = el.nextElementSibling) if (!el.classList.contains('is-hidden')) doGrupo.push(el);
+            const cb = App.$('.grp-cb', h); cb.checked = doGrupo.length > 0 && doGrupo.every(i => App.$('.sel-cb', i).checked);
+        });
+        App.$('#bulkN').textContent = sel.length; App.$('#bulkbar').hidden = sel.length === 0;
+        App.$('#bulkEstados').hidden = k !== 'esp';
+    }
     document.addEventListener('change', e => {
-        if (e.target.id !== 'filtrop') return;
-        App.$$('#listaPer .item').forEach(i => i.classList.toggle('is-hidden', e.target.value !== '0' && i.dataset.ref !== e.target.value));
+        const k = ativo();
+        if (e.target.matches('.sel-cb')) sincronizarSel();
+        else if (e.target.id === 'todosPer' || e.target.id === 'todosEsp') { itens(k).filter(i => !i.classList.contains('is-hidden')).forEach(i => App.$('.sel-cb', i).checked = e.target.checked); sincronizarSel(); }
+        else if (e.target.matches('.grp-cb')) {
+            for (let el = e.target.closest('.group-title').nextElementSibling; el && !el.classList.contains('group-title'); el = el.nextElementSibling) if (!el.classList.contains('is-hidden')) App.$('.sel-cb', el).checked = e.target.checked;
+            sincronizarSel();
+        }
+    });
+    document.addEventListener('click', e => { if (e.target.closest('.seg [role=tab]')) setTimeout(() => { limpar(); sincronizarSel(); }, 0); });
+    const limpar = () => ['per', 'esp'].forEach(k => itens(k).forEach(i => App.$('.sel-cb', i).checked = false));
+    App.on('limparSel', () => { limpar(); sincronizarSel(); });
+
+    async function recarregar() {
+        const r = await fetch(location.href, { headers: { 'X-Requested-With': 'XMLHttpRequest' }, credentials: 'same-origin' });
+        const doc = new DOMParser().parseFromString(await r.text(), 'text/html');
+        ['#listaPer', '#listaEsp'].forEach(s => { App.$(s).innerHTML = App.$(s, doc).innerHTML; });
+        tudo();
+    }
+
+    // Estado de vários pedidos de uma vez
+    document.addEventListener('click', async e => {
+        const b = e.target.closest('[data-bulk-estado]'); if (!b) return;
+        const sel = selecionados('esp'); if (!sel.length) return;
+        App.run(b, async () => {
+            await App.api('PUT', '/Literatura/PedidoEstado/', { stamps: sel.map(i => i.dataset.stamp).join(','), estado: b.dataset.bulkEstado });
+            sel.forEach(i => mudarEstado(i, b.dataset.bulkEstado)); limpar(); aplicar('esp'); estatisticas();
+            notify(sel.length + ' pedido(s) marcado(s) como «' + b.dataset.bulkEstado + '».');
+        }, 'Não foi possível atualizar os pedidos.');
+    });
+    function mudarEstado(i, est) {
+        i.dataset.estado = est; i.dataset.search = i.dataset.search.replace(/(Pendente|Enviado Email|Enviado|Fornecido)\s*$/, '') + ' ' + est;
+        const t = App.$('.estado-tag', i); t.textContent = est; t.className = 'tag estado-tag estado-' + est.split(' ')[0];
+    }
+
+    App.on('apagarSel', async btn => {
+        const k = ativo(), sel = selecionados(k); if (!sel.length) return;
+        if (!await App.confirm({ title: 'Apagar pedidos', text: 'Apagar ' + sel.length + ' pedido(s) selecionado(s)? Esta ação é irreversível.', ok: 'Apagar' })) return;
+        App.run(btn, async () => {
+            await App.api('DELETE', '/Literatura/PedidosApagar/', { ids: sel.map(i => i.dataset.stamp).join(','), tipo: k === 'per' ? 'periodico' : 'especial' });
+            sel.forEach(i => i.remove()); aplicar(k); estatisticas(); notify(sel.length + ' pedido(s) apagado(s).');
+        }, 'Não foi possível apagar os pedidos.');
     });
 
-    App.on('apagarPer', async btn => {
-        const it = btn.closest('.item');
-        if (!await App.confirm({ title: 'Apagar pedido', text: 'Apagar o pedido de «' + App.$('.name', it).textContent + '»?', ok: 'Apagar' })) return;
-        App.run(btn, async () => { await App.api('DELETE', '/Literatura/Periodico/', { id: it.dataset.stamp }); await recarregar(); notify('Pedido apagado.'); },
-            'Não foi possível apagar o pedido.');
+    // Um pedido de cada vez
+    App.on('apagarUm', async btn => {
+        const it = btn.closest('.item'), k = ativo();
+        if (!await App.confirm({ title: 'Apagar pedido', text: 'Apagar o pedido de «' + it.dataset.pub + '» (' + it.dataset.desc + ')?', ok: 'Apagar' })) return;
+        App.run(btn, async () => {
+            await App.api('DELETE', k === 'per' ? '/Literatura/Periodico/' : '/Literatura/Pedido/', { id: it.dataset.stamp });
+            it.remove(); aplicar(k); estatisticas(); notify('Pedido apagado.');
+        }, 'Não foi possível apagar o pedido.');
     });
 
-    App.on('apagarEsp', async btn => {
-        const it = btn.closest('.item');
-        if (!await App.confirm({ title: 'Apagar pedido', text: 'Apagar o pedido especial de «' + App.$('.name', it).textContent + '»?', ok: 'Apagar' })) return;
-        App.run(btn, async () => { await App.api('DELETE', '/Literatura/Pedido/', { id: it.dataset.stamp }); await recarregar(); notify('Pedido apagado.'); },
-            'Não foi possível apagar o pedido.');
+    App.on('avancar', btn => {
+        const it = btn.closest('.item'), seguinte = estados[estados.indexOf(it.dataset.estado) + 1]; if (!seguinte) return;
+        App.run(btn, async () => {
+            await App.api('PUT', '/Literatura/Pedido/', { stamp: it.dataset.stamp, qtd: it.dataset.qtd, estado: seguinte });
+            mudarEstado(it, seguinte); aplicar('esp'); estatisticas(); notify('Pedido marcado como «' + seguinte + '».');
+        }, 'Não foi possível atualizar o pedido.');
     });
 
+    // ---------- Criar e editar ----------
     App.on('criarEsp', btn => App.run(btn, async () => {
         const pub = App.$('#txtIdPublicador').value, stamp = App.$('#txtPubStamp').value, qtd = App.lerInt('#txtQtd');
         if (pub === '') return App.campo('#txtIdPublicador', 'Escolha o publicador.');
@@ -331,7 +487,7 @@
     }
     App.on('editarEsp', btn => {
         atual = btn.closest('.item');
-        App.$('#estNome').textContent = App.$('.name', atual).textContent + ' · ' + App.$('.meta span:nth-child(2)', atual).textContent.trim();
+        App.$('#estNome').textContent = atual.dataset.desc + ' · ' + atual.dataset.pub;
         App.$('#txtQtdPedido').value = atual.dataset.qtd;
         marcarEstado(atual.dataset.estado);
         M('modalEstado').open();
@@ -345,6 +501,7 @@
         M('modalEstado').close(); await recarregar(); notify('Pedido atualizado.');
     }, 'Não foi possível atualizar o pedido.'));
 
+    // ---------- Emails ----------
     App.on('enviarEsp', btn => App.run(btn, async () => {
         const email = App.$('#txtEmailPedidos').value.trim(); if (!email) return App.campo('#txtEmailPedidos', 'Indique o email de destino.');
         await App.api('POST', '/Literatura/Pedidos/', { email: email });
@@ -356,5 +513,7 @@
         await App.api('POST', '/Literatura/Periodicos/' + App.$('#mailperiodico').value, { email: email });
         guardarEmail(email); M('modalMailPeriodicos').close(); notify('Pedidos de periódicos enviados.');
     }, 'Não foi possível enviar os pedidos de periódicos.'));
+
+    tudo();
 </script>
 }

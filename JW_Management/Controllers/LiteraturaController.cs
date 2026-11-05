@@ -229,6 +229,34 @@ namespace JW_Management.Controllers
             return Resultado(_dbContext.AtualizarEstadoPedidoEspecial(l, e), l.Stamp!);
         }
 
+        // Alterar o estado de vários pedidos especiais de uma vez («Enviado», «Fornecido»…).
+        [HttpPut]
+        public IActionResult PedidoEstado(string stamps, string estado)
+        {
+            var ids = IdsNumericos(stamps);
+            if (ids.Count == 0 || !_dbContext.ObterEstadosPedido().Any(e => e.Descricao == estado)) return BadRequest();
+
+            bool ok = true;
+            foreach (var id in ids) ok &= _dbContext.AtualizarEstadoPedidoEspecial(_dbContext.ObterPedidoEspecial(id), new EstadoPedido(estado));
+            return Resultado(ok);
+        }
+
+        // Apagar vários pedidos de uma vez: tipo = «periodico» ou «especial».
+        [HttpDelete]
+        public IActionResult PedidosApagar(string ids, string tipo)
+        {
+            var lista = IdsNumericos(ids);
+            if (lista.Count == 0 || tipo is not ("periodico" or "especial")) return BadRequest();
+
+            bool ok = true;
+            foreach (var id in lista) ok &= tipo == "periodico" ? _dbContext.ApagarPedidoPeriodico(id) : _dbContext.ApagarPedidoEspecial(id);
+            return Resultado(ok);
+        }
+
+        // Os ids vêm do browser e entram em SQL montado por texto: só se aceitam dígitos.
+        private static List<string> IdsNumericos(string? valor) =>
+            (valor ?? "").Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries).Where(x => x.All(char.IsAsciiDigit)).ToList();
+
         [HttpDelete]
         public IActionResult Pedido(string id, bool apagar)
         {
