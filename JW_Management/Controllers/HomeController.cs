@@ -65,7 +65,7 @@ namespace JW_Management.Controllers
 
             if (_configStore.SomenteOidcAtivo(_config))
             {
-                ModelState.AddModelError("", "O login com palavra-passe está desativado. Use o Pocket ID.");
+                ModelState.AddModelError("", "O login com palavra-passe está desativado. Entre com a passkey.");
                 return View();
             }
 

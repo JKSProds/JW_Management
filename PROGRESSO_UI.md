@@ -39,6 +39,19 @@ Aplicadas as 12 sugestões visuais: miniaturas com proporção fixa e ícone por
 ### Hourglass (investigação)
 Fontes públicas indicam que o Hourglass não tem API pública; permite exportar os dados da congregação em PDF, DOCX, CSV ou JSON e importar de KHS, NW Scheduler e TSWIN (https://www.hourglass-app.com/en/features/). Caminho seguro: importar um ficheiro exportado. Falta um ficheiro de exemplo (anonimizado) para escrever o leitor; não se deve ligar com as credenciais do utilizador.
 
+## Importação do Hourglass (reuniões)
+
+Reuniões > «Importar do Hourglass». O utilizador cola um pedido «Copiar como cURL» do Hourglass; o servidor extrai a sessão e faz **só GET** (`HourglassContext`), sem a guardar nem registar. Endereços usados (API interna da aplicação web, não documentada): `fsreport/users` (id e nome), `scheduling/mm/meeting/{datas}?no_subs=true` (partes e cânticos), `scheduling/mm/schedule/{datas}` (quem tem cada parte) e `scheduling/wm/schedule/{datas}` (fim de semana e discurso público).
+Cada semana é criada com `AdicionarReuniao` (reunião-base a partir de `r_tipos`) e preenchida; há pré-visualização com o tipo local de cada parte editável (a escolha fica guardada no browser) e correspondência de nomes aos publicadores (sem correspondência fica só o nome, como no Excel). A tabela `r_tipos` pode estar vazia: os tipos em falta são **criados a partir do Hourglass** na importação (nome estável por tipo de parte, minutos e sala adicional), com Ids por separador: 1-99 Tesouros/presidente/oração inicial, 101+ Ministério, 201+ Vida cristã, 301+ presidente do fim de semana, 401+ A Sentinela. Os Ids não correspondem aos campos do PDF S-140 antigo, que por isso pode ficar por preencher. O fim de semana mostra-se como sábado e domingo e o dia do discurso escolhe-se na pré-visualização (domingo por omissão). Por ser API não documentada, pode deixar de funcionar se o Hourglass a alterar.
+
+## Programa mensal (PDF) e fim do S-140
+
+O formulário S-140 foi removido (ação, método, botões e `S-140_TPO.pdf`). Em Reuniões, «Gerar programa» cria um PDF A4 horizontal no estilo do quadro de atividades da congregação (uma coluna por semana: reunião de semana, fim de semana, A Sentinela, indicadores e sistema sonoro), com os dados lidos do Hourglass (`HourglassPrograma`, `ProgramaPdf`). Semanas de eventos (assembleia de circuito, memorial…) aparecem a amarelo. A limpeza vem de `scheduling/other/clean` (atribuída ao responsável do grupo, mostra-se «Grupo N») e o dirigente de A Sentinela, que o Hourglass devolve vazio, usa um valor por omissão editável no ecrã (Filipe Gonçalves).
+
+## Sincronização de publicadores com o Hourglass
+
+Publicadores > «Sincronizar com o Hourglass» (`HourglassSincronizador`, só leitura no Hourglass): liga cada utilizador a um publicador por email ou nome, e propõe preencher email, telemóvel, morada (`fsreport/addresses`) e grupo (pelo responsável do grupo, ou pelo número), ou criar quem falta (como «Publicador», sem palavra-passe). Por omissão só se preenche o que está vazio; diferenças em dados já preenchidos ficam por marcar. Não altera funções nem palavras-passe. Dados do Hourglass sem coluna na aplicação (nascimento, batismo, nomeação, estado) não são guardados.
+
 ## Minimizar refrescos de página
 
 Utilitários em `wwwroot/js/app.js` (sem dependências, usam `fetch` e delegação de eventos):
@@ -70,7 +83,8 @@ Regra: nenhum ecrã migrado usa `window.location.reload()`. Só há navegação 
 | Home / Index | Feito | Saudação, resumo de stock carregado em segundo plano (`/Home/Resumo`), módulos com atalhos |
 | Home / Login (+ Auth, Error) | Feito | Painel de marca + formulário; congregações renderizadas no servidor (sem pedido AJAX) |
 | Territórios (Index, Território, Registos) | Feito | Estados disponível/atribuído/+90 dias, atribuir e devolver com envio opcional por email/SMS, anexos com lista viva, leitor QR partilhado (`App.qr`) |
-| Reuniões, Congressos | **Por fazer** | Não alterados; seguem as cores e o tema via remapeamento do Bulma (o gráfico Gantt do Calendário não segue o tema escuro) |
+| Reuniões (Início, Reunião, Discursos, Calendário) | Feito | Cartões de designação com guardar/apagar sem recarregar, importação do Hourglass e programa mensal em PDF; o gráfico Gantt do Calendário não segue o tema escuro |
+| Congressos | **Por fazer** | Não alterado; segue as cores e o tema via remapeamento do Bulma |
 
 ## Correções de código (comportamento preservado)
 

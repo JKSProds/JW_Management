@@ -1,256 +1,128 @@
-﻿@model IEnumerable<JW_Management.Models.Discurso>
+@model IEnumerable<JW_Management.Models.Discurso>
 @{
     ViewData["Title"] = "Discursos";
+    var hoje = DateTime.Today;
+    var ordenados = Model.OrderByDescending(d => d.DataDiscurso).ToList();
 }
 
-<form asp-action="Index" method="get" id="">
-    <div class="container">
-        <div class="columns">
-            <div class="column">
-                <div class="tile">
-                    <div class="tile is-parent is-vertical">
-                        <article class="tile is-child notification is-info">
-                            <p class="title">
-                                <span class="icon mr-3">
-                                    <i class="fa-solid fa-user-tie"></i>
-                                </span>
-                                <span>Discursos</span>
-                            </p>
-                        </article>
-                    </div>
-                </div>
-            </div>
-            <div class="column">
-                <div class="field has-addons has-addons-right mx-1 is-flex-wrap-wrap" style="width:100%">
-                    <div class="buttons is-right">
-                        <p class="control">
-                            <button type="button" class="button is-success is-fullwidth " onclick="Bulma('#modalAdicionarDiscurso').modal().open();">
-                                <span class="icon">
-                                    <i class="fa-solid fa-plus"></i>
-                                </span>
-                                <span>Criar Discurso</span>
-                            </button>
-                        </p>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-</form>
-<hr />
 <div class="container">
-    @if (Model.Count() == 0)
-    {
-        <br />
-        <button class="button is-danger is-large is-rounded is-fullwidth is-disabled">
-            Não foram encontrados discursos!
-        </button>
-    }
-    else
-    {
-        <div class="b-table">
-            <div class="table-wrapper has-mobile-cards">
-                <table class="table is-hoverable is-fullwidth">
-                    <thead>
-                        <tr>
-                            <th></th>
-                            <th>
-                                @Html.DisplayNameFor(model => model.FirstOrDefault()!.NomePublicador)
-                            </th>
-                            <th>
-                                @Html.DisplayNameFor(model => model.FirstOrDefault()!.Congregacao)
-                            </th>
-                            <th>
-                                @Html.DisplayNameFor(model => model.FirstOrDefault()!.TemaDiscurso)
-                            </th>
-                            <th>
-                                @Html.DisplayNameFor(model => model.FirstOrDefault()!.DataDiscurso)
-                            </th>
-                            <th></th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @foreach (var item in Model)
-                        {
-                            <tr>
-                                <td></td>
-                                <td data-label="@Html.DisplayNameFor(model => model.FirstOrDefault()!.NomePublicador)">
-                                    <span>@item.NomePublicador</span>
-                                </td>
-                                <td data-label="@Html.DisplayNameFor(model => model.FirstOrDefault()!.Congregacao)">
-                                    <span>@item.Congregacao</span>
-                                </td>
-                                <td data-label="@Html.DisplayNameFor(model => model.FirstOrDefault()!.TemaDiscurso)">
-                                    <span>@item.TemaDiscurso</span>
-                                </td>
-                                <td data-label="@Html.DisplayNameFor(model => model.FirstOrDefault()!.DataDiscurso)">
-                                    <span>@item.DataDiscurso.ToShortDateString()</span>
-                                </td>
-                                <td class="is-actions-cell">
-                                    <div class="buttons is-pulled-right is-flex-wrap-nowrap" style="width:100%">
-                                        <button class="button is-danger is-fullwidth is-large "
-                                                onclick="ConfirmApagar('@item.Stamp')">
-                                            <i class="fas fa-trash-can"></i>
-                                        </button>
-                                    </div>
-                                </td>
-                            </tr>
-                        }
-                    </tbody>
-                </table>
-            </div>
+    <div class="page-head">
+        <div class="head-title"><div><h1>Discursos públicos</h1></div></div>
+        <div class="head-actions">
+            <button type="button" class="button is-info" data-open="modalDiscurso">
+                <span class="icon"><i class="fa-solid fa-microphone-lines"></i></span><span>Criar discurso</span>
+            </button>
         </div>
-    }
+    </div>
+
+    @await Html.PartialAsync("_Stats", new[] {
+        ("fa-microphone-lines", "Discursos", ordenados.Count.ToString(), "sTot", ""),
+        ("fa-calendar-day", "Por realizar", ordenados.Count(d => d.DataDiscurso.Date >= hoje).ToString(), "sProx", "is-ok"),
+        ("fa-people-arrows", "Oradores externos", ordenados.Count(d => d.OradorExterno).ToString(), "sExt", "") })
+
+    <div class="toolbar">
+        <div class="control has-icons-left search">
+            <input type="search" class="input" id="filtro" placeholder="Pesquisar por orador, congregação ou tema" aria-label="Pesquisar discursos">
+            <span class="icon is-left"><i class="fa-solid fa-magnifying-glass"></i></span>
+        </div>
+        <div class="chips" id="chips" role="group" aria-label="Filtrar">
+            <button type="button" class="chip" data-type="0" aria-pressed="true">Todos</button>
+            <button type="button" class="chip" data-type="futuro" aria-pressed="false">Por realizar</button>
+            <button type="button" class="chip" data-type="passado" aria-pressed="false">Realizados</button>
+        </div>
+    </div>
+
+    <div id="lista" class="items">
+        @foreach (var item in ordenados)
+        {
+            <article class="item no-thumb" data-stamp="@item.Stamp" data-type="@(item.DataDiscurso.Date >= hoje ? "futuro" : "passado") @(item.OradorExterno ? "externo" : "")"
+                     data-externo="@(item.OradorExterno ? 1 : 0)" data-search="@item.NomePublicador @item.Congregacao @item.TemaDiscurso @item.NumDiscurso">
+                <div class="main">
+                    <div class="name"><span class="ref-tag id-badge">@item.NumDiscurso</span> @item.TemaDiscurso</div>
+                    <div class="meta">
+                        <span><i class="fa-solid fa-user fa-xs"></i> @item.NomePublicador</span>
+                        <span>@item.Congregacao</span>
+                        <span class="num">@item.DataDiscurso.ToString("dd/MM/yyyy")</span>
+                    </div>
+                </div>
+                <div class="side">
+                    <div class="acts">
+                        <button type="button" class="button btn-icon is-danger-hover" data-action="apagar" aria-label="Apagar discurso" title="Apagar"><i class="fa-solid fa-trash-can"></i></button>
+                    </div>
+                </div>
+            </article>
+        }
+    </div>
+    <div id="vazio" class="empty-state" hidden>
+        <span class="icon"><i class="fa-solid fa-microphone-lines"></i></span>
+        <strong>Não foram encontrados discursos</strong>
+        Crie um discurso ou importe as reuniões do Hourglass.
+    </div>
 </div>
 
-<div id="modalAdicionarDiscurso" class="modal">
+<div id="modalDiscurso" class="modal" role="dialog" aria-modal="true" aria-labelledby="tDi">
     <div class="modal-background"></div>
     <div class="modal-card">
         <header class="modal-card-head">
-            <p class="modal-card-title">Adicionar Discurso</p>
+            <p class="modal-card-title" id="tDi"><span class="icon"><i class="fa-solid fa-microphone-lines"></i></span><span>Adicionar discurso</span></p>
+            <button type="button" class="delete" aria-label="Fechar" data-close></button>
         </header>
         <section class="modal-card-body">
-            <form style="width:100%" id="frmAddDiscurso" asp-action="Discurso" method="POST">
-                               
-                <div class="control" style="width:100%">
-                    <label class="label">Orador</label>
-                    <div class="field has-addons">
-                    <div class="control has-icons-left" style="width:100%">
-                        <span class="select is-fullwidth">
-                            <select class="select" style="height: auto" name="txtIdPub"
-                                    asp-items="@(new SelectList(@ViewBag.Publicadores, "Value", "Text"))">  
-                                    <option value="0" selected disabled>Escolha um publicador</option>
-                            </select>
-                        </span>
-                        <span class="icon is-small is-left">
-                            <i class="fa-solid fa-user-tie"></i>
-                        </span>
-                    </div>
-                    <div class="control has-icons-left "  style="width:100%">
-                        <input class="input is-success" type="text" name="txtNomePub" placeholder="Ou escreva o nome...">
-                        <span class="icon is-small is-left">
-                        <i class="fas fa-user"></i>
-                        </span>
-                    </div>
-                    <div class="control"  style="width:100%">
-                        <input class="input is-success" type="text" name="txtCongPub" placeholder="E a congregacao ...">
-                    </div>
+            <div class="field">
+                <label class="label" for="dPub">Orador (publicador da congregação)</label>
+                <div class="select is-fullwidth">
+                    <select id="dPub">
+                        <option value="0" selected>Orador externo: escreva o nome abaixo</option>
+                        @foreach (var p in ((IEnumerable<SelectListItem>)ViewBag.Publicadores).Where(p => p.Value != "0")) { <option value="@p.Value">@p.Text</option> }
+                    </select>
                 </div>
+            </div>
+            <div class="form-grid">
+                <div class="field"><label class="label" for="dNome">Nome do orador externo</label><input class="input" id="dNome" type="text" autocomplete="off"></div>
+                <div class="field"><label class="label" for="dCong">Congregação</label><input class="input" id="dCong" type="text" autocomplete="off"></div>
+            </div>
+            <div class="field">
+                <label class="label" for="dTema">Discurso</label>
+                <div class="select is-fullwidth">
+                    <select id="dTema">
+                        <option value="0" selected disabled>Escolha um tema</option>
+                        @foreach (var t in (IEnumerable<SelectListItem>)ViewBag.Discursos) { <option value="@t.Value">@t.Text</option> }
+                    </select>
                 </div>
-                <div class="control" style="width:100%">
-                    <label class="label">Discurso</label>
-                    <div class="control has-icons-left" style="width:100%">
-                        <span class="select is-fullwidth">
-                            <select class="select" style="height: auto" name="txtIdDiscurso"
-                                    asp-items="@(new SelectList(@ViewBag.Discursos, "Value", "Text"))">
-                                    <option value="0" selected disabled>Escolha um tema</option>
-                            </select>
-                        </span>
-                        <span class="icon is-small is-left">
-                            <i class="fa-solid fa-book"></i>
-                        </span>
-                    </div>
-                </div>
-                <div class="control" style="width:100%">
-                    <label class="label">Data</label>
-                <p class="control has-icons-left">
-                    <input class="input" type="date"
-                            value="@(DateTime.Now.ToString("yyyy-MM-dd"))" id="txtData"
-                            name="txtData" />
-                    <script>
-                        bulmaCalendar.attach('#txtData', {
-                            color: 'info',
-                            lang: 'pt',
-                            dateFormat: 'dd/MM/yyyy',
-                            todayLabel: 'Hoje',
-                            showClearButton: false,
-                            cancelLabel: 'Cancelar',
-                            displayMode: 'dialog'
-                        });
-                        document.getElementById('txtData').bulmaCalendar.on('select', function (datepicker) {
-                            document.getElementById('txtData').value = datepicker.data.value();
-                        });</script>
-                </p>
-                </div>
-            </form>
+            </div>
+            <div class="field">
+                <label class="label" for="dData">Data</label>
+                <input type="date" class="input" id="dData" value="@DateTime.Now.ToString("yyyy-MM-dd")">
+            </div>
         </section>
         <footer class="modal-card-foot">
-            <div class="buttons is-centered" style="width:100%">
-            <button type="button" class="button is-success is-large is-fullwidth"
-                    onclick="document.getElementById('frmAddDiscurso').submit();"
-                    href="javascript:;">
-                <span class="icon">
-                    <i class="fa-solid fa-circle-plus fa-beat-fade"></i>
-                </span>
-                <span>
-                    Criar
-                </span>
-            </button>
-            <button type="button" class="button is-info is-large is-fullwidth"
-                    onclick="Bulma('#modalAdicionarDiscurso').modal().close();"
-                    href="javascript:;">
-                <span class="icon">
-                    <i class="fa-regular fa-circle-xmark"></i>
-                </span>
-                <span>Fechar</span>
-            </button>
-            </div>
+            <button type="button" class="button" data-close>Cancelar</button>
+            <button type="button" class="button is-info" data-action="criar" data-submit><span class="icon"><i class="fa-solid fa-check"></i></span><span>Criar</span></button>
         </footer>
     </div>
 </div>
 
-<div class="modal" id="ModalConfirmApagar">
-    <div class="modal-background"></div>
-    <div class="modal-card">
-        <header class="modal-card-head">
-            <p class="modal-card-title">Apagar Discursos</p>
-        </header>
-        <section class="modal-card-body">
-            <div class="modal-body">
-                <p>Tem a certeza que deseja apagar este discurso definitivamente?</p>
-            </div>
-        </section>
-        <footer class="modal-card-foot">
-            <button class="button is-danger is-fullwidth is-large"
-                    onclick="Apagar(document.getElementById('txtHiddenStamp').value);">
-                <span class="icon">
-                    <i class="fas fa-trash-can"></i>
-                </span>
-                <span>Confirmar</span>
-            </button>
-            <button class="button is-fullwidth is-large" onclick="Bulma('#ModalConfirmApagar').modal().close();">
-                <span class="icon">
-                    <i class="fa-solid fa-circle-xmark"></i>
-                </span>
-                <span>Não</span>
-            </button>
-        </footer>
-    </div>
-</div>
-
-<input id="txtHiddenStamp" hidden />
-
+@section Scripts {
 <script>
-    function ConfirmApagar(id) {
-        document.getElementById('txtHiddenStamp').value = id;
-        Bulma('#ModalConfirmApagar').modal().open();
-    }
+    App.filtro({
+        lista: '#lista', input: '#filtro', chips: '#chips', vazio: '#vazio',
+        aoAplicar: v => App.stats({ sTot: v.length, sProx: v.filter(i => i.dataset.type.includes('futuro')).length, sExt: v.filter(i => i.dataset.externo === '1').length })
+    });
 
+    App.on('criar', btn => App.run(btn, async () => {
+        const tema = App.$('#dTema').value, pub = App.$('#dPub').value, nome = App.$('#dNome').value.trim();
+        if (pub === '0' && !nome) return App.campo('#dNome', 'Escolha um publicador ou escreva o nome do orador.');
+        if (pub === '0' && !App.$('#dCong').value.trim()) return App.campo('#dCong', 'Indique a congregação do orador.');
+        if (tema === '0') return App.campo('#dTema', 'Escolha o tema.');
+        if (!App.$('#dData').value) return App.campo('#dData', 'Indique a data.');
+        await App.api('POST', '/Reunioes/Discurso/', { txtIdPub: pub, txtNomePub: nome, txtCongPub: App.$('#dCong').value.trim(), txtIdDiscurso: tema, txtData: App.$('#dData').value });
+        App.modal('modalDiscurso').close(); await App.refresh('#lista'); notify('Discurso criado.');
+    }, 'Não foi possível criar o discurso.'));
 
-    function Apagar(id) {
-        $.ajax({
-            url: '/Reunioes/Discurso/',
-            data: { "id": id },
-            type: "DELETE",
-            success: function (data) {
-                window.location.reload();
-            },
-            error: function (data) {
-                notifyError('Ocorreu um erro ao apagar essa reuniao!');
-            },
-            failure: function (data) {
-                notifyError('Falha ao apagar essa reuniao!');
-            }
-        });
-    }
+    App.on('apagar', async btn => {
+        const it = btn.closest('.item');
+        if (!await App.confirm({ title: 'Apagar discurso', text: 'Apagar este discurso definitivamente?', ok: 'Apagar' })) return;
+        App.run(btn, async () => { await App.api('DELETE', '/Reunioes/Discurso/', { id: it.dataset.stamp }); App.removeItem(it); notify('Discurso apagado.'); }, 'Não foi possível apagar o discurso.');
+    });
 </script>
+}

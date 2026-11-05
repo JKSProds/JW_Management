@@ -21,7 +21,7 @@
     </div>
 
     @await Html.PartialAsync("_Stats", new[] {
-        ("fa-user-check", "Estado", livre ? "Disponível" : "Atribuído", "", livre ? "is-ok" : Model.CorEstado is "danger" ? "is-bad" : Model.CorEstado is "warning" ? "is-warn" : ""),
+        ("fa-user-check", "Estado", livre ? "Disponível" : "Atribuído", "", livre ? "is-ok" : ult != null && Model.CorEstado is "danger" ? "is-bad" : ult != null && Model.CorEstado is "warning" ? "is-warn" : ""),
         ("fa-user", livre ? "Último publicador" : "Com o publicador", livre ? (string.IsNullOrEmpty(ult?.Stamp) ? "—" : ult?.Publicador?.Nome ?? "—") : ult!.Publicador!.Nome ?? "—", "", ""),
         ("fa-hourglass-half", "Último movimento", string.IsNullOrEmpty(ult?.Stamp) ? "—" : ((int)(DateTime.Now - ult!.DataMovimento).TotalDays) + " dia(s)", "", ""),
         ("fa-clock-rotate-left", "Movimentos", movimentos.Count.ToString(), "", "") })

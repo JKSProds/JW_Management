@@ -247,15 +247,9 @@
         App.$$('#modalNovaPublicacao input[type=text]').forEach(i => i.value = '');
     }, 'Não foi possível criar a publicação.'));
 
-    // Aceita um comando cURL, os cabeçalhos do pedido ou só o valor da cookie.
-    function extrairCookie(t) {
-        const m = t.match(/(?:-H|--header)\s+(['"])\s*cookie:\s*([^]*?)\1/i) || t.match(/(?:-b|--cookie)\s+(['"])([^]*?)\1/i) || t.match(/^\s*cookie:\s*(.+)$/im);
-        return (m ? m[m.length - 1] : t).replace(/^\s*cookie:\s*/i, '').replace(/\s*\n\s*/g, ' ').trim();
-    }
-
     App.on('enviarHub', btn => App.run(btn, async () => {
         const bruto = App.$('#txtCookie').value.trim(); if (!bruto) return App.campo('#txtCookie', 'Cole o pedido ou a cookie primeiro.');
-        const c = extrairCookie(bruto);
+        const c = App.extrairCookie(bruto);
         if (!/XSRF-TOKEN=/.test(c)) return App.campo('#txtCookie', 'Não encontrei a cookie XSRF-TOKEN. Copie o pedido «overview» completo, com «Copiar como cURL».');
         await App.api('POST', '/Literatura/API/', { id: c });
         App.$('#txtCookie').value = ''; modalTok.close(); notify('Inventário enviado com sucesso.');

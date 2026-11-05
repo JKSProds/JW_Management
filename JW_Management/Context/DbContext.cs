@@ -1317,6 +1317,12 @@
             return ExecutarQuery(sql);
         }
 
+        public bool CriarTipoDesignacao(TipoDesignacao t)
+        {
+            string T(string? s) => (s ?? "").Replace("\\", "\\\\").Replace("'", "''");
+            return ExecutarQuery("INSERT INTO r_tipos (Id, Descricao, DescricaoAdicional, Minutos, SalasExtra) VALUES (" + t.Id + ", '" + T(t.Descricao) + "', '" + T(t.DescricaoAdicional) + "', " + t.NMin + ", " + (t.Salas > 1 ? 1 : 0) + ");");
+        }
+
         public List<TipoDesignacao> ObterTiposDesignacao()
         {
             List<TipoDesignacao> t = new();

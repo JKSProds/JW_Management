@@ -581,3 +581,40 @@ code, pre { background: var(--neutral); color: var(--ink); }
 .diff-MODERADO::before { background: var(--warn); }
 .diff-DIFICIL::before { background: var(--bad); }
 .item .id-badge { min-width: 3rem; text-align: center; }
+
+/* Importação do Hourglass */
+.modal-card.is-wide { max-width: 940px; width: calc(100% - 1.5rem); }
+.modal-card.is-wide .modal-card-body { max-height: 65vh; overflow-y: auto; }
+.hg-semana { border: 1px solid var(--line); border-radius: var(--radius); margin-bottom: .9rem; background: var(--surface); }
+.hg-semana > header { display: flex; align-items: center; gap: .75rem; padding: .6rem .9rem; border-bottom: 1px solid var(--line); font-weight: 700; flex-wrap: wrap; }
+.hg-semana table { width: 100%; font-size: .88rem; border-collapse: collapse; }
+.hg-semana td, .hg-semana th { padding: .35rem .6rem; border-bottom: 1px solid var(--line); text-align: left; vertical-align: middle; }
+.hg-semana th { color: var(--ink-faint); font-size: .75rem; text-transform: uppercase; letter-spacing: .03em; }
+.hg-semana select { max-width: 100%; }
+.hg-semana .sem-par { color: var(--bad); font-weight: 600; }
+.hg-semana .extra { padding: .55rem .9rem; font-size: .88rem; color: var(--ink-soft); display: flex; flex-wrap: wrap; gap: .5rem 1.25rem; align-items: center; }
+
+/* Reuniões: cartões de designação */
+.dg-grid { display: grid; gap: .9rem; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); }
+.dg-head { display: flex; align-items: center; flex-wrap: wrap; gap: .5rem; margin-bottom: .75rem; }
+.dg-head h3 { font-size: 1rem; font-weight: 700; margin: 0; margin-right: auto; }
+.dg-campos { grid-template-columns: 1fr 110px; margin-bottom: .75rem; }
+.dg-pessoas { display: grid; gap: .5rem; }
+.dg-foot { display: flex; gap: .5rem; margin-top: .9rem; justify-content: flex-end; }
+.panel-card + .panel-card.dg { margin-top: 0; }
+.dg.panel-card { padding: 1rem; }
+
+/* Navbar no tema escuro: o Bulma pinta de branco o foco/hover/ativo dos itens e das ligações. */
+.app-nav .navbar-item, .app-nav .navbar-link, .app-nav a.navbar-item, .app-nav .navbar-burger { background: transparent; color: var(--ink-soft); }
+.app-nav .navbar-item:focus, .app-nav .navbar-item:focus-within, .app-nav .navbar-link:focus, .app-nav .navbar-link:focus-within,
+.app-nav a.navbar-item:hover, .app-nav a.navbar-item:focus, .app-nav .navbar-link:hover, .app-nav .navbar-item.has-dropdown:focus .navbar-link,
+.app-nav .navbar-item.has-dropdown:focus-within .navbar-link, .app-nav .navbar-item.has-dropdown.is-active .navbar-link,
+.app-nav .navbar-item.is-hoverable:hover > .navbar-link { background: var(--brand-tint); color: var(--brand-strong); }
+.app-nav .navbar-dropdown .navbar-item { background: transparent; }
+.app-nav .navbar-dropdown .navbar-item:hover, .app-nav .navbar-dropdown .navbar-item:focus { background: var(--brand-tint); color: var(--brand-strong); }
+.app-nav .navbar-link.is-active, .app-nav .navbar-item.has-dropdown:hover > .navbar-link.is-active { background: transparent; color: var(--brand-strong); }
+.app-nav .navbar-link::after { border-color: currentColor; }
+.app-nav .navbar-burger span { background-color: var(--ink); }
+.app-nav .navbar-divider { background-color: var(--line); }
+.app-nav .theme-toggle { background: var(--surface); color: var(--ink-soft); }
+@media (max-width: 1023px) { .app-nav .navbar-menu { background: var(--surface); } }

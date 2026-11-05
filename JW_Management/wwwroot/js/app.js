@@ -23,7 +23,7 @@
         const opt = { method: method, headers: { 'X-Requested-With': 'XMLHttpRequest' }, credentials: 'same-origin' };
         const qs = data ? new URLSearchParams(data).toString() : '';
         if (method === 'GET') { if (qs) url += (url.includes('?') ? '&' : '?') + qs; }
-        else opt.body = qs;
+        else { opt.body = qs; opt.headers['Content-Type'] = 'application/x-www-form-urlencoded;charset=UTF-8'; } // sem isto o fetch envia text/plain e o ASP.NET não lê os parâmetros do corpo
         const r = await fetch(url, opt);
         if (r.redirected && /\/Home\/Login/i.test(r.url)) { location.href = r.url; throw new Error('sessão expirada'); }
         if (!r.ok || (r.redirected && /\/Home\/Error/i.test(r.url))) throw new Error('HTTP ' + r.status); // acesso negado redireciona para /Home/Error
@@ -298,6 +298,12 @@
                 aoLer(txt); m.close(); notify('Código QR lido.');
             });
         } catch (e) { m.close(); notifyError('Não foi possível iniciar a leitura do código QR.'); }
+    };
+
+    // Extrai a cookie de um comando cURL («Copiar como cURL»), de cabeçalhos copiados ou do valor simples.
+    App.extrairCookie = function (t) {
+        const m = t.match(/(?:-H|--header)\s+(['"])\s*cookie:\s*([^]*?)\1/i) || t.match(/(?:-b|--cookie)\s+(['"])([^]*?)\1/i) || t.match(/^\s*cookie:\s*(.+)$/im);
+        return (m ? m[m.length - 1] : t).replace(/^\s*cookie:\s*/i, '').replace(/\s*\n\s*/g, ' ').trim();
     };
 
     // Seleccionar o publicador "Loja" (id definido pelo ecrã).

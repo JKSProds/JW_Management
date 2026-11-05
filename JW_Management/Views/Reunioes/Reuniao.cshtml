@@ -1,491 +1,212 @@
-﻿@model JW_Management.Models.Reuniao
+@model JW_Management.Models.Reuniao
 @{
-    ViewData["Title"] = "Reuniões";
+    ViewData["Title"] = "Reunião";
+    var designacoes = Model.Designacoes ?? new();
+    var separadores = new (int Base, string Titulo, string Icone)[]
+    {
+        (0, "Tesouros", "fa-gem"), (100, "Ministério", "fa-people-arrows"), (200, "Viver como cristãos", "fa-hand-holding-heart"),
+        (300, "Fim de semana", "fa-book"), (400, "A Sentinela", "fa-book-open"), (500, "Responsabilidades", "fa-person-circle-check")
+    };
+    var publicadores = ((IEnumerable<SelectListItem>)ViewBag.Publicadores).ToList();
+    var canticos = ((IEnumerable<SelectListItem>)ViewBag.Canticos).ToList();
 }
 
-<style>
-    .tabs-content li {
-        display: none;
-        list-style: none;
-    }
-
-    .tabs-content li.is-active {
-        display: block;
-    }
-</style>
-
-<form asp-action="Index" method="get" id="">
-    <div class="container">
-        <div class="columns">
-            <div class="column">
-                <div class="tile">
-                    <div class="tile is-parent is-vertical">
-                        <article class="tile is-child notification is-info">
-                            <p class="title">
-                                <span class="icon mr-3">
-                                    <i class="fa-solid fa-user-tie"></i>
-                                </span>
-                                <span>Reunião - @Model.SemanaReuniao</span>
-                            </p>
-                        </article>
-                    </div>
-                </div>
-            </div>
-            <div class="column">
-                    <div class="field has-addons has-addons-right mx-1 is-flex-wrap-wrap" style="width:100%">
-                    <div class="buttons is-right">
-                        <p class="control">
-                            <button type="button" class="button is-info is-fullwidth is-large" onclick="Bulma('#modalAdicionarDesignacao').modal().open();">
-                                <span class="icon">
-                                    <i class="fa-solid fa-plus"></i>
-                                </span>
-                                <span>Adicionar Designação</span>
-                            </button>
-                        </p>
-                        <p class="control">
-                            <a type="button" class="button is-success is-fullwidth is-large" href="~/Reunioes/Formulario/@Model.Stamp">
-                                <span class="icon">
-                                    <i class="fas fa-file-invoice fa-lg"></i>
-                                </span>
-                                <span>Exportar S-140</span>
-                            </a>
-                        </p>
-                    </div>
-                </div>
-            </div>
+<div class="container">
+    <div class="page-head">
+        <div class="head-title"><div><h1>@Model.SemanaReuniao</h1></div></div>
+        <div class="head-actions">
+            <button type="button" class="button is-info" data-open="modalDesignacao">
+                <span class="icon"><i class="fa-solid fa-clipboard-list"></i></span><span>Adicionar designação</span>
+            </button>
+            <a class="button is-info is-light" href="~/Reunioes">
+                <span class="icon"><i class="fa-solid fa-arrow-left"></i></span><span>Reuniões</span>
+            </a>
         </div>
     </div>
-</form>
-<hr />
-<div class="container">
-    @if (Model.Designacoes!.Count() == 0)
+
+    @if (!designacoes.Any())
     {
-        <br />
-        <button class="button is-danger is-large is-rounded is-fullwidth is-disabled">
-            Não foram encontradas
-            designações!
-        </button>
+        <div class="empty-state">
+            <span class="icon"><i class="fa-solid fa-clipboard-list"></i></span>
+            <strong>Esta reunião não tem designações</strong>
+            Não existem tipos de designação para a preencher. Importe as reuniões do Hourglass (cria os tipos) ou adicione uma designação.
+        </div>
     }
     else
     {
-         <div class="task-container columns is-multiline mx-1">
-            @foreach(var item in Model.Canticos) {
-                <div class="column is-3">
-                    <div class="field has-addons">
-                        <div class="control is-expanded">
-                            <div class="select is-fullwidth">
-                                <select class="select" style="height: auto" asp-for="@item.Id" asp-items="@(new SelectList(@ViewBag.Canticos, "Value", "Text"))"></select>
-                            </div>
-                        </div>
-                        <div class="control">
-                            <button class="button is-success is-fullwidth card-footer-item" onclick="AtualizarCantico('@item.Stamp', this.parentElement.parentElement.querySelector('select').value)"><i class="fa-solid fa-floppy-disk"></i></button>
-                        </div>
-                    </div>
-                </div>
-            }  
-            <div class="column is-3">
-                <div class="field has-addons">
-                    <div class="control is-expanded">
+    <div id="regiao">
+        @await Html.PartialAsync("_Stats", new[] {
+            ("fa-clipboard-list", "Designações", designacoes.Count.ToString(), "", ""),
+            ("fa-user-check", "Atribuídas", designacoes.Count(d => d.Atribuida).ToString(), "", "is-ok"),
+            ("fa-user-clock", "Por atribuir", designacoes.Count(d => !d.Atribuida).ToString(), "", designacoes.Any(d => !d.Atribuida) ? "is-warn" : ""),
+            ("fa-music", "Cânticos definidos", Model.Canticos.Count(c => c.Id > 0) + " de " + Model.Canticos.Count, "", "") })
+
+        <div class="panel-card mb-4">
+            <h2>Cânticos</h2>
+            <div class="form-grid">
+                @foreach (var c in Model.Canticos)
+                {
+                    <div class="field">
                         <div class="select is-fullwidth">
-                            <select class="select" style="height: auto" asp-items="@(new SelectList(@ViewBag.Grupos, "Value", "Text"))"></select>
+                            <select data-action-change="cantico" data-stamp="@c.Stamp" aria-label="Cântico">
+                                @foreach (var o in canticos) { <option value="@o.Value" selected="@(o.Value == c.Id.ToString())">@o.Text</option> }
+                            </select>
                         </div>
                     </div>
-                    <div class="control">
-                        <button class="button is-success is-fullwidth card-footer-item" onclick="alert()"><i class="fa-solid fa-floppy-disk"></i></button>
-                    </div>
-                </div>
-            </div>     
+                }
+            </div>
         </div>
 
-    <div class="tabs-wrapper">
-        <div class="tabs is-centered is-boxed is-medium">
-            <ul>               
-                <li class="is-active">
-                <a>
-                    <span class="icon is-small"><i class="fa-solid fa-user-tie"></i></span>
-                    <span>Tesouros</span>
-                </a>
-                </li>                
-                <li>
-                <a>
-                    <span class="icon is-small"><i class="fa-solid fa-people-arrows"></i></span>
-                    <span>Designacoes</span>
-                </a>
-                </li>
-                <li>
-                <a>
-                    <span class="icon is-small"><i class="fa-solid fa-hand"></i></span>
-                    <span>Viver Como Cristaos</span>
-                </a>
-                </li>
-                <li>
-                <a>
-                    <span class="icon is-small"><i class="fa-solid fa-book"></i></span>
-                    <span>Fim de Semana</span>
-                </a>
-                </li>
-                <li>
-                <a>
-                    <span class="icon is-small"><i class="fa-solid fa-book-open"></i></span>
-                    <span>Sentinela</span>
-                </a>
-                </li>
-                <li>
-                <a>
-                    <span class="icon is-small"><i class="fa-solid fa-person-circle-check"></i></span>
-                    <span>Responsabilidades</span>
-                </a>
-                </li>
-            </ul>
+        <div class="seg" role="tablist" aria-label="Secções da reunião">
+            @for (var i = 0; i < separadores.Length; i++)
+            {
+                var sep = separadores[i];
+                <button type="button" role="tab" id="tab@(sep.Base)" aria-controls="pan@(sep.Base)" aria-selected="@(i == 0 ? "true" : "false")">@sep.Titulo<span class="count">@Model.ObterDesignacoesTipo(sep.Base).Count</span></button>
+            }
         </div>
 
-        <div class="tabs-content">
-            <ul>
-            @for (int i=0; i<600; i+=100) {
-                    <li class="@(i == 0 ? "is-active" : "")">
-                        <div class="task-container columns is-multiline mx-1">
-                            @foreach(var item in Model.ObterDesignacoesTipo(i)) {
-                                <div class="column is-6">
-                                    <div class="card">
-                                        <header class="card-header card-toggle @(Model.Designacoes.Where(d => d.TipoDesignacao == item.TipoDesignacao && d.Local == item.Local).Where(u => !u.Atribuida).Count() > 0 ? "has-background-danger" : "")" >
-                                            <p class="is-size-6 my-1 has-text-centered column">
-                                                <b>@item.TipoDesignacao!.Descricao</b>
-                                            </p>
-                                             <input class="input is-rounded my-auto mr-1 minutos" style="max-width:75px" type="number" value="@item.NMin" oninput="this.parentElement.parentElement.childNodes[1].classList.remove('has-background-danger');this.parentElement.parentElement.childNodes[1].classList.add('has-background-warning')">
-                                        </header>
-                                        <div class="card-content has-text-centered">
-                                            <div class="content">
-                                                <div class="field is-horizontal">
-                                                    <div class="field-label is-normal">
-                                                        <label class="label">Tema</label>
-                                                    </div>
-                                                    <div class="field-body">
-                                                        <div class="field">
-                                                            <p class="control">
-                                                                <input class="input tema" type="text" oninput="this.parentElement.parentElement.parentElement.parentElement.parentElement.parentElement.parentElement.childNodes[1].classList.remove('has-background-danger');this.parentElement.parentElement.parentElement.parentElement.parentElement.parentElement.parentElement.childNodes[1].classList.add('has-background-warning')" value="@item.NomeDesignacao" placeholder="Tema da Designacao">
-                                                            </p>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                                <hr>
-                                                <div class="columns is-centered is-vcentered">
-                                                    <div class="column m-1">
-                                                        @foreach (var u in @Model.Designacoes.Where(d => d.TipoDesignacao == item.TipoDesignacao && d.Local == item.Local)) {
-                                                        <div class="field">
-                                                            <div class="field has-addons">
-                                                                <div class="control has-icons-left" style="width:100%">
-                                                                        <span class="select is-fullwidth">
-                                                                            <select class="select" style="height: auto" asp-for="@u.Publicador.Id" id="@u.Stamp" onchange="this.parentElement.parentElement.parentElement.parentElement.parentElement.parentElement.parentElement.parentElement.parentElement.childNodes[1].classList.remove('has-background-danger');this.parentElement.parentElement.parentElement.parentElement.parentElement.parentElement.parentElement.parentElement.parentElement.childNodes[1].classList.add('has-background-warning')"
-                                                                                    asp-items="@(new SelectList(@ViewBag.Publicadores, "Value", "Text"))">
-                                                                            </select>
-                                                                        </span>
-                                                                        <span class="icon is-small is-left">
-                                                                            <i class="fa-solid fa-user-tie"></i>
-                                                                        </span>
-                                                                </div>
-                                                                <div class="control">
-                                                                    <button type="button" class="button is-danger disable-dbl-tap-zoom"
-                                                                            onclick="ConfirmApagar(this.parentElement.parentElement.querySelector('select').id);">
-                                                                        <span class="icon">
-                                                                            <i class="fas fa-trash-can"></i>
-                                                                        </span>
-                                                                    </button>
-                                                                </div>
-                                                            </div>
-                                                        </div>
-                                                        }
-                                                    </div>
-                                                    @if (Model.Designacoes.Where(d => d.TipoDesignacao == item.TipoDesignacao && item.TipoDesignacao.Salas>1).Count() > 1) {
-                                                        <div class="column">
-                                                            <div class="field">
-                                                            <div class="field has-addons">
-                                                                <div class="control" style="width:100%">
-                                                                    <button type="button" class="button is-primary disable-dbl-tap-zoom is-fullwidth">
-                                                                        <span class="icon">
-                                                                            <i class="fas fa-warehouse"></i>
-                                                                        </span>
-                                                                        <span>@item.Local</span>
-                                                                    </button>
-                                                                </div>
-                                                            </div>
-                                                        </div>
-                                                        </div>
-                                                    }
-                                                </div>
-                                            </div>
+        @foreach (var sep in separadores)
+        {
+            <section id="pan@(sep.Base)" role="tabpanel" aria-labelledby="tab@(sep.Base)" @(sep.Base == 0 ? "" : "hidden")>
+                @if (!Model.ObterDesignacoesTipo(sep.Base).Any())
+                {
+                    <div class="empty-state"><span class="icon"><i class="fa-solid @sep.Icone"></i></span><strong>Sem designações nesta secção</strong></div>
+                }
+                <div class="dg-grid">
+                @foreach (var item in Model.ObterDesignacoesTipo(sep.Base))
+                {
+                    var grupo = designacoes.Where(d => d.TipoDesignacao!.Id == item.TipoDesignacao!.Id && d.Local == item.Local).ToList();
+                    var pendente = grupo.Any(u => !u.Atribuida);
+                    <article class="dg panel-card" data-stamps="@string.Join(",", grupo.Select(g => g.Stamp))">
+                        <header class="dg-head">
+                            <h3>@item.TipoDesignacao!.Descricao</h3>
+                            @if (item.TipoDesignacao.Salas > 1) { <span class="tag is-light">@item.Local</span> }
+                            <span class="tag dg-estado @(pendente ? "is-warning" : "is-success")">@(pendente ? "Por atribuir" : "Atribuída")</span>
+                            <span class="tag is-info dg-dirty" hidden>Alterada</span>
+                        </header>
+                        <div class="form-grid dg-campos">
+                            <div class="field"><label class="label">Tema</label><input class="input tema" type="text" value="@item.NomeDesignacao" placeholder="Tema da designação"></div>
+                            <div class="field dg-min"><label class="label">Minutos</label><input class="input minutos" type="number" min="0" value="@item.NMin"></div>
+                        </div>
+                        <div class="dg-pessoas">
+                            @foreach (var u in grupo)
+                            {
+                                <div class="input-action pessoa" data-stamp="@u.Stamp">
+                                    <div class="control">
+                                        <div class="select is-fullwidth">
+                                            <select class="pub" aria-label="Publicador">
+                                                @foreach (var p in publicadores) { <option value="@p.Value" selected="@(p.Value == u.Publicador!.Id.ToString())">@p.Text</option> }
+                                            </select>
                                         </div>
-                                        <footer class="card-footer">
-                                            <div class="container is-12">
-                                                <div class="buttons has-addons">
-                                                    <button class="button is-info is-fullwidth is-large card-footer-item"
-                                                                onclick="AdicionarPublicadorDesignacaoConfirmar(this.parentElement.parentElement.parentElement.parentElement.querySelector('select').id);">
-                                                            <i class="fa-solid fa-circle-plus"></i>
-                                                    </button>
-                                                    <button class="button is-success is-fullwidth is-large card-footer-item"
-                                                                onclick="AtualizarDesignacao(Array.from(this.parentElement.parentElement.parentElement.parentElement.querySelectorAll('select')).map(function(selectElement) {return selectElement.id + '|' + selectElement.value;}), this.parentElement.parentElement.parentElement.parentElement.querySelector('.minutos').value, this.parentElement.parentElement.parentElement.parentElement.querySelector('.tema').value);">
-                                                            <i class="fa-solid fa-floppy-disk"></i>
-                                                    </button>
-                                                    <button class="button is-danger is-fullwidth is-large card-footer-item"
-                                                                onclick="ConfirmApagar(Array.from(this.parentElement.parentElement.parentElement.parentElement.querySelectorAll('select')).map(function(selectElement) {return selectElement.id;}));">
-                                                            <i class="fa-solid fa-trash-can"></i>
-                                                    </button>
-                                                </div>
-                                            </div>
-                                        </footer>
                                     </div>
+                                    <button type="button" class="button btn-icon is-danger-hover" data-action="apagarPessoa" aria-label="Remover publicador" title="Remover"><i class="fa-solid fa-user-minus"></i></button>
                                 </div>
                             }
                         </div>
-                    </li>
+                        <footer class="dg-foot">
+                            <button type="button" class="button is-info is-light" data-action="addPessoa"><span class="icon"><i class="fa-solid fa-user-plus"></i></span><span>Publicador</span></button>
+                            <button type="button" class="button is-info" data-action="guardar"><span class="icon"><i class="fa-regular fa-floppy-disk"></i></span><span>Guardar</span></button>
+                            <button type="button" class="button btn-icon is-danger-hover" data-action="apagarGrupo" aria-label="Apagar designação" title="Apagar designação"><i class="fa-solid fa-trash-can"></i></button>
+                        </footer>
+                    </article>
                 }
-             </ul> 
-        </div>
+                </div>
+            </section>
+        }
     </div>
     }
-
 </div>
 
-<div id="modalAdicionarDesignacao" class="modal">
+<div id="modalDesignacao" class="modal" role="dialog" aria-modal="true" aria-labelledby="tD">
     <div class="modal-background"></div>
     <div class="modal-card">
         <header class="modal-card-head">
-            <p class="modal-card-title">
-                <span class="icon">
-                    <i class="fas fa-circle-plus"></i>
-                </span>
-                <span>Adicionar - Designação</span>
-            </p>
-            <button type="button" class="delete" aria-label="close"></button>
+            <p class="modal-card-title" id="tD"><span class="icon"><i class="fa-solid fa-clipboard-list"></i></span><span>Adicionar designação</span></p>
+            <button type="button" class="delete" aria-label="Fechar" data-close></button>
         </header>
         <section class="modal-card-body">
-            <div class="modal-body">
-                <div class="field">
-                    <label class="label">Designação</label>
-                    <div class="field has-addons">
-                        <div class="control " style="width:100%">
-                            <span class="select is-fullwidth">
-                                <select class="select" id="txtIdTipo" style="height: auto"
-                                        asp-items="@(new SelectList(@ViewBag.Tipos, "Value", "Text"))">
-                                </select>
-                            </span>
-                        </div>
-                    </div>
-                </div>
-                <div class="field has-addons">
-                    <div class="control has-icons-left" style="width:100%">
-                        <span class="select is-fullwidth">
-                            <select class="select" id="txtLocal" style="height: auto">
-                                <option value="Auditório">Auditório</option>
-                                <option value="Sala 2">Sala 2</option>
-                            </select>
-                        </span>
-                        <span class="icon is-small is-left">
-                            <i class="fa-solid fa-warehouse"></i>
-                        </span>
-                    </div>
-                </div>
+            <div class="field">
+                <label class="label" for="txtIdTipo">Tipo</label>
+                <div class="select is-fullwidth"><select id="txtIdTipo" asp-items="@(new SelectList(ViewBag.Tipos, "Value", "Text"))"></select></div>
+            </div>
+            <div class="field">
+                <label class="label" for="txtLocal">Sala</label>
+                <div class="select is-fullwidth"><select id="txtLocal"><option value="Auditório">Auditório</option><option value="Sala 2">Sala 2</option></select></div>
             </div>
         </section>
         <footer class="modal-card-foot">
-            <a class="button is-info is-large is-fullwidth"
-               onclick="AdicionarDesignacao('@Model.Stamp', document.getElementById('txtIdTipo').value,document.getElementById('txtLocal').value)">
-                <span class="icon">
-                    <i class="fa-regular fa-circle-plus"></i>
-                </span>
-                <span>Adicionar</span>
-            </a>
-            <button type="button" class="button is-large is-fullwidth is-danger"
-                    onclick="Bulma('#modalAdicionarDesignacao').modal().close();" href="javascript:;">
-                <span class="icon">
-                    <i class="fa-regular fa-circle-xmark"></i>
-                </span>
-                <span>Fechar</span>
-            </button>
+            <button type="button" class="button" data-close>Cancelar</button>
+            <button type="button" class="button is-info" data-action="criarDg" data-submit><span class="icon"><i class="fa-solid fa-check"></i></span><span>Adicionar</span></button>
         </footer>
     </div>
 </div>
 
-<div id="modalAdicionarPublicadorDesignacao" class="modal">
+<div id="modalPessoa" class="modal" role="dialog" aria-modal="true" aria-labelledby="tP">
     <div class="modal-background"></div>
     <div class="modal-card">
         <header class="modal-card-head">
-            <p class="modal-card-title">
-                <span class="icon">
-                    <i class="fas fa-circle-plus"></i>
-                </span>
-                <span>Adicionar - Publicador</span>
-            </p>
-            <button type="button" class="delete" aria-label="close"></button>
+            <p class="modal-card-title" id="tP"><span class="icon"><i class="fa-solid fa-user-plus"></i></span><span>Adicionar publicador</span></p>
+            <button type="button" class="delete" aria-label="Fechar" data-close></button>
         </header>
         <section class="modal-card-body">
-            <div class="modal-body">
-                <div class="field">
-                    <label class="label">Publicador</label>
-                    <div class="field has-addons">
-                        <div class="control has-icons-left" style="width:100%">
-                            <span class="select is-fullwidth">
-                                <select class="select" id="txtIdPubAddDesignacao" style="height: auto"
-                                        asp-items="@(new SelectList(@ViewBag.Publicadores, "Value", "Text"))">
-                                </select>
-                            </span>
-                            <span class="icon is-small is-left">
-                                <i class="fa-solid fa-user-tie"></i>
-                            </span>
-                        </div>
-                    </div>
-                </div>
+            <div class="field">
+                <label class="label" for="txtIdPubAdd">Publicador</label>
+                <div class="select is-fullwidth"><select id="txtIdPubAdd">@foreach (var p in publicadores) { <option value="@p.Value">@p.Text</option> }</select></div>
             </div>
         </section>
         <footer class="modal-card-foot">
-            <a class="button is-info is-large is-fullwidth"
-               onclick="AdicionarPublicadorDesignacao(document.getElementById('txtHiddenStamp').value,document.getElementById('txtIdPubAddDesignacao').value)">
-                <span class="icon">
-                    <i class="fa-regular fa-circle-plus"></i>
-                </span>
-                <span>Adicionar</span>
-            </a>
-            <button type="button" class="button is-large is-fullwidth is-danger"
-                    onclick="Bulma('#modalAdicionarDesignacao').modal().close();" href="javascript:;">
-                <span class="icon">
-                    <i class="fa-regular fa-circle-xmark"></i>
-                </span>
-                <span>Fechar</span>
-            </button>
+            <button type="button" class="button" data-close>Cancelar</button>
+            <button type="button" class="button is-info" data-action="criarPessoa" data-submit><span class="icon"><i class="fa-solid fa-check"></i></span><span>Adicionar</span></button>
         </footer>
     </div>
 </div>
 
-<div class="modal" id="ModalConfirmApagar">
-    <div class="modal-background"></div>
-    <div class="modal-card">
-        <header class="modal-card-head">
-            <p class="modal-card-title">Apagar Designação</p>
-        </header>
-        <section class="modal-card-body">
-            <div class="modal-body">
-                <p>Tem a certeza que deseja apagar esta designação?</p>
-            </div>
-        </section>
-        <footer class="modal-card-foot">
-            <button class="button is-danger is-fullwidth is-large"
-                    onclick="ApagarDesignacao(document.getElementById('txtHiddenStamp').value);">
-                <span class="icon">
-                    <i class="fas fa-trash-can"></i>
-                </span>
-                <span>Confirmar</span>
-            </button>
-            <button class="button is-fullwidth is-large" onclick="Bulma('#ModalConfirmApagar').modal().close();">
-                <span class="icon">
-                    <i class="fa-solid fa-circle-xmark"></i>
-                </span>
-                <span>Não</span>
-            </button>
-        </footer>
-    </div>
-</div>
-
-<input id="txtHiddenStamp" hidden />
-
+@section Scripts {
 <script>
+    const reuniao = '@Model.Stamp';
+    const recarregar = () => App.refresh('#regiao');
+    let alvo = null;
 
-function AdicionarDesignacao(id, tipo, local) {
-        $.ajax({
-            url: '/Reunioes/Designacao/',
-            data: { "id": id, "tipo": tipo, "local": local },
-            type: "POST",
-            success: function (data) {
-                notify("Designacao criada com sucesso!");
-                window.location.reload();
-            },
-            error: function (response) {
-                notifyError('Ocorreu um erro ao criar a designacao!');
-            },
-            failure: function (response) {
-                notifyError('Falha ao criar a designacao!');
-            }
-        });
-}
+    // «Alterada» aparece assim que algo no cartão muda
+    document.addEventListener('input', e => { const c = e.target.closest('.dg'); if (c) App.$('.dg-dirty', c).hidden = false; });
+    document.addEventListener('change', e => { const c = e.target.closest('.dg'); if (c) App.$('.dg-dirty', c).hidden = false; });
 
-function AtualizarDesignacao(stampList, minutos, tema) {
-      stampList.forEach(function(stamp) {
-        $.ajax({
-            url: '/Reunioes/Designacao/',
-            data: { "id": stamp.split('|')[0], "pub": stamp.split('|')[1], "minutos": minutos, "tema": tema },
-            type: "PUT",
-            success: function (data) {
-                document.getElementById(stamp.split('|')[0]).parentElement.parentElement.parentElement.parentElement.parentElement.parentElement.parentElement.parentElement.parentElement.childNodes[1].classList.remove('has-background-warning');
-                document.getElementById(stamp.split('|')[0]).parentElement.parentElement.parentElement.parentElement.parentElement.parentElement.parentElement.parentElement.parentElement.childNodes[1].classList.remove('has-background-danger');
-                notify("Designacao atualizada com sucesso!");
-            },
-            error: function (response) {
-                notifyError('Ocorreu um erro ao atualizar a designacao!');
-            },
-            failure: function (response) {
-                notifyError('Falha ao atualizar a designacao!');
-            }
-        });
-      });
-}
+    // Cânticos: guardam ao escolher
+    document.addEventListener('change', async e => {
+        const s = e.target.closest('[data-action-change="cantico"]'); if (!s) return;
+        try { await App.api('PUT', '/Reunioes/Cantico/', { id: s.value, stamp: s.dataset.stamp }); notify('Cântico atualizado.'); recarregar(); }
+        catch (x) { notifyError('Não foi possível atualizar o cântico.'); }
+    });
 
-function AtualizarCantico(stamp, id) {
-        $.ajax({
-            url: '/Reunioes/Cantico/',
-            data: { "id": id, "stamp": stamp },
-            type: "PUT",
-            success: function (data) {
-                notify("Cântico atualizado com sucesso!");
-            },
-            error: function (response) {
-                notifyError('Ocorreu um erro ao atualizar o cântico!');
-            },
-            failure: function (response) {
-                notifyError('Falha ao atualizar o cântico!');
-            }
-        });
-}
+    App.on('guardar', btn => App.run(btn, async () => {
+        const c = btn.closest('.dg'), minutos = App.$('.minutos', c).value || 0, tema = App.$('.tema', c).value;
+        for (const p of App.$$('.pessoa', c)) await App.api('PUT', '/Reunioes/Designacao/', { id: p.dataset.stamp, pub: App.$('.pub', p).value, minutos: minutos, tema: tema });
+        await recarregar(); notify('Designação guardada.');
+    }, 'Não foi possível guardar a designação.'));
 
-    function ConfirmApagar(id) {
-        document.getElementById('txtHiddenStamp').value = id;
-        Bulma('#ModalConfirmApagar').modal().open();
-    }
-    function ApagarDesignacao(id) {
-        $.ajax({
-            url: '/Reunioes/Designacao/',
-            data: { "id": id },
-            type: "DELETE",
-            success: function (data) {
-                window.location.reload();
-            },
-            error: function (data) {
-                notifyError('Ocorreu um erro ao apagar essa designação!');
-            },
-            failure: function (data) {
-                notifyError('Falha ao apagar essa designação!');
-            }
-        });
-    }
+    App.on('apagarGrupo', async btn => {
+        const c = btn.closest('.dg');
+        if (!await App.confirm({ title: 'Apagar designação', text: 'Apagar «' + App.$('h3', c).textContent + '» e os publicadores associados?', ok: 'Apagar' })) return;
+        App.run(btn, async () => { await App.api('DELETE', '/Reunioes/Designacao/', { id: c.dataset.stamps }); await recarregar(); notify('Designação apagada.'); }, 'Não foi possível apagar a designação.');
+    });
 
-    function AdicionarPublicadorDesignacaoConfirmar(id) {
-        document.getElementById('txtHiddenStamp').value = id;
-        Bulma('#modalAdicionarPublicadorDesignacao').modal().open();
-    }
+    App.on('apagarPessoa', async btn => {
+        const p = btn.closest('.pessoa'), c = btn.closest('.dg');
+        const unica = App.$$('.pessoa', c).length === 1;
+        if (!await App.confirm({ title: 'Remover publicador', text: unica ? 'É o único publicador: a designação será apagada.' : 'Remover este publicador da designação?', ok: 'Remover' })) return;
+        App.run(btn, async () => { await App.api('DELETE', '/Reunioes/Designacao/', { id: p.dataset.stamp }); await recarregar(); notify('Removido.'); }, 'Não foi possível remover.');
+    });
 
-    function AdicionarPublicadorDesignacao(id, pub) {
-        $.ajax({
-            url: '/Reunioes/Publicador/',
-            data: { "id": id, "pub": pub },
-            type: "POST",
-            success: function (data) {
-                notify("Publicador adicionado com sucesso!");
-                window.location.reload();
-            },
-            error: function (response) {
-                notifyError('Ocorreu um erro ao adicionar o publicador!');
-            },
-            failure: function (response) {
-                notifyError('Falha ao adicionar o publicador!');
-            }
-        });
-}
+    App.on('addPessoa', btn => { alvo = App.$('.pessoa', btn.closest('.dg')).dataset.stamp; App.modal('modalPessoa').open(); });
+    App.on('criarPessoa', btn => App.run(btn, async () => {
+        await App.api('POST', '/Reunioes/Publicador/', { id: alvo, pub: App.$('#txtIdPubAdd').value });
+        App.modal('modalPessoa').close(); await recarregar(); notify('Publicador adicionado.');
+    }, 'Não foi possível adicionar o publicador.'));
 
+    App.on('criarDg', btn => App.run(btn, async () => {
+        await App.api('POST', '/Reunioes/Designacao/', { id: reuniao, tipo: App.$('#txtIdTipo').value, local: App.$('#txtLocal').value });
+        App.modal('modalDesignacao').close();
+        if (App.$('#regiao')) { await recarregar(); notify('Designação criada.'); } else location.reload(); // sem designações ainda não há região a atualizar
+    }, 'Não foi possível criar a designação.'));
 </script>
+}

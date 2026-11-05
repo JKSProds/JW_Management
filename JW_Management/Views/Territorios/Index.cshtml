@@ -4,7 +4,7 @@
     var publicadores = ((IEnumerable<SelectListItem>)ViewBag.Publicadores).ToList();
 
     bool Livre(JW_Management.Models.Territorio t) => t.UltimoMovimento?.Publicador == null || t.UltimoMovimento.Publicador.Id == 0;
-    bool Atencao(JW_Management.Models.Territorio t) => t.CorEstado is "danger" or "warning";
+    bool Atencao(JW_Management.Models.Territorio t) => t.UltimoMovimento != null && t.CorEstado is "danger" or "warning";
     var livres = Model.Count(Livre);
     var atencao = Model.Count(t => !Livre(t) && Atencao(t));
 }
@@ -48,7 +48,7 @@
             {
                 var livre = Livre(item);
                 var pub = livre ? "" : item.UltimoMovimento!.Publicador!.Nome;
-                var tom = livre ? "" : item.CorEstado == "danger" ? "tone-bad" : item.CorEstado == "warning" ? "tone-warn" : "";
+                var tom = livre || item.UltimoMovimento == null ? "" : item.CorEstado == "danger" ? "tone-bad" : item.CorEstado == "warning" ? "tone-warn" : "";
                 var estado = livre ? "livre" : "atribuido" + (Atencao(item) ? " atencao" : "");
                 <article class="item no-thumb @tom" data-stamp="@item.Stamp" data-type="@estado" data-livre="@(livre ? 1 : 0)"
                          data-pub="@(livre ? 0 : item.UltimoMovimento!.Publicador!.Id)" data-label="@item.Id - @item.Nome [@item.Dificuldade]"

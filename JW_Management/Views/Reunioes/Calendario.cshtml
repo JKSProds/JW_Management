@@ -1,43 +1,25 @@
-﻿@model IEnumerable<JW_Management.Models.Reuniao>
+@model IEnumerable<JW_Management.Models.Reuniao>
 @{
     ViewData["Title"] = "Calendário";
 }
 
-<form asp-action="Index" method="get" id="">
-    <div class="container">
-        <div class="columns">
-            <div class="column">
-                <div class="tile">
-                    <div class="tile is-parent is-vertical">
-                        <article class="tile is-child notification is-info">
-                            <p class="title">
-                                <span class="icon mr-3">
-                                    <i class="fa-solid fa-user-tie"></i>
-                                </span>
-                                <span>Calendário - Reuniões</span>
-                            </p>
-                        </article>
-                    </div>
-                </div>
-            </div>
-            <div class="column">
-               
-            </div>
+<div class="container">
+    <div class="page-head">
+        <div class="head-title"><div><h1>Calendário das reuniões</h1></div></div>
+        <div class="head-actions">
+            <a class="button is-info is-light" href="~/Reunioes">
+                <span class="icon"><i class="fa-solid fa-arrow-left"></i></span><span>Reuniões</span>
+            </a>
         </div>
     </div>
-</form>
-<hr />
-<div id="gstc"></div>
+    <div class="panel-card"><div id="gstc"></div></div>
+</div>
 
+@section Scripts {
 <script>
-    const config = {
-  /* ... */
-    };
-
-const state = GSTC.api.stateFromConfig(config);
-
-const app = GSTC({
-  element: document.getElementById("gstc"),
-  state,
-});
+    // Tema do gráfico: o GSTC não segue o tema escuro da aplicação (cores próprias).
+    const config = {};
+    const state = GSTC.api.stateFromConfig(config);
+    GSTC({ element: document.getElementById('gstc'), state });
 </script>
+}

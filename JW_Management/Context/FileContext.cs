@@ -405,41 +405,6 @@ namespace JW_Management.Models
             return LstDesignacao;
         }
 
-        public MemoryStream PreencherFormularioS140(Reuniao r)
-        {
-            string pdfTemplate = AppDomain.CurrentDomain.BaseDirectory + "S-140_TPO.pdf";
-            var outputPdfStream = new MemoryStream();
-            PdfReader pdfReader = new PdfReader(pdfTemplate);
-            PdfStamper pdfStamper = new PdfStamper(pdfReader, outputPdfStream);
-            AcroFields pdfFormFields = pdfStamper.AcroFields;
-            BaseFont baseFont = BaseFont.CreateFont(BaseFont.HELVETICA, BaseFont.CP1252, BaseFont.NOT_EMBEDDED);
-            BaseFont baseFontBold = BaseFont.CreateFont(BaseFont.HELVETICA_BOLD, BaseFont.CP1252, BaseFont.NOT_EMBEDDED);
-
-            pdfFormFields.SetFieldProperty("SemanaReuniao", "textfont", baseFontBold, null);
-            pdfFormFields.SetField("SemanaReuniao", r.SemanaReuniao);
-
-            foreach (var d in r.Designacoes.Where(d => d.Atribuida).DistinctBy(d => d.Distinct).ToList())
-            {
-                pdfFormFields.SetFieldProperty(d.TipoDesignacao.Id + "_Designacao", "textfont", baseFontBold, null);
-                pdfFormFields.SetField(d.TipoDesignacao.Id + "_Designacao", d.NomeDesignacao + (d.NMin > 0 ? " (" + d.NMin + " min.)" : ""));
-                pdfFormFields.SetFieldProperty(d.TipoDesignacao.Id + "_Pub" + (d.SalaAdicional ? "_1" : ""), "textfont", baseFont, null);
-                pdfFormFields.SetField(d.TipoDesignacao.Id + "_Pub" + (d.SalaAdicional ? "_1" : ""), string.Join(" | ", r.Designacoes.Where(i => i.Distinct == d.Distinct).Select(i => r.Designacoes.Where(i => i.Distinct == d.Distinct).Count() > 1 ? i.Publicador.NomeCurto : i.Publicador.Nome).ToArray()));
-            }
-
-            if (r.Canticos.Count() >= 3)
-            {
-                pdfFormFields.SetField("1_Cant", r.Canticos[0].Id.ToString());
-                pdfFormFields.SetField("2_Cant", r.Canticos[1].Id.ToString());
-                pdfFormFields.SetField("3_Cant", r.Canticos[2].Id.ToString());
-            }
-
-            pdfStamper.FormFlattening = true;
-            pdfStamper.Close();
-
-            return outputPdfStream;
-
-        }
-
         public dynamic ConvertCsv(IFormFile file)
         {
            
