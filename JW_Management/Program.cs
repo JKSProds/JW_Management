@@ -1,8 +1,11 @@
 using System.Globalization;
+using System.Net;
 using System.Text;
 using JW_Management.Component.DB;
 using JW_Management.Models;
 using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Authentication.OpenIdConnect;
+using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.Extensions.Configuration;
 using LettuceEncrypt;
 using Microsoft.AspNetCore.DataProtection;
@@ -30,11 +33,69 @@ var _dbBackupService = new MySqlBackupService(new JW_Management.Models.AppContex
 var dbService = new DbService(new JW_Management.Models.AppContext(tenantContext));
 builder.Configuration["DBVersion"] = dbService._version;
 
-builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme).AddCookie(cookieOptions =>
+// Configuração global na BD master; sobrepõe user-secrets e variáveis de ambiente. Mesmas chaves/app name do DataProtection abaixo.
+#if DEBUG
+var earlyProtection = DataProtectionProvider.Create("JW_Management");
+#else
+var earlyProtection = DataProtectionProvider.Create(new DirectoryInfo("/app/img/https/"), o => o.SetApplicationName("JW_Management"));
+#endif
+var configStore = new ConfigStore(builder.Configuration.GetConnectionString("DefaultConnection")!, earlyProtection);
+configStore.EnsureTable();
+builder.Configuration.AddInMemoryCollection(configStore.Load());
+builder.Services.AddSingleton(configStore);
+
+builder.Services.Configure<ForwardedHeadersOptions>(options =>
+{
+    options.ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto;
+    var proxy = builder.Configuration["ForwardedHeaders:KnownProxy"]; // IP do Caddy
+    if (!string.IsNullOrEmpty(proxy)) options.KnownProxies.Add(IPAddress.Parse(proxy));
+});
+
+var auth = builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme).AddCookie(cookieOptions =>
 {
     cookieOptions.LoginPath = "/Home/Login";
     cookieOptions.AccessDeniedPath = "/Home/Error";
+    cookieOptions.Cookie.SecurePolicy = CookieSecurePolicy.Always;
+    cookieOptions.Cookie.HttpOnly = true;
+    cookieOptions.SlidingExpiration = true;
+    cookieOptions.ExpireTimeSpan = TimeSpan.FromHours(8);
+}).AddCookie(OidcLogin.PendingScheme, cookieOptions =>
+{
+    cookieOptions.Cookie.SecurePolicy = CookieSecurePolicy.Always;
+    cookieOptions.Cookie.HttpOnly = true;
+    cookieOptions.ExpireTimeSpan = TimeSpan.FromMinutes(5);
 });
+
+// Só regista o OIDC se estiver configurado (Oidc:Authority, Oidc:ClientId, Oidc:ClientSecret); caso contrário fica só o login antigo.
+var oidc = builder.Configuration.GetSection("Oidc");
+if (!string.IsNullOrEmpty(oidc["ClientId"]))
+{
+    auth.AddOpenIdConnect(options =>
+    {
+        options.Authority = oidc["Authority"];
+        options.ClientId = oidc["ClientId"];
+        options.ClientSecret = oidc["ClientSecret"];
+        options.ResponseType = "code";
+        options.UsePkce = true;
+        options.ResponseMode = "query";
+        options.MapInboundClaims = false;
+        options.GetClaimsFromUserInfoEndpoint = true;
+        options.Scope.Clear();
+        options.Scope.Add("openid");
+        options.Scope.Add("profile");
+        options.Scope.Add("email");
+        options.Events = new OpenIdConnectEvents
+        {
+            OnTokenValidated = OidcLogin.OnTokenValidated,
+            OnRemoteFailure = ctx =>
+            {
+                ctx.Response.Redirect("/acesso-negado");
+                ctx.HandleResponse();
+                return Task.CompletedTask;
+            }
+        };
+    });
+}
 
 builder.Services.Configure<FormOptions>(options =>
 {
@@ -48,6 +109,8 @@ builder.Services.AddDataProtection().SetApplicationName("JW_Management").Persist
 #endif
 
 var app = builder.Build();
+
+app.UseForwardedHeaders();
 
 //Cultura PT
 System.Globalization.CultureInfo cc = new CultureInfo("pt-PT");
@@ -67,9 +130,9 @@ app.UseRouting();
 
 var cookiePolicyOptions = new CookiePolicyOptions
 {
-    MinimumSameSitePolicy = SameSiteMode.Strict,
+    MinimumSameSitePolicy = SameSiteMode.Lax, // Strict impediria o retorno do Pocket ID
     HttpOnly = Microsoft.AspNetCore.CookiePolicy.HttpOnlyPolicy.Always,
-    Secure = CookieSecurePolicy.None,
+    Secure = CookieSecurePolicy.Always,
 };
 app.UseCookiePolicy(cookiePolicyOptions);
 app.UseAuthentication();
