@@ -1,71 +1,180 @@
+using System.Globalization;
 using iTextSharp.text;
 using iTextSharp.text.pdf;
 
 namespace JW_Management.Models;
 
-// PDF do programa mensal: A4 horizontal, uma coluna por semana, como o quadro de atividades da congregação.
-public static class ProgramaPdf
+// PDF dos programas: quadro mensal (A4 horizontal), serviço de campo e testemunho público (A4 vertical).
+// Visual limpo: faixas de cor, linhas finas e zebra; só fontes base do PDF (sem ficheiros de fonte).
+public static class PdfProgramas
 {
-    private static readonly BaseColor Faixa = new(189, 215, 238);
-    private static readonly BaseColor Azul = new(31, 56, 140);
-    private static readonly BaseColor Amarelo = new(255, 255, 0);
+    private static readonly CultureInfo Pt = new("pt-PT");
+    private static readonly BaseColor Marca = new(42, 77, 208);
+    private static readonly BaseColor Escuro = new(24, 39, 96);
+    private static readonly BaseColor Tinta = new(33, 41, 66);
+    private static readonly BaseColor Suave = new(98, 108, 132);
+    private static readonly BaseColor Tint = new(232, 237, 251);
+    private static readonly BaseColor Zebra = new(246, 248, 252);
+    private static readonly BaseColor Linha = new(221, 227, 238);
+    private static readonly BaseColor Ambar = new(255, 226, 138);
+    private static readonly BaseColor AmbarTexto = new(102, 66, 0);
 
+    private record Fontes(BaseFont Normal, BaseFont Negrito, BaseFont Italico);
+    private static Fontes Carregar() => new(
+        BaseFont.CreateFont(BaseFont.HELVETICA, BaseFont.CP1252, BaseFont.NOT_EMBEDDED),
+        BaseFont.CreateFont(BaseFont.HELVETICA_BOLD, BaseFont.CP1252, BaseFont.NOT_EMBEDDED),
+        BaseFont.CreateFont(BaseFont.HELVETICA_OBLIQUE, BaseFont.CP1252, BaseFont.NOT_EMBEDDED));
+
+    private static PdfPCell Cel(string txt, Font f, int al = Element.ALIGN_CENTER, int borda = Rectangle.NO_BORDER, BaseColor? fundo = null, int span = 1, float h = 11, float pad = 3, float vpad = 2)
+    {
+        var c = new PdfPCell(new Phrase(txt, f)) { HorizontalAlignment = al, VerticalAlignment = Element.ALIGN_MIDDLE, Border = borda, BorderWidth = .5f, BorderColor = Linha, Colspan = span, MinimumHeight = h, PaddingTop = vpad, PaddingBottom = vpad + 1, PaddingLeft = pad, PaddingRight = pad };
+        if (fundo != null) c.BackgroundColor = fundo;
+        return c;
+    }
+
+    // Cabeçalho de página: título grande à esquerda, congregação à direita e filete de cor.
+    private static void Cabecalho(Document doc, Fontes f, string sobre, string titulo, string direita, float tam = 20)
+    {
+        var t = new PdfPTable(2) { WidthPercentage = 100 };
+        t.SetWidths(new[] { 3f, 2f });
+        var esq = new PdfPCell { Border = Rectangle.NO_BORDER, PaddingBottom = 6 };
+        esq.AddElement(new Paragraph(sobre.ToUpperInvariant(), new Font(f.Negrito, 7.5f, Font.NORMAL, Marca)) { SpacingAfter = 1 });
+        esq.AddElement(new Paragraph(titulo, new Font(f.Negrito, tam, Font.NORMAL, Escuro)));
+        t.AddCell(esq);
+        var dir = new PdfPCell(new Phrase(direita, new Font(f.Negrito, 10, Font.NORMAL, Suave))) { Border = Rectangle.NO_BORDER, HorizontalAlignment = Element.ALIGN_RIGHT, VerticalAlignment = Element.ALIGN_BOTTOM, PaddingBottom = 8 };
+        t.AddCell(dir);
+        var filete = new PdfPCell(new Phrase(" ", new Font(f.Normal, 2))) { Colspan = 2, Border = Rectangle.BOTTOM_BORDER, BorderColor = Marca, BorderWidthBottom = 2f, FixedHeight = 3 };
+        t.AddCell(filete);
+        doc.Add(t);
+        doc.Add(new Paragraph(" ", new Font(f.Normal, 3)));
+    }
+
+    private static void Rodape(Document doc, Fontes f) =>
+        doc.Add(new Paragraph($"Gerado a {DateTime.Now:dd/MM/yyyy}", new Font(f.Italico, 6.5f, Font.NORMAL, Suave)) { Alignment = Element.ALIGN_RIGHT, SpacingBefore = 4 });
+
+    // ---------- Quadro mensal ----------
     public static byte[] Gerar(ProgramaMensal p)
     {
-        var normal = BaseFont.CreateFont(BaseFont.HELVETICA, BaseFont.CP1252, BaseFont.NOT_EMBEDDED);
-        var negrito = BaseFont.CreateFont(BaseFont.HELVETICA_BOLD, BaseFont.CP1252, BaseFont.NOT_EMBEDDED);
-        var italico = BaseFont.CreateFont(BaseFont.HELVETICA_BOLDOBLIQUE, BaseFont.CP1252, BaseFont.NOT_EMBEDDED);
-        var fValor = new Font(normal, 7); var fRotulo = new Font(negrito, 7); var fSecao = new Font(italico, 7, Font.NORMAL, Azul);
-        var fSemana = new Font(negrito, 6.5f); var fAmarelo = new Font(negrito, 7);
+        var f = Carregar();
+        var fValor = new Font(f.Normal, 7, Font.NORMAL, Tinta); var fRotulo = new Font(f.Negrito, 6.8f, Font.NORMAL, Suave);
+        var fFaixa = new Font(f.Negrito, 7.2f, Font.NORMAL, BaseColor.White); var fSecao = new Font(f.Negrito, 6.8f, Font.NORMAL, Marca);
+        var fSemana = new Font(f.Negrito, 6.8f, Font.NORMAL, BaseColor.White); var fEvento = new Font(f.Negrito, 7, Font.NORMAL, AmbarTexto);
 
         using var ms = new MemoryStream();
-        var doc = new Document(new Rectangle(842, 595), 24, 24, 22, 18); // A4 horizontal, sem /Rotate
+        var doc = new Document(new Rectangle(842, 595), 26, 26, 16, 12); // A4 horizontal, sem /Rotate
         PdfWriter.GetInstance(doc, ms);
         doc.Open();
-
-        doc.Add(new Paragraph(p.Titulo, new Font(negrito, 15)) { Alignment = Element.ALIGN_CENTER, SpacingAfter = 8 });
+        Cabecalho(doc, f, "Programa de atividades", p.Mes, p.Congregacao, 16);
 
         int n = p.Semanas.Count;
         var t = new PdfPTable(n + 1) { WidthPercentage = 100 };
-        t.SetWidths(new[] { 1.9f }.Concat(Enumerable.Repeat(2f, n)).ToArray());
+        t.SetWidths(new[] { 2.3f }.Concat(Enumerable.Repeat(2f, n)).ToArray());
 
-        PdfPCell C(string txt, Font f, int al = Element.ALIGN_CENTER, int borda = Rectangle.BOX, BaseColor? fundo = null, int span = 1, float h = 11)
-        {
-            var c = new PdfPCell(new Phrase(txt, f)) { HorizontalAlignment = al, VerticalAlignment = Element.ALIGN_MIDDLE, Border = borda, BorderWidth = .5f, Colspan = span, MinimumHeight = h, PaddingTop = 1, PaddingBottom = 2, PaddingLeft = 2, PaddingRight = 2 };
-            if (fundo != null) c.BackgroundColor = fundo;
-            return c;
-        }
-        PdfPCell Vazio(int span = 1, float h = 5) => C("", fValor, borda: Rectangle.NO_BORDER, span: span, h: h);
+        t.AddCell(Cel("", fValor, h: 16, vpad: 1));
+        foreach (var s in p.Semanas) t.AddCell(Cel(s.Titulo, fSemana, fundo: Marca, h: 16, vpad: 1));
 
-        // Cabeçalho das semanas
-        t.AddCell(Vazio(h: 18));
-        foreach (var s in p.Semanas) t.AddCell(C(s.Titulo, fSemana, borda: Rectangle.NO_BORDER, h: 18));
-
-        // Células de evento (amarelo): 3 linhas do ministério e 3 do estudo de A Sentinela
         var linhasEvento = new[] { "min1", "min2", "min3", "std", "stl", "sto" };
-
         foreach (var sec in p.Secoes)
         {
-            t.AddCell(Vazio(n + 1, 4));
-            if (sec.Titulo == "") { /* linha avulsa (limpeza), sem título */ }
-            else if (sec.Faixa) t.AddCell(C(sec.Titulo, fSecao, borda: Rectangle.BOX, fundo: Faixa, span: n + 1));
-            else
+            t.AddCell(Cel("", fValor, borda: Rectangle.NO_BORDER, span: n + 1, h: 2, pad: 0, vpad: 0));
+            if (sec.Titulo != "")
             {
-                t.AddCell(C(sec.Titulo, fSecao, Element.ALIGN_LEFT, Rectangle.NO_BORDER, span: Math.Min(2, n + 1), h: 10));
-                for (int i = 0; i < n - 1; i++) t.AddCell(Vazio(h: 10));
+                if (sec.Faixa) t.AddCell(Cel(sec.Titulo, fFaixa, Element.ALIGN_LEFT, fundo: Escuro, span: n + 1, h: 10, pad: 6, vpad: 1));
+                else t.AddCell(Cel(sec.Titulo, fSecao, Element.ALIGN_LEFT, fundo: Tint, span: n + 1, h: 10.5f, pad: 6, vpad: 1));
             }
+            int z = 0;
             foreach (var l in sec.Linhas)
             {
-                t.AddCell(C(l.Rotulo, fRotulo));
+                var fundo = z++ % 2 == 1 ? Zebra : null;
+                t.AddCell(Cel(l.Rotulo, fRotulo, Element.ALIGN_LEFT, Rectangle.BOTTOM_BORDER, fundo, h: 10.5f, pad: 6, vpad: 1));
                 foreach (var s in p.Semanas)
                 {
                     var idx = Array.IndexOf(linhasEvento, l.Id);
-                    if (s.Evento.Count > 0 && idx >= 0) t.AddCell(C(idx % 3 < s.Evento.Count ? s.Evento[idx % 3] : "", fAmarelo, fundo: Amarelo));
-                    else t.AddCell(C(s.Valores.GetValueOrDefault(l.Id, ""), fValor));
+                    if (s.Evento.Count > 0 && idx >= 0) t.AddCell(Cel(idx % 3 < s.Evento.Count ? s.Evento[idx % 3] : "", fEvento, fundo: Ambar, borda: Rectangle.BOTTOM_BORDER, h: 10.5f, vpad: 1));
+                    else t.AddCell(Cel(s.Valores.GetValueOrDefault(l.Id, ""), fValor, borda: Rectangle.BOTTOM_BORDER, fundo: fundo, h: 10.5f, vpad: 1));
                 }
             }
         }
         doc.Add(t);
+        Rodape(doc, f);
+        doc.Close();
+        return ms.ToArray();
+    }
+
+    private static string Dia(string iso)
+    {
+        var d = DateTime.ParseExact(iso, "yyyy-MM-dd", CultureInfo.InvariantCulture);
+        var nome = Pt.DateTimeFormat.GetAbbreviatedDayName(d.DayOfWeek).TrimEnd('.');
+        return char.ToUpper(nome[0]) + nome[1..] + " " + d.Day;
+    }
+
+    // ---------- Serviço de campo (vertical) ----------
+    public static byte[] GerarCampo(List<CampoEntrada> entradas, string congregacao, int ano, int mes)
+    {
+        var f = Carregar();
+        var fValor = new Font(f.Normal, 9, Font.NORMAL, Tinta); var fNeg = new Font(f.Negrito, 9, Font.NORMAL, Tinta);
+        var fSemana = new Font(f.Negrito, 8, Font.NORMAL, Marca); var fCab = new Font(f.Negrito, 7.5f, Font.NORMAL, BaseColor.White);
+
+        using var ms = new MemoryStream();
+        var doc = new Document(new Rectangle(595, 842), 36, 36, 30, 28);
+        PdfWriter.GetInstance(doc, ms);
+        doc.Open();
+        Cabecalho(doc, f, "Serviço de campo", $"{ProgramaServico.NomeMes(mes)} {ano}", congregacao);
+
+        var t = new PdfPTable(4) { WidthPercentage = 100 };
+        t.SetWidths(new[] { 1.1f, 1f, 2.2f, 2.4f });
+        foreach (var h in new[] { "Dia", "Hora", "Local", "Dirigente" }) t.AddCell(Cel(h, fCab, Element.ALIGN_LEFT, fundo: Marca, h: 16, pad: 7));
+
+        // por semana (segunda a domingo)
+        foreach (var sem in entradas.GroupBy(e => { var d = DateTime.ParseExact(e.Data, "yyyy-MM-dd", CultureInfo.InvariantCulture); return d.AddDays(-(((int)d.DayOfWeek + 6) % 7)); }).OrderBy(g => g.Key))
+        {
+            var fim = sem.Key.AddDays(6);
+            t.AddCell(Cel(sem.Key.Month == fim.Month ? $"Semana de {sem.Key.Day} a {fim.Day} de {ProgramaServico.NomeMes(sem.Key.Month)}" : $"Semana de {sem.Key.Day} de {ProgramaServico.NomeMes(sem.Key.Month)} a {fim.Day} de {ProgramaServico.NomeMes(fim.Month)}", fSemana, Element.ALIGN_LEFT, fundo: Tint, span: 4, h: 14, pad: 7));
+            int z = 0;
+            foreach (var e in sem.OrderBy(x => x.Data).ThenBy(x => x.Hora))
+            {
+                var fundo = z++ % 2 == 1 ? Zebra : null;
+                t.AddCell(Cel(Dia(e.Data), fNeg, Element.ALIGN_LEFT, Rectangle.BOTTOM_BORDER, fundo, h: 16, pad: 7));
+                t.AddCell(Cel(e.Hora, fValor, Element.ALIGN_LEFT, Rectangle.BOTTOM_BORDER, fundo, h: 16, pad: 7));
+                t.AddCell(Cel(e.Local, fValor, Element.ALIGN_LEFT, Rectangle.BOTTOM_BORDER, fundo, h: 16, pad: 7));
+                t.AddCell(Cel(e.Dirigente == "" ? "—" : e.Dirigente, fValor, Element.ALIGN_LEFT, Rectangle.BOTTOM_BORDER, fundo, h: 16, pad: 7));
+            }
+        }
+        doc.Add(t);
+        Rodape(doc, f);
+        doc.Close();
+        return ms.ToArray();
+    }
+
+    // ---------- Testemunho público (vertical) ----------
+    public static byte[] GerarTestemunho(List<TestemunhoEntrada> turnos, string congregacao, int ano, int mes)
+    {
+        var f = Carregar();
+        var fValor = new Font(f.Normal, 9, Font.NORMAL, Tinta); var fNeg = new Font(f.Negrito, 9, Font.NORMAL, Tinta);
+        var fVazio = new Font(f.Italico, 9, Font.NORMAL, Suave); var fLocal = new Font(f.Negrito, 9, Font.NORMAL, BaseColor.White);
+
+        using var ms = new MemoryStream();
+        var doc = new Document(new Rectangle(595, 842), 36, 36, 30, 28);
+        PdfWriter.GetInstance(doc, ms);
+        doc.Open();
+        Cabecalho(doc, f, "Testemunho público", $"{ProgramaServico.NomeMes(mes)} {ano}", congregacao);
+
+        foreach (var local in turnos.GroupBy(t => t.Local).OrderBy(g => g.Key))
+        {
+            var t = new PdfPTable(3) { WidthPercentage = 100, KeepTogether = false, SpacingAfter = 10 };
+            t.SetWidths(new[] { 1.2f, 1.6f, 4f });
+            t.AddCell(Cel(local.Key == "" ? "Sem local" : local.Key, fLocal, Element.ALIGN_LEFT, fundo: Escuro, span: 3, h: 16, pad: 7));
+            int z = 0;
+            foreach (var e in local.OrderBy(x => x.Data).ThenBy(x => x.Inicio))
+            {
+                var fundo = z++ % 2 == 1 ? Zebra : null;
+                t.AddCell(Cel(Dia(e.Data), fNeg, Element.ALIGN_LEFT, Rectangle.BOTTOM_BORDER, fundo, h: 16, pad: 7));
+                t.AddCell(Cel($"{e.Inicio} – {e.Fim}", fValor, Element.ALIGN_LEFT, Rectangle.BOTTOM_BORDER, fundo, h: 16, pad: 7));
+                t.AddCell(Cel(e.Pessoas.Count == 0 ? "por atribuir" : string.Join("  ·  ", e.Pessoas), e.Pessoas.Count == 0 ? fVazio : fValor, Element.ALIGN_LEFT, Rectangle.BOTTOM_BORDER, fundo, h: 16, pad: 7));
+            }
+            doc.Add(t);
+        }
+        Rodape(doc, f);
         doc.Close();
         return ms.ToArray();
     }

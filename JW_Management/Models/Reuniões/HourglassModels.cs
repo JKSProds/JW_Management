@@ -44,6 +44,7 @@ public class HgSemana
     public bool Existe { get; set; }
     public bool Importar { get; set; } = true;
     public List<int> Canticos { get; set; } = new();
+    public List<string> CanticoTitulos { get; set; } = new();   // títulos, na mesma ordem dos números
     public List<HgItem> Itens { get; set; } = new();
     public HgDiscurso? Discurso { get; set; }
 }

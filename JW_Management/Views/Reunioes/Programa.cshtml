@@ -1,0 +1,179 @@
+@model JW_Management.Models.ProgramaPagina
+@using System.Globalization
+@using JW_Management.Models
+@{
+    ViewData["Title"] = "Programa";
+    var pt = new CultureInfo("pt-PT");
+    var mesAtual = new DateTime(Model.Ano, Model.Mes, 1);
+    var ant = mesAtual.AddMonths(-1); var seg = mesAtual.AddMonths(1);
+    var est = Model.Estado;
+    string Dia(string iso) { var d = DateTime.ParseExact(iso, "yyyy-MM-dd", CultureInfo.InvariantCulture); var n = pt.DateTimeFormat.GetDayName(d.DayOfWeek); return char.ToUpper(n[0]) + n[1..] + " " + d.Day; }
+}
+
+<div class="container">
+    <div class="page-head">
+        <div class="head-title"><div><h1>Programa de @ProgramaServico.NomeMes(Model.Mes) @Model.Ano</h1></div></div>
+        <div class="head-actions">
+            <a class="button btn-icon" href="~/Reunioes/Programa?ano=@ant.Year&mes=@ant.Month" aria-label="Mês anterior" title="Mês anterior"><i class="fa-solid fa-chevron-left"></i></a>
+            <a class="button btn-icon" href="~/Reunioes/Programa?ano=@seg.Year&mes=@seg.Month" aria-label="Mês seguinte" title="Mês seguinte"><i class="fa-solid fa-chevron-right"></i></a>
+            <button type="button" class="button is-info" data-open="modalSync">
+                <span class="icon"><i class="fa-solid fa-hourglass-half"></i></span><span>@(est.Semanas > 0 ? "Atualizar do Hourglass" : "Obter do Hourglass")</span>
+            </button>
+        </div>
+    </div>
+
+    @await Html.PartialAsync("_Stats", new[] {
+        ("fa-calendar-week", "Semanas guardadas", est.Semanas + " de " + est.SemanasEsperadas, "", est.Semanas >= est.SemanasEsperadas && est.Semanas > 0 ? "is-ok" : "is-warn"),
+        ("fa-people-carry-box", "Serviço de campo", est.Campo ? "Guardado" : "Em falta", "", est.Campo ? "is-ok" : "is-warn"),
+        ("fa-bullhorn", "Testemunho público", est.Testemunho ? "Guardado" : "Em falta", "", est.Testemunho ? "is-ok" : "is-warn"),
+        ("fa-clock-rotate-left", "Última atualização", est.Atualizado?.ToString("dd/MM HH:mm") ?? "—", "", "") })
+
+    @if (!est.Completo)
+    {
+        <div class="notice is-warn">
+            <span class="icon"><i class="fa-solid fa-triangle-exclamation"></i></span>
+            <span>Ainda não há tudo guardado para este mês. Use «@(est.Semanas > 0 ? "Atualizar" : "Obter") do Hourglass» uma vez: depois os PDF geram-se sem pedir a cookie.</span>
+        </div>
+    }
+
+    <div class="seg" role="tablist" aria-label="Programas">
+        <button type="button" role="tab" id="tabProg" aria-controls="panProg" aria-selected="true">Reuniões</button>
+        <button type="button" role="tab" id="tabCampo" aria-controls="panCampo" aria-selected="false">Serviço de campo</button>
+        <button type="button" role="tab" id="tabTest" aria-controls="panTest" aria-selected="false">Testemunho público</button>
+    </div>
+
+    <section id="panProg" role="tabpanel" aria-labelledby="tabProg">
+        <div class="toolbar">
+            <div class="field" style="min-width:260px;flex:1">
+                <label class="label" for="pgDir">Dirigente de A Sentinela por omissão</label>
+                <input class="input is-small" id="pgDir" type="text" value="Filipe Gonçalves" autocomplete="off">
+            </div>
+            <button type="button" class="button is-success" data-action="pdf" data-tipo="programa" @(Model.Programa == null ? "data-sem-dados" : "")><span class="icon"><i class="fa-solid fa-file-pdf"></i></span><span>PDF (horizontal)</span></button>
+        </div>
+        @if (Model.Programa == null)
+        {
+            <div class="empty-state"><span class="icon"><i class="fa-solid fa-calendar-week"></i></span><strong>Sem programa guardado para este mês</strong>Obtenha-o do Hourglass.</div>
+        }
+        else
+        {
+            <div class="prog-scroll">
+                <table class="prog-tabela">
+                    <thead><tr><th></th>@foreach (var s in Model.Programa.Semanas) { <th>@s.Titulo</th> }</tr></thead>
+                    <tbody>
+                    @foreach (var sec in Model.Programa.Secoes)
+                    {
+                        if (sec.Titulo != "") { <tr class="@(sec.Faixa ? "faixa" : "secao")"><th colspan="@(Model.Programa.Semanas.Count + 1)">@sec.Titulo</th></tr> }
+                        foreach (var l in sec.Linhas)
+                        {
+                            <tr>
+                                <th>@l.Rotulo</th>
+                                @foreach (var s in Model.Programa.Semanas)
+                                {
+                                    var v = s.Valores.GetValueOrDefault(l.Id, "");
+                                    <td class="@(s.Evento.Count > 0 && new[] { "min1", "min2", "min3", "std", "stl", "sto" }.Contains(l.Id) ? "evento" : "")">@(s.Evento.Count > 0 && new[] { "min1", "std" }.Contains(l.Id) ? string.Join(" ", s.Evento) : v)</td>
+                                }
+                            </tr>
+                        }
+                    }
+                    </tbody>
+                </table>
+            </div>
+        }
+    </section>
+
+    <section id="panCampo" role="tabpanel" aria-labelledby="tabCampo" hidden>
+        <div class="toolbar">
+            <span class="field-hint">Reuniões para o serviço de campo: dia, hora, local e dirigente.</span>
+            <button type="button" class="button is-success" data-action="pdf" data-tipo="campo" @(Model.Campo == null ? "data-sem-dados" : "")><span class="icon"><i class="fa-solid fa-file-pdf"></i></span><span>PDF (vertical)</span></button>
+        </div>
+        @if (Model.Campo == null) { <div class="empty-state"><span class="icon"><i class="fa-solid fa-people-carry-box"></i></span><strong>Sem serviço de campo guardado</strong>Obtenha-o do Hourglass.</div> }
+        else if (!Model.Campo.Any()) { <div class="empty-state"><strong>Sem reuniões de serviço neste mês</strong></div> }
+        else
+        {
+            <div class="items">
+            @foreach (var e in Model.Campo)
+            {
+                <article class="item no-thumb">
+                    <div class="main"><div class="name">@Dia(e.Data)</div><div class="meta"><span class="num">@e.Hora</span><span><i class="fa-solid fa-location-dot fa-xs"></i> @e.Local</span></div></div>
+                    <div class="side"><span class="tag @(e.Dirigente == "" ? "is-light" : "is-info")">@(e.Dirigente == "" ? "Sem dirigente" : e.Dirigente)</span></div>
+                </article>
+            }
+            </div>
+        }
+    </section>
+
+    <section id="panTest" role="tabpanel" aria-labelledby="tabTest" hidden>
+        <div class="toolbar">
+            <span class="field-hint">Turnos por local, com os publicadores de cada turno.</span>
+            <button type="button" class="button is-success" data-action="pdf" data-tipo="testemunho" @(Model.Testemunho == null ? "data-sem-dados" : "")><span class="icon"><i class="fa-solid fa-file-pdf"></i></span><span>PDF (vertical)</span></button>
+        </div>
+        @if (Model.Testemunho == null) { <div class="empty-state"><span class="icon"><i class="fa-solid fa-bullhorn"></i></span><strong>Sem testemunho público guardado</strong>Obtenha-o do Hourglass.</div> }
+        else if (!Model.Testemunho.Any()) { <div class="empty-state"><strong>Sem turnos neste mês</strong></div> }
+        else
+        {
+            foreach (var local in Model.Testemunho.GroupBy(t => t.Local).OrderBy(g => g.Key))
+            {
+                <h2 class="group-title">@(local.Key == "" ? "Sem local" : local.Key)</h2>
+                <div class="items">
+                @foreach (var t in local.OrderBy(x => x.Data).ThenBy(x => x.Inicio))
+                {
+                    <article class="item no-thumb">
+                        <div class="main"><div class="name">@Dia(t.Data)</div><div class="meta"><span class="num">@t.Inicio – @t.Fim</span></div></div>
+                        <div class="side">@(t.Pessoas.Count == 0 ? Html.Raw("<span class=\"tag is-light\">por atribuir</span>") : Html.Raw(string.Join(" ", t.Pessoas.Select(p => "<span class=\"tag is-info\">" + System.Net.WebUtility.HtmlEncode(p) + "</span>"))))</div>
+                    </article>
+                }
+                </div>
+            }
+        }
+    </section>
+</div>
+
+<div id="modalSync" class="modal" role="dialog" aria-modal="true" aria-labelledby="tSy" data-persist="1">
+    <div class="modal-background"></div>
+    <div class="modal-card">
+        <header class="modal-card-head">
+            <p class="modal-card-title" id="tSy"><span class="icon"><i class="fa-solid fa-hourglass-half"></i></span><span>Obter @ProgramaServico.NomeMes(Model.Mes) @Model.Ano do Hourglass</span></p>
+            <button type="button" class="delete" aria-label="Fechar" data-close></button>
+        </header>
+        <section class="modal-card-body">
+            <p class="modal-body-text mb-4">Lê as reuniões, o serviço de campo e o testemunho público deste mês (só leitura) e guarda-os. Depois, os PDF geram-se sem pedir a cookie.</p>
+            <ol class="steps">
+                <li>Abra o <a href="https://app.hourglass-app.com/v2/page/app/scheduling/mm" target="_blank" rel="noopener">Hourglass</a> com a sessão iniciada, prima <kbd>F12</kbd> e abra o separador <b>Rede</b>.</li>
+                <li>Num pedido cujo nome é um intervalo de datas (por exemplo <b>2026-11-01_2026-11-30</b>): botão direito, <b>Copiar</b>, <b>Copiar como cURL</b>, e cole abaixo.</li>
+            </ol>
+            <div class="field">
+                <label class="label" for="pgCookie">Pedido copiado (ou só a cookie)</label>
+                <textarea class="textarea" id="pgCookie" rows="3" spellcheck="false" autocomplete="off" placeholder="curl 'https://app.hourglass-app.com/...' -H 'Cookie: ...'"></textarea>
+                <p class="field-hint">A cookie não é guardada.</p>
+            </div>
+        </section>
+        <footer class="modal-card-foot">
+            <button type="button" class="button" data-close>Cancelar</button>
+            <button type="button" class="button is-info" data-action="sync" data-submit><span class="icon"><i class="fa-solid fa-cloud-arrow-down"></i></span><span>Obter e guardar</span></button>
+        </footer>
+    </div>
+</div>
+
+@section Scripts {
+<script>
+    const ano = @Model.Ano, mes = @Model.Mes;
+    try { const d = localStorage.getItem('dirigenteSentinela'); if (d) App.$('#pgDir').value = d; } catch (e) { }
+    App.$('#pgDir').addEventListener('change', e => { try { localStorage.setItem('dirigenteSentinela', e.target.value); } catch (x) { } });
+
+    // PDF: abre diretamente se o mês já está guardado; senão pede primeiro os dados ao Hourglass
+    App.on('pdf', btn => {
+        if (btn.hasAttribute('data-sem-dados')) { notify('Ainda não há dados deste mês: obtenha-os do Hourglass.'); App.modal('modalSync').open(); return; }
+        const q = new URLSearchParams({ tipo: btn.dataset.tipo, ano: ano, mes: mes, dirigente: App.$('#pgDir').value });
+        window.open('/Reunioes/ProgramaPdf?' + q, '_blank');
+    });
+
+    App.on('sync', btn => App.run(btn, async () => {
+        const bruto = App.$('#pgCookie').value.trim(); if (!bruto) return App.campo('#pgCookie', 'Cole o pedido ou a cookie primeiro.');
+        const cookie = App.extrairCookie(bruto);
+        if (!/hglogin=/.test(cookie) || !/X-Hourglass-XSRF-Token=/.test(cookie)) return App.campo('#pgCookie', 'Não encontrei a sessão do Hourglass (hglogin e token XSRF). Use «Copiar como cURL».');
+        const r = await fetch('/Reunioes/ProgramaSincronizar', { method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded' }, body: new URLSearchParams({ cookie: cookie, ano: ano, mes: mes }) });
+        if (!r.ok) { notifyError(r.status === 401 ? 'A sessão do Hourglass expirou. Copie o pedido outra vez.' : (await r.text()) || 'Não foi possível obter os dados do Hourglass.'); return; }
+        App.$('#pgCookie').value = ''; notify('Programa guardado.'); setTimeout(() => location.reload(), 700);
+    }, 'Não foi possível obter os dados do Hourglass.'));
+</script>
+}

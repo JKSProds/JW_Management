@@ -1,37 +1,61 @@
 @model IEnumerable<JW_Management.Models.Reuniao>
 @{
     ViewData["Title"] = "Reuniões";
-    var meses = new[] { "Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho", "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro" };
+    var progresso = (Dictionary<string, (int Total, int Atribuidas)>)ViewBag.Progresso;
+    (int Total, int Atrib) P(string stamp) => progresso.TryGetValue(stamp, out var v) ? (v.Total, v.Atribuidas) : (0, 0);
+    var porAtribuir = Model.Sum(r => { var p = P(r.Stamp!); return p.Total - p.Atrib; });
+    var completas = Model.Count(r => { var p = P(r.Stamp!); return p.Total > 0 && p.Total == p.Atrib; });
 }
 
 <div class="container">
     <div class="page-head">
         <div class="head-title"><div><h1>Reuniões</h1></div></div>
         <div class="head-actions">
-            <button type="button" class="button is-info" data-open="modalCriar">
-                <span class="icon"><i class="fa-solid fa-calendar-plus"></i></span><span>Criar reunião</span>
-            </button>
-            <button type="button" class="button is-info is-light" data-open="modalHourglass">
+            <button type="button" class="button is-info" data-open="modalHourglass">
                 <span class="icon"><i class="fa-solid fa-hourglass-half"></i></span><span>Importar do Hourglass</span>
             </button>
-            <button type="button" class="button is-info is-light" data-open="modalPrograma">
-                <span class="icon"><i class="fa-solid fa-file-pdf"></i></span><span>Gerar programa</span>
-            </button>
-            <button type="button" class="button is-info is-light" data-open="modalFicheiro">
-                <span class="icon"><i class="fa-solid fa-file-excel"></i></span><span>Importar Excel</span>
+            <a class="button is-info is-light" href="~/Reunioes/Programa">
+                <span class="icon"><i class="fa-solid fa-file-pdf"></i></span><span>Programa e PDF</span>
+            </a>
+            <button type="button" class="button is-info is-light" data-open="modalCriar">
+                <span class="icon"><i class="fa-solid fa-calendar-plus"></i></span><span>Criar semana</span>
             </button>
         </div>
     </div>
 
     @await Html.PartialAsync("_Stats", new[] {
-        ("fa-calendar-days", "Reuniões registadas", Model.Count().ToString(), "sTot", ""),
-        ("fa-calendar-check", "Mais recente", Model.Any() ? Model.Last().SemanaReuniao ?? "—" : "—", "", "") })
+        ("fa-calendar-days", "Semanas registadas", Model.Count().ToString(), "sTot", ""),
+        ("fa-circle-check", "Completas", completas.ToString(), "sOk", "is-ok"),
+        ("fa-user-clock", "Designações por atribuir", porAtribuir.ToString(), "sFalta", porAtribuir > 0 ? "is-warn" : "") })
+
+    <div class="toolbar">
+        <div class="control has-icons-left search">
+            <input type="search" class="input" id="filtro" placeholder="Pesquisar semana" aria-label="Pesquisar semanas">
+            <span class="icon is-left"><i class="fa-solid fa-magnifying-glass"></i></span>
+        </div>
+        <div class="chips" id="chips" role="group" aria-label="Filtrar">
+            <button type="button" class="chip" data-type="0" aria-pressed="true">Todas</button>
+            <button type="button" class="chip" data-type="falta" aria-pressed="false">Por completar</button>
+            <button type="button" class="chip" data-type="ok" aria-pressed="false">Completas</button>
+        </div>
+    </div>
 
     <div id="lista" class="items">
         @foreach (var item in Model)
         {
-            <article class="item no-thumb" data-stamp="@item.Stamp">
-                <div class="main"><div class="name">@item.SemanaReuniao</div></div>
+            var p = P(item.Stamp!);
+            var pct = p.Total == 0 ? 0 : p.Atrib * 100 / p.Total;
+            var ok = p.Total > 0 && p.Atrib == p.Total;
+            <article class="item no-thumb" data-stamp="@item.Stamp" data-type="@(ok ? "ok" : "falta")" data-search="@item.SemanaReuniao">
+                <div class="main">
+                    <div class="name"><a href="~/Reunioes/Reuniao/@item.Stamp">@item.SemanaReuniao</a></div>
+                    <div class="meta">
+                        <span class="prog" title="@p.Atrib de @p.Total atribuídas"><span class="prog-bar"><i style="width:@pct%"></i></span></span>
+                        <span class="num">@p.Atrib / @p.Total atribuídas</span>
+                        @if (ok) { <span class="tag is-success">Completa</span> }
+                        else if (p.Total == 0) { <span class="tag is-light">Sem designações</span> }
+                    </div>
+                </div>
                 <div class="side">
                     <div class="acts">
                         <a class="button is-info" href="~/Reunioes/Reuniao/@item.Stamp"><span class="icon"><i class="fa-solid fa-pen-to-square"></i></span><span>Abrir</span></a>
@@ -41,10 +65,10 @@
             </article>
         }
     </div>
-    <div id="vazio" class="empty-state" @(Model.Any() ? "hidden" : "")>
+    <div id="vazio" class="empty-state" hidden>
         <span class="icon"><i class="fa-solid fa-calendar-days"></i></span>
-        <strong>Ainda não há reuniões</strong>
-        Crie uma reunião, importe-as do Hourglass ou de um ficheiro Excel.
+        <strong>Não há semanas para mostrar</strong>
+        Importe as reuniões do Hourglass ou crie uma semana.
     </div>
 </div>
 
@@ -52,76 +76,19 @@
     <div class="modal-background"></div>
     <div class="modal-card">
         <header class="modal-card-head">
-            <p class="modal-card-title" id="tCr"><span class="icon"><i class="fa-solid fa-calendar-plus"></i></span><span>Criar reunião</span></p>
+            <p class="modal-card-title" id="tCr"><span class="icon"><i class="fa-solid fa-calendar-plus"></i></span><span>Criar semana</span></p>
             <button type="button" class="delete" aria-label="Fechar" data-close></button>
         </header>
         <section class="modal-card-body">
             <div class="field">
                 <label class="label" for="txtData">Uma data da semana</label>
                 <input type="date" class="input" id="txtData" value="@DateTime.Now.ToString("yyyy-MM-dd")">
-                <p class="field-hint">A reunião é criada com todos os tipos de designação existentes.</p>
+                <p class="field-hint">A semana é criada com todos os tipos de designação existentes.</p>
             </div>
         </section>
         <footer class="modal-card-foot">
             <button type="button" class="button" data-close>Cancelar</button>
             <button type="button" class="button is-info" data-action="criar" data-submit><span class="icon"><i class="fa-solid fa-check"></i></span><span>Criar</span></button>
-        </footer>
-    </div>
-</div>
-
-<div id="modalFicheiro" class="modal" role="dialog" aria-modal="true" aria-labelledby="tFi">
-    <div class="modal-background"></div>
-    <div class="modal-card">
-        <header class="modal-card-head">
-            <p class="modal-card-title" id="tFi"><span class="icon"><i class="fa-solid fa-file-excel"></i></span><span>Importar ficheiro Excel</span></p>
-            <button type="button" class="delete" aria-label="Fechar" data-close></button>
-        </header>
-        <section class="modal-card-body">
-            <form action="/Reunioes/Reunioes" method="POST" class="dropzone" id="frmExcel">
-                <div class="dz-message needsclick">Largue aqui o ficheiro ou toque para escolher</div>
-            </form>
-        </section>
-        <footer class="modal-card-foot"><button type="button" class="button is-info" data-close>Fechar</button></footer>
-    </div>
-</div>
-
-<div id="modalPrograma" class="modal" role="dialog" aria-modal="true" aria-labelledby="tPg">
-    <div class="modal-background"></div>
-    <div class="modal-card">
-        <header class="modal-card-head">
-            <p class="modal-card-title" id="tPg"><span class="icon"><i class="fa-solid fa-file-pdf"></i></span><span>Programa mensal de atividades</span></p>
-            <button type="button" class="delete" aria-label="Fechar" data-close></button>
-        </header>
-        <section class="modal-card-body">
-            <p class="modal-body-text mb-4">Gera um PDF com uma coluna por semana (reuniões, indicadores e sistema sonoro), a partir do Hourglass. Cole um pedido «Copiar como cURL» do Hourglass (um cujo nome é um intervalo de datas), como na importação.</p>
-            <div class="form-grid">
-                <div class="field">
-                    <label class="label" for="pgMes">Mês</label>
-                    <div class="select is-fullwidth">
-                        <select id="pgMes">
-                            @for (var i = 0; i < 12; i++) { <option value="@(i + 1)" selected="@(i + 1 == DateTime.Now.Month)">@meses[i]</option> }
-                        </select>
-                    </div>
-                </div>
-                <div class="field">
-                    <label class="label" for="pgAno">Ano</label>
-                    <input type="number" class="input" id="pgAno" value="@DateTime.Now.Year" min="2020" max="2100">
-                </div>
-            </div>
-            <div class="field">
-                <label class="label" for="pgDir">Dirigente de A Sentinela por omissão</label>
-                <input class="input" id="pgDir" type="text" value="Filipe Gonçalves" autocomplete="off">
-                <p class="field-hint">Usado nas semanas em que o Hourglass não indica dirigente.</p>
-            </div>
-            <div class="field">
-                <label class="label" for="pgCookie">Pedido copiado (ou só a cookie)</label>
-                <textarea class="textarea" id="pgCookie" rows="3" spellcheck="false" autocomplete="off" placeholder="curl 'https://app.hourglass-app.com/...' -H 'Cookie: ...'"></textarea>
-                <p class="field-hint">Só se fazem leituras no Hourglass. A cookie não é guardada.</p>
-            </div>
-        </section>
-        <footer class="modal-card-foot">
-            <button type="button" class="button" data-close>Cancelar</button>
-            <button type="button" class="button is-info" data-action="gerarPrograma" data-submit><span class="icon"><i class="fa-solid fa-file-arrow-down"></i></span><span>Gerar PDF</span></button>
         </footer>
     </div>
 </div>
@@ -161,44 +128,27 @@
 </div>
 
 
+
 @section Scripts {
 <script>
+    App.filtro({
+        lista: '#lista', input: '#filtro', chips: '#chips', vazio: '#vazio', semUrl: true,
+        aoAplicar: v => App.stats({ sTot: v.length, sOk: v.filter(i => i.dataset.type === 'ok').length })
+    });
+
     App.on('criar', btn => App.run(btn, async () => {
         const d = App.$('#txtData').value; if (!d) return App.campo('#txtData', 'Indique uma data.');
         const r = await fetch('/Reunioes/Reuniao', { method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded' }, body: new URLSearchParams({ data: d }) });
         if (!r.ok) throw new Error('HTTP ' + r.status);
         location.href = r.url; // o servidor redireciona para a reunião criada
-    }, 'Não foi possível criar a reunião.'));
+    }, 'Não foi possível criar a semana.'));
 
     App.on('apagar', async btn => {
         const it = btn.closest('.item');
-        if (!await App.confirm({ title: 'Apagar reunião', text: 'Apagar «' + App.$('.name', it).textContent + '» e todas as designações associadas?', ok: 'Apagar' })) return;
-        App.run(btn, async () => { await App.api('DELETE', '/Reunioes/Reuniao/', { id: it.dataset.stamp }); App.removeItem(it); setTimeout(() => App.stats({ sTot: App.$$('#lista .item').length }), 300); notify('Reunião apagada.'); },
-            'Não foi possível apagar a reunião.');
+        if (!await App.confirm({ title: 'Apagar semana', text: 'Apagar «' + App.$('.name', it).textContent.trim() + '» e todas as designações associadas?', ok: 'Apagar' })) return;
+        App.run(btn, async () => { await App.api('DELETE', '/Reunioes/Reuniao/', { id: it.dataset.stamp }); App.removeItem(it); notify('Semana apagada.'); },
+            'Não foi possível apagar a semana.');
     });
-
-    document.addEventListener('DOMContentLoaded', () => {
-        const dz = Dropzone.forElement('#frmExcel');
-        dz.on('success', async () => { notify('Ficheiro importado.'); await App.refresh('#lista'); App.$('#vazio').hidden = App.$$('#lista .item').length > 0; });
-        dz.on('error', () => notifyError('Não foi possível importar o ficheiro.'));
-    });
-
-    // Programa mensal em PDF (lido do Hourglass)
-    App.on('gerarPrograma', btn => {
-        const bruto = App.$('#pgCookie').value.trim(); if (!bruto) return App.campo('#pgCookie', 'Cole o pedido ou a cookie primeiro.');
-        const cookie = App.extrairCookie(bruto);
-        if (!/hglogin=/.test(cookie) || !/X-Hourglass-XSRF-Token=/.test(cookie)) return App.campo('#pgCookie', 'Não encontrei a sessão do Hourglass (hglogin e token XSRF). Use «Copiar como cURL».');
-        const janela = window.open('', '_blank'); // abre já, dentro do gesto do utilizador, para o bloqueador de popups não o impedir
-        return App.run(btn, async () => {
-            const r = await fetch('/Reunioes/Programa', { method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-                body: new URLSearchParams({ cookie: cookie, ano: App.$('#pgAno').value, mes: App.$('#pgMes').value, dirigente: App.$('#pgDir').value }) });
-            if (!r.ok) { if (janela) janela.close(); notifyError(r.status === 401 ? 'A sessão do Hourglass expirou. Copie o pedido outra vez.' : (await r.text()) || 'Não foi possível gerar o programa.'); return; }
-            const url = URL.createObjectURL(await r.blob());
-            if (janela) janela.location.href = url; else location.href = url;
-            App.$('#pgCookie').value = ''; App.modal('modalPrograma').close();
-        }, 'Não foi possível gerar o programa.');
-    });
-
 </script>
 <script>
     (function () {

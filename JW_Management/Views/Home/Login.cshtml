@@ -76,7 +76,9 @@
     if (document.getElementById('divError')) {
         document.getElementById('authCard').classList.add('is-shaking');
         if (navigator.vibrate) navigator.vibrate(200);
-        const u = document.querySelector('[name=Username]'), pw = document.querySelector('[name=Password]'); (u && u.value ? pw : u).focus();
+        // Com «só passkey» o formulário não existe: não há campo onde pôr o foco.
+        const u = document.querySelector('[name=Username]'), pw = document.querySelector('[name=Password]');
+        const alvo = u && u.value ? pw : u; if (alvo) alvo.focus();
     }
 </script>
 }

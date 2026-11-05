@@ -124,22 +124,7 @@
                                 </a>
                             </div>
                         </div>
-                        <div class="navbar-item has-dropdown is-hoverable">
-                            <a class="navbar-link@(Ativo("Territorios"))">
-                                <span class="icon"><i class="fa-solid fa-map-location-dot"></i></span>
-                                <span>Territórios</span>
-                            </a>
-                            <div class="navbar-dropdown">
-                                <a class="navbar-item" href="~/Territorios">
-                                    <span class="icon"><i class="fa-solid fa-list"></i></span>
-                                    <span>Listagem</span>
-                                </a>
-                                <a class="navbar-item" href="~/Territorios/Registros">
-                                    <span class="icon"><i class="fa-solid fa-clock-rotate-left"></i></span>
-                                    <span>Registos</span>
-                                </a>
-                            </div>
-                        </div>
+                        @* Menu «Territórios» escondido por agora: controlador, vistas e rotas mantêm-se; o bloco está no histórico do git. *@
                         <div class="navbar-item has-dropdown is-hoverable">
                             <a class="navbar-link@(Ativo("Reunioes"))">
                                 <span class="icon"><i class="fa-solid fa-people-group"></i></span>
@@ -147,16 +132,16 @@
                             </a>
                             <div class="navbar-dropdown">
                                 <a class="navbar-item" href="~/Reunioes">
-                                    <span class="icon"><i class="fa-solid fa-list"></i></span>
-                                    <span>Listagem</span>
+                                    <span class="icon"><i class="fa-solid fa-calendar-days"></i></span>
+                                    <span>Semanas</span>
+                                </a>
+                                <a class="navbar-item" href="~/Reunioes/Programa">
+                                    <span class="icon"><i class="fa-solid fa-file-pdf"></i></span>
+                                    <span>Programa e PDF</span>
                                 </a>
                                 <a class="navbar-item" href="~/Reunioes/Discursos">
                                     <span class="icon"><i class="fa-solid fa-person-chalkboard"></i></span>
                                     <span>Discursos</span>
-                                </a>
-                                <a class="navbar-item" href="~/Reunioes/Calendario">
-                                    <span class="icon"><i class="fa-solid fa-calendar"></i></span>
-                                    <span>Calendário</span>
                                 </a>
                             </div>
                         </div>

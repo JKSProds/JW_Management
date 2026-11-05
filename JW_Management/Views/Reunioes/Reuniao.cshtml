@@ -2,10 +2,11 @@
 @{
     ViewData["Title"] = "Reunião";
     var designacoes = Model.Designacoes ?? new();
-    var separadores = new (int Base, string Titulo, string Icone)[]
+    // As secções seguem os intervalos de Ids dos tipos (ver HourglassImportador): 0 semana, 100 ministério, 200 viver, 300/400 fim de semana, 500 responsabilidades.
+    var secoes = new (int Base, string Titulo, string Icone)[]
     {
-        (0, "Tesouros", "fa-gem"), (100, "Ministério", "fa-people-arrows"), (200, "Viver como cristãos", "fa-hand-holding-heart"),
-        (300, "Fim de semana", "fa-book"), (400, "A Sentinela", "fa-book-open"), (500, "Responsabilidades", "fa-person-circle-check")
+        (0, "Tesouros da Palavra de Deus", "fa-gem"), (100, "Empenhe-se no ministério", "fa-people-arrows"), (200, "Viver como cristãos", "fa-hand-holding-heart"),
+        (300, "Reunião de fim de semana", "fa-book"), (400, "Estudo de A Sentinela", "fa-book-open"), (500, "Responsabilidades", "fa-person-circle-check")
     };
     var publicadores = ((IEnumerable<SelectListItem>)ViewBag.Publicadores).ToList();
     var canticos = ((IEnumerable<SelectListItem>)ViewBag.Canticos).ToList();
@@ -15,11 +16,11 @@
     <div class="page-head">
         <div class="head-title"><div><h1>@Model.SemanaReuniao</h1></div></div>
         <div class="head-actions">
-            <button type="button" class="button is-info" data-open="modalDesignacao">
+            <button type="button" class="button is-info is-light" data-open="modalDesignacao">
                 <span class="icon"><i class="fa-solid fa-clipboard-list"></i></span><span>Adicionar designação</span>
             </button>
             <a class="button is-info is-light" href="~/Reunioes">
-                <span class="icon"><i class="fa-solid fa-arrow-left"></i></span><span>Reuniões</span>
+                <span class="icon"><i class="fa-solid fa-arrow-left"></i></span><span>Semanas</span>
             </a>
         </div>
     </div>
@@ -28,7 +29,7 @@
     {
         <div class="empty-state">
             <span class="icon"><i class="fa-solid fa-clipboard-list"></i></span>
-            <strong>Esta reunião não tem designações</strong>
+            <strong>Esta semana não tem designações</strong>
             Não existem tipos de designação para a preencher. Importe as reuniões do Hourglass (cria os tipos) ou adicione uma designação.
         </div>
     }
@@ -36,78 +37,67 @@
     {
     <div id="regiao">
         @await Html.PartialAsync("_Stats", new[] {
-            ("fa-clipboard-list", "Designações", designacoes.Count.ToString(), "", ""),
-            ("fa-user-check", "Atribuídas", designacoes.Count(d => d.Atribuida).ToString(), "", "is-ok"),
+            ("fa-user-check", "Atribuídas", designacoes.Count(d => d.Atribuida) + " de " + designacoes.Count, "", designacoes.All(d => d.Atribuida) ? "is-ok" : ""),
             ("fa-user-clock", "Por atribuir", designacoes.Count(d => !d.Atribuida).ToString(), "", designacoes.Any(d => !d.Atribuida) ? "is-warn" : ""),
             ("fa-music", "Cânticos definidos", Model.Canticos.Count(c => c.Id > 0) + " de " + Model.Canticos.Count, "", "") })
 
-        <div class="panel-card mb-4">
-            <h2>Cânticos</h2>
-            <div class="form-grid">
+        <div class="toolbar">
+            <div class="chips" id="chipsRev" role="group" aria-label="Mostrar">
+                <button type="button" class="chip" data-vista="todas" aria-pressed="true">Todas</button>
+                <button type="button" class="chip" data-vista="falta" aria-pressed="false">Por atribuir</button>
+            </div>
+            <span class="field-hint" id="autoGuardado">As alterações guardam-se sozinhas.</span>
+        </div>
+
+        <section class="rev-secao">
+            <h2 class="rev-titulo"><i class="fa-solid fa-music"></i> Cânticos</h2>
+            <div class="rev-canticos">
                 @foreach (var c in Model.Canticos)
                 {
-                    <div class="field">
-                        <div class="select is-fullwidth">
-                            <select data-action-change="cantico" data-stamp="@c.Stamp" aria-label="Cântico">
-                                @foreach (var o in canticos) { <option value="@o.Value" selected="@(o.Value == c.Id.ToString())">@o.Text</option> }
-                            </select>
-                        </div>
+                    <div class="select">
+                        <select data-cantico="@c.Stamp" aria-label="Cântico">
+                            @foreach (var o in canticos) { <option value="@o.Value" selected="@(o.Value == c.Id.ToString())">@o.Text</option> }
+                        </select>
                     </div>
                 }
             </div>
-        </div>
+        </section>
 
-        <div class="seg" role="tablist" aria-label="Secções da reunião">
-            @for (var i = 0; i < separadores.Length; i++)
-            {
-                var sep = separadores[i];
-                <button type="button" role="tab" id="tab@(sep.Base)" aria-controls="pan@(sep.Base)" aria-selected="@(i == 0 ? "true" : "false")">@sep.Titulo<span class="count">@Model.ObterDesignacoesTipo(sep.Base).Count</span></button>
-            }
-        </div>
-
-        @foreach (var sep in separadores)
+        @foreach (var sec in secoes)
         {
-            <section id="pan@(sep.Base)" role="tabpanel" aria-labelledby="tab@(sep.Base)" @(sep.Base == 0 ? "" : "hidden")>
-                @if (!Model.ObterDesignacoesTipo(sep.Base).Any())
-                {
-                    <div class="empty-state"><span class="icon"><i class="fa-solid @sep.Icone"></i></span><strong>Sem designações nesta secção</strong></div>
-                }
-                <div class="dg-grid">
-                @foreach (var item in Model.ObterDesignacoesTipo(sep.Base))
+            var itens = sec.Base == 300 ? Model.ObterDesignacoesTipo(300) : Model.ObterDesignacoesTipo(sec.Base);
+            if (!itens.Any()) continue;
+            <section class="rev-secao">
+                <h2 class="rev-titulo"><i class="fa-solid @sec.Icone"></i> @sec.Titulo</h2>
+                <div class="rev-linhas">
+                @foreach (var item in itens)
                 {
                     var grupo = designacoes.Where(d => d.TipoDesignacao!.Id == item.TipoDesignacao!.Id && d.Local == item.Local).ToList();
                     var pendente = grupo.Any(u => !u.Atribuida);
-                    <article class="dg panel-card" data-stamps="@string.Join(",", grupo.Select(g => g.Stamp))">
-                        <header class="dg-head">
-                            <h3>@item.TipoDesignacao!.Descricao</h3>
-                            @if (item.TipoDesignacao.Salas > 1) { <span class="tag is-light">@item.Local</span> }
-                            <span class="tag dg-estado @(pendente ? "is-warning" : "is-success")">@(pendente ? "Por atribuir" : "Atribuída")</span>
-                            <span class="tag is-info dg-dirty" hidden>Alterada</span>
-                        </header>
-                        <div class="form-grid dg-campos">
-                            <div class="field"><label class="label">Tema</label><input class="input tema" type="text" value="@item.NomeDesignacao" placeholder="Tema da designação"></div>
-                            <div class="field dg-min"><label class="label">Minutos</label><input class="input minutos" type="number" min="0" value="@item.NMin"></div>
+                    <article class="rev-linha @(pendente ? "is-falta" : "")" data-stamps="@string.Join(",", grupo.Select(g => g.Stamp))">
+                        <div class="rev-quem">
+                            <div class="rev-nome">@item.TipoDesignacao!.Descricao @if (item.TipoDesignacao.Salas > 1) { <span class="tag is-light">@item.Local</span> }</div>
+                            <input class="input is-small tema" type="text" value="@item.NomeDesignacao" placeholder="Tema" aria-label="Tema de @item.TipoDesignacao.Descricao">
                         </div>
-                        <div class="dg-pessoas">
+                        <input class="input is-small minutos" type="number" min="0" value="@item.NMin" aria-label="Minutos" title="Minutos">
+                        <div class="rev-pessoas">
                             @foreach (var u in grupo)
                             {
-                                <div class="input-action pessoa" data-stamp="@u.Stamp">
-                                    <div class="control">
-                                        <div class="select is-fullwidth">
-                                            <select class="pub" aria-label="Publicador">
-                                                @foreach (var p in publicadores) { <option value="@p.Value" selected="@(p.Value == u.Publicador!.Id.ToString())">@p.Text</option> }
-                                            </select>
-                                        </div>
+                                <div class="pessoa" data-stamp="@u.Stamp">
+                                    <div class="select">
+                                        <select class="pub" aria-label="Publicador">
+                                            @foreach (var p in publicadores) { <option value="@p.Value" selected="@(p.Value == u.Publicador!.Id.ToString())">@p.Text</option> }
+                                        </select>
                                     </div>
                                     <button type="button" class="button btn-icon is-danger-hover" data-action="apagarPessoa" aria-label="Remover publicador" title="Remover"><i class="fa-solid fa-user-minus"></i></button>
                                 </div>
                             }
                         </div>
-                        <footer class="dg-foot">
-                            <button type="button" class="button is-info is-light" data-action="addPessoa"><span class="icon"><i class="fa-solid fa-user-plus"></i></span><span>Publicador</span></button>
-                            <button type="button" class="button is-info" data-action="guardar"><span class="icon"><i class="fa-regular fa-floppy-disk"></i></span><span>Guardar</span></button>
+                        <div class="rev-acoes">
+                            <button type="button" class="button btn-icon" data-action="addPessoa" aria-label="Adicionar publicador" title="Adicionar publicador"><i class="fa-solid fa-user-plus"></i></button>
                             <button type="button" class="button btn-icon is-danger-hover" data-action="apagarGrupo" aria-label="Apagar designação" title="Apagar designação"><i class="fa-solid fa-trash-can"></i></button>
-                        </footer>
+                            <span class="rev-ok" aria-hidden="true"><i class="fa-solid fa-check"></i></span>
+                        </div>
                     </article>
                 }
                 </div>
@@ -164,40 +154,47 @@
 @section Scripts {
 <script>
     const reuniao = '@Model.Stamp';
-    const recarregar = () => App.refresh('#regiao');
-    let alvo = null;
+    let alvo = null, vista = 'todas';
+    const timers = new WeakMap();
 
-    // «Alterada» aparece assim que algo no cartão muda
-    document.addEventListener('input', e => { const c = e.target.closest('.dg'); if (c) App.$('.dg-dirty', c).hidden = false; });
-    document.addEventListener('change', e => { const c = e.target.closest('.dg'); if (c) App.$('.dg-dirty', c).hidden = false; });
+    // Recarrega só a região e mantém o filtro «por atribuir»
+    async function recarregar() { await App.refresh('#regiao'); aplicarVista(); }
+    function aplicarVista() { App.$$('.rev-linha').forEach(l => l.hidden = vista === 'falta' && !l.classList.contains('is-falta')); App.$$('.rev-secao').forEach(s => { if (App.$('.rev-linhas', s)) s.hidden = !App.$$('.rev-linha', s).some(l => !l.hidden); }); }
+    document.addEventListener('click', e => { const c = e.target.closest('#chipsRev .chip'); if (!c) return; vista = c.dataset.vista; App.$$('#chipsRev .chip').forEach(x => x.setAttribute('aria-pressed', x === c)); aplicarVista(); });
 
-    // Cânticos: guardam ao escolher
-    document.addEventListener('change', async e => {
-        const s = e.target.closest('[data-action-change="cantico"]'); if (!s) return;
-        try { await App.api('PUT', '/Reunioes/Cantico/', { id: s.value, stamp: s.dataset.stamp }); notify('Cântico atualizado.'); recarregar(); }
-        catch (x) { notifyError('Não foi possível atualizar o cântico.'); }
+    // Guardar sozinho: escolher um publicador guarda logo; tema e minutos guardam ao parar de escrever
+    async function guardar(linha) {
+        const minutos = App.$('.minutos', linha).value || 0, tema = App.$('.tema', linha).value;
+        try {
+            for (const p of App.$$('.pessoa', linha)) await App.api('PUT', '/Reunioes/Designacao/', { id: p.dataset.stamp, pub: App.$('.pub', p).value, minutos: minutos, tema: tema });
+            linha.classList.toggle('is-falta', App.$$('.pub', linha).some(s => s.value === '0'));
+            linha.classList.add('is-guardado'); setTimeout(() => linha.classList.remove('is-guardado'), 1500);
+        } catch (x) { notifyError('Não foi possível guardar a designação.'); }
+    }
+    document.addEventListener('change', e => {
+        const linha = e.target.closest('.rev-linha');
+        if (linha && (e.target.matches('.pub') || e.target.matches('.minutos') || e.target.matches('.tema'))) { guardar(linha); return; }
+        const c = e.target.closest('[data-cantico]');
+        if (c) App.api('PUT', '/Reunioes/Cantico/', { id: c.value, stamp: c.dataset.cantico }).then(() => notify('Cântico atualizado.')).catch(() => notifyError('Não foi possível atualizar o cântico.'));
+    });
+    document.addEventListener('input', e => {
+        const linha = e.target.closest('.rev-linha'); if (!linha || !(e.target.matches('.tema') || e.target.matches('.minutos'))) return;
+        clearTimeout(timers.get(linha)); timers.set(linha, setTimeout(() => guardar(linha), 900));
     });
 
-    App.on('guardar', btn => App.run(btn, async () => {
-        const c = btn.closest('.dg'), minutos = App.$('.minutos', c).value || 0, tema = App.$('.tema', c).value;
-        for (const p of App.$$('.pessoa', c)) await App.api('PUT', '/Reunioes/Designacao/', { id: p.dataset.stamp, pub: App.$('.pub', p).value, minutos: minutos, tema: tema });
-        await recarregar(); notify('Designação guardada.');
-    }, 'Não foi possível guardar a designação.'));
-
     App.on('apagarGrupo', async btn => {
-        const c = btn.closest('.dg');
-        if (!await App.confirm({ title: 'Apagar designação', text: 'Apagar «' + App.$('h3', c).textContent + '» e os publicadores associados?', ok: 'Apagar' })) return;
-        App.run(btn, async () => { await App.api('DELETE', '/Reunioes/Designacao/', { id: c.dataset.stamps }); await recarregar(); notify('Designação apagada.'); }, 'Não foi possível apagar a designação.');
+        const l = btn.closest('.rev-linha');
+        if (!await App.confirm({ title: 'Apagar designação', text: 'Apagar «' + App.$('.rev-nome', l).firstChild.textContent.trim() + '» e os publicadores associados?', ok: 'Apagar' })) return;
+        App.run(btn, async () => { await App.api('DELETE', '/Reunioes/Designacao/', { id: l.dataset.stamps }); await recarregar(); notify('Designação apagada.'); }, 'Não foi possível apagar a designação.');
     });
 
     App.on('apagarPessoa', async btn => {
-        const p = btn.closest('.pessoa'), c = btn.closest('.dg');
-        const unica = App.$$('.pessoa', c).length === 1;
+        const p = btn.closest('.pessoa'), l = btn.closest('.rev-linha'), unica = App.$$('.pessoa', l).length === 1;
         if (!await App.confirm({ title: 'Remover publicador', text: unica ? 'É o único publicador: a designação será apagada.' : 'Remover este publicador da designação?', ok: 'Remover' })) return;
         App.run(btn, async () => { await App.api('DELETE', '/Reunioes/Designacao/', { id: p.dataset.stamp }); await recarregar(); notify('Removido.'); }, 'Não foi possível remover.');
     });
 
-    App.on('addPessoa', btn => { alvo = App.$('.pessoa', btn.closest('.dg')).dataset.stamp; App.modal('modalPessoa').open(); });
+    App.on('addPessoa', btn => { alvo = App.$('.pessoa', btn.closest('.rev-linha')).dataset.stamp; App.modal('modalPessoa').open(); });
     App.on('criarPessoa', btn => App.run(btn, async () => {
         await App.api('POST', '/Reunioes/Publicador/', { id: alvo, pub: App.$('#txtIdPubAdd').value });
         App.modal('modalPessoa').close(); await recarregar(); notify('Publicador adicionado.');
@@ -206,7 +203,7 @@
     App.on('criarDg', btn => App.run(btn, async () => {
         await App.api('POST', '/Reunioes/Designacao/', { id: reuniao, tipo: App.$('#txtIdTipo').value, local: App.$('#txtLocal').value });
         App.modal('modalDesignacao').close();
-        if (App.$('#regiao')) { await recarregar(); notify('Designação criada.'); } else location.reload(); // sem designações ainda não há região a atualizar
+        if (App.$('#regiao')) { await recarregar(); notify('Designação criada.'); } else location.reload();
     }, 'Não foi possível criar a designação.'));
 </script>
 }

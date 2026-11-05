@@ -2,18 +2,18 @@ using Microsoft.AspNetCore.Mvc;
 using JW_Management.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc.Rendering;
-using Org.BouncyCastle.Pqc.Crypto.Falcon;
 
 namespace JW_Management.Controllers
 {
     [Authorize(Roles = "Admin, Assistente, Coordenador, Secretario, Servico")]
-    public class ReunioesController(DbContext _dbContext, FileContext _fileContext, HourglassImportador _hourglass, HourglassPrograma _programa) : Controller
+    public class ReunioesController(DbContext _dbContext, HourglassImportador _hourglass, ProgramaServico _programa) : Controller
     {
         // O DbContext monta SQL por texto: o texto livre escreve-se escapado.
         private static string Esc(string? s) => (s ?? "").Replace("\\", "\\\\").Replace("'", "''");
 
-        public IActionResult Index(string filtro, int tipo)
+        public IActionResult Index()
         {
+            ViewBag.Progresso = _dbContext.ObterProgressoReunioes();
             return View(_dbContext.ObterReunioes(false));
         }
 
@@ -39,19 +39,53 @@ namespace JW_Management.Controllers
             catch (InvalidOperationException e) { return StatusCode(500, e.Message); }
         }
 
+        // O antigo «Calendário» (vazio) deu lugar ao Programa.
         [HttpGet]
-        public IActionResult Calendario()
+        public IActionResult Calendario() => RedirectToActionPermanent("Programa");
+
+        // Programa do mês (reuniões, serviço de campo e testemunho público), lido da cópia guardada na base de dados.
+        [HttpGet]
+        public IActionResult Programa(int? ano, int? mes)
         {
-            return View();
+            var hoje = DateTime.Today;
+            int a = ano ?? hoje.Year, m = mes ?? hoje.Month;
+            if (m is < 1 or > 12 || a is < 2000 or > 2100) { a = hoje.Year; m = hoje.Month; }
+
+            return View(new ProgramaPagina
+            {
+                Ano = a, Mes = m,
+                Estado = _programa.Estado(a, m),
+                Programa = _programa.ObterPrograma(a, m, User.ObterCong()),
+                Campo = _programa.ObterCampo(a, m),
+                Testemunho = _programa.ObterTestemunho(a, m)
+            });
         }
 
+        // Lê o mês do Hourglass (só GET) e guarda-o; a cookie é usada neste pedido e não é guardada.
         [HttpPost]
-        public IActionResult Reunioes(IFormFile file)
+        public async Task<IActionResult> ProgramaSincronizar(string cookie, int ano, int mes)
         {
+            if (!HourglassContext.CookieValida(cookie)) return BadRequest("Cookie inválida: falta «hglogin» ou o token XSRF.");
+            if (mes is < 1 or > 12 || ano is < 2000 or > 2100) return BadRequest("Mês ou ano inválido.");
+            try { return Json(await _programa.Sincronizar(cookie, ano, mes)); }
+            catch (UnauthorizedAccessException e) { return Unauthorized(e.Message); }
+            catch (HttpRequestException) { return StatusCode(502, "Não foi possível obter os dados do Hourglass."); }
+        }
 
-            List<Designacao> LstD = _fileContext.ImportarDesignacoes(file, _dbContext!);
-
-            return _dbContext.ApagarReunioes(LstD.Select(d => d.StampReuniao.ToString()).Distinct().ToList()) ? _dbContext.AdicionarDesignacoes(LstD) ? StatusCode(200) : StatusCode(500) : StatusCode(500);
+        // PDF a partir dos dados já guardados: não precisa da cookie. tipo = programa | campo | testemunho.
+        [HttpGet]
+        public IActionResult ProgramaPdf(string tipo, int ano, int mes, string? dirigente)
+        {
+            var cong = User.ObterCong();
+            byte[]? pdf = tipo switch
+            {
+                "programa" => _programa.ObterPrograma(ano, mes, cong, (dirigente ?? "").Trim()) is { } p ? PdfProgramas.Gerar(p) : null,
+                "campo" => _programa.ObterCampo(ano, mes) is { } c ? PdfProgramas.GerarCampo(c, cong, ano, mes) : null,
+                "testemunho" => _programa.ObterTestemunho(ano, mes) is { } t ? PdfProgramas.GerarTestemunho(t, cong, ano, mes) : null,
+                _ => null
+            };
+            if (pdf == null) return NotFound("Ainda não há dados guardados para este mês: sincronize-os do Hourglass.");
+            return File(pdf, "application/pdf", $"{tipo}_{ano}_{mes:00}.pdf");
         }
 
         [HttpGet]
@@ -178,21 +212,6 @@ namespace JW_Management.Controllers
         public IActionResult Discurso(string id, bool apagar)
         {
             return _dbContext.ApagarDiscurso(_dbContext.ObterDiscurso(id)) ? StatusCode(200) : StatusCode(500);
-        }
-
-        // Programa mensal de atividades (PDF) lido do Hourglass; a cookie é usada neste pedido e não é guardada.
-        [HttpPost]
-        public async Task<IActionResult> Programa(string cookie, int ano, int mes, string? dirigente)
-        {
-            if (!HourglassContext.CookieValida(cookie)) return BadRequest("Cookie inválida: falta «hglogin» ou o token XSRF.");
-            if (mes is < 1 or > 12 || ano is < 2000 or > 2100) return BadRequest("Mês ou ano inválido.");
-            try
-            {
-                var programa = await _programa.Obter(cookie, ano, mes, User.ObterCong(), (dirigente ?? "").Trim());
-                return File(ProgramaPdf.Gerar(programa), "application/pdf", $"Programa_{ano}_{mes:00}.pdf");
-            }
-            catch (UnauthorizedAccessException e) { return Unauthorized(e.Message); }
-            catch (HttpRequestException) { return StatusCode(502, "Não foi possível obter os dados do Hourglass."); }
         }
     }
 }

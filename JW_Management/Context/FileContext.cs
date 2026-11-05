@@ -7,7 +7,6 @@ using System.Globalization;
 using System.Reflection.Metadata;
 using System.Text;
 using CsvHelper;
-using OfficeOpenXml;
 
 namespace JW_Management.Models
 {
@@ -349,60 +348,6 @@ namespace JW_Management.Models
 
             document.Close();
             return combinedStream;
-        }
-
-        public List<Designacao> ImportarDesignacoes(IFormFile file, DbContext context)
-        {
-            var filePath = Path.GetTempFileName();
-            List<Designacao> LstDesignacao = new List<Designacao>();
-            List<TipoDesignacao> LstTipos = context.ObterTiposDesignacao();
-            List<Publicador> LstPublicadores = context.ObterPublicadores(false);
-
-            using (var stream = new FileStream(filePath, FileMode.Create))
-            {
-                file.CopyTo(stream);
-            }
-            ExcelPackage.LicenseContext = LicenseContext.NonCommercial;
-            using (var package = new ExcelPackage(new System.IO.FileInfo(filePath)))
-            {
-                var worksheet = package.Workbook.Worksheets[0];
-
-                int rowCount = worksheet.Dimension.Rows;
-                int colCount = worksheet.Dimension.Columns;
-
-                // Check if the specified column is within the bounds of the worksheet
-                for (int colIndex = 2; colIndex <= colCount; colIndex++)
-                {
-                    bool a = colIndex % 2 == 1;
-                    string s = a ? worksheet.Cells[2, colIndex - 1].Text : worksheet.Cells[2, colIndex].Text;
-
-                    // Iterate through each row in the specified column
-                    for (int rowIndex = 3; rowIndex <= rowCount; rowIndex++)
-                    {
-                        string p = worksheet.Cells[rowIndex, colIndex].Text.Contains("Sala") || worksheet.Cells[rowIndex, colIndex].Text.Contains("Salão") ? "" : worksheet.Cells[rowIndex, colIndex].Text;
-                        string d = string.IsNullOrEmpty(worksheet.Cells[rowIndex, 1].Text) ? worksheet.Cells[rowIndex - 1, 1].Text : worksheet.Cells[rowIndex, 1].Text;
-                        if (!string.IsNullOrEmpty(p) && !string.IsNullOrEmpty(d))
-                        {
-                            foreach (var pub in p.Split("|"))
-                            {
-                                LstDesignacao.Add(new Designacao()
-                                {
-                                    Stamp = DateTime.Now.Ticks.ToString(),
-                                    StampReuniao = s.Trim().Replace(" ", ""),
-                                    SemanaReuniao = s.Trim(),
-                                    NomeDesignacao = d.Trim(),
-                                    NomePublicador = pub.Trim(),
-                                    Publicador = LstPublicadores.Where(u => u.Nome.StartsWith(pub.Trim())).DefaultIfEmpty(new Publicador()).First(),
-                                    TipoDesignacao = LstTipos.Where(t => t.DescricaoAdicional == d.Trim()).DefaultIfEmpty(new TipoDesignacao()).First(),
-                                    Local = a ? "Sala" : "Auditorio"
-                                });
-                                //if (LstTipos.Where(u => u.DescricaoAdicional == LstDesignacao.Last().TipoDesignacao.DescricaoAdicional).Count() > 1) LstTipos.Remove(LstTipos.Where(u => u.Id == LstDesignacao.Last().TipoDesignacao.Id).First());
-                            }
-                        }
-                    }
-                }
-            }
-            return LstDesignacao;
         }
 
         public dynamic ConvertCsv(IFormFile file)

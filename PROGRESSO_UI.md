@@ -66,6 +66,15 @@ Publicadores > «Sincronizar com o Hourglass» (`HourglassSincronizador`, só le
 - Pedidos reescrito: pesquisa, filtro por estado com contagens, agrupar por publicador/publicação, seleção em bloco (visíveis, grupo ou individual) com barra de ações (marcar como Pendente/Enviado/Fornecido, apagar), botão «Avançar» ao estado seguinte, tudo sem recarregar. Novos endpoints `PedidoEstado` e `PedidosApagar` (ids só numéricos).
 - Login com passkey: falhas do OIDC passam a ficar registadas no servidor (`[OIDC] Falha no início de sessão`).
 
+## Revisão 9: Reuniões simplificadas e programas
+
+- Importação Excel removida (ação, método, pacote EPPlus). Territórios escondidos da navbar e do Início (código mantido).
+- **Programa mensal guardado**: a tabela `r_programa` (migração V_1.7) guarda como JSON as semanas, o serviço de campo e o testemunho público de cada mês. «Obter do Hourglass» lê e guarda uma vez; os PDF geram-se depois **sem cookie** (`ProgramaServico`, `/Reunioes/ProgramaPdf`).
+- **Três PDF modernos** (`PdfProgramas`): quadro mensal A4 horizontal (numa página, com cânticos, indicadores, sistema sonoro e limpeza), serviço de campo e testemunho público A4 vertical.
+- Cânticos: números e títulos vêm do Hourglass (programa e importação de reuniões) e enchem o catálogo `sys_canticos`.
+- Endpoints do Hourglass usados (GET): `scheduling/other/fm` (serviço de campo), `scheduling/fsmeetings/locations`, `scheduling/pw/schedule/{datas}`, `scheduling/pw/locations?disabled=true`; instantes do testemunho em UTC, convertidos para a hora de Lisboa.
+- Interface: Semanas (lista com progresso e filtros), Reunião (linhas com gravação automática e filtro «por atribuir»), Programa e PDF (substitui o Calendário), Discursos.
+
 ## Minimizar refrescos de página
 
 Utilitários em `wwwroot/js/app.js` (sem dependências, usam `fetch` e delegação de eventos):

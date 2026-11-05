@@ -1317,6 +1317,50 @@
             return ExecutarQuery(sql);
         }
 
+        // ---------- Programa mensal (documentos JSON em r_programa) ----------
+        private static string EscSql(string? s) => (s ?? "").Replace("\\", "\\\\").Replace("'", "''");
+
+        public Dictionary<string, (string Dados, DateTime Atualizado)> ObterProgramaDocs(string tipo, IEnumerable<string> chaves)
+        {
+            var res = new Dictionary<string, (string, DateTime)>();
+            var lista = chaves.Select(c => "'" + EscSql(c) + "'").ToList();
+            if (lista.Count == 0) return res;
+
+            using (Database db = _connectionString)
+            {
+                string sql = "SELECT Chave, Dados, timestamp FROM r_programa WHERE Tipo='" + EscSql(tipo) + "' AND Chave IN (" + string.Join(",", lista) + ");";
+                using var result = db.Query(sql);
+                while (result.Read()) res[result["Chave"]] = (result["Dados"], DateTime.Parse(result["timestamp"]));
+            }
+            return res;
+        }
+
+        public bool GuardarProgramaDoc(string tipo, string chave, string json)
+        {
+            return ExecutarQuery("INSERT INTO r_programa (Tipo, Chave, Dados) VALUES ('" + EscSql(tipo) + "', '" + EscSql(chave) + "', '" + EscSql(json) + "') ON DUPLICATE KEY UPDATE Dados=VALUES(Dados);");
+        }
+
+        // Progresso das reuniões numa só consulta: total de designações e quantas já têm publicador.
+        public Dictionary<string, (int Total, int Atribuidas)> ObterProgressoReunioes()
+        {
+            var res = new Dictionary<string, (int, int)>();
+            using (Database db = _connectionString)
+            {
+                using var result = db.Query("SELECT StampReuniao, COUNT(*) AS Total, SUM(IdPublicador > 0) AS Atrib FROM r_designacoes GROUP BY StampReuniao;");
+                while (result.Read()) res[result["StampReuniao"]] = (int.Parse(result["Total"]), int.Parse(result["Atrib"] == "" ? "0" : result["Atrib"]));
+            }
+            return res;
+        }
+
+        // Cânticos: o catálogo local (sys_canticos) enche-se com os números e títulos vindos do Hourglass.
+        public bool GuardarCanticos(IEnumerable<(int Numero, string Titulo)> canticos)
+        {
+            var linhas = canticos.Where(c => c.Numero > 0).DistinctBy(c => c.Numero)
+                .Select(c => "(" + c.Numero + ", '" + EscSql(c.Titulo.Length > 50 ? c.Titulo[..50] : c.Titulo) + "')").ToList();
+            if (linhas.Count == 0) return true;
+            return ExecutarQuery("INSERT INTO sys_canticos (id, tema) VALUES " + string.Join(",", linhas) + " ON DUPLICATE KEY UPDATE tema=VALUES(tema);");
+        }
+
         public bool CriarTipoDesignacao(TipoDesignacao t)
         {
             string T(string? s) => (s ?? "").Replace("\\", "\\\\").Replace("'", "''");

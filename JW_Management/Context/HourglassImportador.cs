@@ -67,7 +67,12 @@ public class HourglassImportador(HourglassContext _hg, DbContext _db)
                     }
                 Add("mm", "mm:cbsreader", "Leitor do estudo bíblico", a["cbs_reader"], @base: 200);
                 Add("mm", "mm:closeprayer", "Oração final", a["closeprayer"], @base: 200);
-                if (m != null) s.Canticos = new[] { "song1", "song2", "song3" }.Select(k => (int?)HourglassContext.Sub(m[k], "number") ?? 0).ToList();
+                if (m != null)
+                {
+                    var ks = new[] { "song1", "song2", "song3" };
+                    s.Canticos = ks.Select(k => (int?)HourglassContext.Sub(m[k], "number") ?? 0).ToList();
+                    s.CanticoTitulos = ks.Select(k => (string?)HourglassContext.Sub(m[k], "title") ?? "").ToList();
+                }
             }
 
             if (wm.TryGetValue(datas, out var w))
@@ -161,6 +166,8 @@ public class HourglassImportador(HourglassContext _hg, DbContext _db)
                 }
             }
 
+            // o catálogo local de cânticos fica com os títulos do Hourglass (os números sozinhos não dizem nada)
+            _db.GuardarCanticos(s.Canticos.Select((n, i) => (n, i < s.CanticoTitulos.Count ? s.CanticoTitulos[i] : "")));
             var canticos = _db.ObterCanticos(s.Stamp);
             for (int i = 0; i < canticos.Count && i < s.Canticos.Count; i++)
                 if (s.Canticos[i] > 0) { canticos[i].Id = s.Canticos[i]; _db.AtualizarCantico(canticos[i]); }
