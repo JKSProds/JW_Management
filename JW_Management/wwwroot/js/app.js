@@ -324,7 +324,7 @@
             App.hgAtiva = s.ativa; if (!s.ativa) return s;
             b.hidden = true;
             const n = document.createElement('div'); n.className = 'notice is-ok hg-sessao';
-            n.innerHTML = '<span class="icon"><i class="fa-solid fa-circle-check"></i></span><div>Sessão do Hourglass guardada até às <b></b>. <button type="button" class="button is-small is-light" data-hg="outra">Usar outra</button></div>';
+            n.innerHTML = '<span class="icon"><i class="fa-solid fa-circle-check"></i></span><div class="hg-txt">Sessão do Hourglass guardada até às <b></b></div><button type="button" class="button is-small" data-hg="outra">Usar outra</button>';
             $('b', n).textContent = s.ate; b.parentNode.insertBefore(n, b);
             n.addEventListener('click', function (e) {
                 if (!e.target.closest('[data-hg]')) return;

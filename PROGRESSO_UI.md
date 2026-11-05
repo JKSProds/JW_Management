@@ -148,3 +148,5 @@ Regra: nenhum ecrã migrado usa `window.location.reload()`. Só há navegação 
 - **Logo** novo (`logo.svg`) e **Publicadores** em cartões, com filtros por contacto e função e atalhos de email e telefone.
 
 - **Quadro mensal em PDF**: faixa preta por reunião (semana, fim de semana, serviços), partes em cinza, linhas verticais entre semanas e secção própria para Serviços (indicadores, áudio/vídeo, limpeza). Continua numa só página A4.
+
+- Cânticos do PDF na posição certa: inicial no topo da reunião de semana, do meio no início de «Viver como cristãos», final no fim do estudo bíblico; no fim de semana, o do meio antes de A Sentinela e o final no fim. Aviso da sessão do Hourglass alinhado.

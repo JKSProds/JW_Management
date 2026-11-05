@@ -847,3 +847,9 @@ input[type="date"].input, input[type="time"].input { appearance: none; -webkit-a
 .pub-info .meta { display: flex; flex-wrap: wrap; gap: .25rem .6rem; align-items: center; font-size: .8rem; color: var(--ink-faint); }
 .pub-acts { display: flex; gap: .25rem; flex: none; }
 @media (max-width: 640px) { .pub-grid { grid-template-columns: 1fr; } }
+
+/* Aviso da sessão do Hourglass guardada */
+.hg-sessao { align-items: center; padding: .6rem .8rem .6rem 1rem; }
+.hg-sessao .icon { margin-top: 0; }
+.hg-sessao .hg-txt { flex: 1; min-width: 0; }
+.hg-sessao .button { flex: none; margin-left: auto; }
