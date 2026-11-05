@@ -1,4 +1,6 @@
 ﻿@model JW_Management.Models.Publicador
+@inject IConfiguration Configuration
+@inject JW_Management.Models.ConfigStore ConfigStore
 
 @{
     ViewData["Title"] = "Iniciar Sessão";
@@ -63,6 +65,8 @@
                 </div>
                 <div class="container">
                     <div class="box">
+                        @if (!ConfigStore.SomenteOidcAtivo(Configuration))
+                        {
                         <form method="post">
                             <div class="field">
                                 <label class="label">Congregação</label>
@@ -107,6 +111,11 @@
                             </div>
                             <input hidden name="ReturnUrl" value=@ViewData["ReturnUrl"]>
                         </form>
+                        }
+                        @if (!string.IsNullOrEmpty(Configuration["Oidc:ClientId"]))
+                        {
+                            <a class="button is-fullwidth is-large mt-3" href="/login?returnUrl=@Uri.EscapeDataString(ViewData["ReturnUrl"]?.ToString() ?? "/")">Entrar com Pocket ID</a>
+                        }
                     </div>
                 </div>
             </div>

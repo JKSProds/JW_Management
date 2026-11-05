@@ -1,0 +1,41 @@
+@model JW_Management.Models.ConfiguracaoModel
+@{
+    ViewData["Title"] = "Configuração";
+}
+<section class="section">
+    <div class="container">
+        <h1 class="title">Configuração do início de sessão</h1>
+        @if (TempData["Guardado"] != null)
+        {
+            <div class="notification is-success is-light">Guardado. Alterações ao OIDC e ao proxy só têm efeito depois de reiniciar a aplicação.</div>
+        }
+        <div class="notification is-warning is-light">
+            Se o OIDC ficar mal configurado com "Só OAuth" ativo, o acesso só se recupera na base de dados master
+            (tabela sys_config, chave Auth:SomenteOidc).
+        </div>
+        <form method="post" class="box">
+            <div asp-validation-summary="All" class="has-text-danger"></div>
+            <div class="field">
+                <label class="label">Authority (emissor OIDC)</label>
+                <input class="input" asp-for="Authority" />
+            </div>
+            <div class="field">
+                <label class="label">ClientId</label>
+                <input class="input" asp-for="ClientId" autocomplete="off" />
+            </div>
+            <div class="field">
+                <label class="label">ClientSecret @(Model.ClientSecretDefinido ? "(definido)" : "(não definido)")</label>
+                <input class="input" type="password" asp-for="ClientSecret" autocomplete="new-password"
+                       placeholder="Deixe vazio para manter o atual" />
+            </div>
+            <div class="field">
+                <label class="label">IP do proxy (Caddy)</label>
+                <input class="input" asp-for="KnownProxy" />
+            </div>
+            <div class="field">
+                <label class="checkbox"><input type="checkbox" asp-for="SomenteOidc" /> Permitir apenas OAuth (desativa o login com palavra-passe)</label>
+            </div>
+            <button class="button is-link" type="submit">Guardar</button>
+        </form>
+    </div>
+</section>

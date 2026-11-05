@@ -10,7 +10,7 @@ using AppContext = System.AppContext;
 
 namespace JW_Management.Controllers
 {
-    public class HomeController(JW_Management.Models.AppContext _appContext, DbContext _dbContext) : Controller
+    public class HomeController(JW_Management.Models.AppContext _appContext, DbContext _dbContext, ConfigStore _configStore, IConfiguration _config) : Controller
     {
         public IActionResult Index()
         {
@@ -28,6 +28,11 @@ namespace JW_Management.Controllers
         [HttpPost]
         public async Task<IActionResult> Login(Publicador p, int t, string ReturnUrl)
         {
+            if (_configStore.SomenteOidcAtivo(_config))
+            {
+                ModelState.AddModelError("", "O login com palavra-passe está desativado. Use o Pocket ID.");
+                return View();
+            }
             _appContext._manualTenant = t;
             p.Username = p.Username.ToLower().Trim();
             

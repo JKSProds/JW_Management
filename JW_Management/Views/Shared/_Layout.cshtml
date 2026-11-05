@@ -201,6 +201,15 @@
                                         <span>Publicadores</span>
                                     </a>
                                 </div>
+                                @if (User.IsInRole("Admin"))
+                                {
+                                    <div class="navbar-item">
+                                        <a class="button is-primary is-light is-fullwidth" href="~/configuracao">
+                                            <span class="icon"><i class="fas fa-cog"></i></span>
+                                            <span>Configuração</span>
+                                        </a>
+                                    </div>
+                                }
                                 <div class="navbar-item">
                                     <a class="button is-danger is-light is-fullwidth" href="~/Home/Logout">
                                         <span class="icon">

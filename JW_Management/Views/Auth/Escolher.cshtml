@@ -1,0 +1,17 @@
+@model List<JW_Management.Models.Tenant>
+@{
+    ViewData["Title"] = "Escolher congregação";
+}
+<section class="section">
+    <div class="container">
+        <div class="box has-text-centered">
+            <h1 class="title">Escolha a congregação</h1>
+            <form method="post">
+                @foreach (var t in Model)
+                {
+                    <button class="button is-link is-fullwidth is-large mb-2" name="tenantId" value="@t.Id">@t.Nome</button>
+                }
+            </form>
+        </div>
+    </div>
+</section>
