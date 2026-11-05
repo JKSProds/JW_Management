@@ -44,9 +44,10 @@ public class ProgramaMensal
             new() { Titulo = "ESTUDO BÍBLICO", Linhas = { L("ebd", "Dirigente"), L("ebl", "Leitor"), L("ebo", "Oração final") } },
             new() { Titulo = "REUNIÃO DE FIM DE SEMANA", Faixa = true, Linhas = { L("wpr", "Presidente"), L("wor", "Orador"), L("wco", "Congregação"), L("wte", "Tema") } },
             new() { Titulo = "ESTUDO DE A SENTINELA", Linhas = { L("std", "Dirigente"), L("stl", "Leitor"), L("sto", "Oração final"), L("cwm1", "Cântico do meio"), L("cwm2", "Cântico final") } },
+            new() { Titulo = "SERVIÇOS DA REUNIÃO", Faixa = true },
             new() { Titulo = "INDICADORES", Linhas = { L("ind1", R("ind1", "Receção")), L("ind2", R("ind2", "Auditório")), L("ind3", R("ind3", "Estacionamento")) } },
             new() { Titulo = "ÁUDIO / VÍDEO", Linhas = { L("som", R("som", "Som")), L("mic", "Micros"), L("tri", R("tri", "Tribuna")) } },
-            new() { Titulo = "", Linhas = { L("limp", R("limp", "Limpeza")) } }
+            new() { Titulo = "LIMPEZA", Linhas = { L("limp", R("limp", "Limpeza")) } }
         };
     }
 }

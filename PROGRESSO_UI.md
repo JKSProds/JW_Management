@@ -146,3 +146,5 @@ Regra: nenhum ecrã migrado usa `window.location.reload()`. Só há navegação 
 - **Cânticos** separados em início, meio e fim no PDF (`cmm1..3`, `cwm1..2`) e na página da reunião; programas guardados antes continuam a ler-se (reparte «12 - 45 - 100»).
 - **Início**: literatura primeiro, depois «As minhas designações» em cartões por semana (esta semana, próxima).
 - **Logo** novo (`logo.svg`) e **Publicadores** em cartões, com filtros por contacto e função e atalhos de email e telefone.
+
+- **Quadro mensal em PDF**: faixa preta por reunião (semana, fim de semana, serviços), partes em cinza, linhas verticais entre semanas e secção própria para Serviços (indicadores, áudio/vídeo, limpeza). Continua numa só página A4.

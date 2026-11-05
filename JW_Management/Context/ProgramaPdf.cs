@@ -49,7 +49,7 @@ public static class PdfProgramas
     {
         var f = Carregar();
         var fValor = new Font(f.Normal, 7, Font.NORMAL, Tinta); var fRotulo = new Font(f.Negrito, 6.8f, Font.NORMAL, Suave);
-        var fFaixa = new Font(f.Negrito, 7.2f, Font.NORMAL, Tinta); var fSecao = new Font(f.Negrito, 6.8f, Font.NORMAL, Suave);
+        var fFaixa = new Font(f.Negrito, 7.5f, Font.NORMAL, BaseColor.White); var fSecao = new Font(f.Negrito, 6.6f, Font.NORMAL, Tinta);
         var fSemana = new Font(f.Negrito, 6.8f, Font.NORMAL, Tinta); var fEvento = new Font(f.Negrito, 7, Font.NORMAL, Tinta);
 
         using var ms = new MemoryStream();
@@ -62,26 +62,24 @@ public static class PdfProgramas
         var t = new PdfPTable(n + 1) { WidthPercentage = 100 };
         t.SetWidths(new[] { 2.3f }.Concat(Enumerable.Repeat(2f, n)).ToArray());
 
-        t.AddCell(Cel("", fValor, h: 16, vpad: 1));
-        foreach (var s in p.Semanas) t.AddCell(Cel(s.Titulo, fSemana, borda: Rectangle.BOTTOM_BORDER, h: 16, vpad: 1));
+        t.AddCell(Cel("", fValor, h: 16, vpad: .4f));
+        foreach (var s in p.Semanas) t.AddCell(Cel(s.Titulo, fSemana, borda: Rectangle.LEFT_BORDER | Rectangle.BOTTOM_BORDER, h: 16, vpad: .4f));
 
         var linhasEvento = new[] { "min1", "min2", "min3", "std", "stl", "sto" };
         foreach (var sec in p.Secoes)
         {
-            t.AddCell(Cel("", fValor, borda: Rectangle.NO_BORDER, span: n + 1, h: 2, pad: 0, vpad: 0));
-            if (sec.Titulo != "")
-            {
-                if (sec.Faixa) t.AddCell(Cel(sec.Titulo, fFaixa, Element.ALIGN_LEFT, fundo: Cinza, span: n + 1, h: 10, pad: 6, vpad: 1));
-                else t.AddCell(Cel(sec.Titulo, fSecao, Element.ALIGN_LEFT, borda: Rectangle.BOTTOM_BORDER, span: n + 1, h: 10.5f, pad: 6, vpad: 1));
-            }
+            // faixa preta = reunião; cinza = parte da reunião; espaço maior antes de cada reunião
+            t.AddCell(Cel("", fValor, borda: Rectangle.NO_BORDER, span: n + 1, h: sec.Faixa ? 7 : 2, pad: 0, vpad: 0));
+            if (sec.Faixa) t.AddCell(Cel(sec.Titulo, fFaixa, Element.ALIGN_LEFT, fundo: Tinta, span: n + 1, h: 11, pad: 6, vpad: .4f));
+            else t.AddCell(Cel(sec.Titulo, fSecao, Element.ALIGN_LEFT, fundo: Cinza, span: n + 1, h: 10, pad: 6, vpad: .4f));
             foreach (var l in sec.Linhas)
             {
-                t.AddCell(Cel(l.Rotulo, fRotulo, Element.ALIGN_LEFT, Rectangle.BOTTOM_BORDER, h: 10.5f, pad: 6, vpad: 1));
+                t.AddCell(Cel(l.Rotulo, fRotulo, Element.ALIGN_LEFT, Rectangle.BOTTOM_BORDER, h: 9.8f, pad: 6, vpad: .4f));
                 foreach (var s in p.Semanas)
                 {
                     var idx = Array.IndexOf(linhasEvento, l.Id);
-                    if (s.Evento.Count > 0 && idx >= 0) t.AddCell(Cel(idx % 3 < s.Evento.Count ? s.Evento[idx % 3] : "", fEvento, fundo: Cinza, borda: Rectangle.BOTTOM_BORDER, h: 10.5f, vpad: 1));
-                    else t.AddCell(Cel(Valor(s, l.Id), fValor, borda: Rectangle.BOTTOM_BORDER, h: 10.5f, vpad: 1));
+                    if (s.Evento.Count > 0 && idx >= 0) t.AddCell(Cel(idx % 3 < s.Evento.Count ? s.Evento[idx % 3] : "", fEvento, fundo: Cinza, borda: Rectangle.LEFT_BORDER | Rectangle.BOTTOM_BORDER, h: 9.8f, vpad: .4f));
+                    else t.AddCell(Cel(Valor(s, l.Id), fValor, borda: Rectangle.LEFT_BORDER | Rectangle.BOTTOM_BORDER, h: 9.8f, vpad: .4f));
                 }
             }
         }
