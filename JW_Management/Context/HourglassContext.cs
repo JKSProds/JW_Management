@@ -6,7 +6,7 @@ namespace JW_Management.Models;
 
 // Cliente do Hourglass só para LEITURA: expõe apenas GET, usa a sessão que o utilizador colou
 // e não a guarda nem a regista. Os endereços são os que a própria aplicação web do Hourglass usa.
-public record HgUtilizador(int Id, string Nome, string Primeiro, string Ultimo, int Grupo = 0);
+public record HgUtilizador(int Id, string Nome, string Primeiro, string Ultimo, int Grupo = 0, string Preferido = "");
 
 public class HourglassContext
 {
@@ -42,7 +42,9 @@ public class HourglassContext
         var lgroup = lista.GroupBy(u => (int?)u["congregations_id"] ?? 0).OrderByDescending(g => g.Count()).Select(g => g.Key).FirstOrDefault();
         var users = lista.ToDictionary(u => (int)u["id"]!, u => new HgUtilizador((int)u["id"]!,
             string.Join(" ", new[] { (string?)u["firstname"], (string?)u["middlename"], (string?)u["lastname"] }.Where(x => !string.IsNullOrWhiteSpace(x))),
-            (string?)u["firstname"] ?? "", (string?)u["lastname"] ?? "", (int?)u["group_id"] ?? 0));
+            (string?)u["firstname"] ?? "", (string?)u["lastname"] ?? "", (int?)u["group_id"] ?? 0,
+            // «descriptor» é o nome preferido no Hourglass; sem ele usa-se primeiro e último nome (sem nomes do meio).
+            string.IsNullOrWhiteSpace((string?)u["descriptor"]) ? $"{(string?)u["firstname"]} {(string?)u["lastname"]}".Trim() : ((string)u["descriptor"]!).Trim()));
         return (users, lgroup);
     }
 }

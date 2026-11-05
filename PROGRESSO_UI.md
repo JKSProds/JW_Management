@@ -52,6 +52,13 @@ O formulário S-140 foi removido (ação, método, botões e `S-140_TPO.pdf`). E
 
 Publicadores > «Sincronizar com o Hourglass» (`HourglassSincronizador`, só leitura no Hourglass): liga cada utilizador a um publicador por email ou nome, e propõe preencher email, telemóvel, morada (`fsreport/addresses`) e grupo (pelo responsável do grupo, ou pelo número), ou criar quem falta (como «Publicador», sem palavra-passe). Por omissão só se preenche o que está vazio; diferenças em dados já preenchidos ficam por marcar. Não altera funções nem palavras-passe. Dados do Hourglass sem coluna na aplicação (nascimento, batismo, nomeação, estado) não são guardados.
 
+## Revisão 7
+
+- Nomes do Hourglass: usa-se o **nome preferido** (`descriptor`; sem ele, primeiro e último nome) no programa, na importação de reuniões e como nome de novos publicadores.
+- Alinhamento dos controlos em modais e painéis: inputs, selects, botões e ícones partilham a mesma altura (`--control-h`); removida a dupla margem do Bulma nas grelhas de campos.
+- Sincronização de publicadores: seleção em bloco (tudo, nada, só email, só telemóvel, só morada, só grupo, só novos). «Tudo» substitui também dados já preenchidos.
+- Instruções do Hourglass: o pedido a copiar é o que tem o intervalo de datas no nome (ex.: `2026-11-01_2026-11-30`).
+
 ## Minimizar refrescos de página
 
 Utilitários em `wwwroot/js/app.js` (sem dependências, usam `fetch` e delegação de eventos):

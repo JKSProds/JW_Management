@@ -45,7 +45,7 @@ public class HourglassPrograma(HourglassContext _hg)
         }
         string Rot(string chave, string padrao) { var v = (string?)cfg[chave]; return string.IsNullOrWhiteSpace(v) ? padrao : v; }
 
-        string Nome(JToken? id) => id != null && id.Type == JTokenType.Integer && users.TryGetValue((int)id, out var u) ? $"{u.Primeiro} {u.Ultimo}".Trim() : "";
+        string Nome(JToken? id) => id != null && id.Type == JTokenType.Integer && users.TryGetValue((int)id, out var u) ? u.Preferido : "";
         string Par(params string[] n) => string.Join(" - ", n.Where(x => x != ""));
 
         var secoes = new List<ProgramaSecao>

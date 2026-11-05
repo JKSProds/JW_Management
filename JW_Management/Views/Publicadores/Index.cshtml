@@ -96,7 +96,7 @@
                 <p class="modal-body-text mb-4">Liga cada publicador ao utilizador do Hourglass (por email ou nome) e propõe preencher email, telemóvel, morada e grupo, ou acrescentar quem ainda não existe. Não altera funções nem palavras-passe. Só se fazem leituras no Hourglass.</p>
                 <ol class="steps">
                     <li>Abra o <a href="https://app.hourglass-app.com/v2/page/app/scheduling/mm" target="_blank" rel="noopener">Hourglass</a> com a sessão iniciada, prima <kbd>F12</kbd> e abra o separador <b>Rede</b>.</li>
-                    <li>Num pedido, botão direito, <b>Copiar</b>, <b>Copiar como cURL</b>, e cole abaixo.</li>
+                    <li>Num qualquer pedido da lista (por exemplo um cujo nome é um intervalo de datas, como <b>2026-11-01_2026-11-30</b>): botão direito, <b>Copiar</b>, <b>Copiar como cURL</b>, e cole abaixo.</li>
                 </ol>
                 <div class="field">
                     <label class="label" for="syCookie">Pedido copiado (ou só a cookie)</label>
@@ -156,13 +156,18 @@
             const c = App.$('#syPasso2'); c.innerHTML = '';
             const upd = prev.linhas.filter(l => l.pubId > 0), novos = prev.linhas.filter(l => l.pubId === 0);
             c.innerHTML = '<p class="summary"><span><b class="num">' + upd.length + '</b> a atualizar</span><span>·</span><span><b class="num">' + novos.length + '</b> novos no Hourglass</span><span>·</span><span><b class="num">' + prev.semAlteracoes + '</b> já iguais</span><span>·</span><span><b class="num">' + prev.soLocal.length + '</b> só na aplicação</span></p>';
+            c.insertAdjacentHTML('beforeend', '<div class="sy-bar"><span class="label">Selecionar</span><div class="chips is-choice" id="syChips" role="group" aria-label="Escolher o que atualizar">' +
+                '<button type="button" class="chip" data-sy="tudo">Tudo</button><button type="button" class="chip" data-sy="nada">Nada</button>' +
+                Object.keys(rotulo).map(k => '<button type="button" class="chip" data-sy-campo="' + k + '" aria-pressed="false">' + rotulo[k] + '</button>').join('') +
+                '<button type="button" class="chip" data-sy-novos aria-pressed="false">Novos publicadores</button></div>' +
+                '<p class="field-hint">«Tudo» marca também os dados que já estão preenchidos e são diferentes (substitui-os). Por omissão só se marca o que está vazio.</p></div>');
             upd.forEach((l, i) => {
                 const el = document.createElement('section'); el.className = 'hg-semana'; el.dataset.id = l.hgId;
                 el.innerHTML = '<header><label class="checkbox"><input type="checkbox" class="sy-on" checked> ' + esc(l.pubNome) + (l.hgNome !== l.pubNome ? ' <span class="field-hint">(Hourglass: ' + esc(l.hgNome) + ')</span>' : '') + '</label>' +
                     (l.cargo ? '<span class="tag is-light">' + esc(l.cargo) + '</span>' : '') + '</header><table><tbody></tbody></table>';
                 const tb = App.$('tbody', el);
                 l.campos.forEach((f, j) => {
-                    const tr = document.createElement('tr'); tr.dataset.j = j;
+                    const tr = document.createElement('tr'); tr.dataset.j = j; tr.dataset.campo = f.campo;
                     tr.innerHTML = '<td style="width:2rem"><input type="checkbox" class="sy-campo"' + (f.aplicar ? ' checked' : '') + ' aria-label="Aplicar ' + rotulo[f.campo] + '"></td><td>' + rotulo[f.campo] + '</td><td>' +
                         (f.atual ? esc(f.atual) : '<span class="field-hint">vazio</span>') + '</td><td><i class="fa-solid fa-arrow-right fa-xs"></i></td><td><b>' + esc(f.novo) + '</b></td>';
                     tb.appendChild(tr);
@@ -184,14 +189,36 @@
                 const d = document.createElement('details'); d.className = 'field-hint';
                 d.innerHTML = '<summary>Só na aplicação (' + prev.soLocal.length + ')</summary><p>' + prev.soLocal.map(p => esc(p.nome)).join(' · ') + '</p>'; c.appendChild(d);
             }
+            sincronizarChips();
             if (!upd.length && !novos.length) c.insertAdjacentHTML('beforeend', '<div class="empty-state"><strong>Tudo igual</strong>Não há dados novos para sincronizar.</div>');
             App.$('#syPasso1').hidden = true; c.hidden = false; App.$('#syObter').hidden = true; App.$('#syAplicar').hidden = !(upd.length || novos.length);
         }
 
+        // Seleção em bloco: tudo, nada, ou só um tipo de dado (por exemplo só a morada ou só o grupo)
+        const campos = campo => App.$$('#syPasso2 .sy-campo').filter(cb => !campo || cb.closest('tr').dataset.campo === campo);
+        function marcarCabecalhos() { App.$$('#syPasso2 section[data-i]').forEach(el => { App.$('.sy-on', el).checked = App.$$('.sy-campo', el).some(cb => cb.checked); }); }
+        function sincronizarChips() {
+            App.$$('#syChips [data-sy-campo]').forEach(b => { const l = campos(b.dataset.syCampo); b.setAttribute('aria-pressed', l.length > 0 && l.every(cb => cb.checked)); b.disabled = l.length === 0; });
+            const n = App.$$('#syPasso2 .sy-novo'); const b = App.$('#syChips [data-sy-novos]'); if (b) { b.setAttribute('aria-pressed', n.length > 0 && n.every(cb => cb.checked)); b.disabled = n.length === 0; }
+        }
+        document.addEventListener('click', e => {
+            const b = e.target.closest('#syChips .chip'); if (!b) return;
+            if (b.dataset.sy) { const on = b.dataset.sy === 'tudo'; campos().forEach(cb => cb.checked = on); App.$$('#syPasso2 .sy-novo').forEach(cb => cb.checked = on); }
+            else if (b.dataset.syCampo) { const l = campos(b.dataset.syCampo), on = !l.every(cb => cb.checked); l.forEach(cb => cb.checked = on); }
+            else if (b.hasAttribute('data-sy-novos')) { const l = App.$$('#syPasso2 .sy-novo'), on = !l.every(cb => cb.checked); l.forEach(cb => cb.checked = on); }
+            marcarCabecalhos(); sincronizarChips();
+        });
+        document.addEventListener('change', e => {
+            const h = e.target.closest('#syPasso2 .sy-on');
+            if (h) App.$$('.sy-campo', h.closest('section')).forEach(cb => cb.checked = h.checked);
+            if (e.target.closest('#syPasso2')) { marcarCabecalhos(); sincronizarChips(); }
+        });
+
         App.on('syAplicar', async btn => {
             App.$$('#syPasso2 section[data-i]').forEach(el => {
-                const l = prev.linhas[el.dataset.i]; l.aplicar = App.$('.sy-on', el).checked;
+                const l = prev.linhas[el.dataset.i];
                 App.$$('tbody tr', el).forEach(tr => { l.campos[tr.dataset.j].aplicar = App.$('.sy-campo', tr).checked; });
+                l.aplicar = l.campos.some(c => c.aplicar);   // a linha aplica-se se tiver algum campo marcado
             });
             App.$$('#syPasso2 .sy-novo').forEach(cb => { prev.linhas[cb.closest('tr').dataset.i].aplicar = cb.checked; });
             const n = prev.linhas.filter(l => l.aplicar).length; if (!n) { notifyError('Não há nada selecionado.'); return; }

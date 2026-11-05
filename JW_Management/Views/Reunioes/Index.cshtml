@@ -93,7 +93,7 @@
             <button type="button" class="delete" aria-label="Fechar" data-close></button>
         </header>
         <section class="modal-card-body">
-            <p class="modal-body-text mb-4">Gera um PDF com uma coluna por semana (reuniões, indicadores e sistema sonoro), a partir do Hourglass. Cole um pedido «Copiar como cURL» do Hourglass, como na importação.</p>
+            <p class="modal-body-text mb-4">Gera um PDF com uma coluna por semana (reuniões, indicadores e sistema sonoro), a partir do Hourglass. Cole um pedido «Copiar como cURL» do Hourglass (um cujo nome é um intervalo de datas), como na importação.</p>
             <div class="form-grid">
                 <div class="field">
                     <label class="label" for="pgMes">Mês</label>
@@ -138,7 +138,7 @@
                 <ol class="steps">
                     <li>Abra o <a href="https://app.hourglass-app.com/v2/page/app/scheduling/mm" target="_blank" rel="noopener">Hourglass</a> com a sessão iniciada (Agendamento, Reunião de meio de semana).</li>
                     <li>Prima <kbd>F12</kbd>, abra o separador <b>Rede</b> e recarregue a página.</li>
-                    <li>Num pedido <b>schedule</b>: botão direito, <b>Copiar</b>, <b>Copiar como cURL</b>, e cole abaixo.</li>
+                    <li>Na lista de pedidos procure um cujo nome é um intervalo de datas (por exemplo <b>2026-11-01_2026-11-30</b>): botão direito, <b>Copiar</b>, <b>Copiar como cURL</b>, e cole abaixo.</li>
                 </ol>
                 <div class="field">
                     <label class="label" for="hgCookie">Pedido copiado (ou só a cookie)</label>
@@ -218,7 +218,7 @@
         App.on('hgObter', btn => App.run(btn, async () => {
             const bruto = App.$('#hgCookie').value.trim(); if (!bruto) return App.campo('#hgCookie', 'Cole o pedido ou a cookie primeiro.');
             const cookie = App.extrairCookie(bruto);
-            if (!/hglogin=/.test(cookie) || !/X-Hourglass-XSRF-Token=/.test(cookie)) return App.campo('#hgCookie', 'Não encontrei a sessão do Hourglass (hglogin e token XSRF). Copie um pedido «schedule» completo com «Copiar como cURL».');
+            if (!/hglogin=/.test(cookie) || !/X-Hourglass-XSRF-Token=/.test(cookie)) return App.campo('#hgCookie', 'Não encontrei a sessão do Hourglass (hglogin e token XSRF). Copie o pedido completo (o que tem o intervalo de datas no nome) com «Copiar como cURL».');
             const r = await fetch('/Reunioes/HourglassPreview', { method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
                 body: new URLSearchParams({ cookie: cookie, de: App.$('#hgDe').value, ate: App.$('#hgAte').value }) });
             if (!r.ok) { notifyError(r.status === 401 ? 'A sessão do Hourglass expirou. Copie o pedido outra vez.' : (await r.text()) || 'Não foi possível obter os dados do Hourglass.'); return; }

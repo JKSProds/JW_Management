@@ -618,3 +618,36 @@ code, pre { background: var(--neutral); color: var(--ink); }
 .app-nav .navbar-divider { background-color: var(--line); }
 .app-nav .theme-toggle { background: var(--surface); color: var(--ink-soft); }
 @media (max-width: 1023px) { .app-nav .navbar-menu { background: var(--surface); } }
+
+/* ==========================================================================
+   Alinhamento dos controlos: input, select, botão e ícones partilham a mesma altura.
+   O Bulma dá 2.5em ao .select e aos ícones; os inputs têm 2.75rem: sem isto as setas e ícones ficavam deslocados.
+   ========================================================================== */
+:root { --control-h: 2.75rem; }
+.input, .select select, .button:not(.is-small):not(.delete):not(.is-large) { min-height: var(--control-h); }
+.select:not(.is-multiple) { height: var(--control-h); }
+.select select { height: 100%; }
+.select:not(.is-multiple):not(.is-loading)::after { margin-top: -.45em; }
+.select.is-small { height: 2.2rem; }
+.select.is-small select, .input.is-small { min-height: 2.2rem; height: 2.2rem; }
+.control.has-icons-left .icon, .control.has-icons-right .icon { height: var(--control-h); width: var(--control-h); }
+.control.has-icons-left .input, .control.has-icons-left .select select { padding-left: var(--control-h); }
+.btn-icon { width: var(--control-h); height: var(--control-h); }
+.textarea { min-height: 5.5rem; }
+input[type="date"].input, input[type="time"].input { appearance: none; -webkit-appearance: none; display: block; line-height: normal; }
+.input-action { align-items: stretch; }
+.input-action .control { min-width: 0; }
+.input-action .select { width: 100%; }
+
+/* Grelhas e campos nos modais: um ritmo vertical só (margem acima), sem a dupla margem do Bulma */
+.modal-card-body .field, .panel-card .field { margin-bottom: 0; }
+.modal-card-body > * + *, .modal-card-body .field + .field, .modal-card-body .form-grid + .field, .modal-card-body .field + .form-grid,
+.modal-card-body .notice + .field, .modal-card-body .steps + .field, .modal-card-body .field + .field-hint { margin-top: 1rem; }
+.modal-card-body .field-hint { margin-top: .35rem; }
+.form-grid > .field { margin: 0 !important; }
+.form-grid + .form-grid { margin-top: 1rem; }
+.panel-card .form-grid + .field, .panel-card .field + .form-grid, .panel-card .field + .field { margin-top: 1rem; }
+.sy-bar { margin-bottom: 1rem; }
+.sy-bar .label { margin-bottom: .4rem; }
+.modal-card-body .form-grid { grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); }
+.modal-card-head, .modal-card-foot { box-shadow: none; }

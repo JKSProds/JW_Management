@@ -186,8 +186,8 @@ public class HourglassImportador(HourglassContext _hg, DbContext _db)
     private static HgPessoa? Pessoa(JToken? id, Dictionary<int, HgUtilizador> users, List<Publicador> pubs)
     {
         if (id == null || id.Type != JTokenType.Integer || (int)id == 0 || !users.TryGetValue((int)id, out var u)) return null;
-        var local = Corresponder(u.Primeiro, u.Ultimo, u.Nome, pubs);
-        return new HgPessoa { Nome = u.Nome, PubId = local?.Id ?? 0, PubNome = local?.Nome ?? "" };
+        var local = Corresponder(u.Primeiro, u.Ultimo, u.Preferido, pubs) ?? Corresponder(u.Primeiro, u.Ultimo, u.Nome, pubs);
+        return new HgPessoa { Nome = u.Preferido, PubId = local?.Id ?? 0, PubNome = local?.Nome ?? "" };
     }
 
     internal static Publicador? Corresponder(string primeiro, string ultimo, string completo, List<Publicador> pubs)
