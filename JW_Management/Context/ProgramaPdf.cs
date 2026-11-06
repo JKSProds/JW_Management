@@ -45,8 +45,22 @@ public static class PdfProgramas
         doc.Add(new Paragraph($"Gerado a {DateTime.Now:dd/MM/yyyy}", new Font(f.Italico, 6.5f, Font.NORMAL, Suave)) { Alignment = Element.ALIGN_RIGHT, SpacingBefore = 4 });
 
     // ---------- Quadro mensal ----------
+    // Uma só página: se o quadro (ou o rodapé) transbordar, volta a gerar com as alturas das linhas reduzidas.
     public static byte[] Gerar(ProgramaMensal p)
     {
+        byte[] pdf = [];
+        for (var k = 1f; k >= .5f; k -= .05f)
+        {
+            pdf = Gerar(p, k, out var paginas);
+            if (paginas == 1) break;
+        }
+        return pdf;
+    }
+
+    private static byte[] Gerar(ProgramaMensal p, float k, out int paginas)
+    {
+        PdfPCell Cel(string txt, Font f, int al = Element.ALIGN_CENTER, int borda = Rectangle.NO_BORDER, BaseColor? fundo = null, int span = 1, float h = 11, float pad = 3, float vpad = 2) =>
+            PdfProgramas.Cel(txt, f, al, borda, fundo, span, h * k, pad, vpad * k);
         var f = Carregar();
         var fValor = new Font(f.Normal, 7, Font.NORMAL, Tinta); var fRotulo = new Font(f.Negrito, 6.8f, Font.NORMAL, Suave);
         var fFaixa = new Font(f.Negrito, 7.5f, Font.NORMAL, BaseColor.White); var fSecao = new Font(f.Negrito, 6.6f, Font.NORMAL, Tinta);
@@ -54,7 +68,7 @@ public static class PdfProgramas
 
         using var ms = new MemoryStream();
         var doc = new Document(new Rectangle(842, 595), 26, 26, 16, 12); // A4 horizontal, sem /Rotate
-        PdfWriter.GetInstance(doc, ms);
+        var writer = PdfWriter.GetInstance(doc, ms);
         doc.Open();
         Cabecalho(doc, f, "Programa de atividades", p.Mes, p.Congregacao, 16);
 
@@ -85,6 +99,7 @@ public static class PdfProgramas
         }
         doc.Add(t);
         Rodape(doc, f);
+        paginas = writer.PageNumber;
         doc.Close();
         return ms.ToArray();
     }
