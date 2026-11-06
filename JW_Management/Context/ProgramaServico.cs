@@ -163,12 +163,13 @@ public class ProgramaServico(HourglassContext _hg, DbContext _db)
             if (sem.Evento.Count == 0 && mm.TryGetValue(k, out var e2) && e2["event"] is JObject ev) sem.Evento = Evento(ev) ?? sem.Evento;
             // Visita do superintendente de circuito («co»): mantém os cânticos; a reunião de semana passa a terça-feira,
             // o estudo bíblico dá lugar ao discurso dele e ao fim de semana há dois discursos; A Sentinela fica sem leitor.
-            if (((string?)wm[k]?["event"]?["event"] ?? (string?)mm[k]?["event"]?["event"]) == "co")
+            var evCo = (wm[k]?["event"] as JObject) ?? (mm[k]?["event"] as JObject); // «event» pode vir null
+            if ((string?)evCo?["event"] == "co")
             {
                 var orador = v.GetValueOrDefault("wor", "");
                 v["ebd"] = ("Discurso – " + orador).TrimEnd(' ', '–'); v.Remove("ebl"); v.Remove("stl");
                 v["wte"] = (v.GetValueOrDefault("wte", "") + " / Discurso de serviço").TrimStart(' ', '/');
-                if (DateTime.TryParse((string?)(wm[k] ?? mm[k])?["event"]?["date"], CultureInfo.InvariantCulture, DateTimeStyles.None, out var dv))
+                if (DateTime.TryParse((string?)evCo?["date"], CultureInfo.InvariantCulture, DateTimeStyles.None, out var dv))
                     sem.Titulo += $" – visita do superintendente (reunião na {Pt.DateTimeFormat.GetDayName(dv.DayOfWeek)}, {dv.Day})";
             }
             // assembleia de circuito, congresso e memorial: não há cânticos da reunião nessa semana
