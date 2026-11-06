@@ -1,0 +1,40 @@
+@model JW_Management.Models.TenantForm
+@{
+    var novo = Model.Id == 0;
+    ViewData["Title"] = novo ? "Nova congregação" : "Editar congregação";
+}
+
+<div class="container" style="max-width:760px">
+    <div class="page-head">
+        <div class="head-title"><div><h1>@ViewData["Title"]</h1></div></div>
+        <div class="head-actions"><a class="button is-info is-light" href="~/Tenants"><span class="icon"><i class="fa-solid fa-arrow-left"></i></span><span>Congregações</span></a></div>
+    </div>
+
+    <form method="post" class="panel-card" autocomplete="off">
+        <input type="hidden" asp-for="Id" />
+        <div asp-validation-summary="ModelOnly" class="notice is-warn"></div>
+        <div class="field"><label class="label" asp-for="Nome">Nome (interno)</label><input class="input" asp-for="Nome" required><span asp-validation-for="Nome" class="help is-danger"></span></div>
+        <div class="field"><label class="label" asp-for="NomeCongregacao">Nome da congregação</label><input class="input" asp-for="NomeCongregacao" required><span asp-validation-for="NomeCongregacao" class="help is-danger"></span></div>
+        <div class="field"><label class="label" asp-for="Telefone">Telefone</label><input class="input" asp-for="Telefone"></div>
+        <div class="field"><label class="label" asp-for="Morada">Morada</label><input class="input" asp-for="Morada"></div>
+        <div class="field"><label class="label" asp-for="JWApiId">Id da congregação na API do JW</label><input class="input" asp-for="JWApiId"></div>
+
+        <h2 class="group-title">Envio de email</h2>
+        <div class="field"><label class="label" asp-for="Email">Email de envio</label><input class="input" asp-for="Email" type="email"><span asp-validation-for="Email" class="help is-danger"></span></div>
+        <div class="field">
+            <label class="label" asp-for="EmailPassword">Palavra-passe do email</label>
+            <input class="input" asp-for="EmailPassword" type="password" autocomplete="new-password" placeholder="@(novo ? "" : "Deixe vazio para manter")">
+        </div>
+        <div class="field"><label class="label" asp-for="EmailHost">Servidor SMTP</label><input class="input" asp-for="EmailHost"></div>
+        <div class="field"><label class="label" asp-for="EmailSMTPPort">Porta SMTP</label><input class="input" asp-for="EmailSMTPPort"></div>
+
+        @if (novo)
+        {
+            <h2 class="group-title">Primeiro administrador</h2>
+            <p class="field-hint">A palavra-passe é gerada e enviada por email para este endereço, com as definições de email acima.</p>
+            <div class="field"><label class="label" asp-for="AdminNome">Nome</label><input class="input" asp-for="AdminNome"><span asp-validation-for="AdminNome" class="help is-danger"></span></div>
+            <div class="field"><label class="label" asp-for="AdminEmail">Email</label><input class="input" asp-for="AdminEmail" type="email"><span asp-validation-for="AdminEmail" class="help is-danger"></span></div>
+        }
+        <div class="field"><button class="button is-success" type="submit"><span class="icon"><i class="fa-regular fa-floppy-disk"></i></span><span>@(novo ? "Criar congregação" : "Guardar")</span></button></div>
+    </form>
+</div>

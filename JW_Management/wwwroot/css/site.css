@@ -144,7 +144,12 @@ a:hover { color: var(--brand-strong); }
     width: 34px; height: 34px; border-radius: 50%;
     display: inline-grid; place-items: center; flex: none;
     background: var(--brand-solid); color: #fff; font-weight: 700; font-size: .85rem;
+    position: relative; overflow: hidden;
 }
+.pub-linha { display: inline-flex; align-items: center; gap: .45rem; }
+.avatar.is-sm { width: 24px; height: 24px; font-size: .65rem; }
+.ta-list li { align-items: center; }
+.avatar img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
 .user-chip small { display: block; color: var(--ink-faint); font-weight: 500; line-height: 1.1; }
 .nav-meta { font-size: .75rem; color: var(--ink-faint); line-height: 1.5; }
 @media (min-width: 1024px) { .app-nav .navbar-end { margin-right: .25rem; } }
@@ -272,7 +277,7 @@ a:hover { color: var(--brand-strong); }
     background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius);
     box-shadow: var(--shadow-pop); padding: .3rem; list-style: none; margin: 0;
 }
-.ta-list li { padding: .55rem .7rem; border-radius: var(--radius-sm); cursor: pointer; display: flex; gap: .6rem; align-items: baseline; }
+.ta-list li { padding: .55rem .7rem; border-radius: var(--radius-sm); cursor: pointer; display: flex; gap: .6rem; }
 .ta-list li[aria-selected="true"], .ta-list li:hover { background: var(--brand-tint); }
 .ta-list .ref { font-weight: 700; color: var(--brand-strong); font-variant-numeric: tabular-nums; }
 .ta-list .empty { color: var(--ink-faint); cursor: default; }

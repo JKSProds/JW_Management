@@ -31,17 +31,9 @@
         </header>
         <section class="modal-card-body">
             <div class="field">
-                <label class="label" for="txtIdPublicador">Publicador</label>
-                <div class="select is-fullwidth">
-                    <select id="txtIdPublicador">
-                        <option value="" disabled selected>Escolha o publicador…</option>
-                        <option value="0">Congregação (sem publicador)</option>
-                        @foreach (var p in (IEnumerable<SelectListItem>)ViewBag.Publicadores)
-                        {
-                            <option value="@p.Value">@p.Text</option>
-                        }
-                    </select>
-                </div>
+                <label class="label" for="txtPublicadorBusca">Publicador</label>
+                <div><input type="text" class="input" id="txtPublicadorBusca" placeholder="Escreva o nome do publicador"></div>
+                <input type="hidden" id="txtIdPublicador" />
             </div>
             <div class="field">
                 <label class="label" for="txtPub">Publicação</label>
@@ -65,10 +57,11 @@
 <script>
     const modalSaida = App.modal('modalSaida');
     const pesq = App.pesquisaPublicacao('#txtPub', '#txtPubStamp', false);
+    App.pesquisaPublicador('#txtPublicadorBusca', '#txtIdPublicador', true);
 
     App.on('guardar', btn => App.run(btn, async () => {
         const stamp = App.$('#txtPubStamp').value, pub = App.$('#txtIdPublicador').value, qtd = App.lerInt('#txtQtd');
-        if (pub === '') return App.campo('#txtIdPublicador', 'Escolha o publicador.');
+        if (pub === '') return App.campo('#txtPublicadorBusca', 'Escolha um publicador da lista de sugestões.');
         if (!stamp) return App.campo('#txtPub', 'Escolha uma publicação da lista de sugestões.');
         if (qtd < 1) return App.campo('#txtQtd', 'Indique uma quantidade positiva.');
         await App.saida(stamp, qtd, pub);

@@ -11,7 +11,7 @@
 <div class="container">
     <div class="page-head">
         <div class="head-title">
-            <span class="avatar" style="width:46px;height:46px;font-size:1rem" aria-hidden="true">@iniciais.ToUpper()</span>
+            <span class="avatar" style="width:46px;height:46px;font-size:1rem" aria-hidden="true">@iniciais.ToUpper()<img src="~/Publicadores/Foto/@Model.Id" alt="" loading="lazy" onerror="this.remove()"></span>
             <div>
                 <h1>@Model.Nome</h1>
                 <p>@Model.Role · Nº @Model.Id</p>
@@ -77,6 +77,19 @@
                         <span class="icon is-left"><i class="fa-solid fa-user-group"></i></span>
                     </div>
                 </div>
+                @if (User.IsInRole("Admin"))
+                {
+                    <div class="field">
+                        <label class="label" for="TipoUtilizador">Função (permissões)</label>
+                        <div class="control has-icons-left">
+                            <div class="select is-fullwidth">
+                                <select id="TipoUtilizador" name="TipoUtilizador" asp-items="@(new SelectList(ViewBag.Funcoes, "Value", "Text", Model.TipoUtilizador.ToString()))"></select>
+                            </div>
+                            <span class="icon is-left"><i class="fa-solid fa-user-shield"></i></span>
+                        </div>
+                        <span class="field-hint">Só tem efeito no próximo início de sessão do utilizador.</span>
+                    </div>
+                }
                 <div class="field">
                     <label class="label" asp-for="Email">Email</label>
                     <div class="input-action">

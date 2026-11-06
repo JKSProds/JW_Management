@@ -12,6 +12,12 @@
             </div>
         </div>
         <div class="head-actions">
+            @if (User.IsInRole("Admin"))
+            {
+                <a class="button is-info is-light" href="~/Publicadores/Grupos">
+                    <span class="icon"><i class="fa-solid fa-user-group"></i></span><span>Grupos</span>
+                </a>
+            }
             <button type="button" class="button is-info is-light" data-open="modalSync">
                 <span class="icon"><i class="fa-solid fa-hourglass-half"></i></span><span>Sincronizar com o Hourglass</span>
             </button>
@@ -53,7 +59,7 @@
             var tipos = string.Join(' ', new[] { temMail ? "mail" : null, temTel ? "tel" : null, !temMail && !temTel ? "semcontacto" : null, "r-" + Slug(item.Role) }.Where(x => x != null));
             <article class="item pub-card" data-id="@item.Id" data-mail="@(temMail ? 1 : 0)" data-tel="@(temTel ? 1 : 0)" data-type="@tipos" data-search="@item.Nome @item.Role @item.Grupo?.Nome @item.Email @item.Telemovel @item.Id">
                 <a class="pub-main" href="~/Publicadores/Publicador/@item.Id" aria-label="Abrir ficha de @item.Nome">
-                    <span class="avatar pub-avatar" aria-hidden="true">@iniciais.ToUpper()</span>
+                    <span class="avatar pub-avatar" aria-hidden="true">@iniciais.ToUpper()<img src="~/Publicadores/Foto/@item.Id" alt="" loading="lazy" onerror="this.remove()"></span>
                     <span class="pub-info">
                         <span class="name">@item.Nome</span>
                         <span class="meta">

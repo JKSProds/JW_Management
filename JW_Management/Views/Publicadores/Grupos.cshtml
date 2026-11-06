@@ -1,0 +1,40 @@
+@model IEnumerable<JW_Management.Models.Grupo>
+@{
+    ViewData["Title"] = "Grupos";
+    var pubs = (List<JW_Management.Models.Publicador>)ViewBag.Publicadores;
+    SelectList Lista(int sel) => new(pubs, "Id", "Nome", sel);
+}
+
+<div class="container" style="max-width:900px">
+    <div class="page-head">
+        <div class="head-title"><div><h1>Grupos</h1><p>Nome, responsável e ajudante de cada grupo de serviço. Só os administradores podem alterar.</p></div></div>
+        <div class="head-actions">
+            <a class="button is-info is-light" href="~/Publicadores"><span class="icon"><i class="fa-solid fa-arrow-left"></i></span><span>Publicadores</span></a>
+        </div>
+    </div>
+
+    <div class="items">
+        @foreach (var g in Model)
+        {
+            <form method="post" asp-action="GrupoGuardar" class="item" style="display:grid;grid-template-columns:1fr 1fr 1fr auto;gap:.6rem;align-items:end">
+                <input type="hidden" name="id" value="@g.Id">
+                <div class="field m-0"><label class="label" for="n@(g.Id)">Nome</label><input class="input" id="n@(g.Id)" name="nome" value="@g.Nome" required></div>
+                <div class="field m-0"><label class="label" for="r@(g.Id)">Responsável</label><div class="select is-fullwidth"><select id="r@(g.Id)" name="idResponsavel" asp-items="Lista(g.Responsavel?.Id ?? 0)"><option value="0">—</option></select></div></div>
+                <div class="field m-0"><label class="label" for="a@(g.Id)">Ajudante</label><div class="select is-fullwidth"><select id="a@(g.Id)" name="idAjudante" asp-items="Lista(g.Ajudante?.Id ?? 0)"><option value="0">—</option></select></div></div>
+                <div class="buttons">
+                    <button class="button is-info" type="submit">Guardar</button>
+                    <button class="button is-danger is-light" type="submit" asp-action="GrupoApagar" onclick="return confirm('Apagar este grupo? Os publicadores ficam sem grupo.')" aria-label="Apagar grupo"><i class="fa-solid fa-trash"></i></button>
+                </div>
+            </form>
+        }
+    </div>
+
+    <h2 class="group-title">Novo grupo</h2>
+    <form method="post" asp-action="GrupoGuardar" class="item" style="display:grid;grid-template-columns:1fr 1fr 1fr auto;gap:.6rem;align-items:end">
+        <input type="hidden" name="id" value="0">
+        <div class="field m-0"><label class="label" for="nNovo">Nome</label><input class="input" id="nNovo" name="nome" placeholder="Grupo 1" required></div>
+        <div class="field m-0"><label class="label" for="rNovo">Responsável</label><div class="select is-fullwidth"><select id="rNovo" name="idResponsavel" asp-items="Lista(0)"><option value="0">—</option></select></div></div>
+        <div class="field m-0"><label class="label" for="aNovo">Ajudante</label><div class="select is-fullwidth"><select id="aNovo" name="idAjudante" asp-items="Lista(0)"><option value="0">—</option></select></div></div>
+        <button class="button is-info" type="submit">Adicionar</button>
+    </form>
+</div>

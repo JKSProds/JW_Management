@@ -1,5 +1,6 @@
 ﻿@using JW_Management.Models
 @inject IConfiguration Configuration
+@inject TenantContext TenantsCtx
 @{
     var bare = ViewData["Bare"] as bool? == true;
     var ctrl = ViewContext.RouteData.Values["controller"]?.ToString() ?? "";
@@ -139,7 +140,7 @@
                         <div class="navbar-item has-dropdown is-hoverable">
                             <a class="navbar-link">
                                 <span class="user-chip">
-                                    <span class="avatar" aria-hidden="true">@iniciais.ToUpper()</span>
+                                    <span class="avatar" aria-hidden="true">@iniciais.ToUpper()<img src="~/Publicadores/Foto/@User.ObterId()" alt="" loading="lazy" onerror="this.remove()"></span>
                                     <span>@nome<small>@User.ObterCong()</small></span>
                                 </span>
                             </a>
@@ -149,11 +150,23 @@
                                     <span class="icon"><i class="fa-solid fa-users"></i></span>
                                     <span>Publicadores</span>
                                 </a>
+                                <a class="navbar-item" href="#" data-action="foto">
+                                    <span class="icon"><i class="fa-solid fa-camera"></i></span>
+                                    <span>Alterar fotografia</span>
+                                </a>
+                                <input type="file" id="fotoFicheiro" accept="image/*" hidden>
                                 @if (User.IsInRole("Admin"))
                                 {
                                     <a class="navbar-item@(Ativo("Configuracao"))" href="~/configuracao">
                                         <span class="icon"><i class="fa-solid fa-gear"></i></span>
                                         <span>Configuração</span>
+                                    </a>
+                                }
+                                @if (User.IsInRole("Admin") && TenantsCtx.IdPrincipal(Configuration) == User.ObterTenant())
+                                {
+                                    <a class="navbar-item@(Ativo("Tenants"))" href="~/Tenants">
+                                        <span class="icon"><i class="fa-solid fa-building"></i></span>
+                                        <span>Congregações</span>
                                     </a>
                                 }
                                 <a class="navbar-item" href="~/Home/Logout">

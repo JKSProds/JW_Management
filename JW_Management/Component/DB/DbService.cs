@@ -46,7 +46,7 @@ public class DbService
                     db.Execute(sql);
 
                     // Atualiza a versão do banco após a execução do script
-                    UpdateDatabaseVersion(_appContext._tenantContext._masterConnectionString, scriptVersion);
+                    UpdateDatabaseVersion(_appContext._tenantContext._masterConnectionString, scriptVersion, t.Id);
                     t.DbVersion = scriptVersion;
                 }
             }
@@ -75,10 +75,10 @@ public class DbService
     }
 
     // Método para atualizar a versão do banco de dados após uma migração
-    private void UpdateDatabaseVersion(string connection, double version)
+    private void UpdateDatabaseVersion(string connection, double version, int tenantId)
     {
         string sqlQuery =
-            $"UPDATE sys_tenants set DbVersion={version.ToString().Replace(",", ".")}, DbUpdate='{DateTime.Now:yyyy-MM-dd HH:mm:ss}'";
+            $"UPDATE sys_tenants set DbVersion={version.ToString().Replace(",", ".")}, DbUpdate='{DateTime.Now:yyyy-MM-dd HH:mm:ss}' WHERE Id={tenantId}"; // só este tenant (antes atualizava todos)
 
         Database db = connection;
 

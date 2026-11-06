@@ -27,7 +27,7 @@
         {
             <article class="item no-thumb" data-stamp="@item.Stamp" data-qtd="@item.Quantidade" data-pub="@item.Publicador!.Id">
                 <div class="main">
-                    <div class="name">@item.Publicador.Nome</div>
+                    <div class="name pub-linha"><partial name="_AvatarPub" model='(item.Publicador.Id, item.Publicador.Nome, "")' /> @item.Publicador.Nome</div>
                     <div class="meta">
                         <span><i class="fa-solid fa-user-group fa-xs"></i> @item.Publicador.Grupo?.Responsavel?.Nome [@item.Publicador.Grupo?.Id]</span>
                     </div>

@@ -29,6 +29,12 @@ namespace JW_Management.Models
             return CaminhoLinux + "territorio/" + _currentTenant.Id + "/";
         }
 
+        public string ObterCaminhoPublicadores()
+        {
+            CriarPasta(CaminhoLinux + "publicador/" + _currentTenant.Id + "/");
+            return CaminhoLinux + "publicador/" + _currentTenant.Id + "/";
+        }
+
         public string ObterCaminhoLiteratura()
         {
             CriarPasta(CaminhoLinux + "literatura/" + _currentTenant.Id + "/");

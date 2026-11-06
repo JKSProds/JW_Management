@@ -1,0 +1,38 @@
+@model List<JW_Management.Models.Tenant>
+@{
+    ViewData["Title"] = "Congregações";
+}
+
+<div class="container" style="max-width:900px">
+    <div class="page-head">
+        <div class="head-title"><div><h1>Congregações</h1><p>Só os administradores do tenant principal veem esta página.</p></div></div>
+        <div class="head-actions">
+            <a class="button is-info" href="~/Tenants/Editar"><span class="icon"><i class="fa-solid fa-plus"></i></span><span>Nova congregação</span></a>
+        </div>
+    </div>
+
+    @if (TempData["Msg"] != null)
+    {
+        <div class="notice is-ok" role="status"><span class="icon"><i class="fa-solid fa-circle-check"></i></span><span>@TempData["Msg"]</span></div>
+    }
+
+    <div class="items">
+        @foreach (var t in Model)
+        {
+            <article class="item no-thumb">
+                <div class="main">
+                    <div class="name">@t.Nome</div>
+                    <div class="meta"><span>@t.NomeCongregacao</span><span>Nº @t.Id</span><span>BD v@t.DbVersion.ToString("0.0#", System.Globalization.CultureInfo.InvariantCulture)</span></div>
+                </div>
+                <div class="side">
+                    <div class="acts">
+                        <form method="post" asp-action="ReenviarAdmin" asp-route-id="@t.Id" style="display:inline" onsubmit="return confirm('Gerar nova palavra-passe e enviá-la ao administrador desta congregação?')">
+                            <button type="submit" class="button" title="Reenviar acesso ao administrador"><span class="icon"><i class="fa-solid fa-key"></i></span><span>Reenviar acesso</span></button>
+                        </form>
+                        <a class="button is-info is-light" href="~/Tenants/Editar/@t.Id"><span class="icon"><i class="fa-solid fa-pen"></i></span><span>Editar</span></a>
+                    </div>
+                </div>
+            </article>
+        }
+    </div>
+</div>

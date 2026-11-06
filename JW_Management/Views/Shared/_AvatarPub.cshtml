@@ -1,0 +1,7 @@
+@* Avatar de um publicador com fotografia por cima das iniciais. Modelo: (id, nome, classe extra). *@
+@model (int Id, string? Nome, string Cls)
+@{
+    var p = (Model.Nome ?? "").Split(' ', StringSplitOptions.RemoveEmptyEntries);
+    var ini = ((p.Length > 0 ? p[0][..1] : "?") + (p.Length > 1 ? p[^1][..1] : "")).ToUpper();
+}
+<span class="avatar @Model.Cls" aria-hidden="true">@ini<img src="~/Publicadores/Foto/@Model.Id" alt="" loading="lazy" onerror="this.remove()"></span>

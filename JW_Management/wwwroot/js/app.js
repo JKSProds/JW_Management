@@ -34,6 +34,7 @@
         else { opt.body = qs; opt.headers['Content-Type'] = 'application/x-www-form-urlencoded;charset=UTF-8'; } // sem isto o fetch envia text/plain e o ASP.NET não lê os parâmetros do corpo
         const r = await fetch(url, opt);
         if (r.redirected && /\/Home\/Login/i.test(r.url)) { location.href = r.url; throw new Error('sessão expirada'); }
+        if (r.status === 400) { const m = await r.text(); throw new Error(m ? 'MSG:' + m : 'HTTP 400'); } // 400 = recusa com mensagem para o utilizador
         if (!r.ok || (r.redirected && /\/Home\/Error/i.test(r.url))) throw new Error('HTTP ' + r.status); // acesso negado redireciona para /Home/Error
         const ct = r.headers.get('content-type') || '';
         return ct.includes('json') ? r.json() : r.text();
@@ -43,7 +44,7 @@
     App.run = async function (btn, fn, erro) {
         if (btn) { if (btn.classList.contains('is-loading')) return; btn.classList.add('is-loading'); }
         try { return await fn(); }
-        catch (e) { if (e.message !== 'sessão expirada') notifyError(erro || 'Ocorreu um erro. Tente novamente.'); }
+        catch (e) { if (e.message !== 'sessão expirada') notifyError(e.message.startsWith('MSG:') ? e.message.slice(4) : (erro || 'Ocorreu um erro. Tente novamente.')); }
         finally { if (btn) btn.classList.remove('is-loading'); }
     };
 
@@ -214,6 +215,15 @@
 
     // ---------- Pesquisa com sugestões (substitui o jQuery UI autocomplete) ----------
     // o: { input, url, params(termo), mapa(item)->{ref,texto,valor}, aoEscolher(item) }
+    // Avatar com as iniciais e, por cima, a fotografia (se não existir, a imagem remove-se e ficam as iniciais).
+    App.avatar = function (id, nome, cls) {
+        const s = document.createElement('span'); s.className = 'avatar ' + (cls || ''); s.setAttribute('aria-hidden', 'true');
+        const p = (nome || '').split(' ').filter(Boolean);
+        s.textContent = ((p[0] || '?')[0] + (p.length > 1 ? p[p.length - 1][0] : '')).toUpperCase();
+        const im = document.createElement('img'); im.alt = ''; im.src = '/Publicadores/Foto/' + id; im.onerror = function () { im.remove(); };
+        s.appendChild(im); return s;
+    };
+
     App.typeahead = function (o) {
         const inp = typeof o.input === 'string' ? $(o.input) : o.input;
         const wrap = inp.parentElement; wrap.classList.add('ta');
@@ -227,6 +237,7 @@
             itens.forEach(function (it, i) {
                 const li = document.createElement('li'); li.setAttribute('role', 'option');
                 li.setAttribute('aria-selected', i === sel);
+                if (it.foto != null) li.appendChild(App.avatar(it.foto, it.texto, 'is-sm'));
                 if (it.ref) { const r = document.createElement('span'); r.className = 'ref'; r.textContent = it.ref; li.appendChild(r); }
                 const x = document.createElement('span'); x.textContent = it.texto; li.appendChild(x);
                 li.addEventListener('mousedown', function (e) { e.preventDefault(); escolher(i); });
@@ -246,7 +257,7 @@
                 try {
                     const d = await App.api('GET', o.url, o.params(termo));
                     if (meu !== seq) return; // resposta antiga
-                    itens = d.map(o.mapa); sel = -1; mostrar();
+                    itens = (o.filtrar ? o.filtrar(d, termo) : d).map(o.mapa); sel = -1; mostrar();
                 } catch (e) { notifyError('Ocorreu um erro na pesquisa.'); }
             }, 200);
         });
@@ -268,6 +279,21 @@
             params: function (t) { return { filtro: t, periodico: !!periodico }; },
             mapa: function (i) { return { ref: i.referencia, texto: i.descricao, valor: i.stamp }; },
             aoEscolher: function (i) { $(stampEl).value = i ? i.valor : ''; }
+        });
+    };
+
+    // Pesquisa de publicadores (com fotografia). Filtra no browser a lista que o servidor já devolve.
+    App.pesquisaPublicador = function (input, idEl, comCongregacao) {
+        const norm = function (s) { return (s || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, ''); };
+        return App.typeahead({
+            input: input, url: '/Publicadores/ObterPublicadores', params: function () { return null; },
+            filtrar: function (d, t) {
+                const n = norm(t), l = d.filter(function (p) { return p.id > 0 && norm(p.nome).includes(n); }).slice(0, 30);
+                if (comCongregacao && norm('Congregação (sem publicador)').includes(n)) l.unshift({ id: 0, nome: 'Congregação (sem publicador)' });
+                return l;
+            },
+            mapa: function (p) { return { texto: p.nome, valor: p.id, foto: p.id > 0 ? p.id : null }; },
+            aoEscolher: function (i) { $(idEl).value = i ? i.valor : ''; }
         });
     };
 
@@ -344,4 +370,26 @@
 
     // Seleccionar o publicador «Congregação» (id definido pelo ecrã).
     App.lerInt = function (sel) { return parseInt($(sel).value, 10) || 0; };
+})();
+
+// ---------- Fotografia do utilizador ----------
+// Escolhe uma imagem, recorta-a ao centro em 256x256, converte para JPEG no browser e envia (o servidor só aceita JPEG até 1 MB).
+(function () {
+    App.on('foto', function () { const i = document.getElementById('fotoFicheiro'); if (i) i.click(); });
+    document.addEventListener('change', async function (e) {
+        const inp = e.target; if (inp.id !== 'fotoFicheiro') return;
+        const f = inp.files[0]; inp.value = '';
+        if (!f) return;
+        try {
+            const bmp = await createImageBitmap(f);
+            const lado = Math.min(bmp.width, bmp.height), c = document.createElement('canvas');
+            c.width = c.height = 256;
+            c.getContext('2d').drawImage(bmp, (bmp.width - lado) / 2, (bmp.height - lado) / 2, lado, lado, 0, 0, 256, 256);
+            const blob = await new Promise(function (r) { c.toBlob(r, 'image/jpeg', 0.85); });
+            const fd = new FormData(); fd.append('ficheiro', blob, 'foto.jpg');
+            const r = await fetch('/Publicadores/FotoGuardar', { method: 'POST', body: fd, headers: { 'X-Requested-With': 'fetch' } });
+            if (!r.ok) throw new Error(await r.text());
+            location.reload();
+        } catch (e) { alert('Não foi possível guardar a fotografia. ' + (e.message || '')); }
+    });
 })();

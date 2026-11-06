@@ -492,7 +492,21 @@
             return ExecutarQuery(sql);
         }
 
-        //Obter movimentos de um determinado tipo 
+        // Função (permissão) do utilizador: só chamada pelo controlador depois de confirmar que quem pede é Admin.
+        public bool AtualizarTipoUtilizador(int id, int tipo) =>
+            ExecutarQuery("UPDATE sys_utilizadores SET Tipo=" + tipo + " WHERE IdUtilizador=" + id + ";");
+
+        // Grupos de serviço (só Admin). O Id novo é o máximo + 1 para não depender do AUTO_INCREMENT da tabela.
+        private static string Esc(string? s) => (s ?? "").Trim().Replace("\\", "\\\\").Replace("'", "''");
+        public bool GuardarGrupo(int id, string? nome, int idResponsavel, int idAjudante) =>
+            id == 0
+                ? ExecutarQuery("INSERT INTO l_grupos (Id, Nome, IdResponsavel, IdAjudante) SELECT IFNULL(MAX(Id), 0) + 1, '" + Esc(nome) + "', " + idResponsavel + ", " + idAjudante + " FROM l_grupos;")
+                : ExecutarQuery("UPDATE l_grupos SET Nome='" + Esc(nome) + "', IdResponsavel=" + idResponsavel + ", IdAjudante=" + idAjudante + " WHERE Id=" + id + ";");
+        // Os publicadores do grupo apagado passam a «sem grupo» (Id 0).
+        public bool ApagarGrupo(int id) =>
+            ExecutarQuery("UPDATE sys_utilizadores SET IdGrupo=0 WHERE IdGrupo=" + id + "; DELETE FROM l_grupos WHERE Id=" + id + ";");
+
+        //Obter movimentos de um determinado tipo
         public List<Movimentos> ObterMovimentos(bool In, bool Out, int IdPub, DateOnly data)
         {
             List<Movimentos> LstMovimentos = new();

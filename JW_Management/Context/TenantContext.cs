@@ -1,5 +1,6 @@
 using System.Data.Common;
 using System.Security.Claims;
+using MySql.Data.MySqlClient;
 using MySql.Simple;
 
 namespace JW_Management.Models;
@@ -90,5 +91,54 @@ public class TenantContext
         }
 
         return LstTenants;
+    }
+
+    // Tenant principal: o único cujos Admins gerem congregações. Chave Tenants:Principal em sys_config; sem ela, o de menor Id.
+    public int IdPrincipal(IConfiguration c) => int.TryParse(c["Tenants:Principal"], out var p) ? p : _tenants.Select(t => t.Id).DefaultIfEmpty(0).Min();
+
+    public void Recarregar() => _tenants = ObterListaTenants();
+
+    private void Executar(string sql, params (string, object?)[] ps)
+    {
+        using var conn = new MySqlConnection(_masterConnectionString);
+        conn.Open();
+        using var cmd = new MySqlCommand(sql, conn);
+        foreach (var (k, v) in ps) cmd.Parameters.AddWithValue(k, v ?? "");
+        cmd.ExecuteNonQuery();
+    }
+
+    private (string, object?)[] Campos(TenantForm f) => new (string, object?)[]
+    {
+        ("@nome", f.Nome.Trim()), ("@cong", f.NomeCongregacao.Trim()), ("@tel", f.Telefone?.Trim()), ("@mor", f.Morada?.Trim()), ("@api", f.JWApiId?.Trim()),
+        ("@mail", f.Email?.Trim()), ("@mport", f.EmailSMTPPort?.Trim()), ("@mhost", f.EmailHost?.Trim()), ("@mpass", f.EmailPassword)
+    };
+
+    // A ligação à BD do novo tenant copia a do tenant principal (mesmo servidor); nunca é pedida nem mostrada no formulário.
+    public int Criar(TenantForm f, int idPrincipal)
+    {
+        string? baseConn;
+        using (var conn = new MySqlConnection(_masterConnectionString))
+        {
+            conn.Open();
+            using var c = new MySqlCommand("SELECT ConnectionString FROM sys_tenants WHERE Id=@i", conn);
+            c.Parameters.AddWithValue("@i", idPrincipal);
+            baseConn = c.ExecuteScalar() as string;
+        }
+        if (string.IsNullOrWhiteSpace(baseConn)) throw new InvalidOperationException("Tenant principal sem ligação à base de dados.");
+        var ps = Campos(f).Append(("@conn", baseConn)).ToArray();
+        Executar("INSERT INTO sys_tenants (Id, Nome, ConnectionString, DbVersion, NomeCongregacao, TelefoneCongregacao, MoradaCongregacao, JWApiCongregacao, MailSender, MailSenderPassword, MailSenderPort, MailSenderHost, Enable) " +
+                 "SELECT IFNULL(MAX(Id), 0) + 1, @nome, @conn, 0, @cong, @tel, @mor, @api, @mail, @mpass, @mport, @mhost, 1 FROM sys_tenants", ps);
+        using var conn2 = new MySqlConnection(_masterConnectionString);
+        conn2.Open();
+        using var c2 = new MySqlCommand("SELECT MAX(Id) FROM sys_tenants", conn2);
+        return Convert.ToInt32(c2.ExecuteScalar());
+    }
+
+    // Palavra-passe do email vazia mantém a atual.
+    public void Atualizar(TenantForm f)
+    {
+        var ps = Campos(f).Append(("@id", (object?)f.Id)).ToArray();
+        Executar("UPDATE sys_tenants SET Nome=@nome, NomeCongregacao=@cong, TelefoneCongregacao=@tel, MoradaCongregacao=@mor, JWApiCongregacao=@api, MailSender=@mail, MailSenderPort=@mport, MailSenderHost=@mhost" +
+                 (string.IsNullOrEmpty(f.EmailPassword) ? "" : ", MailSenderPassword=@mpass") + " WHERE Id=@id", ps);
     }
 }
