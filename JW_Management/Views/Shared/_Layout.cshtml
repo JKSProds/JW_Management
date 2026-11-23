@@ -26,6 +26,9 @@
         })();
     </script>
     <meta name="theme-color" content="#2a4dd0" />
+    <link rel="icon" href="~/favicon.svg" type="image/svg+xml" asp-append-version="true" />
+    <link rel="icon" href="~/favicon.ico" sizes="48x48" asp-append-version="true" />
+    <link rel="apple-touch-icon" href="~/apple-touch-icon.png" asp-append-version="true" />
     <title>@ViewData["Title"] - Gestor Congregacional @(autenticado ? $"({User.ObterCong()})" : "")</title>
 
     <link rel="preload" href="~/fonts/figtree-var.woff2" as="font" type="font/woff2" crossorigin />
@@ -126,7 +129,7 @@
                             </div>
                         </div>
                         @* Menu «Territórios» escondido por agora: controlador, vistas e rotas mantêm-se; o bloco está no histórico do git. *@
-                        <a class="navbar-item@(Ativo("Reunioes"))" href="~/Reunioes">
+                        <a class="navbar-item@(Ativo("Reunioes"))" href="~/Reunioes/Programa">
                             <span class="icon"><i class="fa-solid fa-people-group"></i></span>
                             <span>Reuniões</span>
                         </a>
@@ -150,9 +153,9 @@
                                     <span class="icon"><i class="fa-solid fa-users"></i></span>
                                     <span>Publicadores</span>
                                 </a>
-                                <a class="navbar-item" href="#" data-action="foto">
-                                    <span class="icon"><i class="fa-solid fa-camera"></i></span>
-                                    <span>Alterar fotografia</span>
+                                <a class="navbar-item" href="~/Publicadores/Perfil">
+                                    <span class="icon"><i class="fa-solid fa-id-card"></i></span>
+                                    <span>Meu Perfil</span>
                                 </a>
                                 <input type="file" id="fotoFicheiro" accept="image/*" hidden>
                                 @if (User.IsInRole("Admin"))
@@ -199,7 +202,19 @@
     <main role="main" class="app-main">
         @RenderBody()
     </main>
-    <footer class="app-footer">Jorge Monteiro · v@(GetType().Assembly.GetName().Version)</footer>
+    <footer class="app-footer">
+        <div class="app-footer-in">
+            <div class="app-footer-marca">
+                <img src="~/img/logo.svg" alt="" width="20" height="20">
+                <span><strong>Gestor Congregacional</strong><span class="app-footer-cong"> · @User.ObterCong()</span></span>
+            </div>
+            <div class="app-footer-meta">
+                <span>© @DateTime.Now.Year Jorge Monteiro</span>
+                <span aria-hidden="true">·</span>
+                <span class="app-footer-versao" title="Versão da aplicação (3.ano.mês.dia da última atualização)">v@(GetType().Assembly.GetName().Version)</span>
+            </div>
+        </div>
+    </footer>
     }
     else
     {

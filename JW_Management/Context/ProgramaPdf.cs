@@ -12,6 +12,7 @@ public static class PdfProgramas
     private static readonly BaseColor Tinta = new(25, 25, 25);
     private static readonly BaseColor Suave = new(105, 105, 105);
     private static readonly BaseColor Cinza = new(236, 236, 236);
+    private static readonly BaseColor Destaque = new(222, 222, 222); // cinzento um pouco mais escuro que as faixas: semana da visita do superintendente
     private static readonly BaseColor Linha = new(200, 200, 200);
 
     private record Fontes(BaseFont Normal, BaseFont Negrito, BaseFont Italico);
@@ -45,8 +46,22 @@ public static class PdfProgramas
         doc.Add(new Paragraph($"Gerado a {DateTime.Now:dd/MM/yyyy}", new Font(f.Italico, 6.5f, Font.NORMAL, Suave)) { Alignment = Element.ALIGN_RIGHT, SpacingBefore = 4 });
 
     // ---------- Quadro mensal ----------
+    // Uma só página: se o quadro (ou o rodapé) transbordar, volta a gerar com as alturas das linhas reduzidas.
     public static byte[] Gerar(ProgramaMensal p)
     {
+        byte[] pdf = [];
+        for (var k = 1f; k >= .5f; k -= .05f)
+        {
+            pdf = Gerar(p, k, out var paginas);
+            if (paginas == 1) break;
+        }
+        return pdf;
+    }
+
+    private static byte[] Gerar(ProgramaMensal p, float k, out int paginas)
+    {
+        PdfPCell Cel(string txt, Font f, int al = Element.ALIGN_CENTER, int borda = Rectangle.NO_BORDER, BaseColor? fundo = null, int span = 1, float h = 11, float pad = 3, float vpad = 2) =>
+            PdfProgramas.Cel(txt, f, al, borda, fundo, span, h * k, pad, vpad * k);
         var f = Carregar();
         var fValor = new Font(f.Normal, 7, Font.NORMAL, Tinta); var fRotulo = new Font(f.Negrito, 6.8f, Font.NORMAL, Suave);
         var fFaixa = new Font(f.Negrito, 7.5f, Font.NORMAL, BaseColor.White); var fSecao = new Font(f.Negrito, 6.6f, Font.NORMAL, Tinta);
@@ -54,7 +69,7 @@ public static class PdfProgramas
 
         using var ms = new MemoryStream();
         var doc = new Document(new Rectangle(842, 595), 26, 26, 16, 12); // A4 horizontal, sem /Rotate
-        PdfWriter.GetInstance(doc, ms);
+        var writer = PdfWriter.GetInstance(doc, ms);
         doc.Open();
         Cabecalho(doc, f, "Programa de atividades", p.Mes, p.Congregacao, 16);
 
@@ -63,13 +78,15 @@ public static class PdfProgramas
         t.SetWidths(new[] { 2.3f }.Concat(Enumerable.Repeat(2f, n)).ToArray());
 
         t.AddCell(Cel("", fValor, h: 16, vpad: .4f));
-        foreach (var s in p.Semanas) t.AddCell(Cel(s.Titulo, fSemana, borda: Rectangle.LEFT_BORDER | Rectangle.BOTTOM_BORDER, h: 16, vpad: .4f));
+        foreach (var s in p.Semanas) t.AddCell(Cel(s.Titulo, fSemana, borda: Rectangle.LEFT_BORDER | Rectangle.BOTTOM_BORDER, fundo: s.Visita ? Destaque : null, h: 16, vpad: .4f));
 
         var linhasEvento = new[] { "min1", "min2", "min3", "std", "stl", "sto" };
         foreach (var sec in p.Secoes)
         {
             // faixa preta = reunião; cinza = parte da reunião; espaço maior antes de cada reunião
-            t.AddCell(Cel("", fValor, borda: Rectangle.NO_BORDER, span: n + 1, h: sec.Faixa ? 7 : 2, pad: 0, vpad: 0));
+            // espaço entre secções: célula a célula, para o fundo da semana de visita não ficar cortado
+            t.AddCell(Cel("", fValor, h: sec.Faixa ? 7 : 2, pad: 0, vpad: 0));
+            foreach (var s in p.Semanas) t.AddCell(Cel("", fValor, fundo: s.Visita ? Destaque : null, h: sec.Faixa ? 7 : 2, pad: 0, vpad: 0));
             if (sec.Faixa) t.AddCell(Cel(sec.Titulo, fFaixa, Element.ALIGN_LEFT, fundo: Tinta, span: n + 1, h: 11, pad: 6, vpad: .4f));
             else t.AddCell(Cel(sec.Titulo, fSecao, Element.ALIGN_LEFT, fundo: Cinza, span: n + 1, h: 10, pad: 6, vpad: .4f));
             foreach (var l in sec.Linhas)
@@ -79,12 +96,13 @@ public static class PdfProgramas
                 {
                     var idx = Array.IndexOf(linhasEvento, l.Id);
                     if (s.Evento.Count > 0 && idx >= 0) t.AddCell(Cel(idx % 3 < s.Evento.Count ? s.Evento[idx % 3] : "", fEvento, fundo: Cinza, borda: Rectangle.LEFT_BORDER | Rectangle.BOTTOM_BORDER, h: 9.8f, vpad: .4f));
-                    else t.AddCell(Cel(Valor(s, l.Id), fValor, borda: Rectangle.LEFT_BORDER | Rectangle.BOTTOM_BORDER, h: 9.8f, vpad: .4f));
+                    else t.AddCell(Cel(Valor(s, l.Id), fValor, borda: Rectangle.LEFT_BORDER | Rectangle.BOTTOM_BORDER, fundo: s.Visita ? Destaque : null, h: 9.8f, vpad: .4f));
                 }
             }
         }
         doc.Add(t);
         Rodape(doc, f);
+        paginas = writer.PageNumber;
         doc.Close();
         return ms.ToArray();
     }

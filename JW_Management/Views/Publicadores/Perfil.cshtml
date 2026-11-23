@@ -1,0 +1,36 @@
+@model JW_Management.Models.Publicador
+@{
+    ViewData["Title"] = "Meu Perfil";
+    var iniciais = string.Concat((Model.Nome ?? "?").Split(' ', StringSplitOptions.RemoveEmptyEntries).Take(1).Select(p => p[0])) +
+                   string.Concat((Model.Nome ?? "").Split(' ', StringSplitOptions.RemoveEmptyEntries).Skip(1).Reverse().Take(1).Select(p => p[0]));
+}
+
+<div class="container" style="max-width:760px">
+    <div class="page-head">
+        <div class="head-title">
+            <span class="avatar" style="width:72px;height:72px;font-size:1.5rem" aria-hidden="true">@iniciais.ToUpper()<img src="~/Publicadores/Foto/@Model.Id" alt="" loading="lazy" onerror="this.remove()"></span>
+            <div>
+                <h1>@Model.Nome</h1>
+                <p>@Model.Role · Nº @Model.Id</p>
+            </div>
+        </div>
+        <div class="head-actions">
+            <button type="button" class="button is-info" data-action="foto">
+                <span class="icon"><i class="fa-solid fa-camera"></i></span><span>Alterar fotografia</span>
+            </button>
+        </div>
+    </div>
+
+    <div class="panel-card">
+        <h2>Os meus dados</h2>
+        <div class="form-grid">
+            <div class="field"><label class="label">Nome</label><input type="text" class="input" value="@Model.Nome" readonly></div>
+            <div class="field"><label class="label">Função</label><input type="text" class="input" value="@Model.Role" readonly></div>
+            <div class="field"><label class="label">Utilizador</label><input type="text" class="input" value="@Model.Username" readonly></div>
+            <div class="field"><label class="label">Grupo</label><input type="text" class="input" value="@(Model.Grupo?.Nome)" readonly></div>
+            <div class="field"><label class="label">Email</label><input type="text" class="input" value="@Model.Email" readonly></div>
+            <div class="field"><label class="label">Telemóvel</label><input type="text" class="input" value="@Model.Telemovel" readonly></div>
+        </div>
+        <p class="field-hint">A fotografia é recortada ao centro, em quadrado, e tem de ser uma imagem até 1 MB depois de convertida. Para alterar os restantes dados, fale com a secretaria.</p>
+    </div>
+</div>

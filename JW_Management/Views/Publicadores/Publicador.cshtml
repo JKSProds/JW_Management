@@ -43,10 +43,13 @@
                     <label class="label" asp-for="Id">Número</label>
                     <input type="text" class="input" readonly asp-for="Id">
                 </div>
-                <div class="field">
-                    <label class="label" asp-for="Role">Função</label>
-                    <input type="text" class="input" readonly disabled asp-for="Role">
-                </div>
+                @if (!User.IsInRole("Admin"))
+                {
+                    <div class="field">
+                        <label class="label" asp-for="Role">Função</label>
+                        <input type="text" class="input" readonly disabled asp-for="Role">
+                    </div>
+                }
                 <div class="field">
                     <label class="label" asp-for="Nome">Nome</label>
                     <input type="text" class="input" readonly asp-for="Nome">
@@ -80,7 +83,7 @@
                 @if (User.IsInRole("Admin"))
                 {
                     <div class="field">
-                        <label class="label" for="TipoUtilizador">Função (permissões)</label>
+                        <label class="label" for="TipoUtilizador">Função</label>
                         <div class="control has-icons-left">
                             <div class="select is-fullwidth">
                                 <select id="TipoUtilizador" name="TipoUtilizador" asp-items="@(new SelectList(ViewBag.Funcoes, "Value", "Text", Model.TipoUtilizador.ToString()))"></select>

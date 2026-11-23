@@ -78,6 +78,22 @@
         </header>
         <section class="modal-card-body">
             <div id="hgPasso1">
+                <div class="buttons has-addons" role="group" aria-label="Origem dos dados">
+                    <button type="button" class="button is-info is-selected" data-action="hgModo" data-modo="sessao" aria-pressed="true">Sessão (token)</button>
+                    <button type="button" class="button" data-action="hgModo" data-modo="pacote" aria-pressed="false">Exportação (colar dados)</button>
+                </div>
+                <p class="field-hint" id="hgModoDica">Cada vez que prime «Obter programa» lê os dados mais recentes do Hourglass.</p>
+                <div id="hgPacote" hidden>
+                <ol class="steps">
+                    <li>No Hourglass, com a sessão iniciada, execute o atalho de exportação (Partilhar, e escolha o atalho).</li>
+                    <li>Cole abaixo o conteúdo copiado. Começa por <code>{"hgdata":</code>.</li>
+                </ol>
+                <div class="field">
+                    <label class="label" for="hgPacoteTxt">Exportação do atalho</label>
+                    <textarea class="textarea" id="hgPacoteTxt" rows="3" spellcheck="false" autocomplete="off" placeholder='{"hgdata":2,...'></textarea>
+                    <p class="field-hint">Não fica guardada. Usa sempre exatamente estes dados e tem de ser colada de cada vez.</p>
+                </div>
+                </div>
                 <div id="hgBloco">
                 <ol class="steps">
                     <li>Abra o <a href="https://app.hourglass-app.com/v2/page/app/scheduling/mm" target="_blank" rel="noopener">Hourglass</a> com a sessão iniciada (Agendamento, Reunião de meio de semana).</li>
@@ -136,12 +152,15 @@
             return r.json();
         };
 
+        const origem = App.hgOrigem({ bloco: '#hgBloco', pacote: '#hgPacote', pacoteTxt: '#hgPacoteTxt', cookie: '#hgCookie', dica: '#hgModoDica' });
+
         App.on('hgObter', btn => App.run(btn, async () => {
-            const cookie = App.hgCookie('#hgCookie'); if (cookie === null) return;
+            const cookie = origem.obter(); if (cookie === null) return;
             const r = await fetch('/Reunioes/HourglassPreview', { method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
                 body: new URLSearchParams({ cookie: cookie, de: App.$('#hgDe').value, ate: App.$('#hgAte').value }) });
             if (!r.ok) { notifyError(r.status === 401 ? 'A sessão do Hourglass expirou. Cole o pedido outra vez.' : (await r.text()) || 'Não foi possível obter os dados do Hourglass.'); return; }
             prev = await r.json();
+            origem.limpar(); // a exportação não se reutiliza: da próxima vez cola-se outra
             desenhar();
         }, 'Não foi possível obter os dados do Hourglass.'));
 
@@ -154,7 +173,7 @@
                 const el = document.createElement('section'); el.className = 'hg-semana'; el.dataset.i = si;
                 const novos = s.itens.filter(i => i.tipoId === -1).length;
                 el.innerHTML = '<header><label class="checkbox"><input type="checkbox" class="hg-on" checked> ' + esc(s.semana) + '</label>' +
-                    (s.existe ? '<span class="tag is-warning">já existe: será substituída</span>' : '') + (novos ? '<span class="tag is-info">' + novos + ' tipo(s) a criar</span>' : '') + '</header>' +
+                    (s.existe ? '<span class="tag is-warning">já existe: será substituída</span>' : '') + (s.visita ? '<span class="tag is-link">visita do superintendente: sem estudo bíblico nem leitores</span>' : '') + (novos ? '<span class="tag is-info">' + novos + ' tipo(s) a criar</span>' : '') + '</header>' +
                     '<table><thead><tr><th>Parte</th><th>Sala</th><th>Min.</th><th>Pessoa(s)</th><th>Tipo local</th></tr></thead><tbody></tbody></table>';
                 const tb = App.$('tbody', el);
                 s.itens.forEach((it, ii) => {

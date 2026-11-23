@@ -11,8 +11,19 @@ public class ConfigStore(string masterConnectionString, IDataProtectionProvider 
     public const string ClientSecret = "Oidc:ClientSecret";
     public const string KnownProxy = "ForwardedHeaders:KnownProxy";
     public const string SomenteOidc = "Auth:SomenteOidc";
+    public const string MailNome = "Mail:Nome";           // nome do remetente (global)
+    public const string MailBcc = "Mail:EmailBcc";        // cópia de todos os emails (global, opcional)
 
     private readonly IDataProtector _protector = provider.CreateProtector("JW_Management.Config.v1");
+
+    // Palavras-passe guardadas fora de sys_config (ex.: email da congregação): cifradas com o prefixo «dp:».
+    // Valores antigos, sem prefixo, são texto simples e continuam a funcionar. Se a chave de cifra não for a mesma, devolve vazio.
+    public string Cifrar(string valor) => "dp:" + _protector.Protect(valor);
+    public string Decifrar(string? valor)
+    {
+        if (string.IsNullOrEmpty(valor) || !valor.StartsWith("dp:")) return valor ?? "";
+        try { return _protector.Unprotect(valor[3..]); } catch (Exception) { return ""; }
+    }
 
     public void EnsureTable() =>
         Run("CREATE TABLE IF NOT EXISTS sys_config (Chave VARCHAR(100) NOT NULL PRIMARY KEY, Valor TEXT NOT NULL);");
@@ -50,6 +61,9 @@ public class ConfigStore(string masterConnectionString, IDataProtectionProvider 
     // Lido a cada pedido (BD), para que "só OAuth" tenha efeito imediato; só vale se o OIDC estiver configurado.
     public bool SomenteOidcAtivo(IConfiguration config)
     {
+#if DEBUG
+        return false; // dev local: o segredo OIDC não desencripta com a chave local, por isso mantém-se o login com palavra-passe
+#endif
         if (string.IsNullOrEmpty(config[ClientId])) return false;
         using var conn = new MySqlConnection(masterConnectionString);
         conn.Open();

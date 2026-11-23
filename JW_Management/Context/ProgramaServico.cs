@@ -161,17 +161,41 @@ public class ProgramaServico(HourglassContext _hg, DbContext _db)
                     if ((int?)HourglassContext.Sub(wt?[sk], "number") is > 0 and var n) { v["cwm" + i] = n.ToString(); cantSem.Add((n, (string?)HourglassContext.Sub(wt?[sk], "title") ?? "")); }
             }
             if (sem.Evento.Count == 0 && mm.TryGetValue(k, out var e2) && e2["event"] is JObject ev) sem.Evento = Evento(ev) ?? sem.Evento;
-            // Visita do superintendente de circuito («co»): mantém os cânticos; a reunião de semana passa a terça-feira,
-            // o estudo bíblico dá lugar ao discurso dele e ao fim de semana há dois discursos; A Sentinela fica sem leitor.
+            // Visita do superintendente de circuito («co»): o estudo bíblico dá lugar ao discurso de serviço dele
+            // (orador na linha do dirigente, tema na do leitor, que não existe) e ao fim de semana há dois discursos;
+            // sem estudo de A Sentinela, o orador (que faz a oração final) fica na linha do leitor e o tema do discurso final na da oração final.
+            // Orador, temas e cânticos finais vêm das definições.
             var evCo = (wm[k]?["event"] as JObject) ?? (mm[k]?["event"] as JObject); // «event» pode vir null
             if ((string?)evCo?["event"] == "co")
             {
-                var orador = v.GetValueOrDefault("wor", "");
-                v["ebd"] = ("Discurso – " + orador).TrimEnd(' ', '–'); v.Remove("ebl"); v.Remove("stl");
-                v["wte"] = (v.GetValueOrDefault("wte", "") + " / Discurso de serviço").TrimStart(' ', '/');
-                if (DateTime.TryParse((string?)evCo?["date"], CultureInfo.InvariantCulture, DateTimeStyles.None, out var dv))
-                    sem.Titulo += $" – visita do superintendente (reunião na {Pt.DateTimeFormat.GetDayName(dv.DayOfWeek)}, {dv.Day})";
+                sem.Visita = true;
+                string Tema(string chave) => Cfg(chave, "").Trim('"', '“', '”', ' ');
+                var orador = Cfg("circuit_overseer_name", v.GetValueOrDefault("wor", ""));
+                if (orador != "") v["wor"] = orador;
+                var temaServico = Tema("circuit_overseer_mm_talk_title");
+                v["ebd"] = orador; v["ebl"] = temaServico != "" ? temaServico : "Discurso";
+                if (v.GetValueOrDefault("wte", "") == "") v["wte"] = Tema("circuit_overseer_wm_talk_title");
+                v["stl"] = orador;
+                if (Tema("circuit_overseer_wm_svc_talk_title") is { Length: > 0 } temaFinal) v["sto"] = temaFinal;
+                // cântico final da reunião de semana: o do superintendente
+                if (int.TryParse(Cfg("circuit_overseer_mm_closing_song", ""), out var mc) && mc > 0)
+                {
+                    if (int.TryParse(v.GetValueOrDefault("cmm3", ""), out var antM) && antM != mc) cantSem.RemoveAll(c => c.Item1 == antM);
+                    v["cmm3"] = mc.ToString();
+                }
+                // Sem estudo de A Sentinela, o cântico final do fim de semana é o do superintendente (definições; senão o «closing_song» do Hourglass).
+                var fimSong = wm[k]?["closing_song"];
+                var fimNum = int.TryParse(Cfg("circuit_overseer_wm_closing_song", ""), out var cs) && cs > 0 ? cs : (int?)HourglassContext.Sub(fimSong, "number") ?? 0;
+                if (fimNum > 0)
+                {
+                    if (int.TryParse(v.GetValueOrDefault("cwm2", ""), out var antigo)) cantSem.RemoveAll(c => c.Item1 == antigo); // o do estudo, que nesta semana não existe
+                    v["cwm2"] = fimNum.ToString();
+                    // o título só entra no catálogo se o Hourglass o der para o mesmo número (não se grava um título vazio por cima)
+                    if ((int?)HourglassContext.Sub(fimSong, "number") == fimNum && (string?)HourglassContext.Sub(fimSong, "title") is { Length: > 0 } tit) cantSem.Add((fimNum, tit));
+                }
             }
+            // o Hourglass chama «Circuit Overseer» à congregação do superintendente
+            if (v.GetValueOrDefault("wco", "").Equals("Circuit Overseer", StringComparison.OrdinalIgnoreCase)) v["wco"] = "Superintendente de Circuito";
             // assembleia de circuito, congresso e memorial: não há cânticos da reunião nessa semana
             if (sem.Evento.Count > 0) { foreach (var k2 in new[] { "cmm1", "cmm2", "cmm3", "cwm1", "cwm2" }) v.Remove(k2); } else canticos.AddRange(cantSem);
 

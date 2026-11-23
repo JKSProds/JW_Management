@@ -1393,7 +1393,7 @@
             var linhas = canticos.Where(c => c.Numero > 0).DistinctBy(c => c.Numero)
                 .Select(c => "(" + c.Numero + ", '" + EscSql(c.Titulo.Length > 50 ? c.Titulo[..50] : c.Titulo) + "')").ToList();
             if (linhas.Count == 0) return true;
-            return ExecutarQuery("INSERT INTO sys_canticos (id, tema) VALUES " + string.Join(",", linhas) + " ON DUPLICATE KEY UPDATE tema=VALUES(tema);");
+            return ExecutarQuery("INSERT INTO sys_canticos (id, tema) VALUES " + string.Join(",", linhas) + " ON DUPLICATE KEY UPDATE tema=IF(VALUES(tema)='', tema, VALUES(tema));");
         }
 
         public bool CriarTipoDesignacao(TipoDesignacao t)

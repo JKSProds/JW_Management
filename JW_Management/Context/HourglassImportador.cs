@@ -23,7 +23,11 @@ public class HourglassImportador(HourglassContext _hg, DbContext _db)
         var tMeeting = _hg.Get(cookie, $"/scheduling/mm/meeting/{intervalo}?lgroup={lgroup}&no_subs=true");
         var tMm = _hg.Get(cookie, $"/scheduling/mm/schedule/{intervalo}?lgroup={lgroup}");
         var tWm = _hg.Get(cookie, $"/scheduling/wm/schedule/{intervalo}?lgroup={lgroup}");
-        await Task.WhenAll(tMeeting, tMm, tWm);
+        var tSet = _hg.Get(cookie, $"/scheduling/congregation/settings?lgroup={lgroup}"); // orador e temas da visita do superintendente
+        await Task.WhenAll(tMeeting, tMm, tWm, tSet);
+        // shortcut: as definições só guardam UMA visita (a atual), por isso valem para todas as semanas «co» do intervalo
+        string Cfg(string chave) => ((string?)(tSet.Result as JObject)?[chave] ?? "").Trim();
+        static string Aspas(string t) => t.Trim().Trim('"', '“', '”').Trim();
 
         var partes = (tMeeting.Result as JArray ?? new()).ToDictionary(m => (string)m["date"]!, m => (JObject)m);
         var mm = (tMm.Result as JArray ?? new()).ToDictionary(m => (string)m["date"]!, m => (JObject)m);
@@ -39,13 +43,26 @@ public class HourglassImportador(HourglassContext _hg, DbContext _db)
             s.Existe = existentes.Any(r => r.SemanaReuniao == semana || r.Stamp == s.Stamp);
 
             HgPessoa? P(JToken? t) => Pessoa(t, utilizadores, pubs);
-            void Add(string grupo, string chave, string titulo, JToken? quem, JToken? ajudante = null, int min = 0, string tema = "", int sala = 0, int @base = 0, bool obrigatorio = false)
+            // Visita do superintendente de circuito («co»): não há estudo bíblico de congregação nem leitores (ver ProgramaServico).
+            var evCo = (wm.TryGetValue(datas, out var wv) ? wv["event"] as JObject : null) ?? (mm.TryGetValue(datas, out var mv) ? mv["event"] as JObject : null);
+            s.Visita = (string?)evCo?["event"] == "co";
+            // O orador da visita não é publicador local: entra só com o nome, sem publicador associado.
+            var sp = wv?["speaker"] as JObject;
+            var oradorHg = sp != null ? string.Join(" ", new[] { (string?)sp["firstname"], (string?)sp["lastname"] }.Where(x => !string.IsNullOrWhiteSpace(x))) : "";
+            var orador = !s.Visita ? "" : Cfg("circuit_overseer_name") is { Length: > 0 } nomeCo ? nomeCo : oradorHg;
+            void AddOrador(string grupo, string chave, string rotulo, string tema, int min, int @base)
+            {
+                if (orador == "") return;
+                s.Itens.Add(new HgItem { Grupo = grupo, Chave = chave, Titulo = rotulo, Tema = tema, Minutos = min, Sala = "Auditório", Rotulo = rotulo, Base = @base, Pessoas = { new HgPessoa { Nome = orador } } });
+            }
+
+            void Add(string grupo, string chave, string titulo, JToken? quem, JToken? ajudante = null, int min = 0, string tema = "", int sala = 0, int @base = 0, bool obrigatorio = false, string? rotulo = null)
             {
                 var tipoHg = chave.Split(':').Last();
                 var it = new HgItem
                 {
                     Grupo = grupo, Chave = chave, Titulo = titulo, Tema = tema, Minutos = min, Sala = sala == 0 ? "Auditório" : "Sala " + (sala + 1),
-                    Rotulo = Rotulo(chave, titulo), Base = @base, Salas = ComSala.Contains(tipoHg)
+                    Rotulo = rotulo ?? Rotulo(chave, titulo), Base = @base, Salas = ComSala.Contains(tipoHg)
                 };
                 foreach (var p in new[] { P(quem), P(ajudante) }) if (p != null) it.Pessoas.Add(p);
                 // uma parte sem ninguém atribuído existe na mesma nessa semana: entra «por atribuir»
@@ -58,29 +75,41 @@ public class HourglassImportador(HourglassContext _hg, DbContext _db)
                 partes.TryGetValue(datas, out var m);
                 Add("mm", "mm:chairman", "Presidente", a["chairman"], obrigatorio: true);
                 Add("mm", "mm:openprayer", "Oração inicial", a["openprayer"], obrigatorio: true);
+                var vida = 0;
                 foreach (var sec in new[] { "tgw", "fm", "lac" })
                     foreach (var e in a[sec] as JArray ?? new())
                     {
                         var parte = (m?[sec] as JArray)?.FirstOrDefault(p => (int?)p["id"] == (int?)e["part"]);
                         if (parte == null) continue;
                         var tipo = (string?)parte["type"] ?? "";
-                        Add("mm", $"mm:{sec}:{tipo}", LimparNumero((string?)parte["title"]), e["assignee"], e["assistant"], Minutos((string?)parte["time"]), LimparNumero((string?)parte["title"]), (int?)e["classroom"] ?? 0, sec == "fm" ? 100 : sec == "lac" ? 200 : 0, true);
+                        // Partes de Vida Cristã (menos o estudo bíblico): o tipo é «Parte 1», «Parte 2»…; o tema do discurso vai só no nome da designação.
+                        var rotulo = sec == "lac" && tipo != "cbs" ? $"Parte {++vida}" : null;
+                        Add("mm", $"mm:{sec}:{tipo}", LimparNumero((string?)parte["title"]), e["assignee"], e["assistant"], Minutos((string?)parte["time"]), LimparNumero((string?)parte["title"]), (int?)e["classroom"] ?? 0, sec == "fm" ? 100 : sec == "lac" ? 200 : 0, true, rotulo);
                     }
-                Add("mm", "mm:cbsreader", "Leitor do estudo bíblico", a["cbs_reader"], @base: 200, obrigatorio: true);
+                if (s.Visita) AddOrador("mm", "mm:co:service", "Discurso de serviço", Aspas(Cfg("circuit_overseer_mm_talk_title")), 30, 200); // ocupa o lugar do estudo bíblico
+                Add("mm", "mm:cbsreader", "Leitor do estudo bíblico", a["cbs_reader"], @base: 200, obrigatorio: !s.Visita);
                 Add("mm", "mm:closeprayer", "Oração final", a["closeprayer"], @base: 200, obrigatorio: true);
                 if (m != null)
                 {
                     var ks = new[] { "song1", "song2", "song3" };
                     s.Canticos = ks.Select(k => (int?)HourglassContext.Sub(m[k], "number") ?? 0).ToList();
                     s.CanticoTitulos = ks.Select(k => (string?)HourglassContext.Sub(m[k], "title") ?? "").ToList();
+                    // visita do superintendente: o cântico final é o das definições (o título fica por conhecer se for outro número)
+                    if (s.Visita && int.TryParse(Cfg("circuit_overseer_mm_closing_song"), out var mc) && mc > 0 && s.Canticos[2] != mc) { s.Canticos[2] = mc; s.CanticoTitulos[2] = ""; }
                 }
             }
 
             if (wm.TryGetValue(datas, out var w))
             {
                 Add("wm", "wm:chairman", "Presidente (fim de semana)", w["wm_chairman"], @base: 300, obrigatorio: true);
+                if (s.Visita)
+                {
+                    var temaPublico = LimparNumero((string?)HourglassContext.Sub(w["public_talk"], "title"));
+                    AddOrador("wm", "wm:co:public", "Discurso público", temaPublico != "" ? temaPublico : Aspas(Cfg("circuit_overseer_wm_talk_title")), 30, 300);
+                    AddOrador("wm", "wm:co:final", "Discurso final", Aspas(Cfg("circuit_overseer_wm_svc_talk_title")), 30, 300);
+                }
                 Add("wm", "wm:conductor", "Dirigente de A Sentinela", w["wt_conductor"], @base: 400);
-                Add("wm", "wm:reader", "Leitor de A Sentinela", w["wm_reader"], @base: 400, obrigatorio: true);
+                Add("wm", "wm:reader", "Leitor de A Sentinela", w["wm_reader"], @base: 400, obrigatorio: !s.Visita);
             }
 
             // Assembleia de circuito, congresso e memorial: nessa semana não há cânticos da reunião
@@ -195,6 +224,9 @@ public class HourglassImportador(HourglassContext _hg, DbContext _db)
         var rotulo = Norm(it.Rotulo);
         var exato = cand.FirstOrDefault(t => Norm(t.Descricao) == rotulo || Norm(t.DescricaoAdicional) == rotulo);
         if (exato != null) return exato.Id;
+        // mesma parte repetida na semana (ex.: duas «Iniciar conversas»): reutiliza o tipo existente em vez de criar outro
+        var repetido = tipos.FirstOrDefault(t => t.Id > 0 && (it.Grupo == "mm" ? t.Id < 300 : t.Id is >= 300 and < 500) && (Norm(t.Descricao) == rotulo || Norm(t.DescricaoAdicional) == rotulo));
+        if (repetido != null) return repetido.Id;
         var tipo = it.Chave.Split(':').Last();
         if (Palavras.TryGetValue(tipo, out var kws))
             foreach (var kw in kws)
