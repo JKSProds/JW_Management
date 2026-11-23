@@ -12,6 +12,7 @@ public static class PdfProgramas
     private static readonly BaseColor Tinta = new(25, 25, 25);
     private static readonly BaseColor Suave = new(105, 105, 105);
     private static readonly BaseColor Cinza = new(236, 236, 236);
+    private static readonly BaseColor Destaque = new(222, 222, 222); // cinzento um pouco mais escuro que as faixas: semana da visita do superintendente
     private static readonly BaseColor Linha = new(200, 200, 200);
 
     private record Fontes(BaseFont Normal, BaseFont Negrito, BaseFont Italico);
@@ -77,13 +78,15 @@ public static class PdfProgramas
         t.SetWidths(new[] { 2.3f }.Concat(Enumerable.Repeat(2f, n)).ToArray());
 
         t.AddCell(Cel("", fValor, h: 16, vpad: .4f));
-        foreach (var s in p.Semanas) t.AddCell(Cel(s.Titulo, fSemana, borda: Rectangle.LEFT_BORDER | Rectangle.BOTTOM_BORDER, h: 16, vpad: .4f));
+        foreach (var s in p.Semanas) t.AddCell(Cel(s.Titulo, fSemana, borda: Rectangle.LEFT_BORDER | Rectangle.BOTTOM_BORDER, fundo: s.Visita ? Destaque : null, h: 16, vpad: .4f));
 
         var linhasEvento = new[] { "min1", "min2", "min3", "std", "stl", "sto" };
         foreach (var sec in p.Secoes)
         {
             // faixa preta = reunião; cinza = parte da reunião; espaço maior antes de cada reunião
-            t.AddCell(Cel("", fValor, borda: Rectangle.NO_BORDER, span: n + 1, h: sec.Faixa ? 7 : 2, pad: 0, vpad: 0));
+            // espaço entre secções: célula a célula, para o fundo da semana de visita não ficar cortado
+            t.AddCell(Cel("", fValor, h: sec.Faixa ? 7 : 2, pad: 0, vpad: 0));
+            foreach (var s in p.Semanas) t.AddCell(Cel("", fValor, fundo: s.Visita ? Destaque : null, h: sec.Faixa ? 7 : 2, pad: 0, vpad: 0));
             if (sec.Faixa) t.AddCell(Cel(sec.Titulo, fFaixa, Element.ALIGN_LEFT, fundo: Tinta, span: n + 1, h: 11, pad: 6, vpad: .4f));
             else t.AddCell(Cel(sec.Titulo, fSecao, Element.ALIGN_LEFT, fundo: Cinza, span: n + 1, h: 10, pad: 6, vpad: .4f));
             foreach (var l in sec.Linhas)
@@ -93,7 +96,7 @@ public static class PdfProgramas
                 {
                     var idx = Array.IndexOf(linhasEvento, l.Id);
                     if (s.Evento.Count > 0 && idx >= 0) t.AddCell(Cel(idx % 3 < s.Evento.Count ? s.Evento[idx % 3] : "", fEvento, fundo: Cinza, borda: Rectangle.LEFT_BORDER | Rectangle.BOTTOM_BORDER, h: 9.8f, vpad: .4f));
-                    else t.AddCell(Cel(Valor(s, l.Id), fValor, borda: Rectangle.LEFT_BORDER | Rectangle.BOTTOM_BORDER, h: 9.8f, vpad: .4f));
+                    else t.AddCell(Cel(Valor(s, l.Id), fValor, borda: Rectangle.LEFT_BORDER | Rectangle.BOTTOM_BORDER, fundo: s.Visita ? Destaque : null, h: 9.8f, vpad: .4f));
                 }
             }
         }

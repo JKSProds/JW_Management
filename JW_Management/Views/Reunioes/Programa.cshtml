@@ -16,6 +16,10 @@
         <div class="head-actions">
             <a class="button btn-icon" href="~/Reunioes/Programa?ano=@ant.Year&mes=@ant.Month" aria-label="Mês anterior" title="Mês anterior"><i class="fa-solid fa-chevron-left"></i></a>
             <a class="button btn-icon" href="~/Reunioes/Programa?ano=@seg.Year&mes=@seg.Month" aria-label="Mês seguinte" title="Mês seguinte"><i class="fa-solid fa-chevron-right"></i></a>
+            <button type="button" class="button" data-open="modalEmail" title="Enviar os programas deste mês por email">
+                <span class="icon"><i class="fa-solid fa-paper-plane"></i></span><span>Enviar por email</span>
+            </button>
+            <a class="button" href="~/Reunioes" title="Designações por semana e importação das reuniões"><span class="icon"><i class="fa-solid fa-list"></i></span><span>Listagem</span></a>
             <button type="button" class="button is-info" data-open="modalSync">
                 <span class="icon"><i class="fa-solid fa-hourglass-half"></i></span><span>@(est.Semanas > 0 ? "Atualizar do Hourglass" : "Obter do Hourglass")</span>
             </button>
@@ -134,6 +138,35 @@
     </section>
 </div>
 
+<div id="modalEmail" class="modal" role="dialog" aria-modal="true" aria-labelledby="tEm" data-persist="1">
+    <div class="modal-background"></div>
+    <div class="modal-card">
+        <header class="modal-card-head">
+            <p class="modal-card-title" id="tEm"><span class="icon"><i class="fa-solid fa-paper-plane"></i></span><span>Enviar programas de @ProgramaServico.NomeMes(Model.Mes) @Model.Ano por email</span></p>
+            <button type="button" class="button delete" aria-label="Fechar" data-close></button>
+        </header>
+        <section class="modal-card-body">
+            <p class="modal-body-text mb-4">Cada publicador escolhido recebe um email com os programas escolhidos em PDF, tal como estão guardados.</p>
+            <div class="field">
+                <label class="label">Programas</label>
+                <label class="checkbox" style="display:block"><input type="checkbox" class="em-tipo" value="programa" @(Model.Programa == null ? "disabled" : "")> Reuniões@(Model.Programa == null ? " (sem dados)" : "")</label>
+                <label class="checkbox" style="display:block"><input type="checkbox" class="em-tipo" value="campo" @(Model.Campo == null ? "disabled" : "")> Serviço de campo@(Model.Campo == null ? " (sem dados)" : "")</label>
+                <label class="checkbox" style="display:block"><input type="checkbox" class="em-tipo" value="testemunho" @(Model.Testemunho == null ? "disabled" : "")> Testemunho público@(Model.Testemunho == null ? " (sem dados)" : "")</label>
+            </div>
+            <div class="field">
+                <label class="label" for="emBusca">Publicadores com email <span class="tag is-light ml-1" id="emN">nenhum escolhido</span></label>
+                <div><input type="text" class="input" id="emBusca" placeholder="Escreva o nome do publicador"></div>
+                <div class="tags" id="emFichas" style="margin-top:.6rem"></div>
+                <button type="button" class="button is-small is-ghost" data-action="emTodos">Adicionar todos</button>
+            </div>
+        </section>
+        <footer class="modal-card-foot">
+            <button type="button" class="button" data-close>Cancelar</button>
+            <button type="button" class="button is-info" data-action="emailProgramas" data-submit><span class="icon"><i class="fa-solid fa-paper-plane"></i></span><span>Enviar</span></button>
+        </footer>
+    </div>
+</div>
+
 <div id="modalSync" class="modal" role="dialog" aria-modal="true" aria-labelledby="tSy" data-persist="1">
     <div class="modal-background"></div>
     <div class="modal-card">
@@ -143,6 +176,22 @@
         </header>
         <section class="modal-card-body">
             <p class="modal-body-text mb-4">Lê as reuniões, o serviço de campo e o testemunho público deste mês (só leitura) e guarda-os. Depois, os PDF geram-se sem pedir a cookie.</p>
+            <div class="buttons has-addons" role="group" aria-label="Origem dos dados">
+                <button type="button" class="button is-info is-selected" data-action="hgModo" data-modo="sessao" aria-pressed="true">Sessão (token)</button>
+                <button type="button" class="button" data-action="hgModo" data-modo="pacote" aria-pressed="false">Exportação (colar dados)</button>
+            </div>
+            <p class="field-hint" id="pgModoDica">Cada vez que prime o botão lê os dados mais recentes do Hourglass.</p>
+            <div id="pgPacote" hidden>
+            <ol class="steps">
+                <li>No Hourglass, com a sessão iniciada, execute o atalho de exportação (Partilhar, e escolha o atalho).</li>
+                <li>Cole abaixo o conteúdo copiado. Começa por <code>{"hgdata":</code>.</li>
+            </ol>
+            <div class="field">
+                <label class="label" for="pgPacoteTxt">Exportação do atalho</label>
+                <textarea class="textarea" id="pgPacoteTxt" rows="3" spellcheck="false" autocomplete="off" placeholder='{"hgdata":2,...'></textarea>
+                <p class="field-hint">Não fica guardada. Usa sempre exatamente estes dados e tem de ser colada de cada vez.</p>
+            </div>
+            </div>
             <div id="pgBloco">
             <ol class="steps">
                 <li>Abra o <a href="https://app.hourglass-app.com/v2/page/app/scheduling/mm" target="_blank" rel="noopener">Hourglass</a> com a sessão iniciada, prima <kbd>F12</kbd> e abra o separador <b>Rede</b>.</li>
@@ -176,12 +225,33 @@
     });
 
     App.hgSessao('#pgBloco');
+    const origem = App.hgOrigem({ bloco: '#pgBloco', pacote: '#pgPacote', pacoteTxt: '#pgPacoteTxt', cookie: '#pgCookie', dica: '#pgModoDica' });
+
+
+    // ---------- Enviar programas por email ----------
+    // A mesma pesquisa de publicadores em todos os ecrãs; nada vem escolhido por omissão.
+    const emPub = App.pesquisaPublicadores({
+        input: '#emBusca', fichas: '#emFichas', soComEmail: true,
+        aoMudar: n => { App.$('#emN').textContent = n ? n + ' escolhido(s)' : 'nenhum escolhido'; }
+    });
+    App.on('emTodos', btn => App.run(btn, () => emPub.adicionarTodos(), 'Não foi possível carregar os publicadores.'));
+    App.on('emailProgramas', btn => App.run(btn, async () => {
+        const tipos = App.$$('.em-tipo').filter(c => c.checked && !c.disabled).map(c => c.value);
+        const ids = emPub.ids();
+        if (!tipos.length) { notifyError('Escolha pelo menos um programa.'); return; }
+        if (!ids.length) { notifyError('Escolha pelo menos um publicador.'); return; }
+        if (!await App.confirm({ title: 'Enviar programas', text: 'Enviar ' + tipos.length + ' programa(s) por email a ' + ids.length + ' publicador(es)?', ok: 'Enviar' })) return;
+        const r = await App.api('POST', '/Reunioes/ProgramaEnviar', { ano: ano, mes: mes, tipos: tipos.join(','), ids: ids.join(','), dirigente: App.$('#pgDir').value });
+        if (r.enviados === r.total) { App.modal('modalEmail').close(); emPub.limpar(); App.$$('.em-tipo').forEach(c => { c.checked = false; }); notify('Programas enviados a ' + r.total + ' publicador(es).'); }
+        else if (r.enviados === 0) notifyError('Não foi possível enviar. Confirme o email da congregação em Configuração.');
+        else notifyError('Enviados ' + r.enviados + ' de ' + r.total + '. Os restantes falharam: consulte os registos do servidor.');
+    }, 'Não foi possível enviar os programas.'));
 
     App.on('sync', btn => App.run(btn, async () => {
-        const cookie = App.hgCookie('#pgCookie'); if (cookie === null) return;
+        const cookie = origem.obter(); if (cookie === null) return;
         const r = await fetch('/Reunioes/ProgramaSincronizar', { method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded' }, body: new URLSearchParams({ cookie: cookie, ano: ano, mes: mes }) });
         if (!r.ok) { notifyError(r.status === 401 ? 'A sessão do Hourglass expirou. Cole o pedido outra vez.' : (await r.text()) || 'Não foi possível obter os dados do Hourglass.'); return; }
-        notify('Programa guardado.'); setTimeout(() => location.reload(), 700);
+        origem.limpar(); notify('Programa guardado.'); setTimeout(() => location.reload(), 700);
     }, 'Não foi possível obter os dados do Hourglass.'));
 </script>
 }

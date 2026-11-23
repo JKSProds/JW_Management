@@ -35,7 +35,9 @@ namespace JW_Management.Controllers
         [Authorize(Roles = "Admin, Assistente, Coordenador, Secretario, Servico, Literatura, Territorios")]
         public IActionResult ObterPublicador(int id)
         {
-            return Json(_dbContext.ObterPublicador(id, false, false, false, false));
+            // só o que o ecrã de territórios usa (nada de hash da palavra-passe nem de dados de outros campos)
+            var p = _dbContext.ObterPublicador(id, false, false, false, false);
+            return Json(new { p.Id, p.Nome, p.Email, p.Telemovel });
         }
 
 
@@ -43,7 +45,8 @@ namespace JW_Management.Controllers
         [HttpGet]
         public IActionResult ObterPublicadores()
         {
-            return Json(_dbContext.ObterPublicadores(false));
+            // só o necessário para as listas de pesquisa; nunca o hash da palavra-passe nem a morada e o telemóvel de todos
+            return Json(_dbContext.ObterPublicadores(false).Select(p => new { p.Id, p.Nome, TemEmail = !string.IsNullOrWhiteSpace(p.Email) }));
         }
 
         [Authorize(Roles = "Admin, Assistente, Coordenador, Secretario, Servico")]
@@ -111,6 +114,17 @@ namespace JW_Management.Controllers
         [Authorize(Roles = "Admin")]
         [HttpPost, ValidateAntiForgeryToken]
         public IActionResult GrupoApagar(int id) => id > 0 && _dbContext.ApagarGrupo(id) ? RedirectToAction("Grupos") : StatusCode(500);
+
+        // ---------- O meu perfil: aberto a qualquer utilizador autenticado, para ver os seus dados e mudar a fotografia ----------
+        [Authorize]
+        [HttpGet]
+        public IActionResult Perfil()
+        {
+            var id = User.ObterId();
+            if (id <= 0) return NotFound();
+            var p = _dbContext.ObterPublicador(id, false, false, true, false);
+            return p == null || p.Id <= 0 ? NotFound() : View(p);
+        }
 
         // ---------- Fotografia do utilizador (só a própria) ----------
         [Authorize]

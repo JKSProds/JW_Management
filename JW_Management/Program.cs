@@ -7,7 +7,6 @@ using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.OpenIdConnect;
 using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.Extensions.Configuration;
-using LettuceEncrypt;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Http.Features;
 using AppContext = System.AppContext;
@@ -47,6 +46,7 @@ var configStore = new ConfigStore(builder.Configuration.GetConnectionString("Def
 configStore.EnsureTable();
 builder.Configuration.AddInMemoryCollection(configStore.Load());
 builder.Services.AddSingleton(configStore);
+tenantContext.Config = configStore;
 
 builder.Services.Configure<ForwardedHeadersOptions>(options =>
 {
@@ -111,7 +111,6 @@ builder.Services.Configure<FormOptions>(options =>
 
 #if !DEBUG
 builder.Services.AddDataProtection().SetApplicationName("JW_Management").PersistKeysToFileSystem(new DirectoryInfo("/app/img/https/"));
-//builder.Services.AddLettuceEncrypt().PersistDataToDirectory(new DirectoryInfo("/https/"), "Mon2020@");
 #endif
 
 var app = builder.Build();

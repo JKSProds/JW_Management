@@ -6,7 +6,7 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 namespace JW_Management.Controllers
 {
     [Authorize(Roles = "Admin, Assistente, Coordenador, Secretario, Servico")]
-    public class ReunioesController(DbContext _dbContext, HourglassImportador _hourglass, ProgramaServico _programa, HourglassContext _hg) : Controller
+    public class ReunioesController(DbContext _dbContext, HourglassImportador _hourglass, ProgramaServico _programa, HourglassContext _hg, MailContext _mailContext) : Controller
     {
         public IActionResult Index()
         {
@@ -56,6 +56,7 @@ namespace JW_Management.Controllers
             int a = ano ?? hoje.Year, m = mes ?? hoje.Month;
             if (m is < 1 or > 12 || a is < 2000 or > 2100) { a = hoje.Year; m = hoje.Month; }
 
+
             return View(new ProgramaPagina
             {
                 Ano = a, Mes = m,
@@ -79,19 +80,55 @@ namespace JW_Management.Controllers
         }
 
         // PDF a partir dos dados já guardados: não precisa da cookie. tipo = programa | campo | testemunho.
-        [HttpGet]
-        public IActionResult ProgramaPdf(string tipo, int ano, int mes, string? dirigente)
+        private byte[]? GerarPdf(string tipo, int ano, int mes, string? dirigente)
         {
             var cong = User.ObterCong();
-            byte[]? pdf = tipo switch
+            return tipo switch
             {
                 "programa" => _programa.ObterPrograma(ano, mes, cong, (dirigente ?? "").Trim()) is { } p ? PdfProgramas.Gerar(p) : null,
                 "campo" => _programa.ObterCampo(ano, mes) is { } c ? PdfProgramas.GerarCampo(c, cong, ano, mes) : null,
                 "testemunho" => _programa.ObterTestemunho(ano, mes) is { } t ? PdfProgramas.GerarTestemunho(t, cong, ano, mes) : null,
                 _ => null
             };
+        }
+
+        [HttpGet]
+        public IActionResult ProgramaPdf(string tipo, int ano, int mes, string? dirigente)
+        {
+            var pdf = GerarPdf(tipo, ano, mes, dirigente);
             if (pdf == null) return NotFound("Ainda não há dados guardados para este mês: sincronize-os do Hourglass.");
             return File(pdf, "application/pdf", $"{tipo}_{ano}_{mes:00}.pdf");
+        }
+
+        // Envia por email os PDF escolhidos (programa, campo, testemunho) aos publicadores escolhidos: um email por publicador, com os PDF anexados.
+        private static readonly Dictionary<string, (string Rotulo, string Ficheiro)> TiposPdf = new()
+        {
+            ["programa"] = ("Reuniões", "Reunioes"), ["campo"] = ("Serviço de campo", "Servico_de_campo"), ["testemunho"] = ("Testemunho público", "Testemunho_publico")
+        };
+
+        [HttpPost]
+        public IActionResult ProgramaEnviar(int ano, int mes, string? tipos, string? ids, string? dirigente)
+        {
+            if (mes is < 1 or > 12 || ano is < 2000 or > 2100) return BadRequest("Mês inválido.");
+            var escolhidos = (tipos ?? "").Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries).Distinct().ToList();
+            if (escolhidos.Count == 0 || escolhidos.Any(t => !TiposPdf.ContainsKey(t))) return BadRequest("Escolha pelo menos um programa.");
+            var idsSel = (ids ?? "").Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries).Select(i => int.TryParse(i, out var n) ? n : 0).Where(n => n > 0).ToHashSet();
+            if (idsSel.Count == 0) return BadRequest("Escolha pelo menos um publicador.");
+            if (idsSel.Count > 300) return BadRequest("Demasiados destinatários num só envio (máximo 300).");
+
+            var pdfs = new List<(string, byte[])>();
+            foreach (var t in escolhidos)
+            {
+                var pdf = GerarPdf(t, ano, mes, dirigente);
+                if (pdf == null) return BadRequest($"Ainda não há dados guardados de «{TiposPdf[t].Rotulo}» neste mês: obtenha-os do Hourglass.");
+                pdfs.Add(($"{TiposPdf[t].Ficheiro}_{ano}_{mes:00}.pdf", pdf));
+            }
+
+            var pubs = _dbContext.ObterPublicadores(false).Where(p => idsSel.Contains(p.Id) && !string.IsNullOrWhiteSpace(p.Email)).ToList();
+            if (pubs.Count == 0) return BadRequest("Nenhum dos publicadores escolhidos tem email.");
+
+            var enviados = _mailContext.MailProgramas(pubs, pdfs, $"{ProgramaServico.NomeMes(mes)} {ano}");
+            return Json(new { enviados, total = pubs.Count });
         }
 
         // Só leitura: as designações vêm todas do Hourglass.

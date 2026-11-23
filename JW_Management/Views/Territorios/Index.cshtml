@@ -1,7 +1,6 @@
 ﻿@model IEnumerable<JW_Management.Models.Territorio>
 @{
     ViewData["Title"] = "Territórios";
-    var publicadores = ((IEnumerable<SelectListItem>)ViewBag.Publicadores).ToList();
 
     bool Livre(JW_Management.Models.Territorio t) => t.UltimoMovimento?.Publicador == null || t.UltimoMovimento.Publicador.Id == 0;
     bool Atencao(JW_Management.Models.Territorio t) => t.UltimoMovimento != null && t.CorEstado is "danger" or "warning";
@@ -151,13 +150,9 @@
         <section class="modal-card-body">
             <p class="modal-body-text mb-4" id="atrNome"></p>
             <div class="field">
-                <label class="label" for="txtIdPublicador">Publicador</label>
-                <div class="select is-fullwidth">
-                    <select id="txtIdPublicador">
-                        <option value="" disabled selected>Escolha o publicador…</option>
-                        @foreach (var p in publicadores) { <option value="@p.Value">@p.Text</option> }
-                    </select>
-                </div>
+                <label class="label" for="txtPublicadorBusca">Publicador</label>
+                <div><input type="text" class="input" id="txtPublicadorBusca" placeholder="Escreva o nome do publicador"></div>
+                <input type="hidden" id="txtIdPublicador" />
             </div>
             <div class="field">
                 <label class="label" for="txtData">Data</label>
@@ -243,10 +238,13 @@
         } catch (e) { notifyError('Não foi possível obter os contactos do publicador.'); }
     }
 
+    // A mesma pesquisa de publicadores em todos os ecrãs (lista de sugestões com fotografia)
+    const pubTer = App.pesquisaPublicador('#txtPublicadorBusca', '#txtIdPublicador', false);
+
     App.on('atribuir', btn => {
         atual = btn.closest('.item');
         App.$('#atrNome').textContent = atual.dataset.label; App.$('#txtData').value = hoje();
-        App.$('#txtIdPublicador').value = ''; preencher('', '#txtEmailPublicador', '#txtTelemovelPublicador');
+        pubTer.limpar(); preencher('', '#txtEmailPublicador', '#txtTelemovelPublicador');
         M('modalAtribuir').open();
     });
     App.$('#txtIdPublicador').addEventListener('change', e => preencher(e.target.value, '#txtEmailPublicador', '#txtTelemovelPublicador'));
@@ -267,7 +265,7 @@
         const tel = App.$(atribuir ? '#txtTelemovelPublicador' : '#txtTelemovelDevolver').value.trim();
         const data = App.$(atribuir ? '#txtData' : '#txtDataDevolver').value;
 
-        if (atribuir && idpub === '') return App.campo('#txtIdPublicador', 'Escolha o publicador.');
+        if (atribuir && idpub === '') return App.campo('#txtPublicadorBusca', 'Escolha um publicador da lista de sugestões.');
         if (!data) return App.campo(atribuir ? '#txtData' : '#txtDataDevolver', 'Indique a data.');
         if (envio === 'email' && !email) return App.campo(atribuir ? '#txtEmailPublicador' : '#txtEmailDevolver', 'Indique o email para o enviar.');
         if (envio === 'sms' && !tel) return App.campo(atribuir ? '#txtTelemovelPublicador' : '#txtTelemovelDevolver', 'Indique o telemóvel para o SMS.');

@@ -15,6 +15,9 @@ public class TenantContext
 
     public string _masterConnectionString { get; set; }
 
+    // Definida no arranque (depois de o ConfigStore existir): cifra/decifra a palavra-passe do email e dá o nome e o Bcc globais.
+    public ConfigStore? Config { get; set; }
+
     public TenantContext(IHttpContextAccessor httpContextAccessor, string masterConnectionString)
     {
         _httpContextAccessor = httpContextAccessor;
@@ -110,8 +113,19 @@ public class TenantContext
     private (string, object?)[] Campos(TenantForm f) => new (string, object?)[]
     {
         ("@nome", f.Nome.Trim()), ("@cong", f.NomeCongregacao.Trim()), ("@tel", f.Telefone?.Trim()), ("@mor", f.Morada?.Trim()), ("@api", f.JWApiId?.Trim()),
-        ("@mail", f.Email?.Trim()), ("@mport", f.EmailSMTPPort?.Trim()), ("@mhost", f.EmailHost?.Trim()), ("@mpass", f.EmailPassword)
+        ("@mail", f.Email?.Trim()), ("@mport", f.EmailSMTPPort?.Trim()), ("@mhost", f.EmailHost?.Trim()), ("@mpass", CifrarSenha(f.EmailPassword))
     };
+
+    private string? CifrarSenha(string? s) => string.IsNullOrEmpty(s) || Config == null ? s : Config.Cifrar(s);
+
+    // Só o email da congregação (ecrã Configuração). Palavra-passe vazia mantém a atual.
+    public void AtualizarEmail(int id, string? email, string? host, string? porta, string? novaPalavraPasse)
+    {
+        var ps = new (string, object?)[] { ("@mail", email?.Trim()), ("@mhost", host?.Trim()), ("@mport", porta?.Trim()), ("@id", id), ("@mpass", CifrarSenha(novaPalavraPasse)) };
+        Executar("UPDATE sys_tenants SET MailSender=@mail, MailSenderHost=@mhost, MailSenderPort=@mport" +
+                 (string.IsNullOrEmpty(novaPalavraPasse) ? "" : ", MailSenderPassword=@mpass") + " WHERE Id=@id", ps);
+        Recarregar();
+    }
 
     // A ligação à BD do novo tenant copia a do tenant principal (mesmo servidor); nunca é pedida nem mostrada no formulário.
     public int Criar(TenantForm f, int idPrincipal)

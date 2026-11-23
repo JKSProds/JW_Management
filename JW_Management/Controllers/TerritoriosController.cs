@@ -15,7 +15,6 @@ namespace JW_Management.Controllers
         {
             filtro = string.IsNullOrEmpty(filtro) ? "" : filtro;
             ViewData["filtro"] = filtro;
-            ViewBag.Publicadores = _dbContext.ObterPublicadores(false).OrderBy(p => p.Nome).Select(l => new SelectListItem() { Value = l.Id.ToString(), Text = l.Nome });
 
             return View(_dbContext.ObterTerritorios(filtro, true, false, false, false).OrderBy(p => p.Id));
         }

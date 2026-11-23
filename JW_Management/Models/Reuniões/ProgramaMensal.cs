@@ -19,6 +19,7 @@ public class ProgramaSemana
     public DateTime Inicio { get; set; }
     public string Titulo { get; set; } = "";       // «Semana de 2 a 8 de Novembro»
     public List<string> Evento { get; set; } = new(); // palavras do evento (assembleia…), vazio = sem evento
+    public bool Visita { get; set; }               // visita do superintendente: a coluna da semana leva fundo de destaque
     public Dictionary<string, string> Valores { get; set; } = new();
 }
 

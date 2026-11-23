@@ -5,7 +5,8 @@
     var especiais = Model.Where(l => l.Tipo!.Id != 7).ToList();
     var estados = ((IEnumerable<SelectListItem>)ViewBag.Estados).ToList();
     var iconesEstado = new[] { "clock", "envelope", "truck-fast", "check-double" };
-    var publicadores = ((IEnumerable<SelectListItem>)ViewBag.Publicadores).ToList();
+    var periodicosJs = ((IEnumerable<SelectListItem>)ViewBag.Periodicos).Select(p => new { valor = p.Value, texto = p.Text }).ToList();
+    var tiposEspJs = ((IEnumerable<SelectListItem>)ViewBag.TiposEsp).Select(p => new { valor = p.Value, texto = p.Text }).ToList();
     var pendentes = especiais.Count(l => l.EstadoPedido!.Descricao == "Pendente");
 }
 
@@ -147,6 +148,7 @@
             <button type="button" class="chip" data-bulk-estado="@estados[i].Value"><i class="fa-solid fa-@(iconesEstado[Math.Min(i, iconesEstado.Length - 1)]) mr-1"></i>@estados[i].Text</button>
         }
     </div>
+    <button type="button" class="button is-info is-light" data-action="enviarSelPub" title="Enviar por email os pedidos selecionados a um publicador"><span class="icon"><i class="fa-solid fa-paper-plane"></i></span><span>Enviar a publicador</span></button>
     <button type="button" class="button is-danger is-light" data-action="apagarSel"><span class="icon"><i class="fa-solid fa-trash-can"></i></span><span>Apagar</span></button>
     <button type="button" class="button is-ghost" data-action="limparSel">Limpar seleção</button>
 </div>
@@ -160,14 +162,9 @@
         </header>
         <section class="modal-card-body">
             <div class="field">
-                <label class="label" for="txtIdPublicador">Publicador</label>
-                <div class="select is-fullwidth">
-                    <select id="txtIdPublicador">
-                        <option value="" disabled selected>Escolha o publicador…</option>
-                        <option value="0">Congregação (sem publicador)</option>
-                        @foreach (var p in publicadores) { <option value="@p.Value">@p.Text</option> }
-                    </select>
-                </div>
+                <label class="label" for="txtPublicadorBusca">Publicador</label>
+                <div><input type="text" class="input" id="txtPublicadorBusca" placeholder="Escreva o nome do publicador"></div>
+                <input type="hidden" id="txtIdPublicador" />
             </div>
             <div class="field">
                 <label class="label" for="txtPub">Publicação</label>
@@ -195,13 +192,9 @@
         </header>
         <section class="modal-card-body">
             <div class="field">
-                <label class="label" for="txtIdPublicador2">Publicador</label>
-                <div class="select is-fullwidth">
-                    <select id="txtIdPublicador2">
-                        <option value="" disabled selected>Escolha o publicador…</option>
-                        @foreach (var p in publicadores) { <option value="@p.Value">@p.Text</option> }
-                    </select>
-                </div>
+                <label class="label" for="txtPublicadorBusca2">Publicador</label>
+                <div><input type="text" class="input" id="txtPublicadorBusca2" placeholder="Escreva o nome do publicador"></div>
+                <input type="hidden" id="txtIdPublicador2" />
             </div>
             <div class="field">
                 <label class="label" for="periodico">Publicação</label>
@@ -263,8 +256,17 @@
         <section class="modal-card-body">
             <p class="modal-body-text mb-4">Os pedidos <strong>pendentes</strong> serão enviados por email e passam ao estado «Enviado Email».</p>
             <div class="field">
-                <label class="label" for="txtEmailPedidos">Email de destino</label>
-                <input type="email" class="input" id="txtEmailPedidos" data-email autocomplete="email">
+                <label class="label">Tipos de publicação</label>
+                @foreach (var x in tiposEspJs)
+                {
+                    <label class="checkbox" style="display:block"><input type="checkbox" class="mail-esp-tipo" value="@x.valor"> @x.texto</label>
+                }
+                <p class="field-hint">Marque pelo menos um tipo para enviar.</p>
+            </div>
+            <div class="field">
+                <label class="label" for="mailEspDestBusca">Enviar a (publicadores com email) <span class="tag is-light ml-1" id="mailEspDestN">nenhum escolhido</span></label>
+                <div><input type="text" class="input" id="mailEspDestBusca" placeholder="Escreva o nome do publicador"></div>
+                <div class="tags" id="mailEspDestFichas" style="margin-top:.6rem"></div>
             </div>
         </section>
         <footer class="modal-card-foot">
@@ -283,17 +285,17 @@
         </header>
         <section class="modal-card-body">
             <div class="field">
-                <label class="label" for="mailperiodico">Publicação</label>
-                <div class="select is-fullwidth">
-                    <select id="mailperiodico">
-                        <option value="0">Todas</option>
-                        @foreach (var p in (IEnumerable<SelectListItem>)ViewBag.Periodicos) { <option value="@p.Value">@p.Text</option> }
-                    </select>
-                </div>
+                <label class="label">Publicações</label>
+                @foreach (var x in periodicosJs)
+                {
+                    <label class="checkbox" style="display:block"><input type="checkbox" class="mail-per-pub" value="@x.valor"> @x.texto</label>
+                }
+                <p class="field-hint">Marque pelo menos uma publicação para enviar.</p>
             </div>
             <div class="field">
-                <label class="label" for="txtEmailPeriodicos">Email de destino</label>
-                <input type="email" class="input" id="txtEmailPeriodicos" data-email autocomplete="email">
+                <label class="label" for="mailPerDestBusca">Enviar a (publicadores com email) <span class="tag is-light ml-1" id="mailPerDestN">nenhum escolhido</span></label>
+                <div><input type="text" class="input" id="mailPerDestBusca" placeholder="Escreva o nome do publicador"></div>
+                <div class="tags" id="mailPerDestFichas" style="margin-top:.6rem"></div>
             </div>
         </section>
         <footer class="modal-card-foot">
@@ -303,10 +305,48 @@
     </div>
 </div>
 
+<div id="modalMailPub" class="modal" role="dialog" aria-modal="true" aria-labelledby="tMPub">
+    <div class="modal-background"></div>
+    <div class="modal-card">
+        <header class="modal-card-head">
+            <p class="modal-card-title" id="tMPub"><span class="icon"><i class="fa-solid fa-paper-plane"></i></span><span>Enviar pedidos a publicadores</span></p>
+            <button type="button" class="delete" aria-label="Fechar" data-close></button>
+        </header>
+        <section class="modal-card-body">
+            <p class="modal-body-text mb-4" id="mailPubResumo"></p>
+            <div class="field">
+                <label class="label" for="mailPubDestBusca">Enviar a (publicadores com email) <span class="tag is-light ml-1" id="mailPubDestN">nenhum escolhido</span></label>
+                <div><input type="text" class="input" id="mailPubDestBusca" placeholder="Escreva o nome do publicador"></div>
+                <div class="tags" id="mailPubDestFichas" style="margin-top:.6rem"></div>
+            </div>
+        </section>
+        <footer class="modal-card-foot">
+            <button type="button" class="button" data-close>Cancelar</button>
+            <button type="button" class="button is-info" data-action="enviarPub" data-submit><span class="icon"><i class="fa-solid fa-paper-plane"></i></span><span>Enviar</span></button>
+        </footer>
+    </div>
+</div>
+
 @section Scripts {
 <script>
     const M = id => App.modal(id);
     const pesq = App.pesquisaPublicacao('#txtPub', '#txtPubStamp', false);
+    // A mesma pesquisa de publicadores em todos os ecrãs (lista de sugestões com fotografia)
+    const pubEsp = App.pesquisaPublicador('#txtPublicadorBusca', '#txtIdPublicador', true);
+    const pubPer = App.pesquisaPublicador('#txtPublicadorBusca2', '#txtIdPublicador2', true);
+    const contar = (id, vazio, un) => n => { App.$(id).textContent = n ? n + ' ' + un : vazio; };
+    const destEsp = App.pesquisaPublicadores({ input: '#mailEspDestBusca', fichas: '#mailEspDestFichas', soComEmail: true, aoMudar: contar('#mailEspDestN', 'nenhum escolhido', 'escolhido(s)') });
+    const destPer = App.pesquisaPublicadores({ input: '#mailPerDestBusca', fichas: '#mailPerDestFichas', soComEmail: true, aoMudar: contar('#mailPerDestN', 'nenhum escolhido', 'escolhido(s)') });
+    const destSel = App.pesquisaPublicadores({ input: '#mailPubDestBusca', fichas: '#mailPubDestFichas', soComEmail: true, aoMudar: contar('#mailPubDestN', 'nenhum escolhido', 'escolhido(s)') });
+    const marcados = sel => App.$$(sel).filter(c => c.checked).map(c => c.value);
+    const desmarcar = sel => App.$$(sel).forEach(c => { c.checked = false; });
+    // Resposta dos envios: { enviados, total }. true = chegou a todos.
+    const envioOk = r => {
+        if (r.enviados === r.total) return true;
+        if (r.enviados === 0) notifyError('Não foi possível enviar. Confirme o email da congregação em Configuração.');
+        else notifyError('Enviados ' + r.enviados + ' de ' + r.total + '. Os restantes falharam: consulte os registos do servidor.');
+        return false;
+    };
     const estados = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(estados.Select(e => e.Value)));
     const P = {
         per: { sec: '#panPer', lista: '#listaPer', q: '#fPer', vazio: '#vazioPer', todos: '#todosPer', modo: '#modoPer' },
@@ -319,10 +359,6 @@
     const modo = { per: lembrado('per', 'publicacao'), esp: lembrado('esp', 'publicador') };
 
     function lembrado(k, padrao) { try { return localStorage.getItem('pedidosModo_' + k) || padrao; } catch (e) { return padrao; } }
-
-    // Lembra o último email usado neste dispositivo (conveniência; falha em silêncio).
-    const guardarEmail = v => { try { localStorage.setItem('emailPedidos', v); } catch (e) { } };
-    try { const e = localStorage.getItem('emailPedidos'); if (e) App.$$('[data-email]').forEach(i => i.value = e); } catch (e) { }
 
     // ---------- Agrupar, filtrar e contar ----------
     function agrupar(k) {
@@ -463,20 +499,20 @@
     // ---------- Criar e editar ----------
     App.on('criarEsp', btn => App.run(btn, async () => {
         const pub = App.$('#txtIdPublicador').value, stamp = App.$('#txtPubStamp').value, qtd = App.lerInt('#txtQtd');
-        if (pub === '') return App.campo('#txtIdPublicador', 'Escolha o publicador.');
+        if (pub === '') return App.campo('#txtPublicadorBusca', 'Escolha um publicador da lista de sugestões.');
         if (!stamp) return App.campo('#txtPub', 'Escolha uma publicação da lista de sugestões.');
         if (qtd < 1) return App.campo('#txtQtd', 'Indique uma quantidade positiva.');
         await App.api('POST', '/Literatura/Pedido/', { stamp: stamp, idpub: pub, qtd: qtd });
-        M('modalPedidoEspecial').close(); pesq.limpar(); App.$('#txtQtd').value = 1;
+        M('modalPedidoEspecial').close(); pesq.limpar(); pubEsp.limpar(); App.$('#txtQtd').value = 1;
         await recarregar(); notify('Pedido registado.');
     }, 'Não foi possível registar o pedido.'));
 
     App.on('criarPer', btn => App.run(btn, async () => {
         const pub = App.$('#txtIdPublicador2').value, qtd = App.lerInt('#txtQtdPeriodico');
-        if (pub === '') return App.campo('#txtIdPublicador2', 'Escolha o publicador.');
+        if (pub === '') return App.campo('#txtPublicadorBusca2', 'Escolha um publicador da lista de sugestões.');
         if (qtd < 1) return App.campo('#txtQtdPeriodico', 'Indique uma quantidade positiva.');
         await App.api('POST', '/Literatura/Periodico/', { referencia: App.$('#periodico').value, idpub: pub, qtd: qtd });
-        M('modalPedidoPeriodico').close(); App.$('#txtQtdPeriodico').value = 1;
+        M('modalPedidoPeriodico').close(); pubPer.limpar(); App.$('#txtQtdPeriodico').value = 1;
         await recarregar(); notify('Pedido registado.');
     }, 'Não foi possível registar o pedido.'));
 
@@ -503,16 +539,32 @@
 
     // ---------- Emails ----------
     App.on('enviarEsp', btn => App.run(btn, async () => {
-        const email = App.$('#txtEmailPedidos').value.trim(); if (!email) return App.campo('#txtEmailPedidos', 'Indique o email de destino.');
-        await App.api('POST', '/Literatura/Pedidos/', { email: email });
-        guardarEmail(email); M('modalMailPedidos').close(); await recarregar(); notify('Pedidos especiais enviados.');
+        const tipos = marcados('.mail-esp-tipo'); if (!tipos.length) { notifyError('Marque pelo menos um tipo de publicação.'); return; }
+        const ids = destEsp.ids(); if (!ids.length) return App.campo('#mailEspDestBusca', 'Escolha pelo menos um publicador.');
+        const r = await App.api('POST', '/Literatura/Pedidos/', { idpubs: ids.join(','), tipos: tipos.join(',') });
+        if (r.enviados > 0) await recarregar(); // os pedidos enviados mudam de estado
+        if (envioOk(r)) { M('modalMailPedidos').close(); destEsp.limpar(); desmarcar('.mail-esp-tipo'); notify('Pedidos especiais enviados a ' + r.total + ' publicador(es).'); }
     }, 'Não foi possível enviar os pedidos especiais.'));
 
     App.on('enviarPer', btn => App.run(btn, async () => {
-        const email = App.$('#txtEmailPeriodicos').value.trim(); if (!email) return App.campo('#txtEmailPeriodicos', 'Indique o email de destino.');
-        await App.api('POST', '/Literatura/Periodicos/' + App.$('#mailperiodico').value, { email: email });
-        guardarEmail(email); M('modalMailPeriodicos').close(); notify('Pedidos de periódicos enviados.');
+        const refs = marcados('.mail-per-pub'); if (!refs.length) { notifyError('Marque pelo menos uma publicação.'); return; }
+        const ids = destPer.ids(); if (!ids.length) return App.campo('#mailPerDestBusca', 'Escolha pelo menos um publicador.');
+        const r = await App.api('POST', '/Literatura/Periodicos/', { idpubs: ids.join(','), refs: refs.join(',') });
+        if (envioOk(r)) { M('modalMailPeriodicos').close(); destPer.limpar(); desmarcar('.mail-per-pub'); notify('Pedidos de periódicos enviados a ' + r.total + ' publicador(es).'); }
     }, 'Não foi possível enviar os pedidos de periódicos.'));
+
+    // ---------- Pedidos selecionados enviados a um publicador ----------
+    App.on('enviarSelPub', () => {
+        const k = ativo(), sel = selecionados(k); if (!sel.length) return;
+        App.$('#mailPubResumo').textContent = sel.length + ' pedido(s) ' + (k === 'per' ? 'de periódicos' : 'especiais') + ' selecionado(s) serão enviados por email a cada publicador escolhido.';
+        destSel.limpar(); M('modalMailPub').open();
+    });
+    App.on('enviarPub', btn => App.run(btn, async () => {
+        const k = ativo(), sel = selecionados(k); if (!sel.length) return;
+        const ids = destSel.ids(); if (!ids.length) return App.campo('#mailPubDestBusca', 'Escolha pelo menos um publicador.');
+        const r = await App.api('POST', '/Literatura/PedidosPublicador/', { idpubs: ids.join(','), stamps: sel.map(i => i.dataset.stamp).join(','), tipo: k === 'per' ? 'periodico' : 'especial' });
+        if (envioOk(r)) { M('modalMailPub').close(); destSel.limpar(); notify('Pedidos enviados a ' + r.total + ' publicador(es).'); }
+    }, 'Não foi possível enviar. Confirme o email da congregação em Configuração e o email dos publicadores.'));
 
     tudo();
 </script>

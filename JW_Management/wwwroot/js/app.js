@@ -255,7 +255,7 @@
             t = setTimeout(async function () {
                 const meu = ++seq;
                 try {
-                    const d = await App.api('GET', o.url, o.params(termo));
+                    const d = await (o.buscar ? o.buscar(termo) : App.api('GET', o.url, o.params(termo)));
                     if (meu !== seq) return; // resposta antiga
                     itens = (o.filtrar ? o.filtrar(d, termo) : d).map(o.mapa); sel = -1; mostrar();
                 } catch (e) { notifyError('Ocorreu um erro na pesquisa.'); }
@@ -283,17 +283,63 @@
     };
 
     // Pesquisa de publicadores (com fotografia). Filtra no browser a lista que o servidor já devolve.
-    App.pesquisaPublicador = function (input, idEl, comCongregacao) {
-        const norm = function (s) { return (s || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, ''); };
+    // soComEmail = só publicadores com email. O campo escondido idEl dispara «change» quando a escolha muda.
+    const normPesq = function (s) { return (s || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, ''); };
+    App.pesquisaPublicador = function (input, idEl, comCongregacao, soComEmail) {
         return App.typeahead({
             input: input, url: '/Publicadores/ObterPublicadores', params: function () { return null; },
             filtrar: function (d, t) {
-                const n = norm(t), l = d.filter(function (p) { return p.id > 0 && norm(p.nome).includes(n); }).slice(0, 30);
-                if (comCongregacao && norm('Congregação (sem publicador)').includes(n)) l.unshift({ id: 0, nome: 'Congregação (sem publicador)' });
+                const n = normPesq(t), l = d.filter(function (p) { return p.id > 0 && (!soComEmail || p.temEmail) && normPesq(p.nome).includes(n); }).slice(0, 30);
+                if (comCongregacao && normPesq('Congregação (sem publicador)').includes(n)) l.unshift({ id: 0, nome: 'Congregação (sem publicador)' });
                 return l;
             },
             mapa: function (p) { return { texto: p.nome, valor: p.id, foto: p.id > 0 ? p.id : null }; },
-            aoEscolher: function (i) { $(idEl).value = i ? i.valor : ''; }
+            aoEscolher: function (i) { const el = $(idEl), v = i ? String(i.valor) : ''; if (el.value !== v) { el.value = v; el.dispatchEvent(new Event('change', { bubbles: true })); } }
+        });
+    };
+
+    // Pesquisa múltipla (publicadores, publicações, tipos…): a mesma lista de sugestões; o que se escolhe fica em fichas que se retiram.
+    // Nada vem escolhido por omissão. o = { input, fichas, carregar() -> Promise<[{valor, texto, foto?}]>, aoMudar(n) }.
+    // Devolve { ids(), limpar(), adicionarTodos() }. A lista carrega-se uma vez e fica em memória.
+    App.pesquisaMultipla = function (o) {
+        const inp = $(o.input), cont = $(o.fichas), escolhidos = new Map(); // valor -> texto
+        let lista = null;
+        const carregar = async function () { return lista || (lista = await o.carregar()); };
+        function desenhar() {
+            cont.innerHTML = '';
+            escolhidos.forEach(function (texto, valor) {
+                const f = document.createElement('span'); f.className = 'tag is-medium'; f.style.gap = '.4rem';
+                const foto = lista && lista.find(function (x) { return x.valor === valor; });
+                if (foto && foto.foto != null) f.appendChild(App.avatar(foto.foto, texto, 'is-sm'));
+                const t = document.createElement('span'); t.textContent = texto; f.appendChild(t);
+                const b = document.createElement('button'); b.type = 'button'; b.className = 'delete is-small'; b.setAttribute('aria-label', 'Retirar ' + texto);
+                b.addEventListener('click', function () { escolhidos.delete(valor); desenhar(); });
+                f.appendChild(b); cont.appendChild(f);
+            });
+            if (o.aoMudar) o.aoMudar(escolhidos.size);
+        }
+        App.typeahead({
+            input: inp, buscar: carregar,
+            filtrar: function (d, t) { const n = normPesq(t); return d.filter(function (x) { return !escolhidos.has(x.valor) && normPesq(x.texto).includes(n); }).slice(0, 30); },
+            mapa: function (x) { return x; },
+            aoEscolher: function (i) { if (!i) return; escolhidos.set(i.valor, i.texto); inp.value = ''; desenhar(); }
+        });
+        desenhar();
+        return {
+            ids: function () { return Array.from(escolhidos.keys()); },
+            limpar: function () { escolhidos.clear(); inp.value = ''; desenhar(); },
+            adicionarTodos: async function () { (await carregar()).forEach(function (x) { escolhidos.set(x.valor, x.texto); }); desenhar(); }
+        };
+    };
+
+    // Vários publicadores (com fotografia). o = { input, fichas, soComEmail, aoMudar }.
+    App.pesquisaPublicadores = function (o) {
+        return App.pesquisaMultipla({
+            input: o.input, fichas: o.fichas, aoMudar: o.aoMudar,
+            carregar: async function () {
+                const d = await App.api('GET', '/Publicadores/ObterPublicadores');
+                return d.filter(function (p) { return p.id > 0 && (!o.soComEmail || p.temEmail); }).map(function (p) { return { valor: p.id, texto: p.nome, foto: p.id }; });
+            }
         });
     };
 
@@ -351,7 +397,7 @@
             b.hidden = true;
             const n = document.createElement('div'); n.className = 'notice is-ok hg-sessao';
             n.innerHTML = '<span class="icon"><i class="fa-solid fa-circle-check"></i></span><div class="hg-txt">Sessão do Hourglass guardada até às <b></b></div><button type="button" class="button is-small" data-hg="outra">Usar outra</button>';
-            $('b', n).textContent = s.ate; b.parentNode.insertBefore(n, b);
+            $('b', n).textContent = s.ate; n.hidden = App.hgModo === 'pacote'; b.parentNode.insertBefore(n, b);
             n.addEventListener('click', function (e) {
                 if (!e.target.closest('[data-hg]')) return;
                 fetch('/Reunioes/HourglassSessao?terminar=true', { method: 'DELETE' }); App.hgAtiva = false; b.hidden = false; n.remove();
@@ -366,6 +412,33 @@
         const c = App.extrairCookie(bruto);
         if (!/hglogin=/.test(c) || !/X-Hourglass-XSRF-Token=/.test(c)) return App.campo(campo, 'Não encontrei a sessão do Hourglass (hglogin e token XSRF). Use «Copiar como cURL».'), null;
         return c;
+    };
+
+    // Duas vias para obter dados do Hourglass, com separadores no ecrã:
+    // «sessao» (token/cookie: fica guardada e cada pedido lê o mais recente) e «pacote» (exportação do atalho: nunca fica guardada, cola-se de cada vez).
+    // ids = { bloco, pacote, pacoteTxt, cookie, dica } (seletores). obter() devolve o que enviar ('' = sessão guardada; null = inválido) e limpar() esquece o pacote colado.
+    App.hgOrigem = function (ids) {
+        let modo = 'pacote'; // por omissão a exportação: não deixa nada guardado
+        const dicas = { sessao: 'Cada vez que prime o botão lê os dados mais recentes do Hourglass.', pacote: 'Usa sempre exatamente os dados colados, que não ficam guardados: tem de colar de cada vez.' };
+        function aplicar(m) {
+            modo = App.hgModo = m;
+            document.querySelectorAll('[data-action="hgModo"]').forEach(function (b) { const on = b.dataset.modo === m; b.classList.toggle('is-info', on); b.classList.toggle('is-selected', on); b.setAttribute('aria-pressed', on); });
+            $(ids.dica).textContent = dicas[m];
+            $(ids.pacote).hidden = m !== 'pacote';
+            $(ids.bloco).hidden = m !== 'sessao' || App.hgAtiva; // com sessão guardada, o aviso substitui os passos
+            const aviso = document.querySelector('.hg-sessao'); if (aviso) aviso.hidden = m !== 'sessao';
+        }
+        App.on('hgModo', function (btn) { aplicar(btn.dataset.modo); });
+        aplicar(modo);
+        return {
+            obter: function () {
+                if (modo !== 'pacote') return App.hgCookie(ids.cookie);
+                const t = $(ids.pacoteTxt).value.trim();
+                if (t[0] !== '{' || t.indexOf('"hgdata"') < 0) return App.campo(ids.pacoteTxt, 'Cole a exportação completa do atalho (começa por {"hgdata":).'), null;
+                return t;
+            },
+            limpar: function () { if (modo === 'pacote') $(ids.pacoteTxt).value = ''; }
+        };
     };
 
     // Seleccionar o publicador «Congregação» (id definido pelo ecrã).

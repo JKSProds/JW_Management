@@ -132,16 +132,28 @@ namespace JW_Management.Controllers
             return View(_dbContext.ObterPeriodicos().Where(l => l.Quantidade > 0).OrderBy(l => l.DescricaoGeral));
         }
 
+        // Destinatários dos envios por email desta página: publicadores (escolhidos na pesquisa) com email; os endereços vêm sempre do servidor.
+        // Cada destinatário recebe o seu próprio email, por isso não veem os endereços uns dos outros. Máximo de 50 por envio.
+        private List<Publicador> Destinatarios(string? idpubs) =>
+            (idpubs ?? "").Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
+                .Select(i => int.TryParse(i, out var n) ? n : 0).Where(n => n > 0).Distinct().Take(50)
+                .Select(n => _dbContext.ObterPublicador(n, false, false, false, false))
+                .Where(p => p != null && p.Id > 0 && !string.IsNullOrWhiteSpace(p.Email)).ToList();
+
         [HttpPost]
-        public IActionResult Periodicos(string Email, string id)
+        public IActionResult Periodicos(string? idpubs, string? refs)
         {
-            List<Literatura> LstLiteratura = _dbContext.ObterPedidosPeriodico().OrderBy(l => l.Publicador.Nome).ToList();
-            if (id != "0")
-            {
-                LstLiteratura = LstLiteratura.Where(l => l.Referencia == id).OrderBy(l => l.Publicador.Nome).ToList();
-            }
-            
-            return Resultado(_mailContext.MailPedidosPeriodicosGrupo(LstLiteratura, Email));
+            var dest = Destinatarios(idpubs);
+            if (dest.Count == 0) return BadRequest("Escolha pelo menos um publicador com email.");
+
+            // sem seleção não se envia nada: é preciso escolher pelo menos uma publicação
+            var refsSel = (refs ?? "").Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries).ToHashSet();
+            if (refsSel.Count == 0) return BadRequest("Escolha pelo menos uma publicação.");
+            var lista = _dbContext.ObterPedidosPeriodico().Where(l => l.Referencia != null && refsSel.Contains(l.Referencia)).OrderBy(l => l.Publicador.Nome).ToList();
+            if (lista.Count == 0) return BadRequest("Não há pedidos das publicações escolhidas para enviar.");
+
+            var enviados = dest.Count(p => _mailContext.MailPedidosPeriodicosGrupo(lista, p.Email!));
+            return Json(new { enviados, total = dest.Count });
         }
 
         [HttpGet]
@@ -179,7 +191,7 @@ namespace JW_Management.Controllers
         [HttpGet]
         public IActionResult Pedidos()
         {
-            ViewBag.Publicadores = ListaPublicadores();
+            ViewBag.TiposEsp = _dbContext.ObterTiposLiteratura().Where(t => t.Id != 7).Select(t => new SelectListItem() { Value = t.Id.ToString(), Text = t.Descricao });
             ViewBag.Estados = _dbContext.ObterEstadosPedido().Select(l => new SelectListItem() { Value = l.Descricao, Text = l.Descricao });
             ViewBag.Periodicos = ListaPeriodicos();
 
@@ -189,17 +201,39 @@ namespace JW_Management.Controllers
             return View(LstPedidos);
         }
 
+        // Envia por email, a cada publicador escolhido, os pedidos selecionados (periódicos ou especiais).
         [HttpPost]
-        public IActionResult Pedidos(string Email)
+        public IActionResult PedidosPublicador(string? idpubs, string? stamps, string? tipo)
         {
-            List<Literatura> LstLiteratura = _dbContext.ObterPedidosEspeciais().Where(l => l.EstadoPedido.Descricao == "Pendente").ToList();
+            if (tipo is not ("periodico" or "especial")) return BadRequest("Selecione pelo menos um pedido.");
+            var ids = (stamps ?? "").Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries).ToHashSet();
+            if (ids.Count == 0) return BadRequest("Selecione pelo menos um pedido.");
+            var dest = Destinatarios(idpubs);
+            if (dest.Count == 0) return BadRequest("Escolha pelo menos um publicador com email.");
 
-            foreach (var l in LstLiteratura)
-            {
-                _dbContext.AtualizarEstadoPedidoEspecial(l, new EstadoPedido("Enviado Email"));
-            }
+            var lista = (tipo == "periodico" ? _dbContext.ObterPedidosPeriodico() : _dbContext.ObterPedidosEspeciais()).Where(l => l.Stamp != null && ids.Contains(l.Stamp)).ToList();
+            if (lista.Count == 0) return BadRequest("Os pedidos selecionados já não existem.");
 
-            return Resultado(_mailContext.MailPedidosEspeciaisPendentes(LstLiteratura, Email));
+            var enviados = dest.Count(p => _mailContext.MailPedidosPublicador(p, lista, tipo == "especial"));
+            return Json(new { enviados, total = dest.Count });
+        }
+
+        [HttpPost]
+        public IActionResult Pedidos(string? idpubs, string? tipos)
+        {
+            var dest = Destinatarios(idpubs);
+            if (dest.Count == 0) return BadRequest("Escolha pelo menos um publicador com email.");
+
+            // sem seleção não se envia nada: é preciso escolher pelo menos um tipo de publicação
+            var tiposSel = (tipos ?? "").Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries).Select(t => int.TryParse(t, out var n) ? n : -1).ToHashSet();
+            if (tiposSel.Count == 0) return BadRequest("Escolha pelo menos um tipo de publicação.");
+            var lista = _dbContext.ObterPedidosEspeciais().Where(l => l.EstadoPedido.Descricao == "Pendente" && l.Tipo != null && tiposSel.Contains(l.Tipo.Id)).ToList();
+            if (lista.Count == 0) return BadRequest("Não há pedidos especiais pendentes destes tipos.");
+
+            // só passam a «Enviado Email» se o email tiver saído para alguém
+            var enviados = dest.Count(p => _mailContext.MailPedidosEspeciaisPendentes(lista, p.Email!));
+            if (enviados > 0) foreach (var l in lista) _dbContext.AtualizarEstadoPedidoEspecial(l, new EstadoPedido("Enviado Email"));
+            return Json(new { enviados, total = dest.Count });
         }
 
         [HttpPost]

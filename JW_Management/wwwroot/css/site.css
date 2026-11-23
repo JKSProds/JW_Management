@@ -166,7 +166,15 @@ a:hover { color: var(--brand-strong); }
 }
 }
 
-.app-footer { padding: 1.25rem; text-align: center; color: var(--ink-faint); font-size: .8rem; }
+.app-footer { width: 100%; border-top: 1px solid var(--line); background: var(--surface); color: var(--ink-faint); font-size: .8rem; }
+.app-footer-in { max-width: 1100px; margin: 0 auto; padding: 1rem 1.5rem; display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: .5rem 1.5rem; }
+.app-footer-marca { display: flex; align-items: center; gap: .55rem; color: var(--ink-soft); }
+.app-footer-marca img { border-radius: 5px; flex: none; }
+.app-footer-marca strong { color: var(--ink); font-weight: 650; }
+.app-footer-meta { display: flex; align-items: center; gap: .5rem; font-variant-numeric: tabular-nums; }
+.app-footer-versao { padding: .1rem .55rem; border: 1px solid var(--line); border-radius: 999px; background: var(--paper); color: var(--ink-soft); font-weight: 600; }
+@media (max-width: 560px) { .app-footer-in { justify-content: center; text-align: center; } }
+@media print { .app-footer { display: none; } }
 
 /* ---------- Cabeçalho de página e barras de ferramentas ---------- */
 .page-head { display: flex; flex-wrap: wrap; align-items: center; gap: 1rem; margin-bottom: 1.25rem; }

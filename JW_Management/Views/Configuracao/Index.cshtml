@@ -1,6 +1,7 @@
 @model JW_Management.Models.ConfiguracaoModel
 @{
     ViewData["Title"] = "Configuração";
+    var emailPronto = !string.IsNullOrWhiteSpace(Model.EmailRemetente) && !string.IsNullOrWhiteSpace(Model.EmailHost) && !string.IsNullOrWhiteSpace(Model.EmailPorta) && Model.EmailPasswordDefinida;
 }
 
 <div class="container" style="max-width:760px">
@@ -13,13 +14,14 @@
     @await Html.PartialAsync("_Stats", new[] {
         ("fa-server", "Authority", string.IsNullOrWhiteSpace(Model.Authority) ? "Por definir" : "Definido", "", string.IsNullOrWhiteSpace(Model.Authority) ? "is-warn" : "is-ok"),
         ("fa-key", "Client secret", Model.ClientSecretDefinido ? "Definido" : "Por definir", "", Model.ClientSecretDefinido ? "is-ok" : "is-warn"),
-        ("fa-shield-halved", "Só OAuth", Model.SomenteOidc ? "Ativo" : "Inativo", "", Model.SomenteOidc ? "is-warn" : "") })
+        ("fa-shield-halved", "Só OAuth", Model.SomenteOidc ? "Ativo" : "Inativo", "", Model.SomenteOidc ? "is-warn" : ""),
+        ("fa-envelope", "Email da congregação", emailPronto ? "Configurado" : "Por definir", "", emailPronto ? "is-ok" : "is-warn") })
 
     @if (TempData["Guardado"] != null)
     {
         <div class="notice is-ok" role="status">
             <span class="icon"><i class="fa-solid fa-circle-check"></i></span>
-            <span>Guardado. As alterações ao OIDC e ao proxy só têm efeito depois de reiniciar a aplicação.</span>
+            <span>Guardado. As alterações ao email têm efeito logo no próximo envio. As alterações ao OIDC e ao proxy só têm efeito depois de reiniciar a aplicação.</span>
         </div>
     }
     <div class="notice is-warn">
@@ -55,6 +57,48 @@
                     </label>
                     <input class="input" type="password" asp-for="ClientSecret" autocomplete="new-password"
                            placeholder="Deixe vazio para manter o atual" />
+                </div>
+            </div>
+        </div>
+
+        <div class="panel-card">
+            <h2>Email da congregação</h2>
+            <p class="field-hint" style="margin-bottom:.8rem">Servidor de envio (SMTP) usado por esta congregação nos pedidos de literatura, territórios, acessos e programas. A porta 465 liga em TLS; a 587 usa STARTTLS.</p>
+            <div class="form-grid">
+                <div class="field">
+                    <label class="label" asp-for="EmailRemetente">Email do remetente</label>
+                    <input class="input" type="email" asp-for="EmailRemetente" autocomplete="off" />
+                </div>
+                <div class="field">
+                    <label class="label" asp-for="EmailPassword">
+                        Palavra-passe
+                        <span class="tag @(Model.EmailPasswordDefinida ? "is-success" : "is-light") ml-1">@(Model.EmailPasswordDefinida ? "definida" : "não definida")</span>
+                    </label>
+                    <input class="input" type="password" asp-for="EmailPassword" autocomplete="new-password" placeholder="Deixe vazio para manter a atual" />
+                </div>
+                <div class="field">
+                    <label class="label" asp-for="EmailHost">Servidor SMTP</label>
+                    <input class="input" asp-for="EmailHost" placeholder="smtp.gmail.com" autocomplete="off" />
+                </div>
+                <div class="field">
+                    <label class="label" asp-for="EmailPorta">Porta</label>
+                    <input class="input" asp-for="EmailPorta" inputmode="numeric" placeholder="465" autocomplete="off" />
+                </div>
+            </div>
+            <p class="field-hint">A palavra-passe é guardada cifrada. Se for guardada num ambiente com outra chave de cifra, os outros ambientes deixam de a conseguir ler.</p>
+        </div>
+
+        <div class="panel-card">
+            <h2>Email: opções comuns a todas as congregações</h2>
+            <div class="form-grid">
+                <div class="field">
+                    <label class="label" asp-for="MailNome">Nome do remetente</label>
+                    <input class="input" asp-for="MailNome" placeholder="Por omissão, o nome da congregação" autocomplete="off" />
+                </div>
+                <div class="field">
+                    <label class="label" asp-for="MailBcc">Cópia (Bcc)</label>
+                    <input class="input" type="email" asp-for="MailBcc" placeholder="Vazio = sem cópia" autocomplete="off" />
+                    <p class="field-hint">Recebe cópia dos emails individuais. Não recebe os envios de programas.</p>
                 </div>
             </div>
         </div>
