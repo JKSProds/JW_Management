@@ -8,11 +8,11 @@ using AppCtx = JW_Management.Models.AppContext;
 
 namespace JW_Management.Controllers;
 
-// Gestão de congregações: só Admins do tenant principal (ver TenantContext.IdPrincipal).
-[Authorize(Roles = "Admin")]
+// Gestão de congregações: só o utilizador master.
+[Authorize(Policy = "Master")]
 public class TenantsController(TenantContext _tenants, IConfiguration _cfg) : Controller
 {
-    private bool Permitido => _tenants.IdPrincipal(_cfg) == User.ObterTenant();
+    private bool Permitido => User.EhMaster();
 
     [HttpGet]
     public IActionResult Index() => !Permitido ? Forbid() : View(_tenants._tenants.OrderBy(t => t.Id).ToList());

@@ -67,6 +67,9 @@ namespace JW_Management.Controllers
             if (m is < 1 or > 12 || a is < 2000 or > 2100) { a = hoje.Year; m = hoje.Month; }
 
 
+            var dirId = ObterDirigenteId();
+            ViewBag.DirigenteId = dirId;
+            ViewBag.DirigenteNome = dirId > 0 ? _dbContext.ObterPublicadores(false).FirstOrDefault(p => p.Id == dirId)?.Nome ?? "" : "";
             return View(new ProgramaPagina
             {
                 Ano = a, Mes = m,
@@ -90,9 +93,24 @@ namespace JW_Management.Controllers
         }
 
         // PDF a partir dos dados já guardados: não precisa da cookie. tipo = programa | campo | testemunho.
-        private byte[]? GerarPdf(string tipo, int ano, int mes, string? dirigente)
+        private const string ChaveDirigente = "dirigenteSentinela";
+
+        // Dirigente de A Sentinela por omissão: um publicador desta congregação (guarda-se o id, na base de dados da congregação).
+        private int ObterDirigenteId() =>
+            _dbContext.ObterProgramaDocs("config", new[] { ChaveDirigente }).TryGetValue(ChaveDirigente, out var d) && int.TryParse(d.Dados, out var id) ? id : 0;
+
+        [HttpPost]
+        public IActionResult ProgramaDirigente(int id)
+        {
+            if (Request.Headers["X-Requested-With"] != "XMLHttpRequest") return BadRequest();
+            if (id > 0 && _dbContext.ObterPublicadores(false).All(p => p.Id != id)) return BadRequest("Escolha um publicador desta congregação.");
+            return _dbContext.GuardarProgramaDoc("config", ChaveDirigente, id.ToString()) ? Ok() : StatusCode(500);
+        }
+
+        private byte[]? GerarPdf(string tipo, int ano, int mes)
         {
             var cong = User.ObterCong();
+            var dirigente = ObterDirigenteId() is > 0 and var did ? _dbContext.ObterPublicadores(false).FirstOrDefault(p => p.Id == did)?.Nome : null;
             return tipo switch
             {
                 "programa" => _programa.ObterPrograma(ano, mes, cong, (dirigente ?? "").Trim()) is { } p ? PdfProgramas.Gerar(p) : null,
@@ -103,9 +121,9 @@ namespace JW_Management.Controllers
         }
 
         [HttpGet]
-        public IActionResult ProgramaPdf(string tipo, int ano, int mes, string? dirigente)
+        public IActionResult ProgramaPdf(string tipo, int ano, int mes)
         {
-            var pdf = GerarPdf(tipo, ano, mes, dirigente);
+            var pdf = GerarPdf(tipo, ano, mes);
             if (pdf == null) return NotFound("Ainda não há dados guardados para este mês: sincronize-os do Hourglass.");
             return File(pdf, "application/pdf", $"{tipo}_{ano}_{mes:00}.pdf");
         }
@@ -117,7 +135,7 @@ namespace JW_Management.Controllers
         };
 
         [HttpPost]
-        public IActionResult ProgramaEnviar(int ano, int mes, string? tipos, string? ids, string? dirigente)
+        public IActionResult ProgramaEnviar(int ano, int mes, string? tipos, string? ids)
         {
             if (mes is < 1 or > 12 || ano is < 2000 or > 2100) return BadRequest("Mês inválido.");
             var escolhidos = (tipos ?? "").Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries).Distinct().ToList();
@@ -129,7 +147,7 @@ namespace JW_Management.Controllers
             var pdfs = new List<(string, byte[])>();
             foreach (var t in escolhidos)
             {
-                var pdf = GerarPdf(t, ano, mes, dirigente);
+                var pdf = GerarPdf(t, ano, mes);
                 if (pdf == null) return BadRequest($"Ainda não há dados guardados de «{TiposPdf[t].Rotulo}» neste mês: obtenha-os do Hourglass.");
                 pdfs.Add(($"{TiposPdf[t].Ficheiro}_{ano}_{mes:00}.pdf", pdf));
             }

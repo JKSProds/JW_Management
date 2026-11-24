@@ -25,14 +25,20 @@ public static class OidcLogin
     }
 
     // Mesmos claims do login antigo (HomeController.Login), para o resto da app não notar a diferença.
-    public static ClaimsPrincipal ToPrincipal(Tenant t, Publicador u) => new(new ClaimsIdentity(
-    [
-        new Claim(ClaimTypes.Name, u.Id.ToString()),
-        new Claim(ClaimTypes.Role, u.Role),
-        new Claim(ClaimTypes.GivenName, u.Nome!),
-        new Claim(ClaimTypes.Sid, t.Id.ToString()),
-        new Claim(ClaimTypes.PrimaryGroupSid, t.NomeCongregacao.ToString())
-    ], CookieAuthenticationDefaults.AuthenticationScheme));
+    public static ClaimsPrincipal ToPrincipal(Tenant t, Publicador u, bool master = false)
+    {
+        var claims = new List<Claim>
+        {
+            new(ClaimTypes.Name, u.Id.ToString()),
+            new(ClaimTypes.Role, u.Role),
+            new(ClaimTypes.GivenName, u.Nome!),
+            new(ClaimTypes.Sid, t.Id.ToString()),
+            new(ClaimTypes.PrimaryGroupSid, t.NomeCongregacao.ToString())
+        };
+        // O master entra em qualquer congregação sem ter registo nela: guarda-se onde está o seu registo (congregação e id).
+        if (master) claims.AddRange([new Claim("master", "1"), new Claim("master_home", t.Id.ToString()), new Claim("master_id", u.Id.ToString())]);
+        return new ClaimsPrincipal(new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme));
+    }
 
     public static async Task OnTokenValidated(TokenValidatedContext ctx)
     {
@@ -52,7 +58,7 @@ public static class OidcLogin
         if (found.Count == 1)
         {
             // O handler ainda compara o "sub" com o do userinfo, por isso mantém-se.
-            var principal = ToPrincipal(found[0].Tenant, found[0].User);
+            var principal = ToPrincipal(found[0].Tenant, found[0].User, db.EhMaster(found[0].User));
             var sub = ctx.Principal!.FindFirst("sub");
             if (sub != null) ((ClaimsIdentity)principal.Identity!).AddClaim(new Claim("sub", sub.Value));
             ctx.Principal = principal;

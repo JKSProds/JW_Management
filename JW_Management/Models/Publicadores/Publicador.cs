@@ -1,9 +1,11 @@
-﻿using System.Security.Claims;
+using System.Security.Claims;
 
 namespace JW_Management.Models
 {
     public static class ClaimsPrincipalExtension
     {
+        public static bool EhMaster(this ClaimsPrincipal principal) => principal.HasClaim("master", "1");
+
         public static string ObterNomeCompleto(this ClaimsPrincipal principal)
         {
             return principal.FindFirst(ClaimTypes.GivenName)?.Value ?? "";

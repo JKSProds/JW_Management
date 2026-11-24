@@ -11,24 +11,13 @@
         </div>
     </div>
 
-    @await Html.PartialAsync("_Stats", new[] {
-        ("fa-server", "Authority", string.IsNullOrWhiteSpace(Model.Authority) ? "Por definir" : "Definido", "", string.IsNullOrWhiteSpace(Model.Authority) ? "is-warn" : "is-ok"),
-        ("fa-key", "Client secret", Model.ClientSecretDefinido ? "Definido" : "Por definir", "", Model.ClientSecretDefinido ? "is-ok" : "is-warn"),
-        ("fa-shield-halved", "Só OAuth", Model.SomenteOidc ? "Ativo" : "Inativo", "", Model.SomenteOidc ? "is-warn" : ""),
-        ("fa-envelope", "Email da congregação", emailPronto ? "Configurado" : "Por definir", "", emailPronto ? "is-ok" : "is-warn") })
-
     @if (TempData["Guardado"] != null)
     {
         <div class="notice is-ok" role="status">
             <span class="icon"><i class="fa-solid fa-circle-check"></i></span>
-            <span>Guardado. As alterações ao email têm efeito logo no próximo envio. As alterações ao OIDC e ao proxy só têm efeito depois de reiniciar a aplicação.</span>
+            <span>Guardado. O email tem efeito no próximo envio; o OIDC e o proxy só depois de reiniciar a aplicação.</span>
         </div>
     }
-    <div class="notice is-warn">
-        <span class="icon"><i class="fa-solid fa-triangle-exclamation"></i></span>
-        <span>Se o OIDC ficar mal configurado com «Só OAuth» ativo, o acesso só se recupera na base de dados master (tabela <code>sys_config</code>, chave <code>Auth:SomenteOidc</code>).</span>
-    </div>
-
     <form method="post" id="frmConfig">
         @if (!ViewData.ModelState.IsValid)
         {
@@ -38,8 +27,8 @@
             </div>
         }
 
-        <div class="panel-card">
-            <h2>Fornecedor de identidade</h2>
+        <details class="panel-card cfg-sec">
+            <summary><h2>Início de sessão (OIDC)</h2><span class="tag @(string.IsNullOrWhiteSpace(Model.Authority) || !Model.ClientSecretDefinido ? "is-warning" : "is-success")">@(string.IsNullOrWhiteSpace(Model.Authority) || !Model.ClientSecretDefinido ? "Por definir" : "Definido")</span></summary>
             <div class="field">
                 <label class="label" asp-for="Authority">Authority (emissor OIDC)</label>
                 <input class="input" asp-for="Authority" placeholder="https://id.exemplo.pt" />
@@ -59,10 +48,14 @@
                            placeholder="Deixe vazio para manter o atual" />
                 </div>
             </div>
-        </div>
+            <label class="checkbox cfg-check">
+                <input type="checkbox" asp-for="SomenteOidc" />
+                <span><strong>Permitir apenas OAuth</strong><br><span class="field-hint">Desativa o início de sessão com palavra-passe. Exige Authority, Client ID e Client secret definidos. Se o OIDC ficar mal configurado, o acesso só se recupera na base de dados master (<code>sys_config</code>, chave <code>Auth:SomenteOidc</code>).</span></span>
+            </label>
+        </details>
 
-        <div class="panel-card">
-            <h2>Email da congregação</h2>
+        <details class="panel-card cfg-sec" open>
+            <summary><h2>Email</h2><span class="tag @(emailPronto ? "is-success" : "is-warning")">@(emailPronto ? "Configurado" : "Por definir")</span></summary>
             <p class="field-hint" style="margin-bottom:.8rem">Servidor de envio (SMTP) usado por esta congregação nos pedidos de literatura, acessos e programas. A porta 465 liga em TLS; a 587 usa STARTTLS.</p>
             <div class="form-grid">
                 <div class="field">
@@ -86,10 +79,7 @@
                 </div>
             </div>
             <p class="field-hint">A palavra-passe é guardada cifrada. Se for guardada num ambiente com outra chave de cifra, os outros ambientes deixam de a conseguir ler.</p>
-        </div>
-
-        <div class="panel-card">
-            <h2>Email: opções comuns a todas as congregações</h2>
+            <h3 class="cfg-sub">Comum a todas as congregações</h3>
             <div class="form-grid">
                 <div class="field">
                     <label class="label" asp-for="MailNome">Nome do remetente</label>
@@ -101,23 +91,15 @@
                     <p class="field-hint">Recebe cópia dos emails individuais. Não recebe os envios de programas.</p>
                 </div>
             </div>
-        </div>
+        </details>
 
-        <div class="panel-card">
-            <h2>Proxy</h2>
+        <details class="panel-card cfg-sec">
+            <summary><h2>Avançado</h2></summary>
             <div class="field">
                 <label class="label" asp-for="KnownProxy">IP do proxy (Caddy)</label>
                 <input class="input" asp-for="KnownProxy" inputmode="decimal" />
             </div>
-        </div>
-
-        <div class="panel-card">
-            <h2>Política de acesso</h2>
-            <label class="checkbox" style="display:flex;gap:.7rem;align-items:flex-start">
-                <input type="checkbox" asp-for="SomenteOidc" style="margin-top:.3rem;width:1.1rem;height:1.1rem" />
-                <span><strong>Permitir apenas OAuth</strong><br><span class="field-hint">Desativa o início de sessão com palavra-passe. Exige Authority, Client ID e Client secret definidos.</span></span>
-            </label>
-        </div>
+        </details>
 
         <div class="mt-5">
             <button class="button is-info" type="submit">

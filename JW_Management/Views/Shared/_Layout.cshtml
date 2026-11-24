@@ -1,4 +1,4 @@
-﻿@using JW_Management.Models
+@using JW_Management.Models
 @inject IConfiguration Configuration
 @inject TenantContext TenantsCtx
 @{
@@ -116,6 +116,13 @@
                             <span class="icon"><i class="fa-solid fa-people-group"></i></span>
                             <span>Reuniões</span>
                         </a>
+                        @if (new[] { "Admin", "Assistente", "Coordenador", "Secretario", "Servico" }.Any(User.IsInRole))
+                        {
+                            <a class="navbar-item@(Ativo("Publicadores"))" href="~/Publicadores">
+                                <span class="icon"><i class="fa-solid fa-users"></i></span>
+                                <span>Publicadores</span>
+                            </a>
+                        }
                     </div>
 
             }
@@ -132,23 +139,22 @@
                             </a>
 
                             <div class="navbar-dropdown is-right">
-                                <a class="navbar-item@(Ativo("Publicadores"))" href="~/Publicadores">
-                                    <span class="icon"><i class="fa-solid fa-users"></i></span>
-                                    <span>Publicadores</span>
-                                </a>
-                                <a class="navbar-item" href="~/Publicadores/Perfil">
-                                    <span class="icon"><i class="fa-solid fa-id-card"></i></span>
-                                    <span>Meu Perfil</span>
-                                </a>
+                                @if (User.ObterId() > 0)
+                                {
+                                    <a class="navbar-item" href="~/Publicadores/Perfil">
+                                        <span class="icon"><i class="fa-solid fa-id-card"></i></span>
+                                        <span>Meu Perfil</span>
+                                    </a>
+                                }
                                 <input type="file" id="fotoFicheiro" accept="image/*" hidden>
-                                @if (User.IsInRole("Admin"))
+                                @if (User.EhMaster())
                                 {
                                     <a class="navbar-item@(Ativo("Configuracao"))" href="~/configuracao">
                                         <span class="icon"><i class="fa-solid fa-gear"></i></span>
                                         <span>Configuração</span>
                                     </a>
                                 }
-                                @if (User.IsInRole("Admin") && TenantsCtx.IdPrincipal(Configuration) == User.ObterTenant())
+                                @if (User.EhMaster())
                                 {
                                     <a class="navbar-item@(Ativo("Tenants"))" href="~/Tenants">
                                         <span class="icon"><i class="fa-solid fa-building"></i></span>

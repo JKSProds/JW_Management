@@ -11,7 +11,8 @@ namespace JW_Management.Controllers
     public class PublicadoresController(DbContext _dbContext, MailContext _mailContext, HourglassSincronizador _sync, HourglassContext _hg, FileContext _file) : Controller
     {
         private bool OutroAdmin(int id) => _dbContext.ObterPublicadores(false).Any(x => x.Id != id && x.Id > 0 && x.TipoUtilizador == 0);
-        private static readonly int[] Funcoes = { 0, 10, 20, 30, 40, 50, 60, 70, 80, 90 };
+        // O 0 (master) é único em todas as congregações e não se atribui nem se retira aqui.
+        private static readonly int[] Funcoes = { 10, 20, 30, 40, 50, 60, 70, 80, 90 };
 
         [Authorize(Roles = "Admin, Assistente, Coordenador, Secretario, Servico")]
         [HttpGet]
@@ -69,7 +70,7 @@ namespace JW_Management.Controllers
             }
 
             // A função (permissão) só muda se quem grava for Admin e o valor for uma das funções existentes.
-            if (User.IsInRole("Admin") && int.TryParse(Request.Form["TipoUtilizador"], out var tipo) && Funcoes.Contains(tipo) && tipo != pOriginal.TipoUtilizador)
+            if (User.IsInRole("Admin") && pOriginal.TipoUtilizador != 0 && int.TryParse(Request.Form["TipoUtilizador"], out var tipo) && Funcoes.Contains(tipo) && tipo != pOriginal.TipoUtilizador)
             {
                 // Um admin só retira a função de admin a si próprio, e só se existir outro admin.
                 if (pOriginal.TipoUtilizador == 0 && p.Id != User.ObterId()) return BadRequest("Um administrador só pode retirar a sua própria função de administrador.");

@@ -23,10 +23,6 @@
         </div>
     </div>
 
-    @await Html.PartialAsync("_Stats", new[] {
-        ("fa-right-left", "Movimentos de literatura", movimentos.Count.ToString(), "", ""),
-        ("fa-clipboard-list", "Pedidos em aberto", pedidos.Count.ToString(), "", pedidos.Any() ? "is-warn" : "") })
-
     <div class="seg" role="tablist" aria-label="Secções da ficha">
         <button type="button" role="tab" id="tabDados" aria-controls="panDados" aria-selected="true">Dados</button>
         <button type="button" role="tab" id="tabMov" aria-controls="panMov" aria-selected="false">Movimentos<span class="count">@movimentos.Count</span></button>
@@ -36,10 +32,7 @@
     <section id="panDados" role="tabpanel" aria-labelledby="tabDados">
         <form method="post" id="frmPublicador" class="panel-card">
             <div class="form-grid">
-                <div class="field">
-                    <label class="label" asp-for="Id">Número</label>
-                    <input type="text" class="input" readonly asp-for="Id">
-                </div>
+                <input type="hidden" asp-for="Id">
                 @if (!User.IsInRole("Admin"))
                 {
                     <div class="field">

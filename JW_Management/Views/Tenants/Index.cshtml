@@ -1,3 +1,4 @@
+@using JW_Management.Models
 @model List<JW_Management.Models.Tenant>
 @{
     ViewData["Title"] = "Congregações";
@@ -5,7 +6,7 @@
 
 <div class="container" style="max-width:900px">
     <div class="page-head">
-        <div class="head-title"><div><h1>Congregações</h1><p>Só os administradores do tenant principal veem esta página.</p></div></div>
+        <div class="head-title"><div><h1>Congregações</h1><p>@Model.Count congregações. «Entrar» muda para uma congregação sem terminar sessão.</p></div></div>
         <div class="head-actions">
             <a class="button is-info" href="~/Tenants/Editar"><span class="icon"><i class="fa-solid fa-plus"></i></span><span>Nova congregação</span></a>
         </div>
@@ -16,16 +17,31 @@
         <div class="notice is-ok" role="status"><span class="icon"><i class="fa-solid fa-circle-check"></i></span><span>@TempData["Msg"]</span></div>
     }
 
-    <div class="items">
+    <div class="toolbar">
+        <div class="control has-icons-left search">
+            <input type="search" class="input" id="filtroCong" placeholder="Pesquisar congregação" aria-label="Pesquisar congregação" autocomplete="off">
+            <span class="icon is-left"><i class="fa-solid fa-magnifying-glass"></i></span>
+        </div>
+    </div>
+
+    <div class="items" id="listaCong">
         @foreach (var t in Model)
         {
-            <article class="item no-thumb">
+            <article class="item no-thumb" data-search="@t.Nome @t.NomeCongregacao @t.Id">
                 <div class="main">
                     <div class="name">@t.Nome</div>
                     <div class="meta"><span>@t.NomeCongregacao</span><span>Nº @t.Id</span><span>BD v@(t.DbVersion.ToString("0.0#", System.Globalization.CultureInfo.InvariantCulture))</span></div>
                 </div>
                 <div class="side">
                     <div class="acts">
+                        @if (t.Id == User.ObterTenant())
+                        {
+                            <span class="button is-atual" aria-current="true"><span class="icon"><i class="fa-solid fa-circle-check"></i></span><span>Atual</span></span>
+                        }
+                        else
+                        {
+                            <button type="button" class="button is-info" data-action="entrar" data-id="@t.Id" title="Mudar para esta congregação sem terminar sessão"><span class="icon"><i class="fa-solid fa-right-to-bracket"></i></span><span>Entrar</span></button>
+                        }
                         <form method="post" asp-action="ReenviarAdmin" asp-route-id="@t.Id" style="display:inline" onsubmit="return confirm('Gerar nova palavra-passe e enviá-la ao administrador desta congregação?')">
                             <button type="submit" class="button" title="Reenviar acesso ao administrador"><span class="icon"><i class="fa-solid fa-key"></i></span><span>Reenviar acesso</span></button>
                         </form>
@@ -36,3 +52,15 @@
         }
     </div>
 </div>
+
+@section Scripts {
+<script>
+    // Pesquisa no browser: a lista já está toda na página.
+    const norm = t => (t || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+    App.on('entrar', btn => App.run(btn, async () => { await App.api('POST', '/Home/TrocarCongregacao', { id: btn.dataset.id }); location.href = '/'; }, 'Não foi possível mudar de congregação.'));
+    App.$('#filtroCong').addEventListener('input', e => {
+        const q = norm(e.target.value.trim());
+        App.$$('#listaCong .item').forEach(i => { i.hidden = q !== '' && !norm(i.dataset.search).includes(q); });
+    });
+</script>
+}

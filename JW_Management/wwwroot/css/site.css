@@ -865,3 +865,25 @@ label.checkbox[style*="display:block"] { display: flex !important; }
 
 /* Datas de início e fim da semana */
 .rev-datas { font-size: 1.05rem; font-weight: 600; color: var(--ink-soft); font-variant-numeric: tabular-nums; margin: .15rem 0 0; }
+
+/* Configuração: secções recolhíveis */
+.cfg-sec { padding: 0; }
+.cfg-sec + .cfg-sec { margin-top: .75rem; }
+.cfg-sec > summary { display: flex; align-items: center; gap: .75rem; padding: .9rem 1.25rem; cursor: pointer; list-style: none; min-height: var(--touch); }
+.cfg-sec > summary::-webkit-details-marker { display: none; }
+.cfg-sec > summary::after { content: "\f078"; font: 900 .8rem/1 "Font Awesome 6 Free"; margin-left: auto; color: var(--ink-faint); transition: transform .15s var(--ease); }
+.cfg-sec[open] > summary::after { transform: rotate(180deg); }
+.cfg-sec > summary h2 { margin: 0; font-size: 1.05rem; font-weight: 700; }
+.cfg-sec > :not(summary) { margin-left: 1.25rem; margin-right: 1.25rem; }
+.cfg-sec > :last-child { margin-bottom: 1.25rem; }
+.cfg-sub { margin: 1.25rem 0 .6rem; font-size: .85rem; font-weight: 700; color: var(--ink-soft); }
+.cfg-check { display: flex; gap: .7rem; align-items: flex-start; margin-top: 1rem; }
+.cfg-check input { margin-top: .3rem; width: 1.1rem; height: 1.1rem; }
+
+
+/* Os campos preenchem a coluna da grelha sem a ultrapassar */
+.form-grid .input, .form-grid .textarea, .form-grid .select, .form-grid .select select { box-sizing: border-box; width: 100%; max-width: 100%; }
+
+/* Congregações: «Entrar» e «Atual» ocupam o mesmo espaço, para as linhas alinharem */
+#listaCong .acts > [data-action="entrar"], #listaCong .acts > .is-atual { min-width: 7.5rem; justify-content: center; }
+.button.is-atual { background: var(--ok-tint); color: var(--ok-ink); border-color: transparent; cursor: default; pointer-events: none; }

@@ -51,6 +51,7 @@ namespace JW_Management.Controllers
         public IActionResult MinhasDesignacoes()
         {
             var hoje = DateTime.Today;
+            if (User.ObterId() <= 0) return Json(Array.Empty<object>()); // master noutra congregação: não tem registo de publicador
             var lista = _dbContext.ObterDesignacoesPublicador(User.ObterId())
                 .Select(d =>
                 {
@@ -129,21 +130,39 @@ namespace JW_Management.Controllers
             }
 
             var (escolhida, utilizador) = encontrados[0];
-            var claims = new List<Claim>
-            {
-                new Claim(ClaimTypes.Name, utilizador.Id.ToString()),
-                new Claim(ClaimTypes.Role, utilizador.Role),
-                new Claim(ClaimTypes.GivenName, utilizador.Nome!),
-                new Claim(ClaimTypes.Sid, escolhida.Id.ToString()),
-                new Claim(ClaimTypes.PrimaryGroupSid, escolhida.NomeCongregacao.ToString())
-            };
-            var claimsIdentity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
-            await HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, new ClaimsPrincipal(claimsIdentity));
+            await HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, OidcLogin.ToPrincipal(escolhida, utilizador, _dbContext.EhMaster(utilizador)));
 
             Console.WriteLine($"[{escolhida.NomeCongregacao}] - Login - Utilizador: {utilizador.Nome}");
 
             // Só aceita destinos locais, para o ReturnUrl não servir de redirecionamento aberto.
             return Url.IsLocalUrl(ReturnUrl) ? LocalRedirect(ReturnUrl) : RedirectToAction("Index", "Home");
+        }
+
+        // O master muda de congregação sem terminar sessão. Fora da congregação onde tem registo não tem id de publicador (0),
+        // para nunca se confundir com outro publicador que tenha o mesmo id nessa base de dados.
+        [Authorize(Policy = "Master")]
+        [HttpPost]
+        public async Task<IActionResult> TrocarCongregacao(int id)
+        {
+            if (Request.Headers["X-Requested-With"] != "XMLHttpRequest") return BadRequest();
+            var destino = ObterTenants().FirstOrDefault(t => t.Id == id);
+            if (destino == null) return NotFound();
+
+            var casa = User.FindFirst("master_home")?.Value;
+            var meuId = User.FindFirst("master_id")?.Value ?? "0";
+            var claims = new List<Claim>
+            {
+                new(ClaimTypes.Name, casa == destino.Id.ToString() ? meuId : "0"),
+                new(ClaimTypes.Role, "Admin"),
+                new(ClaimTypes.GivenName, User.ObterNomeCompleto()),
+                new(ClaimTypes.Sid, destino.Id.ToString()),
+                new(ClaimTypes.PrimaryGroupSid, destino.NomeCongregacao.ToString()),
+                new("master", "1"), new("master_home", casa ?? ""), new("master_id", meuId)
+            };
+            await HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme,
+                new ClaimsPrincipal(new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme)));
+            Console.WriteLine($"[Master] Congregação alterada para {destino.NomeCongregacao}");
+            return Ok();
         }
 
         // Serve dois casos: erro não tratado (o handler de exceções reexecuta aqui) e acesso negado (AccessDeniedPath).

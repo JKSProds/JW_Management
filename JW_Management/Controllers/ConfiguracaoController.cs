@@ -5,7 +5,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace JW_Management.Controllers;
 
-[Authorize(Roles = "Admin")]
+[Authorize(Policy = "Master")]
 [Route("configuracao")]
 public class ConfiguracaoController(ConfigStore _store, TenantContext _tenants) : Controller
 {

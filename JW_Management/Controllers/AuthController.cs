@@ -60,7 +60,7 @@ public class AuthController(TenantContext _tenantContext, DbContext _dbContext, 
         if (found.Count != 1) return Redirect("/acesso-negado");
 
         await HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme,
-            OidcLogin.ToPrincipal(found[0].Tenant, found[0].User));
+            OidcLogin.ToPrincipal(found[0].Tenant, found[0].User, _dbContext.EhMaster(found[0].User)));
         await HttpContext.SignOutAsync(OidcLogin.PendingScheme);
 
         var back = pending.Properties?.RedirectUri;

@@ -374,6 +374,20 @@ namespace JW_Management.Models
 
         //Obter Publicadores
         
+        // O utilizador master é o único com a função de administrador (tipo 0) em todas as congregações. Se houver mais do que um (ou nenhum), ninguém é master.
+        public int ContarMasters() => _appContext._tenantContext._tenants.Sum(t => ObterPublicadores(t.Id, false).Count(u => u.TipoUtilizador == 0));
+        public bool EhMaster(Publicador u)
+        {
+            if (u.TipoUtilizador != 0) return false;
+            var n = ContarMasters();
+            if (n != 1)
+            {
+                var onde = _appContext._tenantContext._tenants.SelectMany(t => ObterPublicadores(t.Id, false).Where(x => x.TipoUtilizador == 0).Select(x => $"congregação {t.Id} / publicador {x.Id}"));
+                Console.WriteLine($"[Master] Existem {n} utilizadores com a função de administrador ({string.Join("; ", onde)}): sem master até haver exatamente um.");
+            }
+            return n == 1;
+        }
+
         public List<Publicador> ObterPublicadores(int tenant, bool LoadGrupo)
         {
             List<Publicador> LstPublicador = new();

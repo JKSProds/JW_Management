@@ -103,6 +103,8 @@ if (!string.IsNullOrEmpty(oidc["ClientId"]))
     });
 }
 
+builder.Services.AddAuthorizationBuilder().AddPolicy("Master", p => p.RequireClaim("master", "1"));
+
 builder.Services.Configure<FormOptions>(options =>
 {
     options.ValueCountLimit = int.MaxValue;
@@ -147,5 +149,9 @@ app.UseAuthorization();
 app.MapControllerRoute(
     name: "default",
     pattern: "{controller=Home}/{action=Index}/{id?}");
+
+// Aviso no arranque se não houver exatamente um utilizador master (tipo 0) em todas as congregações.
+try { using var escopo = app.Services.CreateScope(); escopo.ServiceProvider.GetRequiredService<DbContext>().EhMaster(new Publicador { TipoUtilizador = 0 }); }
+catch (Exception e) { Console.WriteLine($"[Master] Não foi possível verificar o utilizador master: {e.Message}"); }
 
 app.Run();

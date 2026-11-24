@@ -50,7 +50,8 @@
         <div class="toolbar">
             <div class="field" style="min-width:260px;flex:1">
                 <label class="label" for="pgDir">Dirigente de A Sentinela por omissão</label>
-                <input class="input is-small" id="pgDir" type="text" value="Filipe Gonçalves" autocomplete="off">
+                <div><input class="input is-small" id="pgDir" type="text" value="@ViewBag.DirigenteNome" placeholder="Escreva o nome do publicador" autocomplete="off"></div>
+                <input type="hidden" id="pgDirId" value="@(ViewBag.DirigenteId > 0 ? ViewBag.DirigenteId.ToString() : "")">
             </div>
             <button type="button" class="button is-success" data-action="pdf" data-tipo="programa" @(Model.Programa == null ? "data-sem-dados" : "")><span class="icon"><i class="fa-solid fa-file-pdf"></i></span><span>PDF (horizontal)</span></button>
         </div>
@@ -215,13 +216,20 @@
 @section Scripts {
 <script>
     const ano = @Model.Ano, mes = @Model.Mes, jaGuardado = @(est.Semanas > 0 ? "true" : "false");
-    try { const d = localStorage.getItem('dirigenteSentinela'); if (d) App.$('#pgDir').value = d; } catch (e) { }
-    App.$('#pgDir').addEventListener('change', e => { try { localStorage.setItem('dirigenteSentinela', e.target.value); } catch (x) { } });
+    // Dirigente por omissão: publicador da congregação, guardado na base de dados (vale para todos os utilizadores e dispositivos).
+    const pesqDir = App.pesquisaPublicador('#pgDir', '#pgDirId', false);
+    let dirGuardado = App.$('#pgDirId').value;
+    App.$('#pgDirId').addEventListener('change', async e => {
+        if (e.target.value === dirGuardado) return;
+        try { await App.api('POST', '/Reunioes/ProgramaDirigente', { id: e.target.value || 0 }); dirGuardado = e.target.value; notify(e.target.value ? 'Dirigente guardado.' : 'Dirigente removido.'); }
+        catch (x) { notifyError('Não foi possível guardar o dirigente.'); }
+    });
+    App.$('#pgDir').addEventListener('blur', () => { if (!App.$('#pgDir').value.trim() && dirGuardado) { App.$('#pgDirId').value = ''; App.$('#pgDirId').dispatchEvent(new Event('change')); } });
 
     // PDF: abre diretamente se o mês já está guardado; senão pede primeiro os dados ao Hourglass
     App.on('pdf', btn => {
         if (btn.hasAttribute('data-sem-dados')) { notify('Ainda não há dados deste mês: obtenha-os do Hourglass.'); App.modal('modalSync').open(); return; }
-        const q = new URLSearchParams({ tipo: btn.dataset.tipo, ano: ano, mes: mes, dirigente: App.$('#pgDir').value });
+        const q = new URLSearchParams({ tipo: btn.dataset.tipo, ano: ano, mes: mes });
         window.open('/Reunioes/ProgramaPdf?' + q, '_blank');
     });
 
@@ -242,7 +250,7 @@
         if (!tipos.length) { notifyError('Escolha pelo menos um programa.'); return; }
         if (!ids.length) { notifyError('Escolha pelo menos um publicador.'); return; }
         if (!await App.confirm({ title: 'Enviar programas', text: 'Enviar ' + tipos.length + ' programa(s) por email a ' + ids.length + ' publicador(es)?', ok: 'Enviar' })) return;
-        const r = await App.api('POST', '/Reunioes/ProgramaEnviar', { ano: ano, mes: mes, tipos: tipos.join(','), ids: ids.join(','), dirigente: App.$('#pgDir').value });
+        const r = await App.api('POST', '/Reunioes/ProgramaEnviar', { ano: ano, mes: mes, tipos: tipos.join(','), ids: ids.join(',') });
         if (r.enviados === r.total) { App.modal('modalEmail').close(); emPub.limpar(); App.$$('.em-tipo').forEach(c => { c.checked = false; }); notify('Programas enviados a ' + r.total + ' publicador(es).'); }
         else if (r.enviados === 0) notifyError('Não foi possível enviar. Confirme o email da congregação em Configuração.');
         else notifyError('Enviados ' + r.enviados + ' de ' + r.total + '. Os restantes falharam: consulte os registos do servidor.');
