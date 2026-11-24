@@ -6,14 +6,13 @@ namespace JW_Management.Models
     {
         public static string ObterNomeCompleto(this ClaimsPrincipal principal)
         {
-            var firstName = principal.Claims.Where(c => c.Type == ClaimTypes.GivenName).First();
-            return $"{firstName.Value}";
+            return principal.FindFirst(ClaimTypes.GivenName)?.Value ?? "";
         }
 
         public static string ObterCong(this ClaimsPrincipal principal)
         {
-            var cong = principal.Claims.Where(c => c.Type == ClaimTypes.PrimaryGroupSid).First();
-            return $"{cong.Value}";
+            // Sessões antigas (cookie sem este claim) não devem rebentar o layout.
+            return principal.FindFirst(ClaimTypes.PrimaryGroupSid)?.Value ?? "";
         }
         public static string ObterImgUtilizador(this ClaimsPrincipal principal)
         {
