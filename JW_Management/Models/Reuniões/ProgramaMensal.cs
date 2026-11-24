@@ -18,7 +18,11 @@ public class ProgramaSemana
 {
     public DateTime Inicio { get; set; }
     public string Titulo { get; set; } = "";       // «Semana de 2 a 8 de Novembro»
-    public List<string> Evento { get; set; } = new(); // palavras do evento (assembleia…), vazio = sem evento
+    public List<string> Evento { get; set; } = new(); // legado (programas guardados antes de separar as reuniões): vale para as duas
+    public List<string> EventoMeio { get; set; } = new(); // evento que substitui a reunião de semana (memorial a meio da semana…)
+    public List<string> EventoFim { get; set; } = new();  // evento que substitui a reunião de fim de semana (assembleia, congresso…)
+    [Newtonsoft.Json.JsonIgnore] public List<string> SemMeio => EventoMeio.Count > 0 ? EventoMeio : EventoFim.Count == 0 ? Evento : new();
+    [Newtonsoft.Json.JsonIgnore] public List<string> SemFim => EventoFim.Count > 0 ? EventoFim : EventoMeio.Count == 0 ? Evento : new();
     public bool Visita { get; set; }               // visita do superintendente: a coluna da semana leva fundo de destaque
     public Dictionary<string, string> Valores { get; set; } = new();
 }

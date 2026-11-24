@@ -11,7 +11,17 @@ namespace JW_Management.Controllers
         public IActionResult Index()
         {
             ViewBag.Progresso = _dbContext.ObterProgressoReunioes();
-            return View(_dbContext.ObterReunioes(false));
+            var reunioes = _dbContext.ObterReunioes(false);
+            var progresso = (Dictionary<string, (int Total, int Atribuidas)>)ViewBag.Progresso;
+            foreach (var r in reunioes)
+            {
+                (r.EventoMeio, r.EventoFim) = _programa.EventoDaSemana(r.SemanaReuniao);
+                // Semana com uma das reuniões cancelada: as partes por atribuir dessa reunião não contam.
+                if (r.EventoMeio == null && r.EventoFim == null) continue;
+                var validas = _dbContext.ObterDesignacoes(r.Stamp!).Where(d => !r.Cancelada(d)).ToList();
+                progresso[r.Stamp!] = (validas.Count, validas.Count(d => d.Atribuida));
+            }
+            return View(reunioes);
         }
 
         // Sessão do Hourglass guardada em memória algumas horas, para não colar o cURL de cada vez.
@@ -133,7 +143,12 @@ namespace JW_Management.Controllers
 
         // Só leitura: as designações vêm todas do Hourglass.
         [HttpGet]
-        public IActionResult Reuniao(string id) => View(_dbContext.ObterReuniao(id, true, true));
+        public IActionResult Reuniao(string id)
+        {
+            var r = _dbContext.ObterReuniao(id, true, true);
+            (r.EventoMeio, r.EventoFim) = _programa.EventoDaSemana(r.SemanaReuniao);
+            return View(r);
+        }
 
         [HttpDelete]
         public IActionResult Reuniao(string id, bool apagar)

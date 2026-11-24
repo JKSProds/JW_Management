@@ -74,7 +74,8 @@
                                 @foreach (var s in Model.Programa.Semanas)
                                 {
                                     var v = s.Valores.GetValueOrDefault(l.Id, "");
-                                    <td class="@(s.Evento.Count > 0 && new[] { "min1", "min2", "min3", "std", "stl", "sto" }.Contains(l.Id) ? "evento" : "")">@(s.Evento.Count > 0 && new[] { "min1", "std" }.Contains(l.Id) ? string.Join(" ", s.Evento) : v)</td>
+                                    var evL = new[] { "min1", "min2", "min3" }.Contains(l.Id) ? s.SemMeio : new[] { "std", "stl", "sto" }.Contains(l.Id) ? s.SemFim : new List<string>();
+                                    <td class="@(evL.Count > 0 ? "evento" : "")">@(evL.Count > 0 && new[] { "min1", "std" }.Contains(l.Id) ? string.Join(" ", evL) : v)</td>
                                 }
                             </tr>
                         }

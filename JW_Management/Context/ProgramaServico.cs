@@ -20,6 +20,16 @@ public class ProgramaServico(HourglassContext _hg, DbContext _db)
         return l.Count > 0 ? l : new() { inicio };
     }
 
+    // Evento que substitui a reunião («Assembleia de circuito»…) da semana «SEMANA 45 DE 2026», lido do programa guardado; null se não houver.
+    public (string? Meio, string? Fim) EventoDaSemana(string? semana)
+    {
+        if (Reuniao.Intervalo(semana) is not var (segunda, _)) return (null, null);
+        if (!_db.ObterProgramaDocs("semana", new[] { segunda.ToString("yyyy-MM-dd") }).TryGetValue(segunda.ToString("yyyy-MM-dd"), out var doc)) return (null, null);
+        var s = JsonConvert.DeserializeObject<ProgramaSemana>(doc.Dados);
+        static string? Texto(List<string>? ev) { if (ev == null || ev.Count == 0) return null; var t = string.Join(" ", ev).ToLowerInvariant(); return char.ToUpperInvariant(t[0]) + t[1..]; }
+        return s == null ? (null, null) : (Texto(s.SemMeio), Texto(s.SemFim));
+    }
+
     // ---------- Ler da base de dados ----------
     public ProgramaEstado Estado(int ano, int mes)
     {
@@ -47,7 +57,7 @@ public class ProgramaServico(HourglassContext _hg, DbContext _db)
             if (s == null) continue;
             // Programas guardados antes da separação dos cânticos têm «12 - 45 - 100» numa só chave (cmm/cwm).
             foreach (var k in new[] { "cmm", "cwm" })
-                if (s.Valores.Remove(k, out var junto) && s.Evento.Count == 0) // semana de evento não tem cânticos
+                if (s.Valores.Remove(k, out var junto) && (k == "cmm" ? s.SemMeio : s.SemFim).Count == 0) // semana de evento não tem cânticos
                     { var partes = junto.Split(" - "); for (var i = 0; i < partes.Length; i++) s.Valores.TryAdd(k + (i + 1), partes[i]); }
             if (!string.IsNullOrWhiteSpace(dirigenteSentinela) && string.IsNullOrWhiteSpace(s.Valores.GetValueOrDefault("std", ""))) s.Valores["std"] = dirigenteSentinela;
             p.Semanas.Add(s);
@@ -154,13 +164,13 @@ public class ProgramaServico(HourglassContext _hg, DbContext _db)
                     v["wco"] = (string?)HourglassContext.Sub(sp["congregation"], "name") ?? (string?)HourglassContext.Sub(w["temp_cong"], "name") ?? "";
                 }
                 v["wte"] = (string?)HourglassContext.Sub(w["public_talk"], "title") ?? "";
-                sem.Evento = Evento(w["event"] as JObject) ?? sem.Evento;
+                sem.EventoFim = Evento(w["event"] as JObject) ?? new();
                 var wt = w["wt"] as JObject;
                 // A Sentinela tem o cântico antes do estudo (meio da reunião) e o final: cwm1 = meio, cwm2 = fim
                 foreach (var (sk, i) in new[] { "song1", "song2" }.Select((x, i) => (x, i + 1)))
                     if ((int?)HourglassContext.Sub(wt?[sk], "number") is > 0 and var n) { v["cwm" + i] = n.ToString(); cantSem.Add((n, (string?)HourglassContext.Sub(wt?[sk], "title") ?? "")); }
             }
-            if (sem.Evento.Count == 0 && mm.TryGetValue(k, out var e2) && e2["event"] is JObject ev) sem.Evento = Evento(ev) ?? sem.Evento;
+            if (mm.TryGetValue(k, out var e2) && e2["event"] is JObject ev) sem.EventoMeio = Evento(ev) ?? new();
             // Visita do superintendente de circuito («co»): o estudo bíblico dá lugar ao discurso de serviço dele
             // (orador na linha do dirigente, tema na do leitor, que não existe) e ao fim de semana há dois discursos;
             // sem estudo de A Sentinela, o orador (que faz a oração final) fica na linha do leitor e o tema do discurso final na da oração final.
@@ -197,7 +207,11 @@ public class ProgramaServico(HourglassContext _hg, DbContext _db)
             // o Hourglass chama «Circuit Overseer» à congregação do superintendente
             if (v.GetValueOrDefault("wco", "").Equals("Circuit Overseer", StringComparison.OrdinalIgnoreCase)) v["wco"] = "Superintendente de Circuito";
             // assembleia de circuito, congresso e memorial: não há cânticos da reunião nessa semana
-            if (sem.Evento.Count > 0) { foreach (var k2 in new[] { "cmm1", "cmm2", "cmm3", "cwm1", "cwm2" }) v.Remove(k2); } else canticos.AddRange(cantSem);
+            // cada reunião cancelada por um evento (assembleia, congresso, memorial) perde os seus cânticos; a outra mantém-nos
+            void TirarCanticos(params string[] chaves) { foreach (var k2 in chaves) { if (int.TryParse(v.GetValueOrDefault(k2, ""), out var nn)) cantSem.RemoveAll(c => c.Item1 == nn); v.Remove(k2); } }
+            if (sem.SemMeio.Count > 0) TirarCanticos("cmm1", "cmm2", "cmm3");
+            if (sem.SemFim.Count > 0) TirarCanticos("cwm1", "cwm2");
+            canticos.AddRange(cantSem);
 
             if (av.TryGetValue(k, out var lista))
             {

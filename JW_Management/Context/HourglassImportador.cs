@@ -76,15 +76,17 @@ public class HourglassImportador(HourglassContext _hg, DbContext _db)
                 Add("mm", "mm:chairman", "Presidente", a["chairman"], obrigatorio: true);
                 Add("mm", "mm:openprayer", "Oração inicial", a["openprayer"], obrigatorio: true);
                 var vida = 0;
+                // Percorre as partes do programa (e não só as designações): uma parte sem ninguém atribuído também entra, «por atribuir».
                 foreach (var sec in new[] { "tgw", "fm", "lac" })
-                    foreach (var e in a[sec] as JArray ?? new())
+                    foreach (var parte in m?[sec] as JArray ?? new())
                     {
-                        var parte = (m?[sec] as JArray)?.FirstOrDefault(p => (int?)p["id"] == (int?)e["part"]);
-                        if (parte == null) continue;
+                        var designadas = (a[sec] as JArray)?.Where(e => (int?)e["part"] == (int?)parte["id"]).ToList() ?? new();
+                        if (designadas.Count == 0) designadas.Add(new JObject()); // sem designação no Hourglass: uma linha vazia
                         var tipo = (string?)parte["type"] ?? "";
                         // Partes de Vida Cristã (menos o estudo bíblico): o tipo é «Parte 1», «Parte 2»…; o tema do discurso vai só no nome da designação.
                         var rotulo = sec == "lac" && tipo != "cbs" ? $"Parte {++vida}" : null;
-                        Add("mm", $"mm:{sec}:{tipo}", LimparNumero((string?)parte["title"]), e["assignee"], e["assistant"], Minutos((string?)parte["time"]), LimparNumero((string?)parte["title"]), (int?)e["classroom"] ?? 0, sec == "fm" ? 100 : sec == "lac" ? 200 : 0, true, rotulo);
+                        foreach (var e in designadas)
+                            Add("mm", $"mm:{sec}:{tipo}", LimparNumero((string?)parte["title"]), e["assignee"], e["assistant"], Minutos((string?)parte["time"]), LimparNumero((string?)parte["title"]), (int?)e["classroom"] ?? 0, sec == "fm" ? 100 : sec == "lac" ? 200 : 0, true, rotulo);
                     }
                 if (s.Visita) AddOrador("mm", "mm:co:service", "Discurso de serviço", Aspas(Cfg("circuit_overseer_mm_talk_title")), 30, 200); // ocupa o lugar do estudo bíblico
                 Add("mm", "mm:cbsreader", "Leitor do estudo bíblico", a["cbs_reader"], @base: 200, obrigatorio: !s.Visita);
@@ -147,7 +149,7 @@ public class HourglassImportador(HourglassContext _hg, DbContext _db)
                 else
                 {
                     id = Math.Max(it.Base, tipos.Where(t => t.Id > it.Base && t.Id < it.Base + 100).Select(t => t.Id).DefaultIfEmpty(it.Base).Max()) + 1;
-                    var novo = new TipoDesignacao { Id = id, Descricao = Cortar(it.Rotulo), DescricaoAdicional = Cortar(it.Rotulo), NMin = it.Minutos, Salas = it.Salas ? 2 : 1 };
+                    var novo = new TipoDesignacao { Id = id, Descricao = Cortar(it.Rotulo, 255), DescricaoAdicional = Cortar(it.Rotulo, 255), NMin = it.Minutos, Salas = it.Salas ? 2 : 1 };
                     if (!_db.CriarTipoDesignacao(novo)) throw new InvalidOperationException($"Não foi possível criar o tipo «{it.Rotulo}».");
                     tipos.Add(novo);
                 }

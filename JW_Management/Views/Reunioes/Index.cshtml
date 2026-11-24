@@ -3,8 +3,9 @@
     ViewData["Title"] = "Reuniões";
     var progresso = (Dictionary<string, (int Total, int Atribuidas)>)ViewBag.Progresso;
     (int Total, int Atrib) P(string stamp) => progresso.TryGetValue(stamp, out var v) ? (v.Total, v.Atribuidas) : (0, 0);
+    // Semanas de assembleia, congresso ou memorial não têm reunião: ficam fora das contagens.
     var porAtribuir = Model.Sum(r => { var p = P(r.Stamp!); return p.Total - p.Atrib; });
-    var completas = Model.Count(r => { var p = P(r.Stamp!); return p.Total > 0 && p.Total == p.Atrib; });
+    var completas = Model.Count(r => { var p = P(r.Stamp!); return r.SemReuniao || (p.Total > 0 && p.Total == p.Atrib); });
 }
 
 <div class="container">
@@ -42,14 +43,23 @@
         {
             var p = P(item.Stamp!);
             var pct = p.Total == 0 ? 0 : p.Atrib * 100 / p.Total;
-            var ok = p.Total > 0 && p.Atrib == p.Total;
-            <article class="item no-thumb" data-stamp="@item.Stamp" data-type="@(ok ? "ok" : "falta")" data-search="@item.SemanaReuniao">
+            var ok = item.SemReuniao || (p.Total > 0 && p.Atrib == p.Total);
+            <article class="item no-thumb" data-stamp="@item.Stamp" data-type="@(ok ? "ok" : "falta")" data-search="@item.SemanaReuniao @item.Datas">
                 <div class="main">
                     <div class="name"><a href="~/Reunioes/Reuniao/@item.Stamp">@item.SemanaReuniao</a></div>
+                    @if (item.Datas != null) { <div class="field-hint">@item.Datas</div> }
                     <div class="meta">
+                        @if (item.ResumoEvento is string resumo)
+                        {
+                            <span class="tag is-info">@resumo</span>
+                        }
+                        @if (!item.SemReuniao)
+                        {
                         <span class="prog" title="@p.Atrib de @p.Total atribuídas"><span class="prog-bar"><i style="width:@pct%"></i></span></span>
                         <span class="num">@p.Atrib / @p.Total atribuídas</span>
-                        @if (ok) { <span class="tag is-success">Completa</span> }
+                        }
+                        @if (item.SemReuniao) { }
+                        else if (ok) { <span class="tag is-success">Completa</span> }
                         else if (p.Total == 0) { <span class="tag is-light">Sem designações</span> }
                     </div>
                 </div>

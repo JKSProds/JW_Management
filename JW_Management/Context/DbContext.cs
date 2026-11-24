@@ -894,7 +894,13 @@ namespace JW_Management.Models
                 }
             }
 
-            return r;
+            // Cronológica («SEMANA 51 DE 2026»): a base de dados não garante ordem e uma semana reimportada ia para o fim.
+            static (int Ano, int Semana) Chave(Reuniao x)
+            {
+                var m = System.Text.RegularExpressions.Regex.Match(x.SemanaReuniao ?? "", @"(\d+)\D+(\d{4})");
+                return m.Success ? (int.Parse(m.Groups[2].Value), int.Parse(m.Groups[1].Value)) : (int.MaxValue, 0);
+            }
+            return r.OrderBy(Chave).ThenBy(x => x.SemanaReuniao, StringComparer.Ordinal).ToList();
         }
         public Reuniao ObterReuniao(string Stamp, bool LoadDesignacoes, bool LoadCanticos)
         {

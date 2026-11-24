@@ -434,6 +434,7 @@ a:hover { color: var(--brand-strong); }
 .notification.is-warning { background: var(--warn-tint); color: var(--warn-ink); }
 .notification.is-danger { background: var(--bad-tint); color: var(--bad-ink); }
 .notice { display: flex; gap: .75rem; padding: .9rem 1rem; border-radius: var(--radius); font-size: .92rem; margin-bottom: 1rem; }
+.notice.is-info { background: var(--brand-tint); color: var(--brand-strong); }
 .notice.is-ok { background: var(--ok-tint); color: var(--ok-ink); }
 .notice.is-warn { background: var(--warn-tint); color: var(--warn-ink); }
 .notice.is-bad { background: var(--bad-tint); color: var(--bad-ink); }
@@ -861,3 +862,6 @@ input[type="date"].input, input[type="time"].input { appearance: none; -webkit-a
 /* A área clicável de uma caixa de seleção é a etiqueta inteira, com o mínimo de toque */
 .check-all, .check-group, label.checkbox { min-height: var(--touch); display: inline-flex; align-items: center; gap: .5rem; }
 label.checkbox[style*="display:block"] { display: flex !important; }
+
+/* Datas de início e fim da semana */
+.rev-datas { font-size: 1.05rem; font-weight: 600; color: var(--ink-soft); font-variant-numeric: tabular-nums; margin: .15rem 0 0; }

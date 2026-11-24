@@ -2,6 +2,8 @@
 @{
     ViewData["Title"] = "Reunião";
     var designacoes = Model.Designacoes ?? new();
+    // Semana sem reunião (assembleia, congresso, memorial): as partes sem pessoa guardadas antes desta regra não contam como por atribuir.
+    designacoes = designacoes.Where(d => !Model.Cancelada(d)).ToList();
     // As secções seguem os intervalos de Ids dos tipos (ver HourglassImportador): 0 semana, 100 ministério, 200 viver, 300/400 fim de semana, 500 responsabilidades.
     var secoes = new (int Base, string Titulo, string Icone)[]
     {
@@ -12,7 +14,7 @@
 
 <div class="container">
     <div class="page-head">
-        <div class="head-title"><div><h1>@Model.SemanaReuniao</h1><p class="field-hint">Importado do Hourglass: para alterar, edite no Hourglass e importe de novo.</p></div></div>
+        <div class="head-title"><div><h1>@Model.SemanaReuniao</h1>@if (Model.Datas != null) { <p class="rev-datas">@Model.Datas</p> }<p class="field-hint">Importado do Hourglass: para alterar, edite no Hourglass e importe de novo.</p></div></div>
         <div class="head-actions">
             <a class="button is-info is-light" href="~/Reunioes">
                 <span class="icon"><i class="fa-solid fa-arrow-left"></i></span><span>Semanas</span>
@@ -20,7 +22,15 @@
         </div>
     </div>
 
-    @if (!designacoes.Any())
+    @if (Model.ResumoEvento is string resumo)
+    {
+        <div class="notice is-info" role="status">
+            <span class="icon"><i class="fa-solid fa-circle-info"></i></span>
+            <span><strong>@resumo.</strong> @(Model.SemReuniao ? "Nesta semana não há reunião na congregação, por isso não há designações por atribuir." : "A outra reunião realiza-se normalmente.")</span>
+        </div>
+    }
+
+    @if (!designacoes.Any() && Model.ResumoEvento == null)
     {
         <div class="empty-state">
             <span class="icon"><i class="fa-solid fa-clipboard-list"></i></span>
@@ -28,7 +38,7 @@
             Importe as reuniões do Hourglass para a preencher.
         </div>
     }
-    else
+    else if (designacoes.Any())
     {
     <div id="regiao">
         @await Html.PartialAsync("_Stats", new[] {
@@ -68,10 +78,14 @@
                 {
                     var grupo = designacoes.Where(d => d.TipoDesignacao!.Id == item.TipoDesignacao!.Id && d.Local == item.Local).ToList();
                     var pendente = grupo.Any(u => !u.Atribuida);
+                    // Tipos criados antes de a coluna ser alargada ficaram cortados aos 50 caracteres: o nome completo da designação passa a ser o título.
+                    var desc = item.TipoDesignacao!.Descricao ?? "";
+                    var nomeD = item.NomeDesignacao ?? "";
+                    var cortado = nomeD.Length > desc.Length && nomeD.StartsWith(desc, StringComparison.Ordinal);
                     <article class="rev-linha is-leitura @(pendente ? "is-falta" : "")">
                         <div class="rev-quem">
-                            <div class="rev-nome">@item.TipoDesignacao!.Descricao @if (item.TipoDesignacao.Salas > 1) { <span class="tag is-light">@item.Local</span> }</div>
-                            @if (!string.IsNullOrWhiteSpace(item.NomeDesignacao) && item.NomeDesignacao != item.TipoDesignacao.Descricao) { <div class="field-hint">@item.NomeDesignacao</div> }
+                            <div class="rev-nome">@(cortado ? nomeD : desc) @if (item.TipoDesignacao.Salas > 1) { <span class="tag is-light">@item.Local</span> }</div>
+                            @if (!cortado && !string.IsNullOrWhiteSpace(nomeD) && nomeD != desc) { <div class="field-hint">@nomeD</div> }
                         </div>
                         <span class="num minutos-l">@(item.NMin > 0 ? item.NMin + " min" : "")</span>
                         <div class="rev-pessoas">

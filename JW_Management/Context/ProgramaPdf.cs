@@ -95,7 +95,8 @@ public static class PdfProgramas
                 foreach (var s in p.Semanas)
                 {
                     var idx = Array.IndexOf(linhasEvento, l.Id);
-                    if (s.Evento.Count > 0 && idx >= 0) t.AddCell(Cel(idx % 3 < s.Evento.Count ? s.Evento[idx % 3] : "", fEvento, fundo: Cinza, borda: Rectangle.LEFT_BORDER | Rectangle.BOTTOM_BORDER, h: 9.8f, vpad: .4f));
+                    var evLinha = idx < 0 ? new List<string>() : idx < 3 ? s.SemMeio : s.SemFim; // min1-3: reunião de semana; std/stl/sto: fim de semana
+                    if (evLinha.Count > 0) t.AddCell(Cel(idx % 3 < evLinha.Count ? evLinha[idx % 3] : "", fEvento, fundo: Cinza, borda: Rectangle.LEFT_BORDER | Rectangle.BOTTOM_BORDER, h: 9.8f, vpad: .4f));
                     else t.AddCell(Cel(Valor(s, l.Id), fValor, borda: Rectangle.LEFT_BORDER | Rectangle.BOTTOM_BORDER, fundo: s.Visita ? Destaque : null, h: 9.8f, vpad: .4f));
                 }
             }
