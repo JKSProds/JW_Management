@@ -1,6 +1,5 @@
 using System.Text;
 using System.Text.RegularExpressions;
-using Google.Protobuf.WellKnownTypes;
 using Newtonsoft.Json.Linq;
 
 namespace JW_Management.Models;
@@ -10,7 +9,7 @@ public class JWApiContext
    //API CALLS
     public AppContext _appContext { get; set; }
     private string CongId => _appContext._currentTenant.JWApiIdCongregacao;
-    public string Cookies {get;set;} 
+    public string Cookies {get;set;} = "";
     private string XSRF_Token => Regex.Match(Cookies, @"XSRF-TOKEN=([^;]+)").Groups[1].Value;
     private string BaseURL => $"https://hub.jw.org/congregation-literature/api";
 
@@ -205,9 +204,6 @@ public class JWApiContext
             Console.WriteLine(e);
             throw;
         }
-
-        return string.Empty;
-
     }
     
     public string FecharInventario(Inventario i)
@@ -221,7 +217,6 @@ public class JWApiContext
             Console.WriteLine(e);
             throw;
         }
-        return string.Empty;
     }
     
     // Um só HttpClient e cache em memória: os 12 números de um ano verificam-se em paralelo e uma vez por algumas horas.

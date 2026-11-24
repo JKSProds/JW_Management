@@ -1,10 +1,7 @@
-﻿using Google.Protobuf.WellKnownTypes;
 using iTextSharp.text;
 using iTextSharp.text.pdf;
-using iTextSharp.text.rtf;
 using System.Collections;
 using System.Globalization;
-using System.Reflection.Metadata;
 using System.Text;
 using CsvHelper;
 
@@ -12,7 +9,6 @@ namespace JW_Management.Models
 {
     public class FileContext(AppContext appContext)
     {
-        private string Caminho = "D:\\";
         private string CaminhoLinux = "/app/img/";
         public AppContext _appContext { get; set; } = appContext;
         public Tenant _currentTenant => _appContext._currentTenant;
@@ -21,12 +17,6 @@ namespace JW_Management.Models
         {
             CriarPasta(CaminhoLinux);
             return CaminhoLinux;
-        }
-
-        public string ObterCaminhoTerritorios()
-        {
-            CriarPasta(CaminhoLinux + "territorio/" + _currentTenant.Id + "/");
-            return CaminhoLinux + "territorio/" + _currentTenant.Id + "/";
         }
 
         public string ObterCaminhoPublicadores()
@@ -85,9 +75,8 @@ namespace JW_Management.Models
             }
             catch
             {
-                return null;
+                return Array.Empty<byte>();
             }
-            return null;
         }
 
         public bool ApagarFicheiro(string Caminho)
@@ -104,11 +93,6 @@ namespace JW_Management.Models
                 return false;
             }
             return true;
-        }
-
-        public bool GuardarAnexoTerritorio(IFormFile file, string Name)
-        {
-            return CriarFicheiro(ObterCaminhoTerritorios() + Name, file);
         }
 
         public bool GuardarImagemLiteratura(IFormFile file, string Name)
@@ -243,95 +227,6 @@ namespace JW_Management.Models
 
             return outputPdfStream;
 
-        }
-
-        public MemoryStream PreencherFormularioS13(DbContext context, List<Territorio> t, DateTime dInicio, DateTime dFim)
-        {
-            string pdfTemplate = AppDomain.CurrentDomain.BaseDirectory + "S-13_TPO.pdf";
-            string a = DateTime.Now.Year.ToString();
-            List<TipoTerritorio> z = context.ObterTiposTerritorio();
-            List<MemoryStream> m = new List<MemoryStream>();
-
-
-            foreach (var d in z)
-            {
-                int i = 0;
-                List<Territorio> l = new List<Territorio>();
-                foreach (var t2 in t.Where(t => t.Tipo.Id == d.Id))
-                {
-                    if (t2.Registros.Count / 4 + i >= 20)
-                    {
-                        m.Add(PreencherPaginaIndividualS13(pdfTemplate, a, d.Descricao ?? "", l));
-                        l.Clear();
-                        i = 0;
-                    }
-
-                    l.Add(t2);
-                    i += t2.Registros.Count / 4 + 1;
-                }
-                if (l.Count() > 0) m.Add(PreencherPaginaIndividualS13(pdfTemplate, a, d.Descricao ?? "", l));
-            }
-
-            return CombinePdfStreams(m.ToArray());
-        }
-
-        private MemoryStream PreencherPaginaIndividualS13(string pdfTemplate, string AnoServico, string TipoTerritorio, List<Territorio> LstTerritorios)
-        {
-            // Create a MemoryStream to store the modified PDF
-            MemoryStream memoryStream = new MemoryStream();
-            Font fontB = FontFactory.GetFont(FontFactory.HELVETICA, 8);
-
-            // Create a PdfReader to read the existing PDF
-            using (PdfReader reader = new PdfReader(pdfTemplate))
-            {
-                // Create a PdfStamper to modify the existing PDF
-                using (PdfStamper stamper = new PdfStamper(reader, memoryStream))
-                {
-                    int y = 85;
-                    // Get the PdfContentByte for the page
-                    PdfContentByte contentByte = stamper.GetOverContent(1);
-
-                    // Add text overlay
-                    ColumnText.ShowTextAligned(contentByte, Element.ALIGN_LEFT, new Phrase(AnoServico), 140, reader.GetPageSize(1).Height - y, 0);
-                    ColumnText.ShowTextAligned(contentByte, Element.ALIGN_LEFT, new Phrase(TipoTerritorio), 310, reader.GetPageSize(1).Height - y, 0);
-
-                    y += 75;
-
-                    foreach (var t in LstTerritorios)
-                    {
-                        int x = 39;
-                        ColumnText.ShowTextAligned(contentByte, Element.ALIGN_LEFT, new Phrase(t.Id), x, reader.GetPageSize(1).Height - y, 0);
-
-                        x += 35;
-                        if (t.Registros.Count > 0) ColumnText.ShowTextAligned(contentByte, Element.ALIGN_LEFT, new Phrase(t.Registros!.Last().UltimoMovimento.DataMovimento.ToString("dd/MM/yy")), x, reader.GetPageSize(1).Height - y, 0);
-
-                        x += 60;
-                        for (int i = 0; i < t.Registros.Count(); i++)
-                        {
-                            RegistroTerritorio l = t.Registros[i];
-                            if (i == 4) { y += 31; x = 134; }
-
-                            //Nome Publicador
-                            ColumnText.ShowTextAligned(contentByte, Element.ALIGN_LEFT, new Phrase(l.Entrada.Publicador.Nome, fontB), x, reader.GetPageSize(1).Height - y + 10, 0);
-
-                            //Entrada
-                            ColumnText.ShowTextAligned(contentByte, Element.ALIGN_LEFT, new Phrase(l.Entrada.DataMovimento.ToShortDateString(), fontB), x, reader.GetPageSize(1).Height - y - 7, 0);
-
-                            //Saida
-                            ColumnText.ShowTextAligned(contentByte, Element.ALIGN_LEFT, new Phrase((l.Saida.DataMovimento == DateTime.MinValue ? "" : l.Saida.DataMovimento.ToShortDateString()), fontB), x + 52, reader.GetPageSize(1).Height - y - 7, 0);
-                            x += 108;
-                        }
-
-                        y += 31;
-                    }
-
-                }
-            }
-
-            // Reset the MemoryStream position to the beginning before returning
-            memoryStream.Position = 0;
-
-            return memoryStream;
         }
 
         private MemoryStream CombinePdfStreams(params MemoryStream[] pdfStreams)

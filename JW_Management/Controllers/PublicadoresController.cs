@@ -11,7 +11,7 @@ namespace JW_Management.Controllers
     public class PublicadoresController(DbContext _dbContext, MailContext _mailContext, HourglassSincronizador _sync, HourglassContext _hg, FileContext _file) : Controller
     {
         private bool OutroAdmin(int id) => _dbContext.ObterPublicadores(false).Any(x => x.Id != id && x.Id > 0 && x.TipoUtilizador == 0);
-        private static readonly int[] Funcoes = { 0, 10, 20, 30, 40, 50, 60, 70, 80, 90, 99 };
+        private static readonly int[] Funcoes = { 0, 10, 20, 30, 40, 50, 60, 70, 80, 90 };
 
         [Authorize(Roles = "Admin, Assistente, Coordenador, Secretario, Servico")]
         [HttpGet]
@@ -29,19 +29,19 @@ namespace JW_Management.Controllers
             ViewBag.Grupos = LstGrupos.Select(l => new SelectListItem() { Value = l.Id.ToString(), Text = l.Nome + " (" + l.Responsavel.Nome + ")" });
 
             ViewBag.Funcoes = Funcoes.Select(t => new SelectListItem(new Publicador { TipoUtilizador = t }.Role, t.ToString()));
-            return View(_dbContext.ObterPublicador(id, true, true, true, false));
+            return View(_dbContext.ObterPublicador(id, true, true, true));
         }
 
-        [Authorize(Roles = "Admin, Assistente, Coordenador, Secretario, Servico, Literatura, Territorios")]
+        [Authorize(Roles = "Admin, Assistente, Coordenador, Secretario, Servico, Literatura")]
         public IActionResult ObterPublicador(int id)
         {
-            // só o que o ecrã de territórios usa (nada de hash da palavra-passe nem de dados de outros campos)
-            var p = _dbContext.ObterPublicador(id, false, false, false, false);
+            // só o que o ecrã de seleção de publicadores usa (nada de hash da palavra-passe nem de dados de outros campos)
+            var p = _dbContext.ObterPublicador(id, false, false, false);
             return Json(new { p.Id, p.Nome, p.Email, p.Telemovel });
         }
 
 
-        [Authorize(Roles = "Admin, Assistente, Coordenador, Secretario, Servico, Literatura, Territorios")]
+        [Authorize(Roles = "Admin, Assistente, Coordenador, Secretario, Servico, Literatura")]
         [HttpGet]
         public IActionResult ObterPublicadores()
         {
@@ -56,7 +56,7 @@ namespace JW_Management.Controllers
             if (p.Id == 0) return StatusCode(500);
             if (!string.IsNullOrEmpty(p.Nome) && string.IsNullOrEmpty(p.Username)) p.Username = p.Nome.Replace(" ", "").ToLower();
 
-            Publicador pOriginal = _dbContext.ObterPublicador(p.Id, false, false, false, false);
+            Publicador pOriginal = _dbContext.ObterPublicador(p.Id, false, false, false);
 
             var passwordHasher = new PasswordHasher<string>();
             if (pOriginal.Password != p.Password && !string.IsNullOrEmpty(p.Password))
@@ -85,8 +85,8 @@ namespace JW_Management.Controllers
         public IActionResult Publicador(int id, bool delete)
         {
             if (!delete) return StatusCode(403);
-            var p = _dbContext.ObterPublicador(id, false, false, false, false);
-            var u = _dbContext.ObterPublicador(User.ObterId(), false, false, false, false);
+            var p = _dbContext.ObterPublicador(id, false, false, false);
+            var u = _dbContext.ObterPublicador(User.ObterId(), false, false, false);
             if (p.TipoUtilizador < u.TipoUtilizador) return Forbid();
             // Mesma regra: um admin só se apaga a si próprio e só havendo outro admin.
             if (p.TipoUtilizador == 0 && (p.Id != u.Id || !OutroAdmin(p.Id))) return Forbid();
@@ -122,7 +122,7 @@ namespace JW_Management.Controllers
         {
             var id = User.ObterId();
             if (id <= 0) return NotFound();
-            var p = _dbContext.ObterPublicador(id, false, false, true, false);
+            var p = _dbContext.ObterPublicador(id, false, false, true);
             return p == null || p.Id <= 0 ? NotFound() : View(p);
         }
 
@@ -134,7 +134,7 @@ namespace JW_Management.Controllers
             var caminho = _file.ObterCaminhoPublicadores() + id + ".jpg";
             if (!System.IO.File.Exists(caminho)) return NotFound();
             Response.Headers.CacheControl = "private, no-cache"; // revalida sempre (304) para a troca de foto aparecer logo
-            return PhysicalFile(caminho, "image/jpeg", new DateTimeOffset(System.IO.File.GetLastWriteTimeUtc(caminho)), null);
+            return PhysicalFile(caminho, "image/jpeg", new DateTimeOffset(System.IO.File.GetLastWriteTimeUtc(caminho)), null!);
         }
 
         [Authorize]
@@ -172,8 +172,12 @@ namespace JW_Management.Controllers
             return Json(new { atualizados, criados });
         }
 
+        // POST com o cabeçalho do App.api (um site externo não o consegue enviar) e só para quem gere publicadores.
+        [Authorize(Roles = "Admin, Assistente, Coordenador, Secretario, Servico")]
+        [HttpPost]
         public IActionResult Senha(int id)
         {
+            if (Request.Headers["X-Requested-With"] != "XMLHttpRequest") return BadRequest();
             string s = "";
             const string valid = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890!#$%&/()=?-_,.;:|^~";
 
@@ -189,7 +193,9 @@ namespace JW_Management.Controllers
                 }
             }
             
-            var p = _dbContext.ObterPublicador(id, false, false, true, false);
+            var p = _dbContext.ObterPublicador(id, false, false, true);
+            // Mesma regra de apagar: não se mexe na conta de quem tem mais permissões.
+            if (p.TipoUtilizador < _dbContext.ObterPublicador(User.ObterId(), false, false, false).TipoUtilizador) return Forbid();
             p.Password = s;
             _mailContext.MailSenhaPublicador(p);
             

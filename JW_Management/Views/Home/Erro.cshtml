@@ -1,0 +1,34 @@
+@model JW_Management.Models.ErroPagina
+@{
+    ViewData["Title"] = "Algo correu mal";
+}
+<div class="container">
+    <section class="erro-pagina" aria-labelledby="erroTitulo">
+        <span class="erro-icone" aria-hidden="true"><i class="fa-solid fa-triangle-exclamation"></i></span>
+        <p class="erro-codigo">Erro 500</p>
+        <h1 id="erroTitulo">Algo correu mal</h1>
+        <p class="erro-resumo">@Model.Resumo</p>
+        <p class="erro-ajuda">O problema foi registado. Se continuar, indique ao administrador a referência abaixo.</p>
+
+        <div class="erro-acoes">
+            <a class="button is-info" href="~/"><span class="icon"><i class="fa-solid fa-house"></i></span><span>Voltar ao início</span></a>
+            <button type="button" class="button" onclick="history.back()"><span class="icon"><i class="fa-solid fa-arrow-left"></i></span><span>Página anterior</span></button>
+        </div>
+
+        <dl class="erro-meta">
+            <div><dt>Referência</dt><dd class="num">@Model.Pedido</dd></div>
+            @if (!string.IsNullOrEmpty(Model.Caminho))
+            {
+                <div><dt>Pedido</dt><dd class="num">@Model.Caminho</dd></div>
+            }
+        </dl>
+
+        @if (!string.IsNullOrEmpty(Model.Detalhe))
+        {
+            <details class="erro-detalhe">
+                <summary>Detalhe técnico (só administradores)</summary>
+                <pre>@Model.Detalhe</pre>
+            </details>
+        }
+    </section>
+</div>

@@ -175,7 +175,7 @@
             <button type="button" class="delete" aria-label="Fechar" data-close></button>
         </header>
         <section class="modal-card-body">
-            <p class="modal-body-text mb-4">Lê as reuniões, o serviço de campo e o testemunho público deste mês (só leitura) e guarda-os. Depois, os PDF geram-se sem pedir a cookie.</p>
+            <p class="modal-body-text mb-4">Lê as reuniões (programa e designações), o serviço de campo e o testemunho público deste mês (só leitura) e guarda-os. Depois, os PDF geram-se sem pedir a cookie.</p>
             <div class="buttons has-addons" role="group" aria-label="Origem dos dados">
                 <button type="button" class="button is-info is-selected" data-action="hgModo" data-modo="sessao" aria-pressed="true">Sessão (token)</button>
                 <button type="button" class="button" data-action="hgModo" data-modo="pacote" aria-pressed="false">Exportação (colar dados)</button>
@@ -213,7 +213,7 @@
 
 @section Scripts {
 <script>
-    const ano = @Model.Ano, mes = @Model.Mes;
+    const ano = @Model.Ano, mes = @Model.Mes, jaGuardado = @(est.Semanas > 0 ? "true" : "false");
     try { const d = localStorage.getItem('dirigenteSentinela'); if (d) App.$('#pgDir').value = d; } catch (e) { }
     App.$('#pgDir').addEventListener('change', e => { try { localStorage.setItem('dirigenteSentinela', e.target.value); } catch (x) { } });
 
@@ -249,9 +249,22 @@
 
     App.on('sync', btn => App.run(btn, async () => {
         const cookie = origem.obter(); if (cookie === null) return;
+        if (jaGuardado && !await App.confirm({ title: 'Substituir o mês guardado', text: 'O programa e as designações das reuniões de @ProgramaServico.NomeMes(Model.Mes) @Model.Ano já estão guardados. Obter do Hourglass substitui-os pelos dados atuais.', ok: 'Substituir', danger: false })) return;
         const r = await fetch('/Reunioes/ProgramaSincronizar', { method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded' }, body: new URLSearchParams({ cookie: cookie, ano: ano, mes: mes }) });
         if (!r.ok) { notifyError(r.status === 401 ? 'A sessão do Hourglass expirou. Cole o pedido outra vez.' : (await r.text()) || 'Não foi possível obter os dados do Hourglass.'); return; }
-        origem.limpar(); notify('Programa guardado.'); setTimeout(() => location.reload(), 700);
+        // Importa também as designações das reuniões (páginas de Reuniões), com o mesmo pedido: a exportação não fica guardada.
+        const iso = d => new Date(d.getTime() - d.getTimezoneOffset() * 60000).toISOString().slice(0, 10);
+        const primeira = new Date(ano, mes - 1, 1), seg = new Date(primeira); seg.setDate(seg.getDate() - ((seg.getDay() + 6) % 7));
+        let ultima = seg; for (let d = new Date(seg); d.getMonth() === mes - 1; d.setDate(d.getDate() + 7)) ultima = new Date(d);
+        const fim = new Date(ultima); fim.setDate(fim.getDate() + 6);
+        const rp = await fetch('/Reunioes/HourglassPreview', { method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded' }, body: new URLSearchParams({ cookie: cookie, de: iso(seg), ate: iso(fim) }) });
+        if (!rp.ok) { notifyError('Programa guardado, mas as designações das reuniões não foram importadas: ' + ((await rp.text()) || 'erro do Hourglass.')); return; }
+        const prev = await rp.json();
+        let mapa = {}; try { mapa = JSON.parse(localStorage.getItem('hgMapa') || '{}'); } catch (e) { }
+        prev.semanas.forEach(s => { s.importar = true; s.itens.forEach(it => { if (mapa[it.chave] > 0 && it.tipoId <= 0) it.tipoId = mapa[it.chave]; }); });
+        const ri = await fetch('/Reunioes/HourglassImportar', { method: 'POST', headers: { 'Content-Type': 'application/json', 'X-Requested-With': 'XMLHttpRequest' }, body: JSON.stringify(prev) });
+        if (!ri.ok) { notifyError('Programa guardado, mas as designações das reuniões não foram importadas: ' + ((await ri.text()) || 'erro.')); return; }
+        origem.limpar(); notify('Programa e reuniões guardados.'); setTimeout(() => location.reload(), 700);
     }, 'Não foi possível obter os dados do Hourglass.'));
 </script>
 }

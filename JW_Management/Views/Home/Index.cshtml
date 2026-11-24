@@ -3,8 +3,7 @@
 @{
     ViewData["Title"] = "Início";
     var autenticado = User.Identity!.IsAuthenticated;
-    var congressos = autenticado && User.ObterTenant() == 9999;
-    var literatura = autenticado && !congressos && new[] { "Admin", "Assistente", "Coordenador", "Secretario", "Servico", "Literatura" }.Any(User.IsInRole);
+    var literatura = autenticado && new[] { "Admin", "Assistente", "Coordenador", "Secretario", "Servico", "Literatura" }.Any(User.IsInRole);
 }
 
 <div class="container">
@@ -14,7 +13,7 @@
             <div class="welcome-inner">
                 <span class="auth-mark"><img src="~/img/logo.svg" alt=""></span>
                 <h1>Gestor Congregacional</h1>
-                <p>Literatura, territórios e reuniões da congregação num só lugar.</p>
+                <p>Literatura e reuniões da congregação num só lugar.</p>
                 <a class="button is-info" href="~/Home/Login">
                     <span class="icon"><i class="fa-solid fa-right-to-bracket"></i></span><span>Iniciar sessão</span>
                 </a>
@@ -53,7 +52,7 @@
         </div>
     }
 
-    @if (autenticado && !congressos)
+    @if (autenticado)
     {
         <section class="mb-5 mt-5" aria-labelledby="hMin">
             <h2 class="section-title" id="hMin">As minhas designações @if (new[] { "Admin", "Assistente", "Coordenador", "Secretario", "Servico" }.Any(User.IsInRole)) { <a href="~/Reunioes">Ver reuniões</a> }</h2>
@@ -65,16 +64,6 @@
     {
         <h2 class="section-title">Módulos</h2>
         <div class="modules">
-            @if (congressos)
-            {
-                <article class="module">
-                    <div class="module-head"><span class="icon-box"><i class="fa-solid fa-bus"></i></span><h2>Congressos e assembleias</h2></div>
-                    <div class="module-body">Organização de viagens, paragens e congregações para cada evento.</div>
-                    <nav class="module-links"><a href="~/Congressos">Abrir lista</a></nav>
-                </article>
-            }
-            else
-            {
                 <article class="module">
                     <div class="module-head"><span class="icon-box"><i class="fa-solid fa-book"></i></span><h2>Literatura</h2></div>
                     <div class="module-body">Gestão de stocks, com as quantidades a separar por grupo.</div>
@@ -95,7 +84,6 @@
                         <a href="~/Reunioes/Calendario">Calendário</a>
                     </nav>
                 </article>
-            }
         </div>
     }
 </div>
@@ -111,9 +99,6 @@
         const el = document.getElementById('dataHoje');
         el.textContent = d.charAt(0).toUpperCase() + d.slice(1) + ' · ' + el.textContent;
     })();
-    @if (!congressos)
-    {
-    <text>
     // As minhas designações das próximas semanas (agrupadas por semana)
     App.api('GET', '/Home/MinhasDesignacoes').then(l => {
         const c = App.$('#minhas'); c.innerHTML = '';
@@ -141,8 +126,6 @@
             c.appendChild(card);
         });
     }).catch(() => { App.$('#minhas').innerHTML = '<p class="attn-empty">Não foi possível obter as suas designações.</p>'; });
-    </text>
-    }
     @if (literatura)
     {
     <text>

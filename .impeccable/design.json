@@ -1,0 +1,225 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-11-24T09:36:13+00:00",
+  "title": "Design System: Gestor Congregacional",
+  "extensions": {
+    "colorMeta": {
+      "brand": {
+        "role": "primary",
+        "displayName": "Azul-tinta",
+        "canonical": "#2a4dd0",
+        "tonalRamp": [
+          "#060f65",
+          "#142a90",
+          "#2545be",
+          "#3e65e0",
+          "#6088f5",
+          "#84aaff",
+          "#aaccff",
+          "#d2eeff"
+        ]
+      },
+      "paper": {
+        "role": "neutral",
+        "displayName": "Papel frio",
+        "canonical": "#f3f5f9",
+        "tonalRamp": [
+          "#202224",
+          "#393a3e",
+          "#545559",
+          "#707275",
+          "#8d8f93",
+          "#acaeb2",
+          "#ccced2",
+          "#eceef2"
+        ]
+      },
+      "ink": {
+        "role": "neutral",
+        "displayName": "Tinta",
+        "canonical": "#151e2d",
+        "tonalRamp": [
+          "#1b222d",
+          "#333b48",
+          "#4c5666",
+          "#687284",
+          "#8690a0",
+          "#a6aebd",
+          "#c7ceda",
+          "#e9eff9"
+        ]
+      },
+      "ok": {
+        "role": "semantic",
+        "displayName": "Verde de estado",
+        "canonical": "#1f7a4d",
+        "tonalRamp": [
+          "#002c11",
+          "#004826",
+          "#0a663d",
+          "#338358",
+          "#5ea079",
+          "#85bd9a",
+          "#acdbbd",
+          "#d4f9e1"
+        ]
+      },
+      "warn": {
+        "role": "semantic",
+        "displayName": "Âmbar de aviso",
+        "canonical": "#a35a06",
+        "tonalRamp": [
+          "#3e1200",
+          "#602900",
+          "#834100",
+          "#a35e1a",
+          "#bd7f4b",
+          "#d8a175",
+          "#f2c39e",
+          "#ffe6c9"
+        ]
+      },
+      "bad": {
+        "role": "semantic",
+        "displayName": "Vermelho de erro",
+        "canonical": "#c0372b",
+        "tonalRamp": [
+          "#4d0000",
+          "#740000",
+          "#9c1b14",
+          "#bf4033",
+          "#d9685a",
+          "#f28f80",
+          "#ffb5a7",
+          "#ffdbcf"
+        ]
+      }
+    },
+    "typographyMeta": {
+      "display": {
+        "displayName": "Título de página",
+        "purpose": "Cabeçalho de cada ecrã."
+      },
+      "body": {
+        "displayName": "Corpo",
+        "purpose": "Texto corrido e listas."
+      },
+      "label": {
+        "displayName": "Etiqueta",
+        "purpose": "Etiquetas de campos e notas de apoio."
+      }
+    },
+    "shadows": [
+      {
+        "name": "pop",
+        "value": "0 8px 24px rgba(21,30,45,.14)",
+        "purpose": "Só para menus e listas que flutuam acima da página."
+      }
+    ],
+    "motion": [
+      {
+        "name": "ease",
+        "value": "cubic-bezier(.16, 1, .3, 1)",
+        "purpose": "Transições de estado de botões e filtros (.15s)."
+      }
+    ],
+    "breakpoints": [
+      {
+        "name": "sm",
+        "value": "640px"
+      },
+      {
+        "name": "md",
+        "value": "768px"
+      }
+    ]
+  },
+  "components": [
+    {
+      "name": "Primary Button",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "Ação principal de um ecrã.",
+      "html": "<button class=\"ds-btn ds-btn-primary\">Guardar</button>",
+      "css": ".ds-btn{font-family:Figtree,system-ui,sans-serif;font-weight:650;border-radius:6px;min-height:44px;padding:0 1.1rem;border:1px solid transparent;cursor:pointer;transition:background .15s cubic-bezier(.16,1,.3,1)}.ds-btn-primary{background:#2a4dd0;color:#fff}.ds-btn-primary:hover{background:#1e3a9f}.ds-btn:focus-visible{outline:3px solid #8aa2ff;outline-offset:2px}.ds-btn-light{background:#e8edfb;color:#1e3a9f}.ds-btn-light:hover{background:#d7e0fa}"
+    },
+    {
+      "name": "Light Button",
+      "kind": "button",
+      "refersTo": "button-light",
+      "description": "Ação secundária da mesma família.",
+      "html": "<button class=\"ds-btn ds-btn-light\">Importar do Hourglass</button>",
+      "css": ".ds-btn{font-family:Figtree,system-ui,sans-serif;font-weight:650;border-radius:6px;min-height:44px;padding:0 1.1rem;border:1px solid transparent;cursor:pointer;transition:background .15s cubic-bezier(.16,1,.3,1)}.ds-btn-primary{background:#2a4dd0;color:#fff}.ds-btn-primary:hover{background:#1e3a9f}.ds-btn:focus-visible{outline:3px solid #8aa2ff;outline-offset:2px}.ds-btn-light{background:#e8edfb;color:#1e3a9f}.ds-btn-light:hover{background:#d7e0fa}"
+    },
+    {
+      "name": "Input",
+      "kind": "input",
+      "refersTo": "input",
+      "description": "Campo de texto com etiqueta.",
+      "html": "<label class=\"ds-label\" for=\"ds-i\">Utilizador</label><input id=\"ds-i\" class=\"ds-input\" value=\"\">",
+      "css": ".ds-label{display:block;font:600 .82rem Figtree,system-ui,sans-serif;color:#465165;margin-bottom:.3rem}.ds-input{width:100%;box-sizing:border-box;min-height:44px;padding:0 .75rem;border:1px solid #c9d1de;border-radius:6px;background:#fff;color:#151e2d;font:inherit}.ds-input:hover{border-color:#637085}.ds-input:focus{outline:none;border-color:#2a4dd0;box-shadow:0 0 0 1px #2a4dd0}"
+    },
+    {
+      "name": "Statbar",
+      "kind": "custom",
+      "description": "Indicadores de resumo em faixa.",
+      "html": "<div class=\"ds-stats\"><div class=\"ds-stat\"><b>12</b><small>Semanas</small></div><div class=\"ds-stat\"><b>9</b><small>Completas</small></div><div class=\"ds-stat ds-warn\"><b>3</b><small>Por atribuir</small></div></div>",
+      "css": ".ds-stats{display:flex;background:#fff;border:1px solid #e2e7ef;border-radius:8px;overflow:hidden;font-family:Figtree,system-ui,sans-serif}.ds-stat{flex:1;padding:.75rem 1.1rem;border-right:1px solid #e2e7ef}.ds-stat:last-child{border-right:0}.ds-stat b{display:block;font-size:1.2rem;font-weight:750;font-variant-numeric:tabular-nums;color:#151e2d}.ds-stat small{color:#637085;font-size:.76rem;font-weight:600}.ds-warn b{color:#a35a06}"
+    },
+    {
+      "name": "Notice",
+      "kind": "custom",
+      "description": "Aviso de estado com ícone e texto.",
+      "html": "<div class=\"ds-notice\" role=\"status\">Programa guardado.</div>",
+      "css": ".ds-notice{padding:.75rem 1rem;border-radius:8px;background:#e1f3ea;color:#17583a;font:500 .92rem Figtree,system-ui,sans-serif}"
+    }
+  ],
+  "narrative": {
+    "northStar": "O Balcão de Secretaria",
+    "overview": "Uma ferramenta de trabalho diária, prática e sem cerimónia. Superfície plana e fria, azul-tinta só onde há ação, números e estados legíveis de relance.",
+    "keyCharacteristics": [
+      "Plano em repouso: sem sombras, bordas finas.",
+      "Um único acento (azul-tinta).",
+      "Controlos firmes com altura mínima de toque de 44 px.",
+      "Números tabulares e estados com texto ou ícone.",
+      "Tema claro e escuro com os mesmos papéis."
+    ],
+    "rules": [
+      {
+        "name": "The One Voice Rule",
+        "body": "O azul-tinta é a única cor de acento.",
+        "section": "colors"
+      },
+      {
+        "name": "The Never-Color-Alone Rule",
+        "body": "Estado nunca se comunica só por cor.",
+        "section": "colors"
+      },
+      {
+        "name": "The Tabular Numbers Rule",
+        "body": "Quantidades, minutos e contagens usam números tabulares.",
+        "section": "typography"
+      },
+      {
+        "name": "The Flat-By-Default Rule",
+        "body": "Cartões, listas e campos não têm sombra; só o que flutua tem.",
+        "section": "elevation"
+      }
+    ],
+    "dos": [
+      "Do usar o azul-tinta (#2a4dd0) só para ação, ligação e estado selecionado.",
+      "Do manter superfícies planas, com borda de 1 px em vez de sombra.",
+      "Do acompanhar todo o estado de cor com texto ou ícone.",
+      "Do manter alvos de toque de pelo menos 44 px.",
+      "Do usar números tabulares em quantidades, minutos e contagens.",
+      "Do escrever o texto da interface em português de Portugal."
+    ],
+    "donts": [
+      "Don't usar emojis na interface.",
+      "Don't pôr sombra em cartões, listas ou campos em repouso.",
+      "Don't introduzir um segundo acento de cor.",
+      "Don't mostrar dados reais de publicadores em exemplos.",
+      "Don't reintroduzir Territórios ou Congressos."
+    ]
+  }
+}

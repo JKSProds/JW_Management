@@ -137,7 +137,7 @@ namespace JW_Management.Controllers
         private List<Publicador> Destinatarios(string? idpubs) =>
             (idpubs ?? "").Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
                 .Select(i => int.TryParse(i, out var n) ? n : 0).Where(n => n > 0).Distinct().Take(50)
-                .Select(n => _dbContext.ObterPublicador(n, false, false, false, false))
+                .Select(n => _dbContext.ObterPublicador(n, false, false, false))
                 .Where(p => p != null && p.Id > 0 && !string.IsNullOrWhiteSpace(p.Email)).ToList();
 
         [HttpPost]
@@ -172,7 +172,7 @@ namespace JW_Management.Controllers
             Literatura l = new Literatura()
             {
                 Referencia = referencia,
-                Publicador = _dbContext.ObterPublicador(idpub, false, false, false, false),
+                Publicador = _dbContext.ObterPublicador(idpub, false, false, false),
                 Quantidade = qtd,
                 Stamp = DateTime.Now.Ticks.ToString()
             };
@@ -243,7 +243,7 @@ namespace JW_Management.Controllers
 
             Literatura l = new Literatura()
             {
-                Publicador = _dbContext.ObterPublicador(idpub, false, false, false, false),
+                Publicador = _dbContext.ObterPublicador(idpub, false, false, false),
                 Quantidade = qtd,
                 Stamp = stamp
             };
@@ -316,7 +316,7 @@ namespace JW_Management.Controllers
                 CreationDate = DateTime.Now,
 
             };
-            Response.Headers.Add("Content-Disposition", cd.ToString());
+            Response.Headers.ContentDisposition = cd.ToString();
 
             return new FileContentResult(output.ToArray(), System.Net.Mime.MediaTypeNames.Application.Pdf);
         }

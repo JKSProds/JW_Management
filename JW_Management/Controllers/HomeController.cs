@@ -1,11 +1,13 @@
-﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc;
 using JW_Management.Models;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc.Rendering;
+using System.Diagnostics;
 using System.Security.Claims;
+using Microsoft.AspNetCore.Diagnostics;
 
 namespace JW_Management.Controllers
 {
@@ -144,10 +146,33 @@ namespace JW_Management.Controllers
             return Url.IsLocalUrl(ReturnUrl) ? LocalRedirect(ReturnUrl) : RedirectToAction("Index", "Home");
         }
 
+        // Serve dois casos: erro não tratado (o handler de exceções reexecuta aqui) e acesso negado (AccessDeniedPath).
+        [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
         public IActionResult Error()
         {
-            return View();
+            var falha = HttpContext.Features.Get<IExceptionHandlerPathFeature>();
+            if (falha == null) return View();
+
+            Response.StatusCode = 500;
+            var e = falha.Error;
+            // A descrição técnica só é mostrada a administradores: pode conter nomes de tabelas ou caminhos.
+            return View("Erro", new ErroPagina
+            {
+                Pedido = Activity.Current?.Id ?? HttpContext.TraceIdentifier,
+                Caminho = falha.Path,
+                Resumo = DescreverErro(e),
+                Detalhe = User.IsInRole("Admin") ? $"{e.GetType().FullName}: {e.Message}" : null
+            });
         }
+
+        private static string DescreverErro(Exception e) => e switch
+        {
+            MySql.Data.MySqlClient.MySqlException => "Não foi possível comunicar com a base de dados. Tente novamente dentro de instantes.",
+            HttpRequestException => "Não foi possível contactar um serviço externo (Hourglass ou jw.org).",
+            TimeoutException or TaskCanceledException => "A operação demorou demasiado tempo e foi cancelada.",
+            UnauthorizedAccessException => "Não tem permissão para esta operação.",
+            _ => "Ocorreu um erro inesperado ao processar o pedido."
+        };
 
         [HttpGet]
         public JsonResult Tenants()

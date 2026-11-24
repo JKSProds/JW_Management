@@ -1,9 +1,8 @@
-﻿@model JW_Management.Models.Publicador
+@model JW_Management.Models.Publicador
 @{
     ViewData["Title"] = "Publicador";
     var movimentos = Model.Movimentos ?? new();
     var pedidos = Model.Pedidos ?? new();
-    var territorios = Model.Territorios ?? new();
     var iniciais = string.Concat((Model.Nome ?? "?").Split(' ', StringSplitOptions.RemoveEmptyEntries).Take(1).Select(p => p[0])) +
                    string.Concat((Model.Nome ?? "").Split(' ', StringSplitOptions.RemoveEmptyEntries).Skip(1).Reverse().Take(1).Select(p => p[0]));
 }
@@ -26,14 +25,12 @@
 
     @await Html.PartialAsync("_Stats", new[] {
         ("fa-right-left", "Movimentos de literatura", movimentos.Count.ToString(), "", ""),
-        ("fa-clipboard-list", "Pedidos em aberto", pedidos.Count.ToString(), "", pedidos.Any() ? "is-warn" : ""),
-        ("fa-map", "Territórios a trabalhar", territorios.Count.ToString(), "", "") })
+        ("fa-clipboard-list", "Pedidos em aberto", pedidos.Count.ToString(), "", pedidos.Any() ? "is-warn" : "") })
 
     <div class="seg" role="tablist" aria-label="Secções da ficha">
         <button type="button" role="tab" id="tabDados" aria-controls="panDados" aria-selected="true">Dados</button>
         <button type="button" role="tab" id="tabMov" aria-controls="panMov" aria-selected="false">Movimentos<span class="count">@movimentos.Count</span></button>
         <button type="button" role="tab" id="tabPed" aria-controls="panPed" aria-selected="false">Pedidos<span class="count">@pedidos.Count</span></button>
-        <button type="button" role="tab" id="tabTer" aria-controls="panTer" aria-selected="false">Territórios<span class="count">@territorios.Count</span></button>
     </div>
 
     <section id="panDados" role="tabpanel" aria-labelledby="tabDados">
@@ -176,26 +173,6 @@
         }
     </section>
 
-    <section id="panTer" role="tabpanel" aria-labelledby="tabTer" hidden>
-        @if (!territorios.Any())
-        {
-            <div class="empty-state"><span class="icon"><i class="fa-solid fa-map"></i></span><strong>Sem territórios</strong>Não há territórios a trabalhar por este publicador.</div>
-        }
-        else
-        {
-            <div class="items">
-                @foreach (var item in territorios)
-                {
-                    <article class="item no-thumb">
-                        <div class="main">
-                            <div class="name">@item.Nome</div>
-                            <div class="meta"><span class="num">Nº @item.Id</span><span class="num">desde @item.UltimoMovimento?.DataMovimento</span></div>
-                        </div>
-                    </article>
-                }
-            </div>
-        }
-    </section>
 </div>
 
 @section Scripts {
@@ -211,7 +188,7 @@
 
     App.on('novaSenha', async btn => {
         if (!await App.confirm({ title: 'Nova palavra-passe', text: 'Gerar uma nova palavra-passe e enviá-la por email para @Model.Email? A atual deixa de funcionar.', ok: 'Gerar e enviar', danger: false })) return;
-        App.run(btn, async () => { await App.api('GET', '/Publicadores/Senha/@Model.Id'); notify('Nova palavra-passe gerada e enviada.'); },
+        App.run(btn, async () => { await App.api('POST', '/Publicadores/Senha/@Model.Id'); notify('Nova palavra-passe gerada e enviada.'); },
             'Não foi possível gerar a palavra-passe.');
     });
 </script>

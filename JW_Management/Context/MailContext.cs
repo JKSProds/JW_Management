@@ -189,40 +189,5 @@ namespace JW_Management.Models
             
             return p.Email != null && EnviarMail(p.Email, Assunto, Mensagem, null);
         }
-
-
-        public bool MailTerritorioAtribuido(Territorio t, string EmailDestino)
-        {
-            if (string.IsNullOrEmpty(t.Stamp) || string.IsNullOrEmpty(EmailDestino)) return false;
-
-            string Mensagem = "Abaixo segue o território atribuido a si para trabalhar num prazo máximo de 6 meses:<br><br>";
-
-            Mensagem += "Núm. do Território: <b>" + t.Id + "</b><br>";
-            Mensagem += "Nome: <b>" + t.Nome + "</b><br>";
-            Mensagem += "Descrição: " + t.Descricao + "<br><br>";
-
-            Mensagem += "<a href='" + t.Url + "' class='button'>Mapa</a>";
-
-            List<Attachment> Anexos = new();
-
-            foreach (var a in t.Anexos)
-            {
-                Anexos.Add(new Attachment(new MemoryStream(_appContext._fileContext.ObterFicheiro(a.CaminhoFicheiro + a.NomeFicheiro)), a.NomeFicheiro));
-            }
-
-            return EnviarMail(EmailDestino, "Território Atribuido - " + t.Nome + " (" + t.Id + ")", Mensagem, Anexos);
-        }
-        public bool MailTerritorioDevolver(Territorio t, string EmailDestino)
-        {
-            if (string.IsNullOrEmpty(t.Stamp) || string.IsNullOrEmpty(EmailDestino)) return false;
-
-            string Mensagem = "Serve o presente para informar que o territorio abaixo foi devolvido:<br><br>";
-
-            Mensagem += "Núm. do Território: <b>" + t.Id + "</b><br>";
-            Mensagem += "Nome: <b>" + t.Nome + "</b><br><br>";
-            Mensagem += "<b>SE AINDA O TEM FISICAMENTE POR FAVOR ENTREGUE-O AO SERVO DOS TERRITÓRIOS O MAIS DEPRESA POSSIVEL E NÃO O TRABALHE ENTRETANTO!</b>";
-
-            return EnviarMail(EmailDestino, "Território Devolvido - " + t.Nome + " (" + t.Id + ")", Mensagem, null);
-        }
     }
 }

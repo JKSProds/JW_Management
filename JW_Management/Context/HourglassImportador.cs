@@ -175,7 +175,7 @@ public class HourglassImportador(HourglassContext _hg, DbContext _db)
                     novas.Add(new Designacao
                     {
                         Stamp = (DateTime.Now.Ticks + _seq++).ToString(), StampReuniao = s.Stamp, SemanaReuniao = S(s.Semana),
-                        NomeDesignacao = S(it.Tema != "" ? it.Tema : tipo.DescricaoAdicional ?? tipo.Descricao ?? ""), NomePublicador = pub.Nome, Publicador = pub,
+                        NomeDesignacao = S(it.Tema != "" ? it.Tema : tipo.DescricaoAdicional ?? tipo.Descricao ?? "", 255), NomePublicador = pub.Nome, Publicador = pub,
                         TipoDesignacao = tipo, Local = it.Sala, NMin = it.Minutos > 0 ? it.Minutos : tipo.NMin
                     });
                 }
@@ -266,6 +266,6 @@ public class HourglassImportador(HourglassContext _hg, DbContext _db)
     private static int Minutos(string? t) => int.TryParse(Regex.Match(t ?? "", @"\d+").Value, out var m) ? m : 0;
 
     // Os dados vêm de fora e o DbContext monta SQL por texto: escapar antes de gravar.
-    private static string S(string? s) => Cortar(s).Replace("\\", "\\\\").Replace("'", "''");
-    private static string Cortar(string? s) => (s ?? "").Length > 50 ? (s ?? "")[..50] : s ?? "";
+    private static string S(string? s, int max = 50) => Cortar(s, max).Replace("\\", "\\\\").Replace("'", "''");
+    private static string Cortar(string? s, int max = 50) => (s ?? "").Length > max ? (s ?? "")[..max] : s ?? "";
 }

@@ -58,7 +58,6 @@ namespace JW_Management.Models
 
         public List<Movimentos>? Movimentos { get; set; }
         public List<Literatura>? Pedidos { get; set; }
-        public List<Territorio>? Territorios { get; set; }
         public int TipoUtilizador { get; set; } //0 - Admin | 10 - Assistente | 20 - Coordenador | 30 - Secretario | 40 - Sup. Serviço | 50 - Servo Contas | 60 - Servo Literatura | 70 - Servo Territórios | 80 - Servo Ministerial | 90 - Publicador
         
         public string GetUrl => "https://" + httpContextAccessor.HttpContext?.Request.Host.Value;
@@ -78,7 +77,6 @@ namespace JW_Management.Models
                     case 60: return "Literatura";
                     case 70: return "Territorios";
                     case 80: return "Servo";
-                    case 99: return "Congresso";
                     default: return "Publicador";
 
                 }
@@ -93,7 +91,6 @@ namespace JW_Management.Models
             if (string.IsNullOrEmpty(Email)) Email = string.Empty;
             if (string.IsNullOrEmpty(Telemovel)) Telemovel = string.Empty;
             if (Grupo == null) Grupo = new Grupo() { Id = 0, Nome = "N/D"};
-            Territorios = new List<Territorio>();
             Movimentos = new List<Movimentos>();
             Pedidos = new List<Literatura>();
             

@@ -83,22 +83,6 @@
             <div id="menuPrincipal" class="navbar-menu">
             @if (autenticado)
             {
-                @if (User.ObterTenant() == 9999)
-                {
-                    <div class="navbar-start">
-                        <div class="navbar-item has-dropdown is-hoverable">
-                            <a class="navbar-link@(Ativo("Congressos"))">Congressos / Assembleias</a>
-                            <div class="navbar-dropdown">
-                                <a class="navbar-item" href="~/Congressos">
-                                    <span class="icon"><i class="fa-solid fa-list"></i></span>
-                                    <span>Lista</span>
-                                </a>
-                            </div>
-                        </div>
-                    </div>
-                }
-                else
-                {
                     <div class="navbar-start">
                         <div class="navbar-item has-dropdown is-hoverable">
                             <a class="navbar-link@(Ativo("Literatura"))">
@@ -128,13 +112,12 @@
                                 </a>
                             </div>
                         </div>
-                        @* Menu «Territórios» escondido por agora: controlador, vistas e rotas mantêm-se; o bloco está no histórico do git. *@
                         <a class="navbar-item@(Ativo("Reunioes"))" href="~/Reunioes/Programa">
                             <span class="icon"><i class="fa-solid fa-people-group"></i></span>
                             <span>Reuniões</span>
                         </a>
                     </div>
-                }
+
             }
                 <div class="navbar-end">
                     <div class="navbar-item theme-item"><button type="button" class="theme-toggle" data-action="tema" aria-label="Alternar entre tema claro e escuro" title="Alternar tema"><i class="fa-solid fa-moon"></i><i class="fa-solid fa-sun"></i></button></div>

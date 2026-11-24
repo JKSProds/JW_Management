@@ -14,8 +14,8 @@ using AppContext = System.AppContext;
 var accessor = new HttpContextAccessor();
 var builder = WebApplication.CreateBuilder(args);
 
-var tenantContext =
-    new TenantContext(accessor, builder.Configuration.GetConnectionString("DefaultConnection")!);
+var masterConnection = builder.Configuration.GetConnectionString("DefaultConnection")!;
+var tenantContext = new TenantContext(accessor, masterConnection);
 
 // Add services to the container.
 builder.Services.AddRazorPages();
@@ -42,7 +42,7 @@ var earlyProtection = DataProtectionProvider.Create("JW_Management");
 #else
 var earlyProtection = DataProtectionProvider.Create(new DirectoryInfo("/app/img/https/"), o => o.SetApplicationName("JW_Management"));
 #endif
-var configStore = new ConfigStore(builder.Configuration.GetConnectionString("DefaultConnection")!, earlyProtection);
+var configStore = new ConfigStore(masterConnection, earlyProtection);
 configStore.EnsureTable();
 builder.Configuration.AddInMemoryCollection(configStore.Load());
 builder.Services.AddSingleton(configStore);
@@ -125,7 +125,7 @@ CultureInfo.DefaultThreadCurrentCulture = cc;
 // Configure the HTTP request pipeline.
 if (!app.Environment.IsDevelopment())
 {
-    app.UseExceptionHandler("/Error");
+    app.UseExceptionHandler("/Home/Error");
 }
 
 app.UseHttpsRedirection();

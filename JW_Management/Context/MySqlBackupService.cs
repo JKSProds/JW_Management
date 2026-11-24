@@ -6,7 +6,7 @@ public class MySqlBackupService()
 {
     private string _connectionString => _appContext._currentTenant.ConnectionString;
     private string _backupPath => "/app/img/backup/" + _appContext._currentTenant.Id + "/";
-    public AppContext _appContext { get; set; }
+    public AppContext _appContext { get; set; } = null!;
     
     // Construtor com parâmetros
     public MySqlBackupService(AppContext appContext) : this()
@@ -51,7 +51,7 @@ public class MySqlBackupService()
             }
             return true;
         }
-        catch (Exception ex)
+        catch (Exception)
         {
             return false;
         }
@@ -72,7 +72,7 @@ public class MySqlBackupService()
 
             return true;
         }
-        catch (Exception ex)
+        catch (Exception)
         {
             return false;
         }

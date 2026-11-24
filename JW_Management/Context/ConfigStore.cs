@@ -62,6 +62,7 @@ public class ConfigStore(string masterConnectionString, IDataProtectionProvider 
     public bool SomenteOidcAtivo(IConfiguration config)
     {
 #if DEBUG
+#pragma warning disable CS0162
         return false; // dev local: o segredo OIDC não desencripta com a chave local, por isso mantém-se o login com palavra-passe
 #endif
         if (string.IsNullOrEmpty(config[ClientId])) return false;
@@ -70,6 +71,7 @@ public class ConfigStore(string masterConnectionString, IDataProtectionProvider 
         using var cmd = new MySqlCommand("SELECT Valor FROM sys_config WHERE Chave=@k", conn);
         cmd.Parameters.AddWithValue("@k", SomenteOidc);
         return cmd.ExecuteScalar() as string == "true";
+#pragma warning restore CS0162
     }
 
     private void Run(string sql, params (string Name, string Value)[] parameters)
